@@ -1,0 +1,16 @@
+{
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "conventionalcommits"
+      }
+    },
+    "git": {
+      "tagName": "skills-v${version}",
+      "commitMessage": "chore(skills): release v${version}",
+      "requireCleanWorkingDir": false
+    },
+    "npm": false,
+    "prompt": {
+      "enabled": true
+    }
+  }

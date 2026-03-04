@@ -1,0 +1,187 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import { Search } from 'lucide-react';
+import { ProgramDetailModal } from '@/components/program-detail-modal';
+import { DefaultEmptyBox } from '@/components/default-empty-box';
+import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
+import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
+import { useProfilePrograms } from '@/hooks/profile/use-profile-programs';
+import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { getTenant } from '@/utils/helpers';
+import { CustomProgramEnrollmentPlus } from '@/types/program';
+import { getRandomCourseImage } from '@/utils/helpers';
+import { config } from '@/lib/config';
+
+export default function ProgramsPage() {
+  const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
+    org: getTenant(),
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const ENROLLED_TAB = 'enrolled';
+  const ASSIGNED_TAB = 'assigned';
+  const [activeTab, setActiveTab] = useState<'enrolled' | 'assigned' | 'catalog'>(ENROLLED_TAB); // "my" or "assigned"
+  const [selectedProgram, setSelectedProgram] = useState<CustomProgramEnrollmentPlus | null>(null);
+  const [randomImage] = useState(() => getRandomCourseImage());
+  const {
+    programs,
+    filteredPrograms,
+    isLoading,
+    isError,
+    setFilteredPrograms,
+    setPrograms,
+    programCompletions,
+  } = useProfilePrograms({
+    searchQuery,
+    activeTab,
+  });
+
+  const handleProgramTabChange = (tab: 'enrolled' | 'assigned' | 'catalog') => {
+    if (activeTab === tab) return;
+    setActiveTab(tab);
+    setSearchQuery('');
+    setFilteredPrograms([]);
+    setPrograms([]);
+  };
+
+  return (
+    <>
+      <div className="p-6">
+        {/* Programs Tabs */}
+        <div className="border-b border-gray-200 mb-8">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => handleProgramTabChange(ENROLLED_TAB)}
+              className={`py-2 px-1 text-sm font-medium border-b-2 ${
+                activeTab === ENROLLED_TAB
+                  ? 'border-amber-500 text-amber-500'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              My programs
+            </button>
+            {metadataLoaded && !isSkillsAssignmentsFeatureHidden() && (
+              <button
+                onClick={() => handleProgramTabChange(ASSIGNED_TAB)}
+                className={`py-2 px-1 text-sm font-medium border-b-2 ${
+                  activeTab === ASSIGNED_TAB
+                    ? 'border-amber-500 text-amber-500'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Assigned programs
+              </button>
+            )}
+            {/* <button
+              onClick={() => handleProgramTabChange(ENROLLED_TAB)}
+              className={`py-2 px-1 text-sm font-medium border-b-2 ${
+                activeTab === ENROLLED_TAB
+                  ? "border-amber-500 text-amber-500"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Enrolled programs
+            </button> */}
+          </div>
+        </div>
+
+        {/* Search Bar and Create Program Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="relative w-64">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+            />
+          </div>
+        </div>
+        {((!isLoading && isError) || (!isLoading && !isError && programs.length === 0)) && (
+          <DefaultEmptyBox message="No programs found." />
+        )}
+        {!isLoading &&
+          !isError &&
+          programs.length > 0 &&
+          filteredPrograms.length === 0 &&
+          searchQuery.length > 2 && (
+            <DefaultEmptyBox message={`No programs found matching "${searchQuery}" query.`} />
+          )}
+
+        {/* Programs Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {/* Program Cards */}
+          {isLoading && <SkeletonMultiplier Skeleton={SkeletonPathwayBox} multiplier={4} />}
+          {!isLoading &&
+            !isError &&
+            filteredPrograms.length > 0 &&
+            filteredPrograms.map((program: CustomProgramEnrollmentPlus, index: number) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedProgram(program)}
+                data-testid={'program-card'}
+              >
+                <div className="relative h-32 w-full overflow-hidden">
+                  <Image
+                    src={
+                      program.program_metadata?.card_image
+                        ? String(program.program_metadata?.card_image).startsWith('http')
+                          ? program.program_metadata?.card_image
+                          : config.urls.lms() + program.program_metadata?.card_image
+                        : randomImage
+                    }
+                    alt={program.name || ''}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = randomImage;
+                    }}
+                  />
+                  <div
+                    className="absolute bottom-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded"
+                    data-testid="program-badge"
+                  >
+                    PROGRAM
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-medium text-gray-800 mb-2">{program.name || ''}</h3>
+                  {programCompletions.length > 0 && programCompletions[index] && (
+                    <div className="space-y-1">
+                      {programCompletions.length > 0 && programCompletions[index] && (
+                        <>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-600">Progress</span>
+                            <span className="text-gray-800 font-medium">
+                              {programCompletions[index].completion_percentage || 0}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="bg-amber-500 h-1.5 rounded-full"
+                              style={{
+                                width: `${programCompletions[index].completion_percentage}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+      {/* Program Detail Modal */}
+      {selectedProgram && (
+        <ProgramDetailModal program={selectedProgram} onClose={() => setSelectedProgram(null)} />
+      )}
+    </>
+  );
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "IBL Skills",
+  "version": "1.0.0",
+  "identifier": "ai.ibl.skills",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "https://skillsai.iblai.app",
+    "beforeBuildCommand": "",
+    "frontendDist": "./offline-shell"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "IBL.ai",
+    "homepage": "https://ibl.ai",
+    "category": "Education",
+    "copyright": "© 2024 IBL.ai",
+    "shortDescription": "Skills assessment and tracking",
+    "longDescription": "Skills assessment and tracking",
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "hardenedRuntime": true,
+      "entitlements": null,
+      "exceptionDomain": null
+    },
+    "iOS": {
+      "developmentTeam": null
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    },
+    "deep-link": {
+      "mobile": [
+        {
+          "host": "iblai-skills"
+        },
+        {
+          "host": "ai.ibl.skills"
+        }
+      ]
+    }
+  }
+}
