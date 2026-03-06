@@ -1,6 +1,6 @@
 # Stage 0: Base
 FROM node:20 AS base
-WORKDIR /repo
+WORKDIR /app
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -10,26 +10,18 @@ RUN npm install -g n && n 25.3.0 && hash -r
 # Enable Corepack and activate pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy monorepo configs and lockfile
-COPY pnpm-workspace.yaml .
-COPY turbo.json .
+# Copy package manifests first (for layer caching)
 COPY package.json .
 COPY pnpm-lock.yaml .
 
-# Add app-specific package.json
-COPY apps/skills/package.json ./apps/skills/package.json
-
-# Add all packages for workspace resolution
-COPY packages ./packages
-
-# 🔥 Add 'next' to root devDependencies before this step
-RUN pnpm install
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Stage 1: Builder
 FROM base AS builder
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY . .
-RUN pnpm run build --filter=ibl-web-nextjs-skills-spa
+RUN pnpm run build
 
 # Stage 2: Runner
 FROM node:20-alpine AS runner
@@ -44,21 +36,19 @@ RUN apk add --no-cache libstdc++ \
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy built app artifacts
-COPY --from=builder /repo/apps/skills/.next .next
-COPY --from=builder /repo/apps/skills/public ./public
-COPY --from=builder /repo/apps/skills/package.json ./package.json
-COPY --from=builder /repo/apps/skills/next.config.ts ./next.config.ts
-COPY --from=builder /repo/apps/skills/entrypoint.sh ./entrypoint.sh
+COPY --from=builder /app/.next .next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
 
 # Ensure Next.js and dependencies are available during runtime
-COPY --from=builder /repo/node_modules ./node_modules
-# COPY --from=builder /repo/apps/mentor/node_modules ./node_modules
-RUN pnpm ls next
-RUN ls node_modules
+COPY --from=builder /app/node_modules ./node_modules
+
 # Make entrypoint executable
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 5000
 
-# ✅ Use pnpm exec now that next is available globally
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["pnpm", "exec", "next", "start", "-p", "5000"]
