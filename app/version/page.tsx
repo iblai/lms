@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Version } from "@iblai/iblai-js/web-containers";
 import { appVersion } from "@/lib/version";

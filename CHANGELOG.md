@@ -1,3 +1,8 @@
+## [0.9.6]
+
+- iblai-js version bumped to 1.0.26
+- build issue fixed
+
 ## [0.9.5]
 
 - feat: analytics course program update

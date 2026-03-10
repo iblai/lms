@@ -237,3 +237,8 @@ body {
 /* Alternative: Prevent zoom by disabling user scaling */
 /* Add this to your HTML head instead of CSS */
 /* <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> */
+
+.profile-component-dialog{
+  width: 85vw;
+  max-width: 80rem;
+}
