@@ -1,3 +1,8 @@
+## [0.9.5]
+
+- feat: analytics course program update
+- fix: sdk css imported into spa
+
 ## [0.9.4]
 
 - fix(skills): add sso-login-complete to non-auth pages
