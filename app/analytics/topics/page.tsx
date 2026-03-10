@@ -1,7 +1,7 @@
 'use client';
 
 import { getTenant } from '@/utils/helpers';
-import { AnalyticsTopicsStats, useAnalyticsSettings } from '@iblai/iblai-js/web-containers';
+import { AnalyticsTopicsStats, useAnalyticsSettings } from '@iblai/web-containers';
 
 export default function TopicsPage() {
   const { usergroupIds } = useAnalyticsSettings();

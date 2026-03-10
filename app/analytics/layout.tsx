@@ -7,8 +7,8 @@ import {
   AnalyticsSettingsProvider,
   GroupsFilterDropdown,
   type GroupOption,
-} from '@iblai/iblai-js/web-containers';
-import { useLazyPlatformUserGroupsQuery } from '@iblai/iblai-js/data-layer';
+} from '@iblai/web-containers';
+import { useLazyPlatformUserGroupsQuery } from '@iblai/data-layer';
 import { usePathname, useRouter } from 'next/navigation';
 import { getTenant } from '@/utils/helpers';
 
@@ -61,7 +61,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
   );
 
   return (
-    <div className="mb-16">
+    <div className="mb-16 h-[calc(100%-50px)]">
       <AnalyticsSettingsProvider
         value={{ usergroupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined }}
       >

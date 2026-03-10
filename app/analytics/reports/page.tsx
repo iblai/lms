@@ -1,7 +1,7 @@
 'use client';
 
 import { getTenant } from '@/utils/helpers';
-import { AnalyticsReports, useAnalyticsSettings } from '@iblai/iblai-js/web-containers';
+import { AnalyticsReports, useAnalyticsSettings } from '@iblai/web-containers';
 
 export default function ReportsPage() {
   const { usergroupIds } = useAnalyticsSettings();
