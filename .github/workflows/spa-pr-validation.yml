@@ -237,6 +237,7 @@ jobs:
       venv-name: ${{ needs.gate.outputs.venv-name }}
     secrets:
       ssh-private-key: ${{ secrets.SSH_PRIVATE_DEPLOY_OPS }}
+      git-token: ${{ secrets.GIT_TOKEN }}
 
   # ============================================================
   # DEPLOY AUTH (uses prod auth image)
@@ -253,6 +254,7 @@ jobs:
       venv-name: ${{ needs.gate.outputs.venv-name }}
     secrets:
       ssh-private-key: ${{ secrets.SSH_PRIVATE_DEPLOY_OPS }}
+      git-token: ${{ secrets.GIT_TOKEN }}
 
   # ============================================================
   # SEQUENTIAL BROWSER TESTS (default mode)
@@ -273,6 +275,7 @@ jobs:
       health-port: '5023'
     secrets:
       ssh-private-key: ${{ secrets.SSH_PRIVATE_DEPLOY_OPS }}
+      git-token: ${{ secrets.GIT_TOKEN }}
 
   test-chrome:
     needs: [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
@@ -312,6 +315,7 @@ jobs:
       health-port: '5023'
     secrets:
       ssh-private-key: ${{ secrets.SSH_PRIVATE_DEPLOY_OPS }}
+      git-token: ${{ secrets.GIT_TOKEN }}
 
   test-firefox:
     needs: [gate, check-resumption, acquire-domain, build-playwright-image, verify-firefox]
@@ -351,6 +355,7 @@ jobs:
       health-port: '5023'
     secrets:
       ssh-private-key: ${{ secrets.SSH_PRIVATE_DEPLOY_OPS }}
+      git-token: ${{ secrets.GIT_TOKEN }}
 
   test-safari:
     needs: [gate, check-resumption, acquire-domain, build-playwright-image, verify-safari]
@@ -390,6 +395,7 @@ jobs:
       health-port: '5023'
     secrets:
       ssh-private-key: ${{ secrets.SSH_PRIVATE_DEPLOY_OPS }}
+      git-token: ${{ secrets.GIT_TOKEN }}
 
   test-edge:
     needs: [gate, check-resumption, acquire-domain, build-playwright-image, verify-edge]
