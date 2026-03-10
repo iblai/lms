@@ -51,3 +51,5 @@ Thumbs.db
 docker-compose.override.yml
 
 .npmrc
+.yalc
+yalc.lock
