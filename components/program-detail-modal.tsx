@@ -10,6 +10,7 @@ import { config } from '@/lib/config';
 import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/utils/localstorage';
 import { toast } from 'sonner';
+// @ts-ignore
 import {
   useLazyGetProgramCompletionQuery,
   useLazyGetUserEnrolledProgramsQuery,

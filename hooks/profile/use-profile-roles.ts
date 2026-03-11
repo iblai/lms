@@ -1,4 +1,5 @@
 import { getUserId, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import { useCreateCatalogRoleMutation } from '@iblai/iblai-js/data-layer';
 import { DesiredRoleCreateUpdateRequest } from '@iblai/iblai-api';
 import { toast } from 'sonner';

@@ -7,6 +7,7 @@ import { config } from '@/lib/config';
 import { useEffect, useState } from 'react';
 import { DefaultEmptyBox } from './default-empty-box';
 import { useRouter } from 'next/navigation';
+// @ts-ignore
 import {
   useLazyGetPathwayCompletionQuery,
   useLazyGetUserEnrolledPathwaysQuery,

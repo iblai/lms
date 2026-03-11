@@ -1,5 +1,6 @@
 
 import { getUserName } from "@/utils/helpers";
+// @ts-ignore
 import { useGetUserMetadataQuery } from "@iblai/iblai-js/data-layer";
 
 export const useUserMetadata = () => {

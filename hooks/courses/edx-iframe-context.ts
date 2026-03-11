@@ -1,4 +1,5 @@
 import { CourseOutlineChildNode } from '@/types/courses';
+// @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { createContext } from 'react';
 

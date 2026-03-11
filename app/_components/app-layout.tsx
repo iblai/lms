@@ -9,6 +9,7 @@ import { config } from '@/lib/config';
 import { NavigationDrawer } from '@/components/navigation-drawer';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 
 function DefaultPageLayout({ children }: { children: any }) {

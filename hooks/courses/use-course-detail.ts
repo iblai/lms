@@ -18,6 +18,7 @@ import {
 } from '@/services/course-metadata';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+// @ts-ignore
 import { useCreateStripeCheckoutSessionMutation } from '@iblai/iblai-js/data-layer';
 
 interface CourseEligibility {

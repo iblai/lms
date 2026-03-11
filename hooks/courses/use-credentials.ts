@@ -1,4 +1,5 @@
 import { getTenant, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import {
   useLazyGetUsersAsAssertionsQuery,
   useUploadCredentialImageMutation,

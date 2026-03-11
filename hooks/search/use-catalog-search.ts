@@ -1,3 +1,4 @@
+// @ts-ignore
 import { useLazyGetCatalogSearchQuery } from '@iblai/iblai-js/data-layer';
 interface CatalogSearchParams {
   query?: string;

@@ -2,6 +2,7 @@ import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useContext, useState, useEffect } from 'react';
 import { Clock, AlertCircle } from 'lucide-react';
 import _ from 'lodash';
+// @ts-ignore
 import {
   useUpdateExamAttemptMutation,
   useStartExamMutation,

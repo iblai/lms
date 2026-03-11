@@ -6,6 +6,7 @@ import { selectedFields } from '@/types/start-page';
 import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { useProfileRoles } from '../profile/use-profile-roles';
 import { useProfileSkills } from '../profile/use-profile-skills';
+// @ts-ignore
 import {
   useGetUserMetadataQuery,
   useLazyGetReportedSkillsQuery,

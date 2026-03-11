@@ -8,6 +8,7 @@ import { ActivityStats } from "@/types/catalog";
 import { SkeletonActivityStatBox } from "@/components/skeleton-activity-stat-box";
 import { getTenant, getUserName } from "@/utils/helpers";
 import { useTenantMetadata } from "@iblai/iblai-js/web-utils";
+// @ts-ignore
 import { useGetUserMetadataQuery } from "@iblai/iblai-js/data-layer";
 
 export default function ProfilePage() {

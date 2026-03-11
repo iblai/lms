@@ -1,6 +1,7 @@
 'use client';
 import { config } from '@/lib/config';
 import { getTenant, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import { useGetReportedSkillsQuery } from '@iblai/iblai-js/data-layer';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';

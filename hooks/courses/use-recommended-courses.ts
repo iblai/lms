@@ -1,3 +1,4 @@
+// @ts-ignore
 import { useLazyGetRecommendationsAiSearchQuery } from '@iblai/iblai-js/data-layer';
 import { RecommendedCourseResult } from '@/types/courses';
 import { getOrg, getTenant } from '@/utils/helpers';

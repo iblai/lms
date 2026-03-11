@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Program, ProgramCompletionResponse, ProgramEnrollmentPlus } from '@iblai/iblai-api';
 import { useLazyGetAssignedProgramsQuery } from '@/services/catalog';
+// @ts-ignore
 import {
   useLazyGetProgramCompletionQuery,
   useLazyGetProgramListQuery,

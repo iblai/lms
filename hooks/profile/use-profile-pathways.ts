@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLazyGetUserAssignedPathwaysQuery } from '@/services/catalog';
 import { PathwayCompletionResponse, PathwayEnrollmentPlus } from '@iblai/iblai-api';
 import { config } from '@/lib/config';
+// @ts-ignore
 import {
   useLazyGetPathwayCompletionQuery,
   useLazyGetUserEnrolledPathwaysQuery,

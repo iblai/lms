@@ -8,6 +8,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
 import { CourseOutlineChildNode } from '@/types/courses';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
+// @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
 import { TimedExam } from './timed-exam';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';

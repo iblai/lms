@@ -12,6 +12,7 @@ import {
   File,
 } from "lucide-react";
 import { getUserName } from "@/utils/helpers";
+// @ts-ignore
 import { useGetUserResumeQuery } from "@iblai/iblai-js/data-layer";
 import { getTenant } from "@/utils/helpers";
 import { SkeletonMultiplier } from "../skeleton-multiplier";

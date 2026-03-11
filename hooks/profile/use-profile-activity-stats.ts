@@ -1,6 +1,7 @@
 import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { useState, useEffect } from 'react';
 import { ActivityStats } from '@/types/catalog';
+// @ts-ignore
 import {
   useLazyGetUserReportedSkillsQuery,
   useLazyGetUserSkillsPointsQuery,

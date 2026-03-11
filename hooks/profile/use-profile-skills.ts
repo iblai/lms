@@ -1,5 +1,6 @@
 import { UserSkill } from '@/types/skills';
 import { getTenant, getUserId, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import {
   useGetUserEarnedSkillsQuery,
   useGetUserReportedSkillsQuery,

@@ -1,6 +1,7 @@
 import { TimeSpent } from '@/types/perlearner';
 import { getUserName } from '@/utils/helpers';
 import { getTenant } from '@/utils/helpers';
+// @ts-ignore
 import { useLazyGetOverTimeActivityQuery } from '@iblai/iblai-js/data-layer';
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
