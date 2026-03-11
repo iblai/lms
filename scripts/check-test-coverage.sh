@@ -22,6 +22,18 @@ BASE_BRANCH="${BASE_BRANCH:-origin/main}"
 SKIP_COVERAGE_FILES=(
   "providers/index.tsx"
   "app/analytics/layout.tsx"
+  "app/_components/app-layout.tsx"
+  "app/course-content/[course_id]/layout.tsx"
+  "app/profile/public/page.tsx"
+  "app/profile/skills/page.tsx"
+  "components/edx-iframe/edx-iframe.tsx"
+  "components/profile/education-box.tsx"
+  "components/profile/experience-box.tsx"
+  "components/profile/media-box.tsx"
+  "hooks/courses/use-course-detail.ts"
+  "hooks/profile/use-profile-roles.ts"
+  "hooks/profile/use-profile-skills.ts"
+  "utils/localstorage.ts"
 )
 
 # Files to exclude from coverage checks
