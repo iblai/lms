@@ -1,11 +1,14 @@
 import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { useState, useEffect } from 'react';
 import { ActivityStats } from '@/types/catalog';
-// @ts-ignore
 import {
+  // @ts-ignore
   useLazyGetUserReportedSkillsQuery,
+  // @ts-ignore
   useLazyGetUserSkillsPointsQuery,
+  // @ts-ignore
   useLazyGetUserDesiredSkillsQuery,
+  // @ts-ignore
   useLazyGetPerLearnerInfoQuery,
 } from '@iblai/iblai-js/data-layer';
 import _ from 'lodash';
@@ -283,7 +286,6 @@ export const useProfileActivityStats = () => {
         [
           {
             org: getTenant(),
-            // @ts-expect-error userId may not be part of useLazyGetPerLearnerInfoQuery Query definition
             userId: getUserName(),
             format: 'json',
             includeMainPlatform: true,

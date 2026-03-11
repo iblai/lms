@@ -6,11 +6,14 @@ import { selectedFields } from '@/types/start-page';
 import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { useProfileRoles } from '../profile/use-profile-roles';
 import { useProfileSkills } from '../profile/use-profile-skills';
-// @ts-ignore
 import {
+  // @ts-ignore
   useGetUserMetadataQuery,
+  // @ts-ignore
   useLazyGetReportedSkillsQuery,
+  // @ts-ignore
   UserProfile,
+  // @ts-ignore
   useUpdateUserMetadataMutation,
 } from '@iblai/iblai-js/data-layer';
 import { ReportedSkill, Skill } from '@iblai/iblai-api';

@@ -1,11 +1,15 @@
 import { UserSkill } from '@/types/skills';
 import { getTenant, getUserId, getUserName } from '@/utils/helpers';
-// @ts-ignore
 import {
+  // @ts-ignore
   useGetUserEarnedSkillsQuery,
+  // @ts-ignore
   useGetUserReportedSkillsQuery,
+  // @ts-ignore
   useGetUserDesiredSkillsQuery,
+  // @ts-ignore
   useCreateOrUpdateUserReportedSkillMutation,
+  // @ts-ignore
   useCreateOrUpdateUserDesiredSkillMutation,
 } from '@iblai/iblai-js/data-layer';
 import { ReportedSkill, DesiredSkill } from '@iblai/iblai-api';
@@ -21,7 +25,6 @@ export const useProfileSkills = (showToast: boolean = true) => {
   } = useGetUserEarnedSkillsQuery([
     {
       org: getTenant(),
-      // @ts-expect-error // userId may not be part of useGetUserEarnedSkillsQuery Query definition
       userId: getUserName(),
     },
   ]);
