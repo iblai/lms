@@ -7,8 +7,9 @@ import {
   AnalyticsSettingsProvider,
   GroupsFilterDropdown,
   type GroupOption,
-} from '@iblai/web-containers';
-import { useLazyPlatformUserGroupsQuery } from '@iblai/data-layer';
+} from '@iblai/iblai-js/web-containers';
+// @ts-ignore
+import { useLazyPlatformUserGroupsQuery } from '@iblai/iblai-js/data-layer';
 import { usePathname, useRouter } from 'next/navigation';
 import { getTenant } from '@/utils/helpers';
 
@@ -36,8 +37,8 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
     if (groupsData?.results) {
       setGroups(
         groupsData.results
-          .filter((group) => group.name !== null)
-          .map((group) => ({
+          .filter((group: any) => group.name !== null)
+          .map((group: any) => ({
             id: group.id,
             name: group.name as string,
           })),

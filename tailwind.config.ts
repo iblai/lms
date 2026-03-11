@@ -3,6 +3,7 @@ import { themeConfig } from "./config/theme"
 const tailwindcssAnimate = require("tailwindcss-animate")
 
 const config: Config = {
+  // @ts-ignore
   darkMode: ["class"],
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",

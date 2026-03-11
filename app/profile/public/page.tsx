@@ -109,7 +109,7 @@ export default function PublicProfilePage() {
 
           {/* Social Media Links */}
           <div className="flex space-x-3 mt-3">
-            {userMetaData?.social_links?.map((link) => (
+            {userMetaData?.social_links?.map((link: any) => (
               <a
                 key={link.platform}
                 href={`https://${link.platform}.com/${link.social_link}`}
@@ -136,7 +136,7 @@ export default function PublicProfilePage() {
               'Credentials',
               ...(metadataLoaded && !isSkillsResumeFeatureHidden() ? ['Resume'] : []),
               'Media',
-            ].map((tab) => (
+            ].map((tab: any) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab.toLowerCase())}

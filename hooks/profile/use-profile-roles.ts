@@ -11,7 +11,6 @@ export const useProfileRoles = (showToast: boolean = true) => {
   const handleDesiredRolesCreate = async (roles: DesiredRoleCreateUpdateRequest) => {
     try {
       await createCatalogRole({
-        // @ts-expect-error requestBody may not be part of useCreateCatalogRoleMutation Query definition
         requestBody: roles,
         userId: getUserId(),
         username: getUserName(),

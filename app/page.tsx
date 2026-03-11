@@ -25,7 +25,6 @@ export default function Home() {
   } = useGetReportedSkillsQuery([
     {
       org: getTenant(),
-      // @ts-expect-error - user may not be part of useGetReportedSkillsQuery Query definition
       userId: getUserName(),
     },
   ]);

@@ -78,7 +78,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
       }
       const mentor =
         (
-          response?.data?.results.find((item) => item?.metadata?.default) ||
+          response?.data?.results.find((item: any) => item?.metadata?.default) ||
           response?.data?.results[0]
         )?.unique_id || null;
       if (!mentor) {

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { getTenant } from '@/utils/helpers';
-import { AnalyticsProgramDetail } from '@iblai/web-containers';
+import { AnalyticsProgramDetail } from '@iblai/iblai-js/web-containers';
 
 export default function ProgramDetailPage() {
   const params = useParams();

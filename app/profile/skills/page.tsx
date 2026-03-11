@@ -103,7 +103,7 @@ export default function SkillsPage() {
             {!earnedSkillsLoading &&
               earnedSkillsSuccess &&
               !_.isEmpty(earnedSkills?.resources) &&
-              earnedSkills?.resources.map((skill, index) => (
+              earnedSkills?.resources.map((skill: any, index: number) => (
                 <SkillBox
                   key={index}
                   onSkillClick={() => {}}
@@ -175,7 +175,7 @@ export default function SkillsPage() {
               {!selfReportedSkillsLoading &&
                 selfReportedSkillsSuccess &&
                 !_.isEmpty(selfReportedSkills?.skills) &&
-                selfReportedSkills?.skills.map((skill, index) => (
+                selfReportedSkills?.skills.map((skill: any, index: number) => (
                   <SkillBox
                     key={index}
                     onSkillClick={() => {
@@ -220,7 +220,7 @@ export default function SkillsPage() {
             {!selfReportedSkillsLoading &&
               selfReportedSkillsSuccess &&
               !_.isEmpty(selfReportedSkills?.skills) &&
-              selfReportedSkills?.skills.map((skill, index) => (
+              selfReportedSkills?.skills.map((skill: any, index: number) => (
                 <SkillBox
                   key={index}
                   onSkillClick={() => {
@@ -314,7 +314,7 @@ export default function SkillsPage() {
                 {!desiredSkillsLoading &&
                   desiredSkillsSuccess &&
                   !_.isEmpty(desiredSkills?.skills) &&
-                  desiredSkills?.skills.map((skill, index) => (
+                  desiredSkills?.skills.map((skill: any, index: number) => (
                     <SkillBox
                       key={index}
                       showRating={false}
@@ -334,7 +334,7 @@ export default function SkillsPage() {
               {!desiredSkillsLoading &&
                 desiredSkillsSuccess &&
                 !_.isEmpty(desiredSkills?.skills) &&
-                desiredSkills?.skills.map((skill, index) => (
+                desiredSkills?.skills.map((skill: any, index: number) => (
                   <SkillBox
                     key={index}
                     showRating={false}
