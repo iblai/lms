@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import _ from 'lodash';
@@ -510,13 +510,9 @@ describe('TimedExam', () => {
   });
 
   it('disables start button when starting exam', async () => {
-    let resolveStartExam: () => void;
     mockStartExam.mockReturnValue({
       unwrap: vi.fn().mockImplementation(
-        () =>
-          new Promise<void>((resolve) => {
-            resolveStartExam = resolve;
-          }),
+        () => new Promise<void>(() => {}),
       ),
     });
 
@@ -577,6 +573,7 @@ describe('TimedExam', () => {
   });
 
   it('shows "Starting exam..." text when isStartingExam is true', async () => {
+    // @ts-ignore
     const { useStartExamMutation } = await import('@iblai/iblai-js/data-layer');
     vi.mocked(useStartExamMutation as any).mockReturnValue([mockStartExam, { isLoading: true }]);
     renderTimedExam({ examInfo: noAttemptExamInfo });
@@ -585,6 +582,7 @@ describe('TimedExam', () => {
   });
 
   it('shows "Submitting..." text when isSubmittingExam is true', async () => {
+    // @ts-ignore
     const { useUpdateExamAttemptMutation } = await import('@iblai/iblai-js/data-layer');
     vi.mocked(useUpdateExamAttemptMutation as any).mockReturnValue([mockUpdateExamAttempt, { isLoading: true }]);
     renderTimedExam({ examInfo: startedExamInfo });

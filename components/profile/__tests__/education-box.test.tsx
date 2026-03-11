@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -39,7 +39,7 @@ vi.mock('@/components/add-institution-dialog', () => ({
 }));
 
 vi.mock('@iblai/iblai-js/web-containers', () => ({
-  EducationDialog: ({ open, onOpenChange, onComplete, education }: any) =>
+  EducationDialog: ({ open, onOpenChange, onComplete }: any) =>
     open ? (
       <div data-testid="education-dialog">
         <button onClick={() => onComplete()}>Complete</button>

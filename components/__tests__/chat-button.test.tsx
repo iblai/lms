@@ -112,6 +112,7 @@ describe('ChatButton', () => {
   });
 
   it('renders loading state when mentors are loading', async () => {
+    // @ts-ignore
     const { useLazyGetMentorsQuery } = await import('@iblai/iblai-js/data-layer');
     vi.mocked(useLazyGetMentorsQuery).mockReturnValue([
       mockGetMentors,
@@ -122,6 +123,7 @@ describe('ChatButton', () => {
   });
 
   it('renders loading state when fetching mentors', async () => {
+    // @ts-ignore
     const { useLazyGetMentorsQuery } = await import('@iblai/iblai-js/data-layer');
     vi.mocked(useLazyGetMentorsQuery).mockReturnValue([
       mockGetMentors,
@@ -215,14 +217,14 @@ describe('ChatButton', () => {
       ...defaultContextValue,
       courseMentor: 'course-mentor-id',
     };
-    const { container } = renderWithContext(<ChatButton />, contextWithCourseMentor);
+    const { container } = renderWithContext(<ChatButton />, contextWithCourseMentor as any);
     await waitFor(() => {
       expect(container).toBeTruthy();
     });
   });
 
   it('handles embedded mentor from metadata', async () => {
-    mockGetEmbeddedMentorToUse.mockReturnValue({ unique_id: 'embedded-mentor-id' });
+    mockGetEmbeddedMentorToUse.mockReturnValue({ unique_id: 'embedded-mentor-id' } as any);
     const { container } = renderWithContext(<ChatButton />);
     await waitFor(() => {
       expect(container).toBeTruthy();
@@ -230,7 +232,7 @@ describe('ChatButton', () => {
   });
 
   it('shows toast error when no mentors found', async () => {
-    const { toast } = await import('sonner');
+    await import('sonner');
     const _ = await import('lodash');
     vi.mocked(_.default.isEmpty).mockReturnValue(true);
     mockGetMentors.mockResolvedValue({ data: { results: [] } });
@@ -242,9 +244,9 @@ describe('ChatButton', () => {
   });
 
   it('handles mentor fetch error gracefully', async () => {
-    const { toast } = await import('sonner');
+    await import('sonner');
     mockGetMentors.mockRejectedValue(new Error('Network error'));
-    renderWithContext(<ChatButton />);
+    const { container } = renderWithContext(<ChatButton />);
     await waitFor(() => {
       expect(container).toBeTruthy();
     }).catch(() => {});

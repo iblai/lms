@@ -306,7 +306,7 @@ describe('PathwayDetailModal', () => {
 
   it('handles enrollment error', async () => {
     mockCreateCatalogPathwaySelfEnrollment.mockRejectedValue(new Error('Enrollment failed'));
-    const { toast } = await import('sonner');
+    await import('sonner');
     render(<PathwayDetailModal {...defaultProps} />);
     await waitFor(() => {
       const enrollBtn = screen.queryByText('Enroll Now');
@@ -387,6 +387,7 @@ describe('PathwayDetailModal', () => {
   });
 
   it('throws error when isEnrollmentError is true (line 77-78)', async () => {
+    // @ts-ignore
     const { useCreateCatalogPathwaySelfEnrollmentMutation } =
       await import('@iblai/iblai-js/data-layer');
     vi.mocked(useCreateCatalogPathwaySelfEnrollmentMutation).mockReturnValue([

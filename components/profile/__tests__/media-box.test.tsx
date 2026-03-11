@@ -77,7 +77,7 @@ vi.mock('@tanstack/react-form', () => ({
         values = { ...defaultValues };
       }),
       Subscribe: ({ selector, children }: any) => children(selector({ isSubmitting })),
-      Field: ({ name, children, validators }: any) => {
+      Field: ({ name, children }: any) => {
         const field = {
           name,
           state: {
@@ -279,7 +279,7 @@ describe('MediaBox', () => {
   });
 
   it('handles file too large', async () => {
-    const { toast } = await import('sonner');
+    await import('sonner');
     render(<MediaBox />);
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
     if (fileInput) {
@@ -466,7 +466,7 @@ describe('MediaBox', () => {
           };
           return children(field);
         },
-      };
+      } as any;
     });
     mockGetUserResumeQuery.mockReturnValue({
       data: { files: [], links: [] },
@@ -493,7 +493,7 @@ describe('MediaBox', () => {
   it('shows error when form is invalid on submit (line 225-226)', async () => {
     // Override the form mock to return isFormValid = false
     const { useForm } = await import('@tanstack/react-form');
-    vi.mocked(useForm).mockImplementationOnce(({ defaultValues, onSubmit }: any) => {
+    vi.mocked(useForm).mockImplementationOnce(({ defaultValues }: any) => {
       const values = { ...defaultValues };
       return {
         state: { isSubmitting: false, isFormValid: false },
@@ -508,7 +508,7 @@ describe('MediaBox', () => {
           };
           return children(field);
         },
-      };
+      } as any;
     });
     const { toast } = await import('sonner');
     render(<MediaBox />);
@@ -522,7 +522,7 @@ describe('MediaBox', () => {
   it('returns early when form is submitting (line 229)', async () => {
     const { useForm } = await import('@tanstack/react-form');
     const mockHandleSubmitFn = vi.fn();
-    vi.mocked(useForm).mockImplementationOnce(({ defaultValues, onSubmit }: any) => {
+    vi.mocked(useForm).mockImplementationOnce(({ defaultValues }: any) => {
       const values = { ...defaultValues };
       return {
         state: { isSubmitting: true, isFormValid: true },
@@ -537,7 +537,7 @@ describe('MediaBox', () => {
           };
           return children(field);
         },
-      };
+      } as any;
     });
     render(<MediaBox />);
     // When isSubmitting is true, button text is "Uploading..."

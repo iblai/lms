@@ -52,6 +52,7 @@ vi.mock('@/components/spinner', () => ({
 
 import Home from '../page';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+// @ts-ignore
 import { useGetReportedSkillsQuery } from '@iblai/iblai-js/data-layer';
 import { config } from '@/lib/config';
 

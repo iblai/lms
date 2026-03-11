@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock next/navigation
@@ -96,6 +96,7 @@ vi.mock('@/utils/helpers', () => ({
 import AppLayout from '../app-layout';
 import { usePathname } from 'next/navigation';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+// @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';

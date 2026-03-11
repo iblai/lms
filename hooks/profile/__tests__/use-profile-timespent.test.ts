@@ -36,7 +36,7 @@ describe('useProfileTimeSpent', () => {
   });
 
   it('fetches time spent data on mount', async () => {
-    const { result } = renderHook(() => useProfileTimeSpent());
+    renderHook(() => useProfileTimeSpent());
     await waitFor(() => {
       expect(mockGetOverTimeActivity).toHaveBeenCalled();
     });
@@ -100,7 +100,7 @@ describe('useProfileTimeSpent', () => {
   });
 
   it('calls getOverTimeActivity with correct params', async () => {
-    const { result } = renderHook(() => useProfileTimeSpent());
+    renderHook(() => useProfileTimeSpent());
 
     await waitFor(() => {
       expect(mockGetOverTimeActivity).toHaveBeenCalledWith(

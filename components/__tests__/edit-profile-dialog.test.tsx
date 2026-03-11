@@ -205,7 +205,7 @@ describe('EditProfileDialog', () => {
         grade: 'A',
       },
     ];
-    mockGetUserEducationQuery.mockReturnValue({ data: educationData });
+    mockGetUserEducationQuery.mockReturnValue({ data: educationData as any });
 
     render(<EditProfileDialog {...defaultProps} />);
 
@@ -228,7 +228,7 @@ describe('EditProfileDialog', () => {
         end_date: null,
       },
     ];
-    mockGetUserExperienceQuery.mockReturnValue({ data: experienceData });
+    mockGetUserExperienceQuery.mockReturnValue({ data: experienceData as any });
 
     render(<EditProfileDialog {...defaultProps} />);
 
@@ -252,7 +252,7 @@ describe('EditProfileDialog', () => {
         grade: 'B',
       },
     ];
-    mockGetUserEducationQuery.mockReturnValue({ data: educationData });
+    mockGetUserEducationQuery.mockReturnValue({ data: educationData as any });
 
     render(<EditProfileDialog {...defaultProps} />);
 
@@ -263,7 +263,7 @@ describe('EditProfileDialog', () => {
   });
 
   it('shows "No education found" when education data is null', async () => {
-    mockGetUserEducationQuery.mockReturnValue({ data: null });
+    mockGetUserEducationQuery.mockReturnValue({ data: null as any });
 
     render(<EditProfileDialog {...defaultProps} />);
 
@@ -277,7 +277,7 @@ describe('EditProfileDialog', () => {
   });
 
   it('shows "No experience found" when experience data is null', async () => {
-    mockGetUserExperienceQuery.mockReturnValue({ data: null });
+    mockGetUserExperienceQuery.mockReturnValue({ data: null as any });
 
     render(<EditProfileDialog {...defaultProps} />);
 
@@ -291,7 +291,7 @@ describe('EditProfileDialog', () => {
   });
 
   it('handles invalid education data gracefully', async () => {
-    mockGetUserEducationQuery.mockReturnValue({ data: [{ bad: 'data' }] });
+    mockGetUserEducationQuery.mockReturnValue({ data: [{ bad: 'data' }] as any });
     render(<EditProfileDialog {...defaultProps} />);
     await waitFor(() => {
       const inputs = screen.getAllByRole('textbox');
@@ -300,7 +300,7 @@ describe('EditProfileDialog', () => {
   });
 
   it('handles empty experience array', async () => {
-    mockGetUserExperienceQuery.mockReturnValue({ data: [] });
+    mockGetUserExperienceQuery.mockReturnValue({ data: [] as any });
     render(<EditProfileDialog {...defaultProps} />);
     await waitFor(() => {
       const inputs = screen.getAllByRole('textbox');
@@ -327,7 +327,7 @@ describe('EditProfileDialog', () => {
         grade: 'A',
       },
     ];
-    mockGetUserEducationQuery.mockReturnValue({ data: educationData });
+    mockGetUserEducationQuery.mockReturnValue({ data: educationData as any });
     render(<EditProfileDialog {...defaultProps} />);
     await waitFor(() => {
       const inputs = screen.getAllByRole('textbox');
@@ -358,7 +358,7 @@ describe('EditProfileDialog', () => {
         grade: 'A',
       },
     ];
-    mockGetUserEducationQuery.mockReturnValue({ data: educationData });
+    mockGetUserEducationQuery.mockReturnValue({ data: educationData as any });
     render(<EditProfileDialog {...defaultProps} />);
     await waitFor(() => {
       const inputs = screen.getAllByRole('textbox');
@@ -387,7 +387,7 @@ describe('EditProfileDialog', () => {
         end_date: null,
       },
     ];
-    mockGetUserExperienceQuery.mockReturnValue({ data: experienceData });
+    mockGetUserExperienceQuery.mockReturnValue({ data: experienceData as any });
     render(<EditProfileDialog {...defaultProps} />);
     await waitFor(() => {
       const inputs = screen.getAllByRole('textbox');
@@ -415,7 +415,7 @@ describe('EditProfileDialog', () => {
         end_date: '2022-01-01',
       },
     ];
-    mockGetUserExperienceQuery.mockReturnValue({ data: experienceData });
+    mockGetUserExperienceQuery.mockReturnValue({ data: experienceData as any });
     render(<EditProfileDialog {...defaultProps} />);
     await waitFor(() => {
       const inputs = screen.getAllByRole('textbox');

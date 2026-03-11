@@ -159,7 +159,7 @@ describe('useProfilePrograms', () => {
   });
 
   it('re-fetches when activeTab changes', async () => {
-    const { result, rerender } = renderHook(
+    const { rerender } = renderHook(
       ({ tab }) => useProfilePrograms({ searchQuery: '', activeTab: tab }),
       { initialProps: { tab: 'enrolled' as const } },
     );
@@ -168,7 +168,7 @@ describe('useProfilePrograms', () => {
       expect(mockGetUserEnrolledPrograms).toHaveBeenCalledTimes(1);
     });
 
-    rerender({ tab: 'catalog' });
+    rerender({ tab: 'catalog' as any });
 
     await waitFor(() => {
       expect(mockGetProgramList).toHaveBeenCalledTimes(1);

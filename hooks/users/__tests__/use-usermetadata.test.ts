@@ -14,7 +14,7 @@ const mockUseGetUserMetadataQuery = vi.fn(() => ({
 }));
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useGetUserMetadataQuery: (...args: any[]) => mockUseGetUserMetadataQuery(...args),
+  useGetUserMetadataQuery: (...args: any[]) => (mockUseGetUserMetadataQuery as (...a: any[]) => any)(...args),
 }));
 
 import { useUserMetadata } from '../use-usermetadata';
@@ -52,7 +52,7 @@ describe('useUserMetadata', () => {
   it('returns userMetaData from query', () => {
     const mockData = { id: 1, username: 'test-user', bio: 'Test bio' };
     mockUseGetUserMetadataQuery.mockReturnValueOnce({
-      data: mockData,
+      data: mockData as any,
       isLoading: false,
       isError: false,
     });

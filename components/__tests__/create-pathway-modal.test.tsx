@@ -107,6 +107,7 @@ describe('CreatePathwayModal', () => {
     mockHandleSearch.mockResolvedValue(mockCoursesData);
 
     // Re-setup module mocks after reset
+    // @ts-ignore
     const { useLazyGetResourceSearchQuery, useCreateCatalogPathwayMutation } =
       await import('@iblai/iblai-js/data-layer');
     vi.mocked(useLazyGetResourceSearchQuery).mockReturnValue([
@@ -559,6 +560,7 @@ describe('CreatePathwayModal', () => {
       handleSearch: vi.fn(() => new Promise(() => {})),
       isLoading: true,
     } as any);
+    // @ts-ignore
     const { useLazyGetResourceSearchQuery } = await import('@iblai/iblai-js/data-layer');
     vi.mocked(useLazyGetResourceSearchQuery).mockReturnValue([
       vi.fn(),
@@ -571,6 +573,7 @@ describe('CreatePathwayModal', () => {
   });
 
   it('shows isCreateCatalogPathwayError scenario', async () => {
+    // @ts-ignore
     const { useCreateCatalogPathwayMutation } = await import('@iblai/iblai-js/data-layer');
     vi.mocked(useCreateCatalogPathwayMutation).mockReturnValue([
       mockCreateCatalogPathway,

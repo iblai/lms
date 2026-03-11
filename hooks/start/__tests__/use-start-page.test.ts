@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 vi.mock('@/utils/helpers', () => ({
@@ -27,7 +27,7 @@ const mockResetReportedSkills = vi.fn();
 const mockUpdateUserMetadata = vi.fn();
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useGetUserMetadataQuery: (...args: any[]) => mockGetUserMetadataQuery(...args),
+  useGetUserMetadataQuery: (...args: any[]) => (mockGetUserMetadataQuery as (...a: any[]) => any)(...args),
   useLazyGetReportedSkillsQuery: vi.fn(() => [vi.fn(), { reset: mockResetReportedSkills }]),
   useUpdateUserMetadataMutation: vi.fn(() => [mockUpdateUserMetadata]),
 }));

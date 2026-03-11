@@ -60,6 +60,7 @@ vi.mock('@/components/skeleton-activity-stat-box', () => ({
 import ProfilePage from '../page';
 import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-stats';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+// @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 
 describe('ProfilePage', () => {

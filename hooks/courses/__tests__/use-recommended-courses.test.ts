@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 vi.mock('@/utils/helpers', () => ({
@@ -44,7 +44,7 @@ describe('useRecommendedCourses', () => {
   });
 
   it('fetches courses on mount', async () => {
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
     );
 
