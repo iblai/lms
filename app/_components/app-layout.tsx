@@ -23,8 +23,11 @@ export default function AppLayout({ children }: { children: any }) {
   const { courseMentor, setCourseMentor, setMentorSidebarHidden, mentorSidebarHidden } =
     useChatState();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const username = getUserName();
   const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery({
-    params: { username: getUserName() },
+    params: { username },
+  }, {
+    skip: !username,
   });
   const { metadataLoaded, isMentorAIEnabled } = useTenantMetadata({
     org: getTenant(),

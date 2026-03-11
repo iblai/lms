@@ -15,9 +15,12 @@ export default function ProfilePage() {
   const { metadataLoaded, isSkillsLeaderBoardEnabled } = useTenantMetadata({
     org: getTenant(),
   });
+  const username = getUserName();
   const { data: userMetadata, isLoading: isUserMetadataLoading } =
     useGetUserMetadataQuery({
-      params: { username: getUserName() },
+      params: { username },
+    }, {
+      skip: !username,
     });
 
   return (
