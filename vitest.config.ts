@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./__tests__/vitest.setup.ts'],
     environment: 'jsdom',
+    exclude: ['node_modules/**', 'e2e/**'],
     coverage: {
       provider: 'istanbul',
       include: [
