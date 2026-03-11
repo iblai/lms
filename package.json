@@ -14,9 +14,11 @@
     "format": "prettier . --write",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --config e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --config e2e/playwright.config.ts --ui",
-    "test:e2e:headed": "playwright test --config e2e/playwright.config.ts --headed"
+    "test:e2e:headed": "playwright test --config e2e/playwright.config.ts --headed",
+    "prepare": "husky"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -111,6 +113,7 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "husky": "^9.1.7"
   }
 }
