@@ -64,7 +64,7 @@ vi.mock('@tanstack/react-form', () => ({
   useForm: vi.fn(({ defaultValues, onSubmit }: any) => {
     let values = { ...defaultValues };
     let isSubmitting = false;
-    let isFormValid = true;
+    const isFormValid = true;
 
     return {
       state: { isSubmitting, isFormValid },
