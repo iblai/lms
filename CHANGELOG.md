@@ -1,3 +1,7 @@
+## [0.9.8]
+
+- fix: course payment flow payload updated
+
 ## [0.9.7]
 
 - feat: reports page using AnalyticsReportDownload implemented
