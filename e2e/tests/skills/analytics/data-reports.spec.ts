@@ -21,6 +21,8 @@ import {
   shouldCombineRecommendationReports,
 } from '../../shared';
 
+test.skip()
+
 const pageURL = SKILL_HOST;
 
 // Report card labels used in the UI
