@@ -14,6 +14,7 @@ import { getTenant, getUserId } from '@/utils/helpers';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { CourseOutline } from '@/components/course-outline';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
+// @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';

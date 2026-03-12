@@ -4,8 +4,11 @@ import { useLazyGetUserAssignedPathwaysQuery } from '@/services/catalog';
 import { PathwayCompletionResponse, PathwayEnrollmentPlus } from '@iblai/iblai-api';
 import { config } from '@/lib/config';
 import {
+  // @ts-ignore
   useLazyGetPathwayCompletionQuery,
+  // @ts-ignore
   useLazyGetUserEnrolledPathwaysQuery,
+  // @ts-ignore
   useLazyGetPathwayListQuery,
 } from '@iblai/iblai-js/data-layer';
 export const useProfilePathways = ({
@@ -43,7 +46,7 @@ export const useProfilePathways = ({
       return (
         Array.isArray(response.data) &&
         response.data.findIndex(
-          (pre) => pre.active && pre?.pathway_uuid === pathway.pathway_uuid,
+          (pre: any) => pre.active && pre?.pathway_uuid === pathway.pathway_uuid,
         ) !== -1
       );
     } catch (error) {

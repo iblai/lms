@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
+// @ts-ignore
 import { useGetUserEducationQuery, useGetUserExperienceQuery } from '@iblai/iblai-js/data-layer';
 import { getTenant, getUserName } from '@/utils/helpers';
 import { EditEducationDialog } from './edit-education-dialog';

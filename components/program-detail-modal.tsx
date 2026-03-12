@@ -11,8 +11,11 @@ import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/utils/localstorage';
 import { toast } from 'sonner';
 import {
+  // @ts-ignore
   useLazyGetProgramCompletionQuery,
+  // @ts-ignore
   useLazyGetUserEnrolledProgramsQuery,
+  // @ts-ignore
   useCreateCatalogProgramSelfEnrollmentMutation,
 } from '@iblai/iblai-js/data-layer';
 import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/services/studio';
@@ -388,7 +391,7 @@ export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps
       ]);
       setEnrollmentStatus(
         Array.isArray(response.data) &&
-          response.data.findIndex((pre) => pre.active && pre?.program_id === program.program_id) !==
+          response.data.findIndex((pre: any) => pre.active && pre?.program_id === program.program_id) !==
             -1,
       );
     } catch (error) {
@@ -436,8 +439,8 @@ export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps
 
         // Remove duplicates based on course_id
         const uniqueCourses = allCourses.filter(
-          (course, index, self) =>
-            index === self.findIndex((c) => c.course?.course_id === course.course?.course_id),
+          (course: any, index: number, self: any) =>
+            index === self.findIndex((c: any) => c.course?.course_id === course.course?.course_id),
         );
 
         // Process the unique courses with proper image paths

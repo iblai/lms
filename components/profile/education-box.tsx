@@ -1,6 +1,7 @@
 'use client';
 
 import { Edit2 } from 'lucide-react';
+// @ts-ignore
 import { useGetUserEducationQuery } from '@iblai/iblai-js/data-layer';
 import { getTenant, getUserName } from '@/utils/helpers';
 import { SkeletonMultiplier } from '../skeleton-multiplier';

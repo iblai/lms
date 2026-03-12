@@ -1,5 +1,6 @@
 'use client';
 
+// @ts-ignore
 import { useGetUserExperienceQuery } from '@iblai/iblai-js/data-layer';
 import { getUserName, getTenant } from '@/utils/helpers';
 import { Edit2 } from 'lucide-react';

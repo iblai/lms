@@ -34,7 +34,7 @@ export const SkillsBox = () => {
           {!earnedSkillsLoading &&
             !earnedSkillsError &&
             !_.isEmpty(earnedSkills?.resources) &&
-            earnedSkills?.resources.map((skill, index) => (
+            earnedSkills?.resources.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
                 onSkillClick={() => {}}
@@ -72,7 +72,7 @@ export const SkillsBox = () => {
           {!selfReportedSkillsLoading &&
             !selfReportedSkillsError &&
             !_.isEmpty(selfReportedSkills?.skills) &&
-            selfReportedSkills?.skills.map((skill, index) => (
+            selfReportedSkills?.skills.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
                 skill={{
@@ -101,7 +101,7 @@ export const SkillsBox = () => {
           {!desiredSkillsLoading &&
             !desiredSkillsError &&
             !_.isEmpty(desiredSkills?.skills) &&
-            desiredSkills?.skills.map((skill, index) => (
+            desiredSkills?.skills.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
                 showRating={false}

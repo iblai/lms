@@ -1,7 +1,7 @@
 'use client';
 
 import { getTenant } from '@/utils/helpers';
-import { AnalyticsFinancialStats, useAnalyticsSettings } from '@iblai/web-containers';
+import { AnalyticsFinancialStats, useAnalyticsSettings } from '@iblai/iblai-js/web-containers';
 
 export default function FinancialPage() {
   const { usergroupIds } = useAnalyticsSettings();

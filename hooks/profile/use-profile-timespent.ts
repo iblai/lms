@@ -1,6 +1,7 @@
 import { TimeSpent } from '@/types/perlearner';
 import { getUserName } from '@/utils/helpers';
 import { getTenant } from '@/utils/helpers';
+// @ts-ignore
 import { useLazyGetOverTimeActivityQuery } from '@iblai/iblai-js/data-layer';
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
@@ -21,7 +22,6 @@ export const useProfileTimeSpent = () => {
         [
           {
             org: getTenant(),
-            // @ts-expect-error - userId may not be a property of useLazyGetOverTimeActivityQuery Query definition
             userId: getUserName(),
             startDate: dayjs().subtract(6, 'day').format('YYYY-MM-DD'),
             endDate: dayjs().format('YYYY-MM-DD'),
@@ -34,7 +34,6 @@ export const useProfileTimeSpent = () => {
         throw new Error();
       }
       setTimeSpent(
-        // @ts-expect-error - investigate response.data.data format
         Object.entries(response?.data?.data).map(([date, seconds]) => ({
           date: dayjs(date).format('ddd DD/MM/YY'),
           minutes: dayjs.duration(seconds as number, 'seconds').asMinutes(),

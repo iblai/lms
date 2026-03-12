@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { getTenant } from '@/utils/helpers';
-import { AnalyticsCourseDetail } from '@iblai/web-containers';
+import { AnalyticsCourseDetail } from '@iblai/iblai-js/web-containers';
 
 export default function CourseDetailPage() {
   const params = useParams();

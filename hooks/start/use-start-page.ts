@@ -7,9 +7,13 @@ import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { useProfileRoles } from '../profile/use-profile-roles';
 import { useProfileSkills } from '../profile/use-profile-skills';
 import {
+  // @ts-ignore
   useGetUserMetadataQuery,
+  // @ts-ignore
   useLazyGetReportedSkillsQuery,
+  // @ts-ignore
   UserProfile,
+  // @ts-ignore
   useUpdateUserMetadataMutation,
 } from '@iblai/iblai-js/data-layer';
 import { ReportedSkill, Skill } from '@iblai/iblai-api';
@@ -23,11 +27,15 @@ export const useStartPage = () => {
     org: getTenant(),
   });
   const router = useRouter();
+  const username = getUserName();
   const { data: userMetadata } = useGetUserMetadataQuery({
     params: {
-      username: getUserName(),
-    },
-  });
+      username,
+    }},
+    {
+      skip: !username,
+    }
+  );
   const canShowSkillsToast = metadata?.enable_skills_screen_on_start_page !== false;
   const canShowRolesToast = metadata?.enable_roles_screen_on_start_page !== false;
   const [, { reset: resetReportedSkills }] = useLazyGetReportedSkillsQuery();

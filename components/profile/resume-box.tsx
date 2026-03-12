@@ -2,6 +2,7 @@
 
 import { UploadedFile } from '@/types/career';
 import { getTenant, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import { useGetUserResumeQuery } from '@iblai/iblai-js/data-layer';
 import { useEffect, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';

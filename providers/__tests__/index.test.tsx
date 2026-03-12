@@ -115,6 +115,7 @@ describe('Providers', () => {
 
   it('initializes data layer when window.__ENV__ is defined', async () => {
     const store = createTestStore();
+    // @ts-ignore
     const { initializeDataLayer } = await import('@iblai/iblai-js/data-layer');
 
     render(

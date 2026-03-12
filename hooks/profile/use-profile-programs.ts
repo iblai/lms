@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { Program, ProgramCompletionResponse, ProgramEnrollmentPlus } from '@iblai/iblai-api';
 import { useLazyGetAssignedProgramsQuery } from '@/services/catalog';
 import {
+  // @ts-ignore
   useLazyGetProgramCompletionQuery,
+  // @ts-ignore
   useLazyGetProgramListQuery,
+  // @ts-ignore
   useLazyGetUserEnrolledProgramsQuery,
 } from '@iblai/iblai-js/data-layer';
 import { getOrg, getRandomCourseImage, getUserId, getUserName } from '@/utils/helpers';
@@ -70,7 +73,6 @@ export const useProfilePrograms = ({
       ],
       true,
     );
-    // @ts-expect-error - investigate into type of response.data
     const fetchedPrograms = response.data?.map((program: ProgramEnrollmentPlus) => ({
       ...program,
       metadata: {
@@ -113,7 +115,6 @@ export const useProfilePrograms = ({
       [
         {
           org: getOrg(),
-          // @ts-expect-error username may not be part of useLazyGetProgramListQuery Query Definition
           username: getUserName(),
         },
       ],

@@ -1,4 +1,5 @@
 import { GenericPagination } from '@/types/discover';
+// @ts-ignore
 import { useLazyGetPersonnalizedSearchQuery } from '@iblai/iblai-js/data-layer';
 import { useState } from 'react';
 

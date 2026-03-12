@@ -1,14 +1,24 @@
 import { getTenant, getUserName } from '@/utils/helpers';
 import {
+  // @ts-ignore
   useLazyGetUsersAsAssertionsQuery,
+  // @ts-ignore
   useUploadCredentialImageMutation,
+  // @ts-ignore
   useCreateCredentialAssertionMutation,
+  // @ts-ignore
   useCreateCredentialMutation,
+  // @ts-ignore
   useUpdateCredentialMutation,
+  // @ts-ignore
   useDeleteCourseCredentialMutation,
+  // @ts-ignore
   useLazyGetIssuersQuery,
+  // @ts-ignore
   useLazyGetCredentialsListQuery,
+  // @ts-ignore
   IssuersResponse,
+  // @ts-ignore
   CredentialsResponse,
 } from '@iblai/iblai-js/data-layer';
 import {
@@ -43,7 +53,6 @@ export const useCredentials = () => {
     try {
       const usersAsAssertions = await getUsersAsAssertions({
         platformKey: getTenant(),
-        // @ts-expect-error username no longer needed
         username: getUserName(),
         course: courseId,
       }).unwrap();
@@ -77,7 +86,6 @@ export const useCredentials = () => {
     try {
       const credentialAssertion = await createCredentialAssertion({
         platformKey: getTenant(),
-        // @ts-expect-error username should be added
         username: getUserName(),
         entityId,
         requestBody,

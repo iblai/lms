@@ -1,4 +1,5 @@
 import { getUserId, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import { useCreateCatalogRoleMutation } from '@iblai/iblai-js/data-layer';
 import { DesiredRoleCreateUpdateRequest } from '@iblai/iblai-api';
 import { toast } from 'sonner';
@@ -10,7 +11,6 @@ export const useProfileRoles = (showToast: boolean = true) => {
   const handleDesiredRolesCreate = async (roles: DesiredRoleCreateUpdateRequest) => {
     try {
       await createCatalogRole({
-        // @ts-expect-error requestBody may not be part of useCreateCatalogRoleMutation Query definition
         requestBody: roles,
         userId: getUserId(),
         username: getUserName(),

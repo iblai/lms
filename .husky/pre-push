@@ -1,0 +1,19 @@
+#!/bin/sh
+
+echo "Building..."
+pnpm build
+
+echo "Running lint..."
+pnpm lint
+
+echo "Running typecheck..."
+pnpm typecheck
+
+echo "Running unit tests..."
+pnpm test
+
+echo "Checking test coverage for changed files..."
+bash ./scripts/check-test-coverage.sh
+
+echo "Claude is reviewing your code..."
+claude --print "/code-review"

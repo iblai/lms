@@ -19,7 +19,7 @@ vi.mock('@/utils/helpers', () => ({
 }));
 
 // Mock the web-containers module
-vi.mock('@iblai/web-containers', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   AnalyticsCourseDetail: vi.fn(({ tenantKey, mentorId, courseId, onBack }) => (
     <div data-testid="analytics-course-detail">
       <span data-testid="tenant-key">{tenantKey}</span>
