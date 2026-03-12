@@ -82,6 +82,7 @@ export interface CourseEdxData {
   course_outline?: OutlineNode[];
   course_price?: string;
   platform_key?: string;
+  org?: string;
   display_name?: string;
   mentor_hidden?: boolean;
   mentor_uuid?: string;

@@ -18,7 +18,7 @@ import {
 } from '@/services/course-metadata';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-// @ts-ignore
+//@ts-ignore
 import { useCreateStripeCheckoutSessionMutation } from '@iblai/iblai-js/data-layer';
 
 interface CourseEligibility {
@@ -84,12 +84,12 @@ export const useCourseDetail = (courseId: string) => {
     try {
       const checkoutSession = await createStripeCheckoutSession({
         sku: courseId,
-        org: 'main',
+        org: course?.org,
         tenant: course?.platform_key || currentTenant,
         username: getUserName(),
         mode: 'payment',
         cancel_url: window.location.href,
-        success_url: `${config.urls.dm()}/api/service/orgs/main/stripe/course-payment-callback/`,
+        success_url: `${config.urls.dm()}/api/service/orgs/${course?.platform_key}/stripe/course-payment-callback/`,
       }).unwrap();
       if (!checkoutSession?.redirect_to) {
         throw new Error('Failed to create checkout session');
