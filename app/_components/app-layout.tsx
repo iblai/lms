@@ -9,6 +9,7 @@ import { config } from '@/lib/config';
 import { NavigationDrawer } from '@/components/navigation-drawer';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName } from '@/utils/helpers';
+// @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 
 function DefaultPageLayout({ children }: { children: any }) {
@@ -23,8 +24,11 @@ export default function AppLayout({ children }: { children: any }) {
   const { courseMentor, setCourseMentor, setMentorSidebarHidden, mentorSidebarHidden } =
     useChatState();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const username = getUserName();
   const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery({
-    params: { username: getUserName() },
+    params: { username },
+  }, {
+    skip: !username,
   });
   const { metadataLoaded, isMentorAIEnabled } = useTenantMetadata({
     org: getTenant(),

@@ -11,6 +11,7 @@ const envFile =
 dotenv.config({ path: path.resolve(__dirname, envFile) });
 
 export default createPlaywrightConfig({
+  testDir: '.',
   platforms: [
     { name: 'skills', dependencies: ['setup'], otherTestMatch: ['**skills/*/*.spec.ts'] },
   ],

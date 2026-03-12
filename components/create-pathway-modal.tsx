@@ -6,10 +6,12 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Upload, Search, Plus, Check, X } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+// @ts-ignore
 import { useLazyGetResourceSearchQuery } from '@iblai/iblai-js/data-layer';
 import { useDebouncedCallback } from 'use-debounce';
 import { getRandomCourseImage, getTenant, getUserId, getUserName, slugify } from '@/utils/helpers';
 import { config } from '@/lib/config';
+// @ts-ignore
 import { useCreateCatalogPathwayMutation } from '@iblai/iblai-js/data-layer';
 import { toast } from 'sonner';
 import { Pathway } from '@iblai/iblai-api';

@@ -1,3 +1,4 @@
+// @ts-ignore
 import { useLazyGetRecommendationsAiSearchQuery } from '@iblai/iblai-js/data-layer';
 import { RecommendedCourseResult } from '@/types/courses';
 import { getOrg, getTenant } from '@/utils/helpers';
@@ -51,7 +52,7 @@ export const useRecommendedCourses = ({
       if (Array.isArray(aiSearchResponse?.recommendations)) {
         // Transform AI search recommendations to RecommendedCourseResult format
         const transformedCourses: RecommendedCourseResult[] = aiSearchResponse.recommendations.map(
-          (rec) => ({
+          (rec: any) => ({
             type: 'course',
             data: {
               course_id: rec.course_id,

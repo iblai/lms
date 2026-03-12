@@ -13,7 +13,7 @@ const mockUseAnalyticsSettings = vi.fn(() => ({
   usergroupIds: ['group-1', 'group-2'],
 }));
 
-vi.mock('@iblai/web-containers', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   AnalyticsReports: vi.fn(({ tenantKey, selectedMentorId, usergroupIds }) => (
     <div data-testid="analytics-reports">
       <span data-testid="tenant-key">{tenantKey}</span>

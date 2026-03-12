@@ -452,7 +452,7 @@ describe('CredentialsCard', () => {
       expect(mockFetchIssuers).toHaveBeenCalled();
     });
 
-    it('does not fetch when section is collapsed', () => {
+    it('fetches on mount even when section is collapsed', () => {
       const mockFetchCredentials = vi.fn();
       const mockFetchIssuers = vi.fn();
 
@@ -466,8 +466,8 @@ describe('CredentialsCard', () => {
 
       render(<CredentialsCard {...defaultProps} expandedSections={{ credentials: false }} />);
 
-      expect(mockFetchCredentials).not.toHaveBeenCalled();
-      expect(mockFetchIssuers).not.toHaveBeenCalled();
+      expect(mockFetchCredentials).toHaveBeenCalledWith('course-v1:test+course+2024', 1, 10);
+      expect(mockFetchIssuers).toHaveBeenCalled();
     });
   });
 

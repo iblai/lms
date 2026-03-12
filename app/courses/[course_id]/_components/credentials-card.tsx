@@ -55,11 +55,11 @@ export function CredentialsCard({
 
   // Fetch credentials when expanded
   useEffect(() => {
-    if (expandedSections['credentials'] && courseId) {
+    if (courseId) {
       handleFetchCredentials(courseId, currentPage, 10);
       handleFetchIssuers();
     }
-  }, [expandedSections['credentials'], courseId, currentPage]);
+  }, [courseId, currentPage]);
 
   const handleOpenCredentialModal = (credential?: any) => {
     if (credential) {

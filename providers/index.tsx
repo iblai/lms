@@ -1,6 +1,7 @@
 'use client';
 
 import { useDispatch } from 'react-redux';
+// @ts-ignore
 import { initializeDataLayer } from '@iblai/iblai-js/data-layer';
 import { useEffect, useState } from 'react';
 import { config } from '@/lib/config';

@@ -8,9 +8,13 @@ import { useEffect, useState } from 'react';
 import { DefaultEmptyBox } from './default-empty-box';
 import { useRouter } from 'next/navigation';
 import {
+  // @ts-ignore
   useLazyGetPathwayCompletionQuery,
+  // @ts-ignore
   useLazyGetUserEnrolledPathwaysQuery,
+  // @ts-ignore
   useCreateCatalogPathwaySelfEnrollmentMutation,
+  // @ts-ignore
   useLazyGetPathwayListQuery,
 } from '@iblai/iblai-js/data-layer';
 import _ from 'lodash';
@@ -63,7 +67,6 @@ export function PathwayDetailModal({
       await createCatalogPathwaySelfEnrollment([
         {
           requestBody: {
-            // @ts-expect-error pathway_uuid may not be part of the requestBody type
             pathway_uuid: pathway.pathway_uuid || '',
             pathway_key: pathway.platform_key || '',
             username: getUserName(),
@@ -109,7 +112,7 @@ export function PathwayDetailModal({
       setEnrollmentStatus(
         Array.isArray(response.data) &&
           response.data.findIndex(
-            (pre) => pre.active && pre?.pathway_uuid === pathway.pathway_uuid,
+            (pre: any) => pre.active && pre?.pathway_uuid === pathway.pathway_uuid,
           ) !== -1,
       );
     } catch (error) {

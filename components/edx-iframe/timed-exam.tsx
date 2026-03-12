@@ -3,8 +3,11 @@ import { useContext, useState, useEffect } from 'react';
 import { Clock, AlertCircle } from 'lucide-react';
 import _ from 'lodash';
 import {
+  // @ts-ignore
   useUpdateExamAttemptMutation,
+  // @ts-ignore
   useStartExamMutation,
+  // @ts-ignore
   useLazyGetExamInfoQuery,
 } from '@iblai/iblai-js/data-layer';
 
@@ -47,7 +50,7 @@ export const TimedExam = () => {
                 updateExamInfo();
                 setRefresher(new Date());
               })
-              .catch((error) => {
+              .catch((error: any) => {
                 console.error('Failed to auto-submit exam:', error);
               });
           }

@@ -1,7 +1,7 @@
 'use client';
 
 import { getTenant } from '@/utils/helpers';
-import { AnalyticsTranscriptsStats, useAnalyticsSettings } from '@iblai/web-containers';
+import { AnalyticsTranscriptsStats, useAnalyticsSettings } from '@iblai/iblai-js/web-containers';
 
 export default function TranscriptsPage() {
   const { usergroupIds } = useAnalyticsSettings();

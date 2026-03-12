@@ -1,7 +1,10 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@tailwind utilities;
 
 @config '../tailwind.config.ts';
+
+@plugin 'tailwind-scrollbar';
 
 /* SDK: custom base styles (CSS variables, no Tailwind utilities) */
 @import '@iblai/iblai-js/web-containers/styles';
@@ -31,6 +34,7 @@ body {
 
 @layer base {
   :root {
+    --spacing:.25rem!important;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -241,4 +245,19 @@ body {
 .profile-component-dialog{
   width: 85vw;
   max-width: 80rem;
+}
+.py-5 {
+  padding-block: calc(var(--spacing) * 5);
+}
+.w-auto {
+  width: auto;
+}
+@media (min-width: 40rem) {
+  .sm\:w-auto {
+      width: auto;
+  }
+}
+/* TODO temporary fix for image size in profile component dialog */
+.profile-component-dialog img[alt="Organization logo"] {
+  max-width: 192px;
 }

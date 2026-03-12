@@ -7,6 +7,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { PlatformSlice } from '@/services/platform';
 import { CourseMetadataSlice } from '@/services/course-metadata';
 import { CatalogSlice } from '@/services/catalog';
+// @ts-ignore
 import { skillsMiddleware, skillsReducer } from '@iblai/iblai-js/data-layer';
 import { CareerSlice } from '@/services/career';
 import { NotificationsSlice } from '@/services/notifications';

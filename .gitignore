@@ -53,3 +53,5 @@ docker-compose.override.yml
 .npmrc
 .yalc
 yalc.lock
+e2e/playwright-report
+test-results

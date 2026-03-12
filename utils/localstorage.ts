@@ -1,3 +1,4 @@
+// @ts-ignore
 import { StorageService } from '@iblai/iblai-js/data-layer';
 import { z } from 'zod';
 import { userDataSchema, tenantSchema } from '@/types/storage';
