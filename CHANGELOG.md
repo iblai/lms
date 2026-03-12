@@ -1,3 +1,13 @@
+## [0.9.7]
+
+- feat: reports page using AnalyticsReportDownload implemented
+- fix: usermetadata endpoint skipped when username not available
+- fix: credential creation issue fixed
+- feat: prepush and check test coverage script added
+- feat: suppressing cannot find module despite being exported from iblai-js & typecheck issues fixed
+- feat: typechecks issues fixed added
+- fix: conflicting css RE to sdk on skills resolved
+
 ## [0.9.6]
 
 - iblai-js version bumped to 1.0.26
