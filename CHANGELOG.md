@@ -1,3 +1,7 @@
+## [0.9.9]
+
+- feat: course content page UI display optimized
+
 ## [0.9.8]
 
 - fix: course payment flow payload updated
