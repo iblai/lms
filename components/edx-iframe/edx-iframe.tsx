@@ -196,7 +196,7 @@ export const EdxIframe = () => {
           <Loader2 className="w-10 h-10 animate-spin" />
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="p-6">
           {examInfo && <TimedExam />}
           {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
             <iframe
