@@ -1,3 +1,7 @@
+## [0.9.10]
+
+- fix: course pagination should only open on course tab
+
 ## [0.9.9]
 
 - feat: course content page UI display optimized
