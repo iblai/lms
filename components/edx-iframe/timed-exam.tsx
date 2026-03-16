@@ -279,7 +279,7 @@ export const TimedExam = () => {
   // Show "ready to start" UI when no active attempt exists
   if (_.isEmpty(examInfo?.exam?.attempt) || _.isEmpty(examInfo?.active_attempt)) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="sm:p-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
           <div className="flex items-start gap-3">
             <Clock className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />

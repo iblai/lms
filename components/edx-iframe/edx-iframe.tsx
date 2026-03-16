@@ -12,6 +12,7 @@ import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
 import { TimedExam } from './timed-exam';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
+import { cn } from '@/lib/utils';
 
 export const EdxIframe = () => {
   const {
@@ -196,7 +197,7 @@ export const EdxIframe = () => {
           <Loader2 className="w-10 h-10 animate-spin" />
         </div>
       ) : (
-        <div className="p-6">
+        <div className={cn('w-full p-6', `active-tab-${activeTab} course-edx-iframe-container`)} >
           {examInfo && <TimedExam />}
           {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
             <iframe

@@ -149,7 +149,7 @@ export default function CourseContentLayout({
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Course navigation tabs */}
             <div className="border-b border-gray-200">
-              <div className="flex">
+              <div className="flex overflow-x-auto w-full">
                 <Link
                   href={`/course-content/${resolvedParams.course_id}/course${
                     currentCourseInfo?.id ? `?unit_id=${currentCourseInfo?.id}` : ''
