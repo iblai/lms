@@ -216,7 +216,7 @@ export const EdxIframe = () => {
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"
             />
           )}
-          {iframeLoaded &&
+          {iframeLoaded && activeTab === 'course' &&
             !fetchingIframeData &&
             (!navigator.isPreviousHidden() || !navigator.isNextHidden()) && (
               <div
