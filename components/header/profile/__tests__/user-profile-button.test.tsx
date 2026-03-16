@@ -10,12 +10,14 @@ const {
   mockDispatch,
   mockHandleLogout,
   mockHandleTenantSwitch,
+  mockOnAccountDeleted,
 } = vi.hoisted(() => ({
   mockSaveCurrentTenant: vi.fn(),
   mockSaveUserTenants: vi.fn(),
   mockDispatch: vi.fn(),
   mockHandleLogout: vi.fn(),
   mockHandleTenantSwitch: vi.fn(),
+  mockOnAccountDeleted: vi.fn(),
 }));
 
 // Mock helpers
@@ -24,6 +26,7 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: () => 'testuser',
   handleLogout: mockHandleLogout,
   handleTenantSwitch: mockHandleTenantSwitch,
+  onAccountDeleted: mockOnAccountDeleted,
 }));
 
 // Mock local storage hooks - default to admin
@@ -34,7 +37,10 @@ vi.mock('@/utils/localstorage', () => ({
     saveCurrentTenant: mockSaveCurrentTenant,
   }),
   useUserTenants: () => ({
-    userTenants: [{ key: 'test-tenant', is_admin: true, org: 'test-org' }],
+    userTenants: [
+      { key: 'test-tenant', is_admin: true, org: 'test-org' },
+      { key: 'other-tenant', is_admin: false, org: 'other-org' },
+    ],
     saveUserTenants: mockSaveUserTenants,
   }),
   useIsAdmin: () => mockIsAdmin,
@@ -116,6 +122,9 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         onClick={() => props.onLoadGroupPermissions?.({ test: true })}
       >
         Load Permissions
+      </button>
+      <button data-testid="account-deleted-btn" onClick={() => props.onAccountDeleted?.()}>
+        Account Deleted
       </button>
     </div>
   ),
@@ -248,6 +257,29 @@ describe('UserProfileButton', () => {
       fireEvent.click(permissionsBtn);
 
       expect(mockDispatch).toHaveBeenCalled();
+    });
+
+    it('should handle account deleted', () => {
+      render(<UserProfileButton />);
+
+      const accountDeletedBtn = screen.getByTestId('account-deleted-btn');
+      fireEvent.click(accountDeletedBtn);
+
+      expect(mockOnAccountDeleted).toHaveBeenCalled();
+    });
+
+    it('should preserve non-matching tenants during tenant update', () => {
+      render(<UserProfileButton />);
+
+      // Clicking tenant-update-btn updates 'test-tenant'; 'other-tenant' hits the else branch
+      fireEvent.click(screen.getByTestId('tenant-update-btn'));
+
+      const savedTenants = mockSaveUserTenants.mock.calls[0][0];
+      expect(savedTenants).toHaveLength(2);
+      // matched tenant is replaced with the updated value
+      expect(savedTenants[0]).toEqual({ key: 'test-tenant', is_admin: true, org: 'org' });
+      // non-matching tenant is preserved as-is
+      expect(savedTenants[1]).toEqual({ key: 'other-tenant', is_admin: false, org: 'other-org' });
     });
   });
 });
