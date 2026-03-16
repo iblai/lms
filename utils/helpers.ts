@@ -347,6 +347,12 @@ export function clearCookies() {
   }
 }
 
+export const onAccountDeleted = () => {
+  setTimeout(() => {
+    handleLogout();
+  }, 3000);
+};
+
 export const handleLogout = (redirectUrl = window.location.origin, callback?: () => void) => {
   const tenant = getTenant();
   window.localStorage.clear();

@@ -1,7 +1,7 @@
 'use client';
 
 import { UserProfileDropdown } from '@iblai/iblai-js/web-containers/next';
-import { getTenant, getUserName, handleLogout, handleTenantSwitch } from '@/utils/helpers';
+import { getTenant, getUserName, handleLogout, handleTenantSwitch, onAccountDeleted } from '@/utils/helpers';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
@@ -90,6 +90,9 @@ export const UserProfileButton = () => {
       rbacPermissions={rbackPermissions}
       enableRbac={config.settings.enableRBAC()}
       onLoadGroupPermissions={handleLoadGroupPermissions}
+      onAccountDeleted={() => {
+        onAccountDeleted();
+      }}
     />
   );
 };

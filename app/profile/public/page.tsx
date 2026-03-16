@@ -12,7 +12,7 @@ import { MediaBox } from '@/components/profile/media-box';
 import { UserAvatar } from '@/components/header/profile/user-avatar';
 import { AppContext } from '@/components/client-layout';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant } from '@/utils/helpers';
+import { getTenant, onAccountDeleted } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { UserProfileModal } from '@iblai/iblai-js/web-containers/next';
@@ -201,6 +201,7 @@ export default function PublicProfilePage() {
           onTenantUpdate={handleTenantUpdate}
           currentPlatformBaseDomain={config.settings.platformBaseDomain()}
           rbacPermissions={rbacPermissions}
+          onAccountDeleted={() => onAccountDeleted()}
         />
       )}
     </>
