@@ -1,0 +1,811 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,700");
+body, body *{
+    font-family: "Open Sans"!important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
+
+@font-face {
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+.learning-header {
+  display: none;
+}
+
+.row.w-100.m-0 .col-12.col-md-4.p-0.px-md-4 {
+  display: none;
+}
+
+.grades section:nth-of-type(2) {
+  display: none;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+ color: #6d717f !important;
+}
+
+h1, .h1 {
+  font-size: 1.5rem !important;
+}
+
+h2, .h2 {
+  font-size: 1rem !important;
+}
+
+p {
+ color: #6d717f !important;
+}
+
+.text-primary-700 {
+  color: #6d717f !important;
+}
+
+.content-wrapper {
+  margin-top: 0 !important;
+}
+
+.page-content {
+  padding-top: 0 !important;
+}
+
+* {
+  font-family: HKGrotesk, sans-serif !important;
+}
+
+.learning-header{
+  display: none !important;
+}
+
+.course-tabs-navigation{
+  display: none !important;
+}
+
+.previous-btn, .previous-button.btn, .next-btn, .next-button.btn{
+  display: none !important;
+}
+
+ol.list-unstyled.d-flex.flex-nowrap.align-items-center.m-0{
+  display: none !important;
+}
+
+
+/* remove from ibl edx */
+.position-relative.d-flex.align-items-start{
+  display: none !important;
+}
+
+footer.d-flex, .text-right.small.py-1, .content-tools{
+  display: none !important;
+}
+
+#course-content .discussion-module .inline-discussion .add_post_btn_container button.new-post-btn{
+  background-color: transparent !important;
+}
+
+.image-explorer-wrapper button.image-explorer-hotspot{
+  padding:0 !important
+}
+
+#root {
+  min-height: auto !important;
+}
+
+.sequence-container{
+  margin-bottom: 0 !important;
+}
+
+.bg-primary.text-white {
+  display: none;
+}
+
+.pgn__modal-layer {
+  display: none !important;
+}
+
+.pgn__checkpoint {
+  display: none;
+}
+
+.btn-link.btn-inline {
+  display: none;
+}
+
+.pgn__modal-backdrop {
+  display: none !important;
+}
+
+.pgn__modal-layer,
+.pgn__modal-content-container,
+.pgn__modal-backdrop,
+.pgn__modal,
+.pgn__modal-md,
+.pgn__modal-dark,
+.pgn__modal-scroll-fullscreen,
+.new-user-tour-dialog,
+.pgn__modal-hero,
+.pgn__modal-hero-bg,
+.pgn__modal-hero-content,
+.pgn__modal-body,
+.pgn__modal-body-scroll-top,
+.pgn__modal-body-scroll-bottom,
+.pgn__modal-body-content,
+.pgn__modal-footer,
+.pgn__action-row {
+    display: none;
+}
+
+/* Styling for SKILLS SPA */
+/* =============================================
+   PROGRESS PAGE - PARENT WINDOW UNIFORMITY CSS
+   Primary Accent: #F59E0B (Amber)
+   Text Color: #4a5568 (slate gray)
+   Font: "Open Sans", sans-serif
+   ============================================= */
+/* --- GLOBAL / BASE STYLES --- */
+body {
+  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important;
+  color: #4a5568 !important;
+  background-color: #ffffff !important;
+  line-height: 1.6 !important;
+}
+/* --- HIDE EDX HEADER, NAV TABS & STAFF BAR --- */
+.learning-header {
+  display: none !important;
+}
+#courseTabsNavigation {
+  display: none !important;
+}
+.bg-primary.text-white {
+  display: none !important;
+}
+/* --- TYPOGRAPHY --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  color: #4a5568 !important;
+}
+h1 {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+}
+h2 {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+}
+h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+p, span, div, td, th, li, label, small {
+  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+p, li {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+}
+strong, b, .font-weight-bold {
+  color: #4a5568 !important;
+}
+/* --- LINKS --- */
+a,
+.pgn__hyperlink,
+.inline-link,
+.default-link,
+.standalone-link,
+.muted-link {
+  color: #F59E0B !important;
+  text-decoration: none !important;
+}
+a:hover,
+.pgn__hyperlink:hover,
+.inline-link:hover,
+.default-link:hover,
+.standalone-link:hover,
+.muted-link:hover {
+  color: #D97706 !important;
+  text-decoration: underline !important;
+}
+/* --- BUTTONS --- */
+.btn-outline-primary {
+  background-color: transparent !important;
+  color: #F59E0B !important;
+  border: 2px solid #F59E0B !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  font-family: "Open Sans", sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+.btn-outline-primary:hover {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+  border-color: #F59E0B !important;
+}
+.btn-inverse-outline-primary {
+  background-color: #F59E0B !important;
+  border-color: #F59E0B !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+.btn-inverse-outline-primary:hover {
+  background-color: #D97706 !important;
+  border-color: #D97706 !important;
+}
+.btn-link,
+.btn-sm.btn-link {
+  color: #F59E0B !important;
+  background-color: transparent !important;
+  border: none !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+.btn-link:hover {
+  color: #D97706 !important;
+}
+/* --- RAISED CARDS --- */
+.raised-card {
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #e5e7eb !important;
+  background-color: #ffffff !important;
+}
+/* --- DONUT CHART --- */
+svg.donut .donut-ring {
+  stroke: #F0EEED !important;
+}
+svg.donut .donut-ring.incomplete-stroke {
+  stroke: #F0EEED !important;
+}
+svg.donut .donut-hole {
+  fill: #ffffff !important;
+}
+svg.donut .donut-segment-group circle {
+  stroke: #F59E0B !important;
+}
+.donut-chart-number {
+  fill: #4a5568 !important;
+  font-family: "Open Sans", sans-serif !important;
+  font-weight: 700 !important;
+}
+.donut-chart-label {
+  fill: #4a5568 !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+/* --- GRADE BAR --- */
+svg.grade-bar rect.grade-bar__base {
+  fill: #e5e7eb !important;
+}
+svg.grade-bar .grade-bar--passing {
+  fill: #F59E0B !important;
+}
+svg.grade-bar .grade-bar--current-non-passing,
+svg.grade-bar .grade-bar--current-passing,
+svg.grade-bar rect[class*="grade-bar--current"] {
+  fill: #F59E0B !important;
+}
+svg.grade-bar .grade-bar__divider {
+  fill: #4a5568 !important;
+}
+/* --- GRADE POPOVERS/BADGES --- */
+.popover {
+  border-radius: 6px !important;
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 13px !important;
+}
+/* Passing grade badge (50% - bottom arrow popover) */
+.popover.bg-primary-500,
+.fade.bg-primary-500.show.popover.bs-popover-bottom {
+  background-color: #F59E0B !important;
+  border: none !important;
+}
+.popover.bg-primary-500 .popover-body {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+.popover.bg-primary-500 .popover-arrow::after,
+.bs-popover-bottom > .popover-arrow::after {
+  border-bottom-color: #F59E0B !important;
+}
+.popover.bg-primary-500 .popover-arrow::before,
+.bs-popover-bottom > .popover-arrow::before {
+  border-bottom-color: #F59E0B !important;
+}
+/* Current grade badge (0% - top arrow popover) */
+.popover.bs-popover-top:not(.bg-primary-500) {
+  background-color: #FEF3C7 !important;
+  border: 1px solid #F59E0B !important;
+}
+.popover.bs-popover-top:not(.bg-primary-500) .popover-body {
+  color: #4a5568 !important;
+  font-weight: 600 !important;
+}
+.popover.bs-popover-top > .popover-arrow::after {
+  border-top-color: #FEF3C7 !important;
+}
+.popover.bs-popover-top > .popover-arrow::before {
+  border-top-color: #F59E0B !important;
+}
+/* --- DATA TABLE (Grade Summary) --- */
+.pgn__data-table {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 14px !important;
+}
+.pgn__data-table thead th {
+  background-color: #FEF3C7 !important;
+  color: #4a5568 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  padding: 10px 12px !important;
+  border-bottom: 2px solid #F59E0B !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+.pgn__data-table tbody td {
+  padding: 10px 12px !important;
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+.pgn__data-table tbody tr:hover {
+  background-color: #FFFBEB !important;
+}
+/* Weighted grade column (last column) - amber accent */
+.pgn__data-table tbody td:last-child {
+  font-weight: 700 !important;
+  color: #F59E0B !important;
+}
+/* Table footer / summary row */
+.pgn__data-table-footer {
+  background-color: #FFFBEB !important;
+  border-top: 2px solid #F59E0B !important;
+  padding: 12px !important;
+  font-size: 14px !important;
+  color: #4a5568 !important;
+}
+.pgn__data-table-footer .font-weight-bold {
+  color: #F59E0B !important;
+}
+/* --- WARNING BANNER --- */
+.bg-warning-100 {
+  background-color: #FEF3C7 !important;
+  color: #4a5568 !important;
+  border-left: 4px solid #F59E0B !important;
+  border-radius: 0 0 8px 8px !important;
+}
+.bg-warning-100 * {
+  color: #4a5568 !important;
+}
+.bg-warning-100 .pgn__icon,
+.bg-warning-100 svg {
+  color: #F59E0B !important;
+}
+/* --- RELATED LINKS SECTION --- */
+.x-small {
+  font-size: 13px !important;
+}
+.small {
+  color: #4a5568 !important;
+  font-size: 13px !important;
+}
+/* --- FOOTNOTES --- */
+sup, sub {
+  color: #F59E0B !important;
+}
+/* --- CONTAINER ADJUSTMENTS --- */
+#main-content {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+@media (max-width: 768px) {
+  #main-content {
+    padding: 0 12px !important;
+  }
+}
+.container-xl {
+  max-width: 100% !important;
+  padding: 0 16px !important;
+}
+/* --- NAV TABS (fallback if still visible) --- */
+.nav-underline-tabs .nav-link {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-bottom: 2px solid transparent !important;
+}
+.nav-underline-tabs .nav-link:hover,
+.nav-underline-tabs .nav-link.active {
+  color: #F59E0B !important;
+  border-bottom-color: #F59E0B !important;
+}
+/* --- UTILITY OVERRIDES --- */
+.bg-primary-500 {
+  background-color: #F59E0B !important;
+}
+.text-primary-500,
+.text-primary {
+  color: #F59E0B !important;
+}
+/* --- INFO ICON --- */
+.pgn__icon {
+  color: #F59E0B !important;
+}
+/* --- FOOTER (edx logo at bottom) --- */
+footer, .footer {
+  display: none !important;
+}
+/* --- TOAST NOTIFICATIONS --- */
+.toast-container {
+  font-family: "Open Sans", sans-serif !important;
+}
+/* --- COLUMN TEXT COLOR FIX --- */
+.col-12 {
+  color: #4a5568 !important;
+}
+
+/* =============================================
+   DATES PAGE - PARENT WINDOW UNIFORMITY CSS
+   Primary Accent: #F59E0B (Amber)
+   Text Color: #4a5568 (slate gray)
+   Font: "Open Sans", sans-serif
+   ============================================= */
+
+/* --- TIMELINE: DATE ENTRIES --- */
+.dates-day {
+  font-size: 14px !important;
+  color: #4a5568 !important;
+}
+/* Date text rows (e.g., "Mon, Sep 30, 2024") */
+.text-primary-700 {
+  color: #4a5568 !important;
+}
+.text-primary-700 .d-inline-block {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+}
+/* "Course starts" and similar sub-labels */
+.text-primary-700.small {
+  color: #4a5568 !important;
+  font-size: 13px !important;
+}
+/* --- TIMELINE: DOTS --- */
+/* Past / default dot — gray outline */
+.dates-dot {
+  border-color: #d1d5db !important;
+  background-color: transparent !important;
+}
+/* Today's dot — amber filled */
+.dates-dot.bg-warning-300 {
+  background-color: #F59E0B !important;
+  border-color: #F59E0B !important;
+}
+/* --- TIMELINE: CONNECTING LINES --- */
+.dates-line-bottom,
+.dates-line-top {
+  border-left-color: #d1d5db !important;
+}
+.dates-line-bottom.border-gray-900,
+.dates-line-top.border-gray-900 {
+  border-left-color: #d1d5db !important;
+}
+.dates-dot.border-gray-900 {
+  border-color: #d1d5db !important;
+}
+/* Today's line segments — amber */
+.dates-line-top.bg-warning-300,
+.dates-line-bottom.bg-warning-300 {
+  border-left-color: #F59E0B !important;
+}
+/* --- TODAY BADGE --- */
+.badge-primary,
+.badge.badge-primary {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  font-family: "Open Sans", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+/* Non-primary badges (assignment types etc.) */
+.badge:not(.badge-primary) {
+  background-color: #FEF3C7 !important;
+  color: #4a5568 !important;
+  border: 1px solid #F59E0B !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+}
+
+
+/* =============================================
+   DISCUSSION PAGE - SPECIFIC OVERRIDES
+   (Use with shared base/typography from progress)
+   ============================================= */
+/* --- PILL TAB NAVIGATION (My posts / All posts / Topics / Learners) --- */
+.nav-pills .nav-link {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  color: #4a5568 !important;
+  background-color: transparent !important;
+  border: 1px solid #e5e7eb !important;
+  transition: all 0.2s ease !important;
+}
+.nav-pills .nav-link:hover {
+  background-color: #FEF3C7 !important;
+  color: #D97706 !important;
+  border-color: #F59E0B !important;
+}
+.nav-pills .nav-link.active {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+  border-color: #F59E0B !important;
+}
+/* --- "ADD A POST" BUTTON (header) --- */
+.btn-brand {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  font-family: "Open Sans", sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+.btn-brand:hover {
+  background-color: #D97706 !important;
+}
+/* --- SEARCH FIELD --- */
+.pgn__searchfield input,
+.pgn__searchfield .form-control {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 14px !important;
+  color: #4a5568 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+}
+.pgn__searchfield input:focus,
+.pgn__searchfield .form-control:focus {
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+  outline: none !important;
+}
+.pgn__searchfield .pgn__icon {
+  color: #9ca3af !important;
+}
+/* --- FILTER / SORT BAR --- */
+.filter-bar {
+  color: #4a5568 !important;
+  font-size: 13px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+.filter-bar .btn-link,
+.filter-bar button {
+  color: #F59E0B !important;
+}
+.filter-bar .pgn__icon {
+  color: #4a5568 !important;
+}
+.filter-bar .text-primary-500 {
+  color: #F59E0B !important;
+}
+/* --- POST LIST (left sidebar) --- */
+.discussion-post {
+  border-bottom-color: #e5e7eb !important;
+  transition: background-color 0.15s ease !important;
+}
+.discussion-post:hover {
+  background-color: #FFFBEB !important;
+}
+.discussion-post .text-gray-700 {
+  color: #4a5568 !important;
+}
+.discussion-post .post-summary-timestamp {
+  color: #9ca3af !important;
+  font-size: 12px !important;
+}
+.discussion-post .pgn__icon {
+  color: #9ca3af !important;
+}
+.discussion-post .pgn__icon:hover {
+  color: #F59E0B !important;
+}
+.discussion-post .text-gray-700.align-bottom {
+  color: #9ca3af !important;
+}
+/* Selected post indicator */
+.border-primary-500 {
+  border-color: #F59E0B !important;
+}
+.border-primary-500.bg-light-300,
+.post-summary-card-selected {
+  background-color: #FEF3C7 !important;
+  border-left: 3px solid #F59E0B !important;
+}
+.bg-light-300 {
+  background-color: #FEF3C7 !important;
+}
+/* --- AUTHOR NAME (override text-primary-500) --- */
+span.author-name,
+.author-name.text-primary-500,
+span.author-name.text-primary-500,
+.discussion-post .author-name.text-primary-500 {
+  color: #4a5568 !important;
+  font-weight: 500 !important;
+}
+/* --- TEXT-PRIMARY-500 (amber for topic labels, links) --- */
+.text-primary-500 {
+  color: #F59E0B !important;
+}
+/* --- RIGHT PANEL --- */
+.bg-light-400 {
+  background-color: #f9fafb !important;
+}
+.min-content-height h4,
+.min-content-height p,
+.min-content-height .h4 {
+  color: #9ca3af !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+/* --- POST DETAIL VIEW --- */
+.discussion-post h3,
+.discussion-post h4 {
+  color: #4a5568 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+[class*="post-body"],
+[class*="post-content"] p {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+/* --- EMPTY STATE "Add a post" BUTTON --- */
+.btn-outline-dark {
+  background-color: transparent !important;
+  color: #F59E0B !important;
+  border: 2px solid #F59E0B !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+.btn-outline-dark:hover {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+}
+/* --- ADD A POST FORM --- */
+.btn-primary {
+  background-color: #F59E0B !important;
+  border-color: #F59E0B !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+.btn-primary:hover {
+  background-color: #D97706 !important;
+  border-color: #D97706 !important;
+}
+/* Discussion/Question type card selected */
+.border-primary-500-2,
+.pgn__card.border-primary-500-2 {
+  border-color: #F59E0B !important;
+}
+.pgn__card .pgn__icon {
+  color: #F59E0B !important;
+}
+/* Form controls focus */
+.form-control:focus,
+select:focus,
+textarea:focus,
+input:focus {
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+  outline: none !important;
+}
+/* Floating labels */
+.pgn__form-control-floating-label-text,
+.pgn__form-control-floating-label-content:focus-within .pgn__form-control-floating-label-text {
+  color: #F59E0B !important;
+}
+/* Checkbox */
+.pgn__form-checkbox-input:checked {
+  background-color: #F59E0B !important;
+  border-color: #F59E0B !important;
+}
+input[type="checkbox"]:checked {
+  accent-color: #F59E0B !important;
+}
+/* Collapsible card (Topics section) */
+.collapsible-card-lg {
+  border-color: #e5e7eb !important;
+}
+.collapsible-card-lg .pgn__icon {
+  color: #F59E0B !important;
+}
+/* --- UTILITY --- */
+.text-gray-700 { color: #4a5568 !important; }
+.text-gray-900 { color: #4a5568 !important; }
+.text-dark { color: #4a5568 !important; }
+.bg-primary-500 { background-color: #F59E0B !important; }
+.border-light-400 { border-color: #e5e7eb !important; }
+.pgn__icon { color: #9ca3af !important; }
+.pgn__avatar { border: 2px solid #e5e7eb !important; }
+/* --- DROPDOWN MENUS (sort, filters) --- */
+.pgn__dropdown .dropdown-menu {
+  font-family: "Open Sans", sans-serif !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+.pgn__dropdown .dropdown-item {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+}
+.pgn__dropdown .dropdown-item:hover {
+  background-color: #FEF3C7 !important;
+  color: #D97706 !important;
+}
+.pgn__dropdown .dropdown-item.active,
+.pgn__dropdown .dropdown-item:active {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+}
