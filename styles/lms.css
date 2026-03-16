@@ -1,0 +1,445 @@
+header:first-child,
+footer:last-child,
+main .nav-menu,
+#courseTabsNavigation {
+  display: none !important;
+}
+/* font-color & font-family */
+h1,
+h2,
+h4,
+h5,
+h6,
+body,
+p,
+label,
+.c_text,
+li {
+  font-family: Open Sans,Open Sans Fallback !important;
+  color: #374151 !important;
+}
+
+.course-wrapper .course-content .xblock > div:first-child[style*="background"] {
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 1) 73%,
+    rgba(245, 158, 11, 1) 100%
+  ) !important;
+}
+
+
+/* Styling for SKILLS SPA */
+
+/* =============================================
+   INSTRUCTOR DASHBOARD (LMS) - UNIFORMITY CSS
+   Primary Accent: #F59E0B (Amber)
+   Text Color: #4a5568 (slate gray)
+   Font: "Open Sans", sans-serif
+   ============================================= */
+/* --- GLOBAL / BASE STYLES --- */
+body {
+  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important;
+  color: #4a5568 !important;
+  background-color: #ffffff !important;
+  line-height: 1.6 !important;
+}
+/* --- TYPOGRAPHY --- */
+h1, h2, h3, h4, h5, h6,
+.hd, .hd-1, .hd-2, .hd-3, .hd-4, .hd-5 {
+  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  color: #4a5568 !important;
+}
+/* Page title */
+.instructor-dashboard-wrapper-2 h1,
+h1.instructor-dashboard-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #4a5568 !important;
+  margin-bottom: 20px !important;
+}
+.hd-2, h2 {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+  margin-bottom: 12px !important;
+}
+.hd-3, h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+}
+.hd-4, h4 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+}
+.hd-5, h5 {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+}
+p, span, div, td, th, li, label, small {
+  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+p, li {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+}
+strong, b {
+  color: #4a5568 !important;
+}
+/* --- LINKS --- */
+a {
+  color: #F59E0B !important;
+  text-decoration: none !important;
+}
+a:hover {
+  color: #D97706 !important;
+  text-decoration: underline !important;
+}
+/* --- INSTRUCTOR NAV TABS --- */
+.instructor-nav {
+  border-bottom: 1px solid #e5e7eb !important;
+  margin-bottom: 20px !important;
+}
+.instructor-nav .nav-item {
+  margin-right: 4px !important;
+}
+.instructor-nav .btn-link {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 10px 16px !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  font-family: "Open Sans", sans-serif !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+.instructor-nav .btn-link:hover {
+  color: #F59E0B !important;
+  border-bottom-color: #FDE68A !important;
+  text-decoration: none !important;
+}
+.instructor-nav .btn-link.active-section {
+  color: #F59E0B !important;
+  border-bottom: 3px solid #F59E0B !important;
+  font-weight: 600 !important;
+}
+/* --- "VIEW COURSE IN STUDIO" BUTTON --- */
+.instructor-info-action a {
+  background-color: transparent !important;
+  color: #F59E0B !important;
+  border: 2px solid #F59E0B !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-family: "Open Sans", sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+.instructor-info-action a:hover {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+/* --- SECTION LABEL (e.g. "Course Info", "Membership") --- */
+.idash-section > p:first-child,
+.instructor-dashboard-content-2 > div > p:first-child {
+  color: #9ca3af !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 16px !important;
+}
+/* --- FORM ELEMENTS --- */
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="number"],
+input[type="url"],
+select {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 14px !important;
+  color: #4a5568 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  transition: border-color 0.2s ease !important;
+}
+textarea:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+select:focus {
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+  outline: none !important;
+}
+textarea::placeholder,
+input::placeholder {
+  color: #9ca3af !important;
+}
+/* --- CHECKBOXES --- */
+input[type="checkbox"] {
+  accent-color: #F59E0B !important;
+}
+/* --- ACTION BUTTONS (Enroll, Generate Report, etc.) --- */
+input[type="button"],
+input[type="submit"],
+button:not(.btn-link):not(.instructor-nav .btn-link) {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background-color: #F59E0B !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+input[type="button"]:hover,
+input[type="submit"]:hover,
+button:not(.btn-link):not(.instructor-nav .btn-link):hover {
+  background-color: #D97706 !important;
+  background-image: none !important;
+}
+/* Secondary buttons (Unenroll, Remove, Delete) - outline style */
+input[type="button"][value="Unenroll"],
+input[type="button"][name*="delete"],
+input[type="button"][name*="remove"],
+.btn-secondary {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #F59E0B !important;
+  border: 2px solid #F59E0B !important;
+}
+input[type="button"][value="Unenroll"]:hover,
+.btn-secondary:hover {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+}
+/* --- BLUE BUTTONS (Special Exams, legacy) --- */
+.blue-button,
+a.blue-button,
+.add.blue-button {
+  background: #F59E0B !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family: "Open Sans", sans-serif !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+.blue-button:hover,
+a.blue-button:hover {
+  background: #D97706 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+/* --- DATA TABLES --- */
+.data-display-table,
+table {
+  font-family: "Open Sans", sans-serif !important;
+  font-size: 14px !important;
+}
+.data-display-table th,
+table th {
+  color: #4a5568 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  border-bottom: 2px solid #F59E0B !important;
+  background-color: #FEF3C7 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+.data-display-table td,
+table td {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+.data-display-table tr:hover,
+table tbody tr:hover {
+  background-color: #FFFBEB !important;
+}
+.data-display-table td:first-child {
+  font-weight: 600 !important;
+}
+/* Total row */
+td[style*="green"], td[style*="color: green"],
+span[style*="green"], span[style*="color: green"] {
+  color: #F59E0B !important;
+  font-weight: 700 !important;
+}
+/* --- SECTION DIVIDERS --- */
+hr {
+  border: none !important;
+  border-top: 1px solid #e5e7eb !important;
+  margin: 24px 0 !important;
+}
+/* --- SPECIAL EXAMS ACCORDION --- */
+.special-exam-header,
+.ui-accordion-header {
+  color: #4a5568 !important;
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+  padding: 10px 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family: "Open Sans", sans-serif !important;
+  margin-bottom: 4px !important;
+}
+.special-exam-header:hover,
+.ui-accordion-header:hover {
+  background-color: #FEF3C7 !important;
+  border-color: #F59E0B !important;
+}
+.special-exam-header.ui-state-active,
+.ui-accordion-header.ui-state-active {
+  background-color: #FEF3C7 !important;
+  border-color: #F59E0B !important;
+  color: #F59E0B !important;
+}
+.ui-accordion-header.ui-state-active a {
+  color: #F59E0B !important;
+}
+.ui-accordion-content {
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 0 6px 6px !important;
+  padding: 16px !important;
+}
+.ui-accordion-header .ui-icon {
+  color: #F59E0B !important;
+}
+/* --- EXAM TABLES --- */
+.exam-attempts-table th,
+.certificate-data-display-table th,
+.auth-list-container table th {
+  background-color: #FEF3C7 !important;
+  border-bottom: 2px solid #F59E0B !important;
+}
+/* --- ASYNC REPORT BUTTONS --- */
+.async-report-btn {
+  background-color: #F59E0B !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  box-shadow: none !important;
+}
+.async-report-btn:hover {
+  background-color: #D97706 !important;
+}
+/* --- GENERATE PROGRESS / VIEW PROGRESS --- */
+.ibl-generate-progress-btn {
+  background-color: #F59E0B !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+.ibl-generate-progress-btn:hover {
+  background-color: #D97706 !important;
+}
+.ibl-view-progress-link {
+  color: #F59E0B !important;
+}
+/* --- CONTAINER ADJUSTMENTS --- */
+.instructor-dashboard-wrapper-2 {
+  max-width: 100% !important;
+}
+.instructor-dashboard-content-2 {
+  padding: 20px !important;
+}
+/* --- LABELS --- */
+label {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family: "Open Sans", sans-serif !important;
+}
+/* --- ENROLLMENT LINKS --- */
+.enrollment-status-link,
+.gradebook-link a,
+a.gradebook-link {
+  color: #F59E0B !important;
+}
+.enrollment-status-link:hover,
+.gradebook-link a:hover {
+  color: #D97706 !important;
+}
+/* --- COHORTS --- */
+.cohorts-state-section {
+  color: #4a5568 !important;
+}
+/* --- LIST MARKERS --- */
+ul li::marker {
+  color: #F59E0B !important;
+}
+/* --- FOOTER --- */
+footer, .footer, .wrapper-footer {
+  display: none !important;
+}
+/* =============================================
+   INSTRUCTOR TABS – MOBILE HORIZONTAL SCROLL
+   ============================================= */
+   .instructor-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    white-space: nowrap !important;
+    gap: 0 !important;
+    padding-bottom: 2px !important;
+    scrollbar-width: none !important;       /* Firefox */
+    -ms-overflow-style: none !important;    /* IE/Edge */
+  }
+  .instructor-nav::-webkit-scrollbar {
+    display: none !important;               /* Chrome/Safari */
+  }
+  .instructor-nav .nav-item {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+  .instructor-nav .nav-item .btn-link {
+    white-space: nowrap !important;
+  }
+  @media (max-width: 768px) {
+    a.instructor-info-action {
+      display: none!important;
+    }
+  }
+  body.view-courseware p{
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+    margin-top: 10px !important;
+  }
