@@ -21,6 +21,9 @@ export default defineConfig({
         'utils/**/*.{ts,tsx}',
       ],
       exclude: [
+        // Playwright E2E tests (not unit coverage)
+        'e2e/**',
+
         'node_modules/**',
         '.next/**',
         'dist/**',
