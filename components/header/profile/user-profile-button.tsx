@@ -62,7 +62,7 @@ export const UserProfileButton = () => {
       currentSPA={config.settings.appName() || 'skills'}
       // Customization
       helpCenterUrl=""
-      enableGravatarOnProfilePic={true}
+      enableGravatarOnProfilePic={config.settings.enableGravatarOnProfilePic() !== "false"}
       // Callbacks
       onLogout={handleLogout}
       onTenantChange={handleTenantChange}
