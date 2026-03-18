@@ -20,6 +20,9 @@ const {
   mockOnAccountDeleted: vi.fn(),
 }));
 
+// Mutable state for per-test config control
+let mockEnableGravatarOnProfilePic = 'true';
+
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
   getTenant: () => 'test-tenant',
@@ -53,6 +56,7 @@ vi.mock('@/lib/config', () => ({
       appName: () => 'skills',
       platformBaseDomain: () => 'example.com',
       enableRBAC: () => false,
+      enableGravatarOnProfilePic: () => mockEnableGravatarOnProfilePic,
     },
     urls: {
       auth: () => 'https://auth.example.com',
@@ -99,6 +103,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="show-learner-mode-switch">{String(props.showLearnerModeSwitch)}</span>
       <span data-testid="billing-enabled">{String(props.billingEnabled)}</span>
       <span data-testid="current-spa">{props.currentSPA}</span>
+      <span data-testid="enable-gravatar-on-profile-pic">{String(props.enableGravatarOnProfilePic)}</span>
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
@@ -134,6 +139,7 @@ describe('UserProfileButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAdmin = true; // Reset to admin by default
+    mockEnableGravatarOnProfilePic = 'true'; // Reset to gravatar enabled by default
   });
 
   describe('rendering', () => {
@@ -280,6 +286,29 @@ describe('UserProfileButton', () => {
       expect(savedTenants[0]).toEqual({ key: 'test-tenant', is_admin: true, org: 'org' });
       // non-matching tenant is preserved as-is
       expect(savedTenants[1]).toEqual({ key: 'other-tenant', is_admin: false, org: 'other-org' });
+    });
+  });
+
+  describe('enableGravatarOnProfilePic', () => {
+    it('passes true to dropdown when config does not return "false"', () => {
+      mockEnableGravatarOnProfilePic = 'true';
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-gravatar-on-profile-pic')).toHaveTextContent('true');
+    });
+
+    it('passes false to dropdown when config returns "false"', () => {
+      mockEnableGravatarOnProfilePic = 'false';
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-gravatar-on-profile-pic')).toHaveTextContent('false');
+    });
+
+    it('treats any value other than "false" as enabled', () => {
+      mockEnableGravatarOnProfilePic = '1';
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-gravatar-on-profile-pic')).toHaveTextContent('true');
     });
   });
 });
