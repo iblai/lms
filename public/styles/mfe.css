@@ -634,6 +634,9 @@ footer,
    (Use with shared base/typography from progress)
    ============================================= */
 /* --- PILL TAB NAVIGATION (My posts / All posts / Topics / Learners) --- */
+.header-action-bar .nav-pills{
+  gap:4px
+}
 .nav-pills .nav-link {
   font-family: "Open Sans", sans-serif !important;
   font-size: 14px !important;
@@ -650,7 +653,7 @@ footer,
   color: #d97706 !important;
   border-color: #f59e0b !important;
 }
-.nav-pills .nav-link.active {
+.nav-pills .nav-link.active, .nav-pills a.nav-link.active {
   background-color: #f59e0b !important;
   color: #ffffff !important;
   border-color: #f59e0b !important;
@@ -896,7 +899,7 @@ input[type="checkbox"]:checked {
 }
 
 .bg-primary.text-white {
-  display: block !important;
+  /*display: block !important;*/
   color: black !important;
   background-color: unset !important;
 }
