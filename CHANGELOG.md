@@ -1,3 +1,8 @@
+## [0.9.12]
+
+- fix: accessing course in an  unauthorized way from another tenant restricted
+- feat: proper error page implemented
+
 ## [0.9.11]
 
 - fix: mfe, lms css for course content updated
