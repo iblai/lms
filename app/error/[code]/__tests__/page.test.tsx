@@ -130,7 +130,7 @@ describe('ErrorPage', () => {
     });
 
     it('falls back to config supportEmail when getSupportEmail returns falsy', () => {
-      mockGetSupportEmail.mockReturnValue(null);
+      mockGetSupportEmail.mockReturnValue("");
       vi.mocked(config.settings.supportEmail).mockReturnValue('fallback@support.com');
       render(<ErrorPage />);
       const supportLink = screen.getByText('Contact Support');
