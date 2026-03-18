@@ -1,3 +1,10 @@
+## [0.9.11]
+
+- fix: mfe, lms css for course content updated
+- fix: error page included on skills
+- feat: included NEXT_PUBLIC_SUPPORT_EMAIL env variable for default support email
+- fix: user avatar bug mixing gravatar initials
+
 ## [0.9.10]
 
 - fix: course pagination should only open on course tab
