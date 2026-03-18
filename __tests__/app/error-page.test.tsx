@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockHideInitialLoader = vi.fn();
@@ -19,13 +19,16 @@ vi.mock('next/navigation', () => ({
   useParams: () => mockUseParams(),
 }));
 
-const MockClientErrorPage = vi.fn(({ errorCode, supportEmail, header, message, showHomeButton }: any) => (
+const MockClientErrorPage = vi.fn(({ errorCode, supportEmail, header, message, showHomeButton, handleError }: any) => (
   <div data-testid="client-error-page">
     <span data-testid="error-code">{errorCode}</span>
     <span data-testid="support-email">{supportEmail}</span>
     <span data-testid="header">{header}</span>
     <span data-testid="message">{message}</span>
     {showHomeButton && <button data-testid="home-button">Home</button>}
+    <button data-testid="trigger-error" onClick={() => handleError('test-error')}>
+      Trigger Error
+    </button>
   </div>
 ));
 vi.mock('@iblai/iblai-js/web-containers/next', () => ({
@@ -76,5 +79,18 @@ describe('ErrorPage (app/error/[code]/page.tsx)', () => {
     const { default: ErrorPage } = await import('@/app/error/[code]/page');
     render(<ErrorPage />);
     expect(screen.getByTestId('error-code').textContent).toBe('500');
+  });
+
+  it('handleError logs the error with tenant context', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { default: ErrorPage } = await import('@/app/error/[code]/page');
+    render(<ErrorPage />);
+
+    fireEvent.click(screen.getByTestId('trigger-error'));
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      JSON.stringify({ tenant: 'client-error-page', error: 'test-error' }),
+    );
+    consoleSpy.mockRestore();
   });
 });
