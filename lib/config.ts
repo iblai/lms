@@ -23,6 +23,7 @@ const env = {
   NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME: process.env.NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME,
   NEXT_PUBLIC_PLATFORM_BASE_DOMAIN: process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN,
   NEXT_PUBLIC_ENABLE_RBAC: process.env.NEXT_PUBLIC_ENABLE_RBAC,
+  NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
 };
 
 const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
@@ -58,5 +59,6 @@ export const config = {
     defaultEmbeddedMentorName: () => getEnv('NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME', 'mentorAI'),
     platformBaseDomain: () => getEnv('NEXT_PUBLIC_PLATFORM_BASE_DOMAIN', ''),
     enableRBAC: () => getEnv('NEXT_PUBLIC_ENABLE_RBAC', 'false') === 'true',
+    supportEmail: () => getEnv('NEXT_PUBLIC_SUPPORT_EMAIL', 'support@ibl.ai'),
   },
 };
