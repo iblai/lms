@@ -196,7 +196,7 @@ input[type="checkbox"] {
 /* --- ACTION BUTTONS (Enroll, Generate Report, etc.) --- */
 input[type="button"],
 input[type="submit"],
-:not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link) {
+body :not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link) {
   font-family: "Open Sans", sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -213,7 +213,7 @@ input[type="submit"],
 }
 input[type="button"]:hover,
 input[type="submit"]:hover,
-:not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link):hover {
+body :not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link):hover {
   background-color: #D97706 !important;
   background-image: none !important;
 }

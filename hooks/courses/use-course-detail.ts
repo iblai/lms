@@ -298,6 +298,7 @@ export const useCourseDetail = (courseId: string) => {
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
     course,
+    courseInfoLoading:loading,
     courseOutline,
     courseEligibility,
     courseOutlineLoading,
