@@ -14,6 +14,7 @@ import { getTenant, getUserId } from '@/utils/helpers';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { CourseOutline } from '@/components/course-outline';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
+import { CourseAccessGuard } from '@/components/course-access-guard';
 // @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
@@ -40,6 +41,7 @@ export default function CourseContentLayout({
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
     course,
+    courseInfoLoadingState,
     courseOutline,
     courseOutlineLoading,
     courseCompletion,
@@ -113,7 +115,7 @@ export default function CourseContentLayout({
   };
 
   return (
-    <>
+    <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>
       <CourseOutlineContext.Provider
         value={{
           courseOutline,
@@ -308,6 +310,6 @@ export default function CourseContentLayout({
           }
         `}</style>
       </CourseOutlineContext.Provider>
-    </>
+    </CourseAccessGuard>
   );
 }

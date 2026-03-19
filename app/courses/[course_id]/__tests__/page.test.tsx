@@ -75,7 +75,7 @@ vi.mock('@/hooks/courses/use-course-detail', () => ({
     courseOutlineLoading: false,
     courseEligibilityLoading: false,
     courseButtonActionLoading: false,
-    loading: false,
+    courseInfoLoadingState: 'successful',
   })),
 }));
 
@@ -132,7 +132,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: true,
+      courseInfoLoadingState: 'loading',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -152,7 +152,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'failure',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -182,7 +182,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -213,7 +213,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -241,7 +241,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -272,7 +272,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -304,7 +304,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -339,7 +339,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -374,7 +374,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -402,7 +402,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: true,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -435,7 +435,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -467,7 +467,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -502,7 +502,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);
@@ -534,7 +534,7 @@ describe('CourseDetailsPage', () => {
       courseOutlineLoading: false,
       courseEligibilityLoading: false,
       courseButtonActionLoading: false,
-      loading: false,
+      courseInfoLoadingState: 'successful',
     } as any);
 
     render(<CourseDetailsPage />);

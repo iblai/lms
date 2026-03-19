@@ -66,6 +66,7 @@ vi.mock('@/hooks/courses/use-course-detail', () => ({
     handleFetchCourseProgress: mockHandleFetchCourseProgress,
     handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
     course: null,
+    courseInfoLoadingState: 'successful',
     courseOutline: null,
     courseOutlineLoading: false,
     courseCompletion: null,
@@ -99,6 +100,11 @@ vi.mock('@/components/course-outline', () => ({
 // Mock CourseOutlineDrawer
 vi.mock('@/components/course-outline-drawer', () => ({
   CourseOutlineDrawer: () => <div data-testid="course-outline-drawer">CourseOutlineDrawer</div>,
+}));
+
+// Mock CourseAccessGuard — renders children unconditionally so layout tests are isolated
+vi.mock('@/components/course-access-guard', () => ({
+  CourseAccessGuard: ({ children }: any) => <>{children}</>,
 }));
 
 // Mock ExamInfo from data-layer
@@ -136,6 +142,7 @@ describe('CourseContentLayout', () => {
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
       course: null,
+      courseInfoLoadingState: 'successful',
       courseOutline: null,
       courseOutlineLoading: false,
       courseCompletion: null,

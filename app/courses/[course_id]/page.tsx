@@ -44,7 +44,7 @@ export default function CourseDetailsPage() {
     courseOutlineLoading,
     courseEligibilityLoading,
     courseButtonActionLoading,
-    loading,
+    courseInfoLoadingState,
   } = useCourseDetail(courseId);
 
   const [randomCourseImage] = useState(() => getRandomCourseImage());
@@ -82,15 +82,15 @@ export default function CourseDetailsPage() {
 
   return (
     <>
-      {loading && (
+      {(courseInfoLoadingState === 'not-started' || courseInfoLoadingState === 'loading') && (
         <div className="flex-1 flex justify-center items-center">
           <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
 
-      {!loading && !course && <DefaultEmptyBox message="No course data found." />}
+      {courseInfoLoadingState === 'failure' && !course && <DefaultEmptyBox message="No course data found." />}
 
-      {!loading && course && (
+      {courseInfoLoadingState === 'successful' && course && (
         <div className="flex flex-1 overflow-hidden">
           {/* Main content area */}
           <div
