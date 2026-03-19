@@ -21,6 +21,8 @@ import { useRouter } from 'next/navigation';
 //@ts-ignore
 import { useCreateStripeCheckoutSessionMutation } from '@iblai/iblai-js/data-layer';
 
+export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
+
 interface CourseEligibility {
   btn_label: string;
   btn_action: () => void;
@@ -52,7 +54,7 @@ export const useCourseDetail = (courseId: string) => {
     handleFetchCourseCompletionOutlines,
     handleFetchCourseEligibility,
   } = useCourseMetadata();
-  const [loading, setLoading] = useState(false);
+  const [courseInfoLoadingState, setCourseInfoLoadingState] = useState<CourseInfoLoadingState>('not-started');
   const [course, setCourse] = useState<CourseEdxData | null>(null);
   const [courseOutline, setCourseOutline] = useState<CourseOutlineChildNode[]>([]);
   const [courseOutlineLoading, setCourseOutlineLoading] = useState(false);
@@ -210,14 +212,19 @@ export const useCourseDetail = (courseId: string) => {
     }
   };
   const handleFetchCourseInfo = async () => {
-    setLoading(true);
-    const courseMetaData = await handleFetchCourseMetaData(courseId);
-    if (!_.isEmpty(courseMetaData)) {
-      setCourse(courseMetaData as CourseEdxData);
-      setLoading(false);
-    } else {
+    setCourseInfoLoadingState('loading');
+    try {
+      const courseMetaData = await handleFetchCourseMetaData(courseId);
+      if (!_.isEmpty(courseMetaData)) {
+        setCourse(courseMetaData as CourseEdxData);
+        setCourseInfoLoadingState('successful');
+      } else {
+        setCourse(null);
+        setCourseInfoLoadingState('failure');
+      }
+    } catch {
       setCourse(null);
-      setLoading(false);
+      setCourseInfoLoadingState('failure');
     }
   };
 
@@ -298,7 +305,7 @@ export const useCourseDetail = (courseId: string) => {
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
     course,
-    courseInfoLoading:loading,
+    courseInfoLoadingState,
     courseOutline,
     courseEligibility,
     courseOutlineLoading,
@@ -306,7 +313,6 @@ export const useCourseDetail = (courseId: string) => {
     courseButtonActionLoading,
     isCourseProgressLoading,
     isCourseCompletionLoading,
-    loading,
     courseProgress,
     courseCompletion,
     courseGradingPolicyActive,

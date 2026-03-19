@@ -108,7 +108,7 @@ describe('useCourseDetail', () => {
     const { result } = renderHook(() => useCourseDetail('course-123'));
     expect(result.current.course).toBeNull();
     expect(result.current.courseOutline).toEqual([]);
-    expect(result.current.loading).toBe(false);
+    expect(result.current.courseInfoLoadingState).toBe('not-started');
     expect(result.current.courseOutlineLoading).toBe(false);
     expect(result.current.courseEligibilityLoading).toBe(false);
     expect(result.current.courseButtonActionLoading).toBe(false);
@@ -173,7 +173,7 @@ describe('useCourseDetail', () => {
       });
 
       expect(result.current.course).toEqual(mockCourseData);
-      expect(result.current.loading).toBe(false);
+      expect(result.current.courseInfoLoadingState).toBe('successful');
     });
 
     it('sets course to null when empty data returned', async () => {
@@ -185,7 +185,7 @@ describe('useCourseDetail', () => {
       });
 
       expect(result.current.course).toBeNull();
-      expect(result.current.loading).toBe(false);
+      expect(result.current.courseInfoLoadingState).toBe('failure');
     });
   });
 

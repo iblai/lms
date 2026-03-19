@@ -16,14 +16,14 @@ const mockHandleFetchCourseInfo = vi.fn();
 vi.mock('@/hooks/courses/use-course-detail', () => ({
   useCourseDetail: vi.fn(() => ({
     course: { platform_key: 'test-tenant', display_name: 'Test Course' },
-    loading: false,
+    courseInfoLoadingState: 'successful',
     handleFetchCourseInfo: mockHandleFetchCourseInfo,
   })),
 }));
 
 vi.mock('@/components/course-access-guard', () => ({
-  CourseAccessGuard: ({ children, course, loading }: any) => (
-    <div data-testid="course-access-guard" data-loading={loading} data-platform-key={course?.platform_key}>
+  CourseAccessGuard: ({ children, course, courseInfoLoadingState }: any) => (
+    <div data-testid="course-access-guard" data-loading-state={courseInfoLoadingState} data-platform-key={course?.platform_key}>
       {children}
     </div>
   ),
@@ -39,7 +39,7 @@ describe('CourseLayout', () => {
     vi.clearAllMocks();
     vi.mocked(useCourseDetail).mockReturnValue({
       course: { platform_key: 'test-tenant', display_name: 'Test Course' } as any,
-      loading: false,
+      courseInfoLoadingState: 'successful',
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
     } as any);
   });
@@ -77,7 +77,7 @@ describe('CourseLayout', () => {
   it('passes loading state to CourseAccessGuard', () => {
     vi.mocked(useCourseDetail).mockReturnValue({
       course: null,
-      loading: true,
+      courseInfoLoadingState: 'loading',
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
     } as any);
 
@@ -86,7 +86,7 @@ describe('CourseLayout', () => {
         <div>children</div>
       </CourseLayout>,
     );
-    expect(screen.getByTestId('course-access-guard')).toHaveAttribute('data-loading', 'true');
+    expect(screen.getByTestId('course-access-guard')).toHaveAttribute('data-loading-state', 'loading');
   });
 
   it('calls handleFetchCourseInfo on mount', () => {

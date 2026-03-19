@@ -14,11 +14,11 @@ export default function CourseLayout({
 }) {
   const { course_id } = use(params);
   const courseId = decodeURIComponent(course_id);
-  const { course, loading, handleFetchCourseInfo } = useCourseDetail(courseId);
+  const { course, courseInfoLoadingState, handleFetchCourseInfo } = useCourseDetail(courseId);
 
   useEffect(() => {
     handleFetchCourseInfo();
   }, [courseId]);
 
-  return <CourseAccessGuard course={course} loading={loading}>{children}</CourseAccessGuard>;
+  return <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>{children}</CourseAccessGuard>;
 }

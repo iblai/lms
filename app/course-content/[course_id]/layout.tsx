@@ -41,7 +41,7 @@ export default function CourseContentLayout({
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
     course,
-    loading,
+    courseInfoLoadingState,
     courseOutline,
     courseOutlineLoading,
     courseCompletion,
@@ -115,7 +115,7 @@ export default function CourseContentLayout({
   };
 
   return (
-    <CourseAccessGuard course={course} loading={loading}>
+    <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>
       <CourseOutlineContext.Provider
         value={{
           courseOutline,
