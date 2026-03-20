@@ -1,3 +1,7 @@
+## [0.9.14]
+
+- iblai-js version updated
+
 ## [0.9.13]
 
 - fix: lms css updated
