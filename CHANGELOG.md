@@ -1,3 +1,7 @@
+## [0.9.13]
+
+- fix: lms css updated
+
 ## [0.9.12]
 
 - fix: accessing course in an  unauthorized way from another tenant restricted

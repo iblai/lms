@@ -15,7 +15,9 @@ p,
 label,
 .c_text,
 li {
-  font-family: Open Sans,Open Sans Fallback !important;
+  font-family:
+    Open Sans,
+    Open Sans Fallback !important;
   color: #374151 !important;
 }
 
@@ -27,7 +29,6 @@ li {
   ) !important;
 }
 
-
 /* Styling for SKILLS SPA */
 
 /* =============================================
@@ -38,16 +39,42 @@ li {
    ============================================= */
 /* --- GLOBAL / BASE STYLES --- */
 body {
-  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family:
+    "Open Sans",
+    -apple-system,
+    "system-ui",
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif !important;
   font-size: 14px !important;
   color: #4a5568 !important;
   background-color: #ffffff !important;
   line-height: 1.6 !important;
 }
 /* --- TYPOGRAPHY --- */
-h1, h2, h3, h4, h5, h6,
-.hd, .hd-1, .hd-2, .hd-3, .hd-4, .hd-5 {
-  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.hd,
+.hd-1,
+.hd-2,
+.hd-3,
+.hd-4,
+.hd-5 {
+  font-family:
+    "Open Sans",
+    -apple-system,
+    "system-ui",
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif !important;
   color: #4a5568 !important;
 }
 /* Page title */
@@ -58,44 +85,65 @@ h1.instructor-dashboard-title {
   color: #4a5568 !important;
   margin-bottom: 20px !important;
 }
-.hd-2, h2 {
+.hd-2,
+h2 {
   font-size: 18px !important;
   font-weight: 600 !important;
   color: #4a5568 !important;
   margin-bottom: 12px !important;
 }
-.hd-3, h3 {
+.hd-3,
+h3 {
   font-size: 16px !important;
   font-weight: 600 !important;
   color: #4a5568 !important;
 }
-.hd-4, h4 {
+.hd-4,
+h4 {
   font-size: 15px !important;
   font-weight: 600 !important;
   color: #4a5568 !important;
 }
-.hd-5, h5 {
+.hd-5,
+h5 {
   font-size: 14px !important;
   font-weight: 600 !important;
   color: #4a5568 !important;
 }
-p, span, div, td, th, li, label, small {
-  font-family: "Open Sans", -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+p,
+span,
+div,
+td,
+th,
+li,
+label,
+small {
+  font-family:
+    "Open Sans",
+    -apple-system,
+    "system-ui",
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif !important;
 }
-p, li {
+p,
+li {
   color: #4a5568 !important;
   font-size: 14px !important;
 }
-strong, b {
+strong,
+b {
   color: #4a5568 !important;
 }
 /* --- LINKS --- */
 a {
-  color: #F59E0B !important;
+  color: #f59e0b !important;
   text-decoration: none !important;
 }
 a:hover {
-  color: #D97706 !important;
+  color: #d97706 !important;
   text-decoration: underline !important;
 }
 /* --- INSTRUCTOR NAV TABS --- */
@@ -120,20 +168,20 @@ a:hover {
   text-decoration: none !important;
 }
 .instructor-nav .btn-link:hover {
-  color: #F59E0B !important;
-  border-bottom-color: #FDE68A !important;
+  color: #f59e0b !important;
+  border-bottom-color: #fde68a !important;
   text-decoration: none !important;
 }
 .instructor-nav .btn-link.active-section {
-  color: #F59E0B !important;
-  border-bottom: 3px solid #F59E0B !important;
+  color: #f59e0b !important;
+  border-bottom: 3px solid #f59e0b !important;
   font-weight: 600 !important;
 }
 /* --- "VIEW COURSE IN STUDIO" BUTTON --- */
 .instructor-info-action a {
   background-color: transparent !important;
-  color: #F59E0B !important;
-  border: 2px solid #F59E0B !important;
+  color: #f59e0b !important;
+  border: 2px solid #f59e0b !important;
   border-radius: 6px !important;
   font-size: 12px !important;
   font-weight: 600 !important;
@@ -144,7 +192,7 @@ a:hover {
   transition: all 0.2s ease !important;
 }
 .instructor-info-action a:hover {
-  background-color: #F59E0B !important;
+  background-color: #f59e0b !important;
   color: #ffffff !important;
   text-decoration: none !important;
 }
@@ -181,7 +229,7 @@ input[type="search"]:focus,
 input[type="number"]:focus,
 input[type="url"]:focus,
 select:focus {
-  border-color: #F59E0B !important;
+  border-color: #f59e0b !important;
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
   outline: none !important;
 }
@@ -191,12 +239,12 @@ input::placeholder {
 }
 /* --- CHECKBOXES --- */
 input[type="checkbox"] {
-  accent-color: #F59E0B !important;
+  accent-color: #f59e0b !important;
 }
 /* --- ACTION BUTTONS (Enroll, Generate Report, etc.) --- */
 input[type="button"],
 input[type="submit"],
-body :not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link) {
+button:not(.btn-link):not(.instructor-nav .btn-link) {
   font-family: "Open Sans", sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -204,7 +252,7 @@ body :not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link) 
   border-radius: 6px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  background-color: #F59E0B !important;
+  background-color: #f59e0b !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -213,8 +261,8 @@ body :not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link) 
 }
 input[type="button"]:hover,
 input[type="submit"]:hover,
-body :not(form.login-form) button:not(.btn-link):not(.instructor-nav .btn-link):hover {
-  background-color: #D97706 !important;
+button:not(.btn-link):not(.instructor-nav .btn-link):hover {
+  background-color: #d97706 !important;
   background-image: none !important;
 }
 /* Secondary buttons (Unenroll, Remove, Delete) - outline style */
@@ -224,19 +272,19 @@ input[type="button"][name*="remove"],
 .btn-secondary {
   background-color: transparent !important;
   background-image: none !important;
-  color: #F59E0B !important;
-  border: 2px solid #F59E0B !important;
+  color: #f59e0b !important;
+  border: 2px solid #f59e0b !important;
 }
 input[type="button"][value="Unenroll"]:hover,
 .btn-secondary:hover {
-  background-color: #F59E0B !important;
+  background-color: #f59e0b !important;
   color: #ffffff !important;
 }
 /* --- BLUE BUTTONS (Special Exams, legacy) --- */
 .blue-button,
 a.blue-button,
 .add.blue-button {
-  background: #F59E0B !important;
+  background: #f59e0b !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -251,7 +299,7 @@ a.blue-button,
 }
 .blue-button:hover,
 a.blue-button:hover {
-  background: #D97706 !important;
+  background: #d97706 !important;
   background-image: none !important;
   color: #ffffff !important;
   text-decoration: none !important;
@@ -269,8 +317,8 @@ table th {
   font-weight: 600 !important;
   font-size: 13px !important;
   padding: 8px 12px !important;
-  border-bottom: 2px solid #F59E0B !important;
-  background-color: #FEF3C7 !important;
+  border-bottom: 2px solid #f59e0b !important;
+  background-color: #fef3c7 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
 }
@@ -283,15 +331,17 @@ table td {
 }
 .data-display-table tr:hover,
 table tbody tr:hover {
-  background-color: #FFFBEB !important;
+  background-color: #fffbeb !important;
 }
 .data-display-table td:first-child {
   font-weight: 600 !important;
 }
 /* Total row */
-td[style*="green"], td[style*="color: green"],
-span[style*="green"], span[style*="color: green"] {
-  color: #F59E0B !important;
+td[style*="green"],
+td[style*="color: green"],
+span[style*="green"],
+span[style*="color: green"] {
+  color: #f59e0b !important;
   font-weight: 700 !important;
 }
 /* --- SECTION DIVIDERS --- */
@@ -315,17 +365,17 @@ hr {
 }
 .special-exam-header:hover,
 .ui-accordion-header:hover {
-  background-color: #FEF3C7 !important;
-  border-color: #F59E0B !important;
+  background-color: #fef3c7 !important;
+  border-color: #f59e0b !important;
 }
 .special-exam-header.ui-state-active,
 .ui-accordion-header.ui-state-active {
-  background-color: #FEF3C7 !important;
-  border-color: #F59E0B !important;
-  color: #F59E0B !important;
+  background-color: #fef3c7 !important;
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
 }
 .ui-accordion-header.ui-state-active a {
-  color: #F59E0B !important;
+  color: #f59e0b !important;
 }
 .ui-accordion-content {
   border: 1px solid #e5e7eb !important;
@@ -334,18 +384,18 @@ hr {
   padding: 16px !important;
 }
 .ui-accordion-header .ui-icon {
-  color: #F59E0B !important;
+  color: #f59e0b !important;
 }
 /* --- EXAM TABLES --- */
 .exam-attempts-table th,
 .certificate-data-display-table th,
 .auth-list-container table th {
-  background-color: #FEF3C7 !important;
-  border-bottom: 2px solid #F59E0B !important;
+  background-color: #fef3c7 !important;
+  border-bottom: 2px solid #f59e0b !important;
 }
 /* --- ASYNC REPORT BUTTONS --- */
 .async-report-btn {
-  background-color: #F59E0B !important;
+  background-color: #f59e0b !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -355,11 +405,11 @@ hr {
   box-shadow: none !important;
 }
 .async-report-btn:hover {
-  background-color: #D97706 !important;
+  background-color: #d97706 !important;
 }
 /* --- GENERATE PROGRESS / VIEW PROGRESS --- */
 .ibl-generate-progress-btn {
-  background-color: #F59E0B !important;
+  background-color: #f59e0b !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -367,10 +417,10 @@ hr {
   box-shadow: none !important;
 }
 .ibl-generate-progress-btn:hover {
-  background-color: #D97706 !important;
+  background-color: #d97706 !important;
 }
 .ibl-view-progress-link {
-  color: #F59E0B !important;
+  color: #f59e0b !important;
 }
 /* --- CONTAINER ADJUSTMENTS --- */
 .instructor-dashboard-wrapper-2 {
@@ -390,11 +440,11 @@ label {
 .enrollment-status-link,
 .gradebook-link a,
 a.gradebook-link {
-  color: #F59E0B !important;
+  color: #f59e0b !important;
 }
 .enrollment-status-link:hover,
 .gradebook-link a:hover {
-  color: #D97706 !important;
+  color: #d97706 !important;
 }
 /* --- COHORTS --- */
 .cohorts-state-section {
@@ -402,44 +452,111 @@ a.gradebook-link {
 }
 /* --- LIST MARKERS --- */
 ul li::marker {
-  color: #F59E0B !important;
+  color: #f59e0b !important;
 }
 /* --- FOOTER --- */
-footer, .footer, .wrapper-footer {
+footer,
+.footer,
+.wrapper-footer {
   display: none !important;
 }
 /* =============================================
    INSTRUCTOR TABS – MOBILE HORIZONTAL SCROLL
    ============================================= */
-   .instructor-nav {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    white-space: nowrap !important;
-    gap: 0 !important;
-    padding-bottom: 2px !important;
-    scrollbar-width: none !important;       /* Firefox */
-    -ms-overflow-style: none !important;    /* IE/Edge */
+.instructor-nav {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  white-space: nowrap !important;
+  gap: 0 !important;
+  padding-bottom: 2px !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
+}
+.instructor-nav::-webkit-scrollbar {
+  display: none !important; /* Chrome/Safari */
+}
+.instructor-nav .nav-item {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+.instructor-nav .nav-item .btn-link {
+  white-space: nowrap !important;
+}
+@media (max-width: 768px) {
+  a.instructor-info-action {
+    display: none !important;
   }
-  .instructor-nav::-webkit-scrollbar {
-    display: none !important;               /* Chrome/Safari */
-  }
-  .instructor-nav .nav-item {
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-  }
-  .instructor-nav .nav-item .btn-link {
-    white-space: nowrap !important;
-  }
-  @media (max-width: 768px) {
-    a.instructor-info-action {
-      display: none!important;
-    }
-  }
-  body.view-courseware p{
-    font-size: 16px !important;
-    margin-bottom: 10px !important;
-    margin-top: 10px !important;
-  }
+}
+body.view-courseware p {
+  font-size: 16px !important;
+  margin-bottom: 10px !important;
+  margin-top: 10px !important;
+}
+
+.xmodule_display.xmodule_VideoBlock
+  .video
+  .video-wrapper
+  .video-controls
+  .control {
+  background-color: initial !important;
+  padding: initial !important;
+  color: initial !important;
+  border: initial !important;
+  font-size: initial !important;
+}
+button.problem-action-btn {
+  background-color: initial !important;
+}
+body .login-register .login-provider.button-oa2-google-oauth2,
+.financial-assistance-wrapper
+  .financial-assistance-form
+  .login-provider.button-oa2-google-oauth2 {
+  color: white !important;
+  border-color: #4285f4 !important;
+  background-color: #4285f4 !important;
+  padding: 0 0 0 40px !important;
+}
+
+body .login-register .login-provider.button-oa2-apple-id,
+.financial-assistance-wrapper
+  .financial-assistance-form
+  .login-provider.button-oa2-apple-id {
+  color: white !important;
+  border-color: #000 !important;
+  background-color: #000 !important;
+  padding: 0 0 0 40px !important;
+}
+
+body .login-register .form-wrapper .login-form .action-primary {
+  background: #3d3d3d !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 1ex 1em !important;
+}
+body .login-register .form-field .field-link {
+  color: #0075b4 !important;
+  background: transparent !important;
+  padding: unset !important;
+}
+body .login-register .form-field .field-link:hover {
+  color: #0075b4 !important;
+  background: transparent !important;
+}
+
+body .login-register-content a {
+  color: #3d3d3d !important;
+}
+
+body .login-register .login-provider.button-oa2-google-oauth2:hover {
+  background-color: #287ae6 !important;
+  border: 1px solid #287ae6 !important;
+  color: #fff !important;
+}
+body .login-register .login-provider.button-oa2-apple-id:hover{
+  background-color: #000 !important;
+  border: 1px solid #000 !important;
+  color: #fff !important;
+}
