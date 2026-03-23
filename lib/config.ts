@@ -1,10 +1,7 @@
 const env = {
   NODE_ENV: process.env.NODE_ENV,
-  NEXT_PUBLIC_DM_URL: process.env.NEXT_PUBLIC_DM_URL,
+  NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
   NEXT_PUBLIC_DM_URL_TEST: process.env.NEXT_PUBLIC_DM_URL_TEST,
-  NEXT_PUBLIC_AXD_URL: process.env.NEXT_PUBLIC_AXD_URL,
-  NEXT_PUBLIC_LMS_URL: process.env.NEXT_PUBLIC_LMS_URL,
-  NEXT_PUBLIC_STUDIO_URL: process.env.NEXT_PUBLIC_STUDIO_URL,
   NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
   NEXT_PUBLIC_MFE_URL: process.env.NEXT_PUBLIC_MFE_URL,
   NEXT_PUBLIC_SPA_ANALYTICS_URL: process.env.NEXT_PUBLIC_SPA_ANALYTICS_URL,
@@ -32,13 +29,16 @@ export const getEnv = (key: keyof typeof env, fallback = ''): string => {
   return runtimeEnv()[key] ?? env[key] ?? fallback;
 };
 
+const apiBaseUrl = () => getEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.iblai.app');
+
 export const config = {
   environment: () => getEnv('NODE_ENV', 'development'),
   urls: {
-    dm: () => getEnv('NEXT_PUBLIC_DM_URL', 'https://base.manager.iblai.app'),
-    axd: () => getEnv('NEXT_PUBLIC_AXD_URL', 'https://base.manager.iblai.app'),
-    lms: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://learn.iblai.app'),
-    studio: () => getEnv('NEXT_PUBLIC_STUDIO_URL', 'https://studio.learn.iblai.app'),
+    apiBase: apiBaseUrl,
+    dm: () => `${apiBaseUrl()}/dm`,
+    axd: () => `${apiBaseUrl()}/axd`,
+    lms: () => `${apiBaseUrl()}/lms`,
+    studio: () => `${apiBaseUrl()}/studio`,
     auth: () => getEnv('NEXT_PUBLIC_AUTH_URL', 'https://login.iblai.app'),
     mfe: () => getEnv('NEXT_PUBLIC_MFE_URL', 'https://apps.learn.iblai.app'),
     analytics: () => getEnv('NEXT_PUBLIC_SPA_ANALYTICS_URL', 'https://analytics.iblai.app'),

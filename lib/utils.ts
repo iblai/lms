@@ -1,21 +1,21 @@
-import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type {
   BaseQueryFn,
   FetchArgs,
   FetchBaseQueryError,
   FetchBaseQueryMeta,
-} from '@reduxjs/toolkit/query';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { SERVICES } from './constants';
-import { config } from './config';
-import { LOCALSTORAGE_KEYS } from '@/constants/storage';
+} from "@reduxjs/toolkit/query";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { SERVICES } from "./constants";
+import { config } from "./config";
+import { LOCALSTORAGE_KEYS } from "@/constants/storage";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export interface CustomQueryArgs extends Omit<FetchArgs, 'url'> {
+export interface CustomQueryArgs extends Omit<FetchArgs, "url"> {
   url: string;
   service: SERVICES;
   includeCredentials?: boolean;
@@ -26,8 +26,14 @@ export type ExtendedFetchBaseQueryError = FetchBaseQueryError & {
   data?: { detail?: string; message?: string } | string;
 };
 
-const isErrorObject = (data: unknown): data is { detail?: string; message?: string } => {
-  return typeof data === 'object' && data !== null && ('detail' in data || 'message' in data);
+const isErrorObject = (
+  data: unknown,
+): data is { detail?: string; message?: string } => {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    ("detail" in data || "message" in data)
+  );
 };
 
 export const getServiceUrl = (service: SERVICES) => {
@@ -70,16 +76,16 @@ function getHeaders(service: SERVICES) {
   }
 }
 
-const baseQuery = (service: SERVICES, includeCredentials = false, isJson = true) =>
+const baseQuery = (service: SERVICES, isJson = true) =>
   fetchBaseQuery({
     baseUrl: getServiceUrl(service),
-    credentials: includeCredentials ? 'include' : 'omit',
+    credentials: "omit",
     prepareHeaders: (headers) => {
       const authHeaders = getHeaders(service);
 
       // Remove this in favor of the isForm flag in the future
       if (isJson) {
-        headers.set('Content-Type', 'application/json');
+        headers.set("Content-Type", "application/json");
       }
 
       Object.entries(authHeaders).forEach(([key, value]) => {
@@ -98,7 +104,7 @@ export const iblFetchBaseQuery: BaseQueryFn<
   FetchBaseQueryMeta
 > = async (args, api, extraOptions) => {
   try {
-    const result = await baseQuery(args.service, args.includeCredentials, args.isJson)(
+    const result = await baseQuery(args.service, args.isJson)(
       args,
       api,
       extraOptions,
@@ -106,11 +112,11 @@ export const iblFetchBaseQuery: BaseQueryFn<
     if (result.error) {
       const errorData = result.error.data;
       const errorMessage =
-        typeof errorData === 'string'
+        typeof errorData === "string"
           ? errorData
           : isErrorObject(errorData)
-            ? errorData.detail || errorData.message || 'Unknown server error'
-            : 'Unknown server error';
+            ? errorData.detail || errorData.message || "Unknown server error"
+            : "Unknown server error";
       throw new Error(errorMessage); // Let this error bubble up directly
     }
     return { data: result?.data };
@@ -118,11 +124,11 @@ export const iblFetchBaseQuery: BaseQueryFn<
     // Only catch unexpected errors that aren't from our explicit error handling above
     if (
       e instanceof Error &&
-      e.message !== 'Unknown server error' &&
+      e.message !== "Unknown server error" &&
       !isErrorObject(e) &&
-      typeof e !== 'string'
+      typeof e !== "string"
     ) {
-      throw new Error('something went wrong fetching data');
+      throw new Error("something went wrong fetching data");
     }
     throw e; // Re-throw the original error
   }

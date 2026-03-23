@@ -226,6 +226,6 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
 export const logEnvironmentInfo = (): void => {
   if (typeof window === 'undefined') {
     console.log(`[Server] Environment: ${process.env.NODE_ENV}`);
-    console.log(`[Server] DM URL: ${process.env.NEXT_PUBLIC_DM_URL}`);
+    console.log(`[Server] API Base URL: ${process.env.NEXT_PUBLIC_API_BASE_URL}`);
   }
 };

@@ -26,51 +26,51 @@ describe('config module', () => {
 
   describe('getEnv', () => {
     it('returns process.env value when window.__ENV__ is not available', async () => {
-      processEnv.NEXT_PUBLIC_DM_URL = 'test-dm-value';
+      processEnv.NEXT_PUBLIC_API_BASE_URL = 'test-base-value';
 
       const { getEnv } = await import('../config');
-      expect(getEnv('NEXT_PUBLIC_DM_URL')).toBe('test-dm-value');
+      expect(getEnv('NEXT_PUBLIC_API_BASE_URL')).toBe('test-base-value');
     });
 
     it('returns fallback when env value is undefined', async () => {
-      delete processEnv.NEXT_PUBLIC_DM_URL;
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { getEnv } = await import('../config');
-      expect(getEnv('NEXT_PUBLIC_DM_URL', 'fallback-value')).toBe('fallback-value');
+      expect(getEnv('NEXT_PUBLIC_API_BASE_URL', 'fallback-value')).toBe('fallback-value');
     });
 
     it('returns empty string as default fallback when value is undefined', async () => {
-      delete processEnv.NEXT_PUBLIC_DM_URL;
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { getEnv } = await import('../config');
-      expect(getEnv('NEXT_PUBLIC_DM_URL')).toBe('');
+      expect(getEnv('NEXT_PUBLIC_API_BASE_URL')).toBe('');
     });
 
     it('prioritizes window.__ENV__ over process.env', async () => {
-      processEnv.NEXT_PUBLIC_DM_URL = 'process-value';
+      processEnv.NEXT_PUBLIC_API_BASE_URL = 'process-value';
       (window as unknown as { __ENV__: Record<string, string> }).__ENV__ = {
-        NEXT_PUBLIC_DM_URL: 'window-value',
+        NEXT_PUBLIC_API_BASE_URL: 'window-value',
       };
 
       const { getEnv } = await import('../config');
-      expect(getEnv('NEXT_PUBLIC_DM_URL')).toBe('window-value');
+      expect(getEnv('NEXT_PUBLIC_API_BASE_URL')).toBe('window-value');
     });
 
     it('falls back to process.env when key not in window.__ENV__', async () => {
-      processEnv.NEXT_PUBLIC_LMS_URL = 'lms-process-value';
+      processEnv.NEXT_PUBLIC_AUTH_URL = 'auth-process-value';
       (window as unknown as { __ENV__: Record<string, string> }).__ENV__ = {
-        NEXT_PUBLIC_DM_URL: 'dm-window-value',
+        NEXT_PUBLIC_API_BASE_URL: 'base-window-value',
       };
 
       const { getEnv } = await import('../config');
-      expect(getEnv('NEXT_PUBLIC_LMS_URL')).toBe('lms-process-value');
+      expect(getEnv('NEXT_PUBLIC_AUTH_URL')).toBe('auth-process-value');
     });
 
     it('returns the value when env is set (not the fallback)', async () => {
-      processEnv.NEXT_PUBLIC_DM_URL = 'actual-value';
+      processEnv.NEXT_PUBLIC_API_BASE_URL = 'actual-value';
 
       const { getEnv } = await import('../config');
-      expect(getEnv('NEXT_PUBLIC_DM_URL', 'fallback')).toBe('actual-value');
+      expect(getEnv('NEXT_PUBLIC_API_BASE_URL', 'fallback')).toBe('actual-value');
     });
   });
 
@@ -95,39 +95,39 @@ describe('config module', () => {
   });
 
   describe('config.urls', () => {
-    it('returns dm url with default fallback when undefined', async () => {
-      delete processEnv.NEXT_PUBLIC_DM_URL;
+    it('returns dm url derived from default api base url', async () => {
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { config } = await import('../config');
-      expect(config.urls.dm()).toBe('https://base.manager.iblai.app');
+      expect(config.urls.dm()).toBe('https://api.iblai.app/dm');
     });
 
-    it('returns configured dm url', async () => {
-      processEnv.NEXT_PUBLIC_DM_URL = 'https://custom.dm.url';
+    it('returns dm url derived from custom api base url', async () => {
+      processEnv.NEXT_PUBLIC_API_BASE_URL = 'https://custom.api.url';
 
       const { config } = await import('../config');
-      expect(config.urls.dm()).toBe('https://custom.dm.url');
+      expect(config.urls.dm()).toBe('https://custom.api.url/dm');
     });
 
-    it('returns axd url with default fallback when undefined', async () => {
-      delete processEnv.NEXT_PUBLIC_AXD_URL;
+    it('returns axd url derived from api base url', async () => {
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { config } = await import('../config');
-      expect(config.urls.axd()).toBe('https://base.manager.iblai.app');
+      expect(config.urls.axd()).toBe('https://api.iblai.app/axd');
     });
 
-    it('returns lms url with default fallback when undefined', async () => {
-      delete processEnv.NEXT_PUBLIC_LMS_URL;
+    it('returns lms url derived from api base url', async () => {
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { config } = await import('../config');
-      expect(config.urls.lms()).toBe('https://learn.iblai.app');
+      expect(config.urls.lms()).toBe('https://api.iblai.app/lms');
     });
 
-    it('returns studio url with default fallback when undefined', async () => {
-      delete processEnv.NEXT_PUBLIC_STUDIO_URL;
+    it('returns studio url derived from api base url', async () => {
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { config } = await import('../config');
-      expect(config.urls.studio()).toBe('https://studio.learn.iblai.app');
+      expect(config.urls.studio()).toBe('https://api.iblai.app/studio');
     });
 
     it('returns auth url with default fallback when undefined', async () => {

@@ -1279,9 +1279,7 @@ const URL_MONITOR_SCRIPT_OFFLINE: &str = r#"
 
     // Override __ENV__ to route API calls through our offline server
     window.__ENV__ = window.__ENV__ || {};
-    window.__ENV__.NEXT_PUBLIC_DM_URL = OFFLINE_SERVER;
-    window.__ENV__.NEXT_PUBLIC_AXD_URL = OFFLINE_SERVER;
-    window.__ENV__.NEXT_PUBLIC_LMS_URL = OFFLINE_SERVER;
+    window.__ENV__.NEXT_PUBLIC_API_BASE_URL = OFFLINE_SERVER;
 
     console.log('[OfflineMode] Starting offline mode initialization...');
 

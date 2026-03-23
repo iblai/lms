@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { config } from '@/lib/config';
-import { useEffect, useState } from 'react';
-import { getTenant } from '@/utils/helpers';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import Image from "next/image";
+import Link from "next/link";
+import { config } from "@/lib/config";
+import { useEffect, useState } from "react";
+import { getTenant } from "@/utils/helpers";
+import { useTenantMetadata } from "@iblai/iblai-js/web-utils";
 
 export function Logo({
   width = 120,
   height = 40,
 }: {
-  variant?: 'main' | 'small' | 'footer';
+  variant?: "main" | "small" | "footer";
   width?: number;
   height?: number;
 }) {
@@ -23,7 +23,7 @@ export function Logo({
   const loadLogo = async () => {
     setLogoUrl(
       metadata?.auth_web_skillsai?.display_logo ||
-        `${config.urls.axd()}/api/core/orgs/${getTenant()}/logo/`,
+        `${config.urls.dm()}/api/core/orgs/${getTenant()}/logo/`,
     );
   };
 
@@ -38,7 +38,7 @@ export function Logo({
   return (
     <Link href="/" className="flex items-center">
       <Image
-        src={logoUrl || '/images/iblai-logo.png'}
+        src={logoUrl || "/images/iblai-logo.png"}
         loading="lazy"
         alt={config.settings.appName()}
         width={width}

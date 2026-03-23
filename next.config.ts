@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "base.manager.iblai.app",
       },
+      {
+        protocol: "https",
+        hostname: "api.iblai.app",
+      },
+      {
+        protocol: "https",
+        hostname: "api.iblai.org",
+      },
     ],
   },
   transpilePackages: ["@tauri-apps/api"],
