@@ -1,6 +1,6 @@
 {
   "name": "ibl-web-nextjs-skills-spa",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
