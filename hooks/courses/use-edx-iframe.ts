@@ -168,7 +168,7 @@ export const useEdxIframe = () => {
           url = `${config.urls.mfe()}/learning/course/${course_id}/dates/`;
           break;
         case "bookmarks":
-          url = `${process.env.NEXT_PUBLIC_LMS_URL}/courses/${course_id}/bookmarks/`;
+          url = `${config.urls.legacyLmsUrl()}/courses/${course_id}/bookmarks/`;
           break;
         case "instructor":
           baseLMSIframeURL = `${config.urls.lms()}/courses/${course_id}/instructor`;
@@ -177,7 +177,7 @@ export const useEdxIframe = () => {
             username: getUserName(),
             redirect_url: baseLMSIframeURL,
           });
-          url = `${process.env.NEXT_PUBLIC_LMS_URL}/ibl/ai/sso/backend/edx/iframe?sso_auth_token=${
+          url = `${config.urls.legacyLmsUrl()}/ibl/ai/sso/backend/edx/iframe?sso_auth_token=${
             authSsoToken?.sso_auth_token
           }`;
           break;

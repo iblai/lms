@@ -1,3 +1,8 @@
+## [0.10.0]
+
+- chore(iblai-js): bump iblai-js to 1.1.0
+- unified domain implementation with while keeping legacy lms url for iframing
+
 ## [0.9.14]
 
 - iblai-js version updated
@@ -8,7 +13,7 @@
 
 ## [0.9.12]
 
-- fix: accessing course in an  unauthorized way from another tenant restricted
+- fix: accessing course in an unauthorized way from another tenant restricted
 - feat: proper error page implemented
 
 ## [0.9.11]
@@ -88,10 +93,10 @@
 
 ## [0.8.8]
 
-- feat(web-containers): help center switch feature implemented #1476 
-- feat(web-containers): catalog invite content list with scroll pagination #1332 
-- fix(skills): recommended courses images not displaying fixed #1449 
-- feat(web-containers): recommendation related reports can now be combined when env flag enabled #1402  
+- feat(web-containers): help center switch feature implemented #1476
+- feat(web-containers): catalog invite content list with scroll pagination #1332
+- fix(skills): recommended courses images not displaying fixed #1449
+- feat(web-containers): recommendation related reports can now be combined when env flag enabled #1402
 - fix(skills): discover page pagination issue with programs contents fixed
 - feat(web-containers): add source code editor mode to html editor feature
 - feat(web-containers):resets edit template dialog form fields on close
@@ -110,7 +115,7 @@
 
 ## [0.8.4]
 
-- chore(web-containers): complete team sharing functionality 
+- chore(web-containers): complete team sharing functionality
 - fix(web-containers): fix notification template title form issue
 - fix(skills): configuration > credential type issue fixed
 - feat(skills): program image issue completely fixed
@@ -165,7 +170,6 @@
 - Extracts iframe origin from URL for secure postMessage targeting
 - Sends JWT token via postMessage when iframe loads
 - Handles errors gracefully (invalid URLs, missing refs, missing tokens)
-
 
 ## [0.7.4]
 

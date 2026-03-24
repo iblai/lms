@@ -1,20 +1,25 @@
-'use client';
+"use client";
 
-import { useDispatch } from 'react-redux';
+import { useDispatch } from "react-redux";
 // @ts-ignore
-import { initializeDataLayer } from '@iblai/iblai-js/data-layer';
-import { useEffect, useState } from 'react';
-import { config } from '@/lib/config';
+import { initializeDataLayer } from "@iblai/iblai-js/data-layer";
+import { useEffect, useState } from "react";
+import { config } from "@/lib/config";
 import {
   handleTenantSwitch,
   LocalStorageService,
   useCurrentTenant,
   useUserTenants,
-} from '@/utils/localstorage';
-import { AuthProvider, TenantProvider } from '@iblai/iblai-js/web-utils';
-import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
-import { usePathname } from 'next/navigation';
-import { updateRbacPermissions } from '@/features/rbac';
+} from "@/utils/localstorage";
+import { AuthProvider, TenantProvider } from "@iblai/iblai-js/web-utils";
+import {
+  getTenant,
+  getUserName,
+  hasNonExpiredAuthToken,
+  redirectToAuthSpa,
+} from "@/utils/helpers";
+import { usePathname } from "next/navigation";
+import { updateRbacPermissions } from "@/features/rbac";
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
@@ -24,21 +29,27 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const isVersionRoute = /^\/version/.test(pathname);
 
   const loadDataLayer = () => {
-    initializeDataLayer(config.urls.dm(), config.urls.lms(), LocalStorageService.getInstance(), {
-      401: () => {
-        console.log('[auth-redirect] API returned 401 Unauthorized');
-        redirectToAuthSpa(undefined, undefined, true);
+    initializeDataLayer(
+      config.urls.dm(),
+      config.urls.lms(),
+      config.urls.legacyLmsUrl(),
+      LocalStorageService.getInstance(),
+      {
+        401: () => {
+          console.log("[auth-redirect] API returned 401 Unauthorized");
+          redirectToAuthSpa(undefined, undefined, true);
+        },
       },
-    });
+    );
     setReady(true);
   };
 
   useEffect(() => {
-    if (typeof window.__ENV__ !== 'undefined') {
+    if (typeof window.__ENV__ !== "undefined") {
       loadDataLayer();
     } else {
-      const script = document.createElement('script');
-      script.src = '/env.js';
+      const script = document.createElement("script");
+      script.src = "/env.js";
       script.async = false;
       script.onload = () => loadDataLayer();
       script.onerror = () => loadDataLayer();
@@ -56,13 +67,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return true;
   }); */
 
-  middleware.set(new RegExp('^/sso-login'), async () => {
+  middleware.set(new RegExp("^/sso-login"), async () => {
     return false;
   });
   // allow user to go to version page without auth
-  middleware.set(new RegExp('^\/version'), async () => false);
+  middleware.set(new RegExp("^\/version"), async () => false);
 
-  function onLoadPlatformpermissions(rbacPermissions: Record<string, unknown> | undefined) {
+  function onLoadPlatformpermissions(
+    rbacPermissions: Record<string, unknown> | undefined,
+  ) {
     dispatch(updateRbacPermissions(rbacPermissions ?? {}));
   }
 
@@ -76,22 +89,22 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         saveRedirect = true,
       ) => redirectToAuthSpa(redirectTo, platformKey, logout, saveRedirect)}
       hasNonExpiredAuthToken={hasNonExpiredAuthToken}
-      username={getUserName() || ''}
+      username={getUserName() || ""}
       storageService={LocalStorageService.getInstance()}
       middleware={middleware}
       pathname={pathname}
     >
       <TenantProvider
         skip={isSsoLoginRoute || isVersionRoute}
-        currentTenant={getTenant() || ''}
-        requestedTenant={getTenant() || ''}
+        currentTenant={getTenant() || ""}
+        requestedTenant={getTenant() || ""}
         saveCurrentTenant={saveCurrentTenant}
         saveUserTenants={saveUserTenants}
         handleTenantSwitch={handleTenantSwitch}
-        username={getUserName() || ''}
+        username={getUserName() || ""}
         onAuthFailure={(reason) => {
-          console.error('[TenantProvider] Auth failure:', reason);
-          window.location.href = '/error/403';
+          console.error("[TenantProvider] Auth failure:", reason);
+          window.location.href = "/error/403";
         }}
         onLoadPlatformPermissions={onLoadPlatformpermissions}
       >
