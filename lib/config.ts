@@ -44,7 +44,7 @@ export const config = {
     apiBase: apiBaseUrl,
     dm: () => `${apiBaseUrl()}/dm`,
     axd: () => `${apiBaseUrl()}/axd`,
-    lms: () => `${apiBaseUrl()}/lms`,
+    lms: () => getEnv("NEXT_PUBLIC_LMS_URL", "https://lms.iblai.app"),
     legacyLmsUrl: () => getEnv("NEXT_PUBLIC_LMS_URL", "https://lms.iblai.app"),
     studio: () => `${apiBaseUrl()}/studio`,
     auth: () => getEnv("NEXT_PUBLIC_AUTH_URL", "https://login.iblai.app"),
