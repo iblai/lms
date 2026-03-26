@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, waitFor, act, fireEvent } from '@testing-library/react';
 import { EdxIframe } from '../edx-iframe';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
@@ -51,6 +51,7 @@ describe('EdxIframe - JWT PostMessage', () => {
   const mockSetCurrentlyInExamSubsection = vi.fn();
   const mockSetExamInfo = vi.fn();
   const mockSelectLesson = vi.fn();
+  const mockRefetchCourseOutline = vi.fn();
 
   const defaultContextValue = {
     iframeUrl: 'https://apps.learn.example.com/discussions/course-v1:test+course/posts',
@@ -89,6 +90,7 @@ describe('EdxIframe - JWT PostMessage', () => {
     courseOutlineDrawerOpen: false,
     setCourseOutlineDrawerOpen: vi.fn(),
     currentUnitID: null,
+    refetchCourseOutline: mockRefetchCourseOutline,
   };
 
   beforeEach(() => {
@@ -222,6 +224,27 @@ describe('EdxIframe - JWT PostMessage', () => {
 
     // Should not have been called since no token
     expect(mockPostMessage).not.toHaveBeenCalled();
+  });
+
+  it('calls refetchCourseOutline when iframe loads', async () => {
+    const { container } = renderEdxIframe();
+
+    await waitFor(
+      () => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      },
+      { timeout: 1000 },
+    );
+
+    const iframe = container.querySelector('iframe');
+    expect(iframe).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.load(iframe!);
+    });
+
+    expect(mockRefetchCourseOutline).toHaveBeenCalledWith(false);
   });
 
   it('rejects messages from wrong origin', async () => {
