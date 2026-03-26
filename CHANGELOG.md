@@ -1,3 +1,7 @@
+## [0.10.4]
+
+- fix: iframe loading twice 30s after initial course page load
+
 ## [0.10.3]
 
 - feat: course outline > have progress checks per unit instead of current icon
