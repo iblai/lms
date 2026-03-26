@@ -56,7 +56,7 @@ export const useCourseDetail = (courseId: string) => {
   } = useCourseMetadata();
   const [courseInfoLoadingState, setCourseInfoLoadingState] = useState<CourseInfoLoadingState>('not-started');
   const [course, setCourse] = useState<CourseEdxData | null>(null);
-  const [courseOutline, setCourseOutline] = useState<CourseOutlineChildNode[]>([]);
+  const [courseOutline, setCourseOutline] = useState<CourseOutlineChildNode>({} as CourseOutlineChildNode);
   const [courseOutlineLoading, setCourseOutlineLoading] = useState(false);
   const [courseEligibilityLoading, setCourseEligibilityLoading] = useState(false);
   const [courseButtonActionLoading, setCourseButtonActionLoading] = useState(false);
@@ -237,12 +237,12 @@ export const useCourseDetail = (courseId: string) => {
       | Record<string, any>;
     if (!_.isEmpty(courseCompletionOutlines)) {
       //const coursesSyllabus = courseCompletionOutlines.children as CourseOutlineChildNode[];
-      setCourseOutline(courseCompletionOutlines?.children || []);
+      setCourseOutline(courseCompletionOutlines as CourseOutlineChildNode);
       if (setLoadingState) {
         setCourseOutlineLoading(false);
       }
     } else {
-      setCourseOutline([]);
+      setCourseOutline({} as CourseOutlineChildNode);
       if (setLoadingState) {
         setCourseOutlineLoading(false);
       }

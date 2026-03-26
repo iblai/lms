@@ -56,15 +56,21 @@ describe('EdxIframe - JWT PostMessage', () => {
   const defaultContextValue = {
     iframeUrl: 'https://apps.learn.example.com/discussions/course-v1:test+course/posts',
     setIframeUrl: mockSetIframeUrl,
-    courseOutline: [
-      {
-        id: 'test',
-        block_id: 'test-block',
-        type: 'chapter',
-        display_name: 'Test Chapter',
-        children: [],
-      },
-    ], // Non-empty to trigger course load
+    courseOutline: {
+      id: 'root',
+      block_id: 'root-block',
+      type: 'course',
+      display_name: 'Test Course',
+      children: [
+        {
+          id: 'test',
+          block_id: 'test-block',
+          type: 'chapter',
+          display_name: 'Test Chapter',
+          children: [],
+        },
+      ],
+    }, // Non-empty to trigger course load
     setActiveTab: mockSetActiveTab,
     activeTab: 'forum',
     courseID: 'course-v1:test+course',
@@ -77,7 +83,7 @@ describe('EdxIframe - JWT PostMessage', () => {
   };
 
   const defaultCourseOutlineValue = {
-    courseOutline: [],
+    courseOutline: {} as any,
     courseOutlineLoading: false,
     expandedModule: '',
     expandedLessons: [],

@@ -107,7 +107,7 @@ describe('useCourseDetail', () => {
   it('initializes with expected defaults', () => {
     const { result } = renderHook(() => useCourseDetail('course-123'));
     expect(result.current.course).toBeNull();
-    expect(result.current.courseOutline).toEqual([]);
+    expect(result.current.courseOutline).toEqual({});
     expect(result.current.courseInfoLoadingState).toBe('not-started');
     expect(result.current.courseOutlineLoading).toBe(false);
     expect(result.current.courseEligibilityLoading).toBe(false);
@@ -199,7 +199,7 @@ describe('useCourseDetail', () => {
         await result.current.handleFetchCourseSyllabus();
       });
 
-      expect(result.current.courseOutline).toEqual(mockOutlineData.children);
+      expect(result.current.courseOutline).toEqual(mockOutlineData);
       expect(result.current.courseOutlineLoading).toBe(false);
     });
 
@@ -211,10 +211,10 @@ describe('useCourseDetail', () => {
         await result.current.handleFetchCourseSyllabus();
       });
 
-      expect(result.current.courseOutline).toEqual([]);
+      expect(result.current.courseOutline).toEqual({});
     });
 
-    it('sets children to empty when no children in response', async () => {
+    it('stores outline even when no children in response', async () => {
       mockHandleFetchCourseCompletionOutlines.mockResolvedValue({ name: 'Outline' });
 
       const { result } = renderHook(() => useCourseDetail('course-123'));
@@ -222,7 +222,8 @@ describe('useCourseDetail', () => {
         await result.current.handleFetchCourseSyllabus();
       });
 
-      expect(result.current.courseOutline).toEqual([]);
+      expect(result.current.courseOutline).toEqual({ name: 'Outline' });
+      expect(result.current.courseOutline.children).toBeUndefined();
     });
   });
 

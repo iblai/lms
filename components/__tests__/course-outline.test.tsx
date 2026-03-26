@@ -24,7 +24,7 @@ const makeNode = (
 });
 
 const defaultContext: CourseOutlineContextType = {
-  courseOutline: [],
+  courseOutline: {} as CourseOutlineChildNode,
   courseOutlineLoading: false,
   expandedModule: '',
   expandedLessons: [],
@@ -58,7 +58,7 @@ describe('CourseOutline', () => {
       makeNode({ id: 'mod-1', display_name: 'Module 1', children: [] }),
       makeNode({ id: 'mod-2', display_name: 'Module 2', children: [] }),
     ];
-    renderWithContext({ courseOutline: modules });
+    renderWithContext({ courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }) });
     expect(screen.getByText('Module 1')).toBeInTheDocument();
     expect(screen.getByText('Module 2')).toBeInTheDocument();
   });
@@ -74,7 +74,7 @@ describe('CourseOutline', () => {
         ],
       }),
     ];
-    renderWithContext({ courseOutline: modules, expandedModule: 'mod-1' });
+    renderWithContext({ courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }), expandedModule: 'mod-1' });
     expect(screen.getByText('Lesson 1')).toBeInTheDocument();
     expect(screen.getByText('Lesson 2')).toBeInTheDocument();
   });
@@ -82,7 +82,7 @@ describe('CourseOutline', () => {
   it('calls toggleModule on module click', () => {
     const toggleModule = vi.fn();
     const modules = [makeNode({ id: 'mod-1', display_name: 'Module 1' })];
-    renderWithContext({ courseOutline: modules, toggleModule });
+    renderWithContext({ courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }), toggleModule });
     fireEvent.click(screen.getByText('Module 1'));
     expect(toggleModule).toHaveBeenCalledWith('mod-1');
   });
@@ -100,7 +100,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     const { container } = renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
     });
     const svgs = container.querySelectorAll('svg');
@@ -124,7 +124,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     const { container } = renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
     });
     const svgs = container.querySelectorAll('svg');
@@ -158,7 +158,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     const { container } = renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
     });
     const svgs = container.querySelectorAll('svg');
@@ -190,7 +190,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     const { container } = renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
     });
     const svgs = container.querySelectorAll('svg');
@@ -221,7 +221,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     const { container } = renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
     });
     const svgs = container.querySelectorAll('svg');
@@ -251,7 +251,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
       expandedLessons: ['lesson-1'],
     });
@@ -277,7 +277,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
       expandedLessons: ['lesson-1'],
       selectLesson,
@@ -304,7 +304,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
       expandedLessons: ['lesson-1'],
       currentLesson: 'sub-1',
@@ -344,7 +344,7 @@ describe('CompletionIcon rendering', () => {
       }),
     ];
     const { container } = renderWithContext({
-      courseOutline: modules,
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
       expandedModule: 'mod-1',
     });
     const svgs = container.querySelectorAll('svg');

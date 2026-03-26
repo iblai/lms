@@ -85,11 +85,11 @@ export default function CourseContentLayout({
   const [refresher, setRefresher] = useState<Date | null>(null);
   useEffect(() => {
     if (!_.isEmpty(courseOutline)) {
-      const currentCourse = getUnitToIframe({ children: courseOutline });
+      const currentCourse = getUnitToIframe(courseOutline);
       setCurrentCourseInfo(currentCourse);
       const unitID = currentCourse?.id;
       setCurrentUnitID(unitID);
-      const parentsIDs = getParentsInfosFromSublessonId(courseOutline, unitID);
+      const parentsIDs = getParentsInfosFromSublessonId(courseOutline?.children || [], unitID);
       setCurrentParentIds(parentsIDs);
       setCurrentLesson(unitID || '');
       setExpandedLessons([parentsIDs?.lesson.id || '']);

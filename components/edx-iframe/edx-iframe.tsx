@@ -6,7 +6,6 @@ import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
 import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
-import { CourseOutlineChildNode } from '@/types/courses';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 // @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
@@ -34,7 +33,7 @@ export const EdxIframe = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { navigator } = useCourseNavigator(
-    { children: courseOutline } as CourseOutlineChildNode,
+    courseOutline,
     currentUnitID || courseID,
   );
 
@@ -46,10 +45,10 @@ export const EdxIframe = () => {
       setCurrentlyInExamSubsection(false);
       setFetchingIframeData(true);
       if (activeTab === 'course') {
-        getIframeURL(courseID, { children: courseOutline }, async (url) => {
+        getIframeURL(courseID, courseOutline, async (url) => {
           try {
-            const courseOutlineData = Array.isArray(courseOutline)
-              ? courseOutline[navigator?.thirdLevelChildren[navigator?.currentIndex]?.chapterIndex]
+            const courseOutlineData = Array.isArray(courseOutline?.children)
+              ? courseOutline.children[navigator?.thirdLevelChildren[navigator?.currentIndex]?.chapterIndex]
               : courseOutline;
             const sequentialParentID = findSequentialParent(
               courseOutlineData,
@@ -189,7 +188,7 @@ export const EdxIframe = () => {
 
   useEffect(() => {
     handleLoadCourse();
-  }, [courseOutline, searchParams, courseID, activeTab, refresher]);
+  }, [courseOutline?.id, searchParams, courseID, activeTab, refresher]);
   return (
     <>
       {fetchingIframeData ? (

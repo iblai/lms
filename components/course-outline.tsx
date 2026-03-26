@@ -112,8 +112,8 @@ export const CourseOutline = () => {
       {courseOutlineLoading ? (
         <SkeletonMultiplier multiplier={8} Skeleton={SkeletonCourseOutline} />
       ) : (
-        Array.isArray(courseOutline) &&
-        courseOutline.map((module) => (
+        Array.isArray(courseOutline?.children) &&
+        courseOutline.children.map((module) => (
           <div key={module.id} className="border-b border-gray-200">
             <button
               onClick={() => toggleModule(module.id)}

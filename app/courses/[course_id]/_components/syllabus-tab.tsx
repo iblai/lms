@@ -7,7 +7,7 @@ import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonCourseSyllabus } from '@/components/skeleton-course-syllabus';
 
 interface SyllabusTabProps {
-  courseOutline: any[];
+  courseOutline: any;
   courseOutlineLoading: boolean;
   expandedSections: Record<string, boolean>;
   toggleSection: (index: number | string) => void;
@@ -24,14 +24,14 @@ export function SyllabusTab({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <h2 className="text-lg font-medium text-gray-800 mb-4">Syllabus</h2>
-      {!courseOutlineLoading && courseOutline?.length === 0 && (
+      {!courseOutlineLoading && (!courseOutline?.children || courseOutline.children.length === 0) && (
         <DefaultEmptyBox message="No course syllabus found." />
       )}
       <div className="space-y-3">
         {courseOutlineLoading && (
           <SkeletonMultiplier multiplier={6} Skeleton={SkeletonCourseSyllabus} />
         )}
-        {courseOutline.map((section, index) => (
+        {(courseOutline?.children || []).map((section: any, index: number) => (
           <div
             key={`${section.id}-${index}`}
             className="border border-gray-200 rounded-md overflow-hidden"

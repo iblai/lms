@@ -6,7 +6,7 @@ import { createContext } from 'react';
 export const EdxIframeContext = createContext<{
   iframeUrl: string;
   setIframeUrl: (url: string) => void;
-  courseOutline: CourseOutlineChildNode[];
+  courseOutline: CourseOutlineChildNode;
   setActiveTab: (tab: string) => void;
   activeTab: string;
   courseID: string;
@@ -20,7 +20,7 @@ export const EdxIframeContext = createContext<{
 }>({
   iframeUrl: '',
   setIframeUrl: () => {},
-  courseOutline: [],
+  courseOutline: {} as CourseOutlineChildNode,
   setActiveTab: () => {},
   activeTab: '',
   courseID: '',
