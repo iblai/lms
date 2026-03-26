@@ -916,3 +916,6 @@ input[type="checkbox"]:checked {
     right: 0;
   }
 }
+body .fa{
+  font-family: 'FontAwesome' !important;
+}
