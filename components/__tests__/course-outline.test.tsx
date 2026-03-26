@@ -233,6 +233,86 @@ describe('CompletionIcon rendering', () => {
     expect(circles[0].getAttribute('stroke')).toBe('#d1d5db');
   });
 
+  it('renders sublessons when a lesson is expanded', () => {
+    const modules = [
+      makeNode({
+        id: 'mod-1',
+        display_name: 'Module 1',
+        children: [
+          makeNode({
+            id: 'lesson-1',
+            display_name: 'Lesson 1',
+            children: [
+              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
+              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: true }),
+            ],
+          }),
+        ],
+      }),
+    ];
+    renderWithContext({
+      courseOutline: modules,
+      expandedModule: 'mod-1',
+      expandedLessons: ['lesson-1'],
+    });
+    expect(screen.getByText('Sub 1')).toBeInTheDocument();
+    expect(screen.getByText('Sub 2')).toBeInTheDocument();
+  });
+
+  it('calls selectLesson when a sublesson is clicked', () => {
+    const selectLesson = vi.fn();
+    const modules = [
+      makeNode({
+        id: 'mod-1',
+        display_name: 'Module 1',
+        children: [
+          makeNode({
+            id: 'lesson-1',
+            display_name: 'Lesson 1',
+            children: [
+              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
+            ],
+          }),
+        ],
+      }),
+    ];
+    renderWithContext({
+      courseOutline: modules,
+      expandedModule: 'mod-1',
+      expandedLessons: ['lesson-1'],
+      selectLesson,
+    });
+    fireEvent.click(screen.getByText('Sub 1'));
+    expect(selectLesson).toHaveBeenCalledWith('sub-1');
+  });
+
+  it('highlights the current sublesson', () => {
+    const modules = [
+      makeNode({
+        id: 'mod-1',
+        display_name: 'Module 1',
+        children: [
+          makeNode({
+            id: 'lesson-1',
+            display_name: 'Lesson 1',
+            children: [
+              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
+              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: false }),
+            ],
+          }),
+        ],
+      }),
+    ];
+    renderWithContext({
+      courseOutline: modules,
+      expandedModule: 'mod-1',
+      expandedLessons: ['lesson-1'],
+      currentLesson: 'sub-1',
+    });
+    const sub1Button = screen.getByText('Sub 1').closest('button');
+    expect(sub1Button?.className).toContain('bg-amber-50');
+  });
+
   it('calculates recursive completion correctly for deeply nested nodes', () => {
     // Parent with 2 children: one fully complete, one half complete
     // Expected ratio: (1 + 0.5) / 2 = 0.75 => level = round(0.75 * 7) = 5
