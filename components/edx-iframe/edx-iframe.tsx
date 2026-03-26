@@ -26,7 +26,7 @@ export const EdxIframe = () => {
     setIframeUrl,
     refresher,
   } = useContext(EdxIframeContext);
-  const { selectLesson, currentUnitID } = useContext(CourseOutlineContext);
+  const { selectLesson, currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
 
   const searchParams = useSearchParams();
   const [fetchingIframeData, setFetchingIframeData] = useState(true);
@@ -206,6 +206,7 @@ export const EdxIframe = () => {
               onLoad={() => {
                 setFetchingIframeData(false);
                 setIframeLoaded(true);
+                refetchCourseOutline(false);
               }}
               id="edx-iframe"
               title="Forum InnerWare"

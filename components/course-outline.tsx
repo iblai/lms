@@ -1,9 +1,96 @@
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { SkeletonMultiplier } from './skeleton-multiplier';
-import { ChevronRight, Play, FileText, Clock } from 'lucide-react';
-import { CheckCircle } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useContext } from 'react';
 import { SkeletonCourseOutline } from './skeleton-course-outline';
+import { CourseOutlineChildNode } from '@/types/courses';
+
+const MAX_CHECKMARK_POINT = 7;
+
+const getCompletionRatio = (node: CourseOutlineChildNode): number => {
+  if (!Array.isArray(node.children) || node.children.length === 0) {
+    return node.complete ? 1 : 0;
+  }
+  const totalChildren = node.children.length;
+  const completedScore = node.children.reduce(
+    (acc, child) => acc + getCompletionRatio(child),
+    0
+  );
+  return completedScore / totalChildren;
+};
+
+const getCompletionLevel = (node: CourseOutlineChildNode): number => {
+  return Math.round(getCompletionRatio(node) * MAX_CHECKMARK_POINT);
+};
+
+const CompletionIcon = ({ node }: { node: CourseOutlineChildNode }) => {
+  const level = getCompletionLevel(node);
+  const size = 16;
+  const strokeWidth = 2;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = level / MAX_CHECKMARK_POINT;
+  const dashOffset = circumference * (1 - progress);
+
+  if (level === MAX_CHECKMARK_POINT) {
+    // Fully complete - filled check circle
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="#f59e0b" stroke="none" />
+        <path
+          d="M5 8.5L7 10.5L11 6"
+          fill="none"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  if (level === 0) {
+    // No progress - empty circle
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#d1d5db"
+          strokeWidth={strokeWidth}
+        />
+      </svg>
+    );
+  }
+
+  // Partial progress - arc circle
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#e5e7eb"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#f59e0b"
+        strokeWidth={strokeWidth}
+        strokeDasharray={circumference}
+        strokeDashoffset={dashOffset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+};
 
 export const CourseOutline = () => {
   const {
@@ -55,26 +142,10 @@ export const CourseOutline = () => {
                       }`}
                     >
                       <div className="flex items-center">
-                        {(!lesson.children || lesson.children.length === 0) && (
-                          <div className="mr-2 flex-shrink-0">
-                            {lesson.type === 'html' && lesson.complete ? (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                            ) : lesson.type === 'video' ? (
-                              <Play className="h-4 w-4 text-gray-400" />
-                            ) : lesson.type === 'document' ? (
-                              <FileText className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Clock className="h-4 w-4 text-gray-400" />
-                            )}
-                          </div>
-                        )}
-                        <span
-                          className={`${
-                            lesson.type === 'html' && lesson.complete ? 'text-gray-500' : ''
-                          }`}
-                        >
-                          {lesson.display_name}
-                        </span>
+                        <div className="mr-2 flex-shrink-0">
+                          <CompletionIcon node={lesson} />
+                        </div>
+                        <span>{lesson.display_name}</span>
                       </div>
                       {lesson.children && lesson.children.length > 0 && (
                         <ChevronRight
@@ -100,25 +171,9 @@ export const CourseOutline = () => {
                               }`}
                             >
                               <div className="mr-2 flex-shrink-0">
-                                {sublesson.type === 'html' && sublesson.complete ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                ) : sublesson.type === 'video' ? (
-                                  <Play className="h-4 w-4 text-gray-400" />
-                                ) : sublesson.type === 'document' ? (
-                                  <FileText className="h-4 w-4 text-gray-400" />
-                                ) : (
-                                  <Clock className="h-4 w-4 text-gray-400" />
-                                )}
+                                <CompletionIcon node={sublesson} />
                               </div>
-                              <span
-                                className={`${
-                                  sublesson.type === 'html' && sublesson.complete
-                                    ? 'text-gray-500'
-                                    : ''
-                                }`}
-                              >
-                                {sublesson.display_name}
-                              </span>
+                              <span>{sublesson.display_name}</span>
                             </button>
                           ))}
                         </div>

@@ -86,7 +86,7 @@ export const useCourseDetail = (courseId: string) => {
     try {
       const checkoutSession = await createStripeCheckoutSession({
         sku: courseId,
-        org: course?.org,
+        org: course?.org || '',
         tenant: course?.platform_key || currentTenant,
         username: getUserName(),
         mode: 'payment',
@@ -228,18 +228,24 @@ export const useCourseDetail = (courseId: string) => {
     }
   };
 
-  const handleFetchCourseSyllabus = async () => {
-    setCourseOutlineLoading(true);
+  const handleFetchCourseSyllabus = async (setLoadingState: boolean = true) => {
+    if (setLoadingState) {
+      setCourseOutlineLoading(true);
+    }
     const courseCompletionOutlines = (await handleFetchCourseCompletionOutlines(courseId)) as
       | CourseOutlineResponse
       | Record<string, any>;
     if (!_.isEmpty(courseCompletionOutlines)) {
       //const coursesSyllabus = courseCompletionOutlines.children as CourseOutlineChildNode[];
       setCourseOutline(courseCompletionOutlines?.children || []);
-      setCourseOutlineLoading(false);
+      if (setLoadingState) {
+        setCourseOutlineLoading(false);
+      }
     } else {
       setCourseOutline([]);
-      setCourseOutlineLoading(false);
+      if (setLoadingState) {
+        setCourseOutlineLoading(false);
+      }
     }
   };
 
