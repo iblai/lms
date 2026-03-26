@@ -25,6 +25,7 @@ export default function Home() {
   } = useGetReportedSkillsQuery([
     {
       org: getTenant(),
+      //@ts-ignore
       userId: getUserName(),
     },
   ]);

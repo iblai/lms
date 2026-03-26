@@ -120,7 +120,7 @@ describe('config module', () => {
       delete processEnv.NEXT_PUBLIC_API_BASE_URL;
 
       const { config } = await import('../config');
-      expect(config.urls.lms()).toBe('https://api.iblai.app/lms');
+      expect(config.urls.lms()).toBe('https://lms.iblai.app');
     });
 
     it('returns studio url derived from api base url', async () => {

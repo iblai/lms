@@ -131,6 +131,7 @@ export default function CourseContentLayout({
           courseOutlineDrawerOpen,
           setCourseOutlineDrawerOpen,
           currentUnitID,
+          refetchCourseOutline: handleFetchCourseSyllabus,
         }}
       >
         <CourseOutlineDrawer />

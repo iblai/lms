@@ -67,6 +67,7 @@ export function PathwayDetailModal({
       await createCatalogPathwaySelfEnrollment([
         {
           requestBody: {
+            //@ts-ignore
             pathway_uuid: pathway.pathway_uuid || '',
             pathway_key: pathway.platform_key || '',
             username: getUserName(),

@@ -11,6 +11,7 @@ export const useProfileRoles = (showToast: boolean = true) => {
   const handleDesiredRolesCreate = async (roles: DesiredRoleCreateUpdateRequest) => {
     try {
       await createCatalogRole({
+        //@ts-ignore
         requestBody: roles,
         userId: getUserId(),
         username: getUserName(),

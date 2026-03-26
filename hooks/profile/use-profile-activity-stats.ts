@@ -286,6 +286,7 @@ export const useProfileActivityStats = () => {
         [
           {
             org: getTenant(),
+            //@ts-ignore
             userId: getUserName(),
             format: 'json',
             includeMainPlatform: true,

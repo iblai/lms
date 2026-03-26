@@ -17,6 +17,7 @@ export interface CourseOutlineContextType {
   courseOutlineDrawerOpen: boolean;
   setCourseOutlineDrawerOpen: (open: boolean) => void;
   currentUnitID: string | null;
+  refetchCourseOutline: (setLoadingState: boolean) => void;
 }
 
 export const CourseOutlineContext = createContext<CourseOutlineContextType>({
@@ -33,4 +34,5 @@ export const CourseOutlineContext = createContext<CourseOutlineContextType>({
   courseOutlineDrawerOpen: false,
   setCourseOutlineDrawerOpen: () => {},
   currentUnitID: null,
+  refetchCourseOutline: () => {},
 });

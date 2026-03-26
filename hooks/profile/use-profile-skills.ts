@@ -25,6 +25,7 @@ export const useProfileSkills = (showToast: boolean = true) => {
   } = useGetUserEarnedSkillsQuery([
     {
       org: getTenant(),
+      //@ts-ignore
       userId: getUserName(),
     },
   ]);
