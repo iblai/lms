@@ -22,6 +22,7 @@ export const useProfileTimeSpent = () => {
         [
           {
             org: getTenant(),
+            //@ts-ignore
             userId: getUserName(),
             startDate: dayjs().subtract(6, 'day').format('YYYY-MM-DD'),
             endDate: dayjs().format('YYYY-MM-DD'),
@@ -34,7 +35,7 @@ export const useProfileTimeSpent = () => {
         throw new Error();
       }
       setTimeSpent(
-        Object.entries(response?.data?.data).map(([date, seconds]) => ({
+        Object.entries(response?.data?.data || {})?.map(([date, seconds]) => ({
           date: dayjs(date).format('ddd DD/MM/YY'),
           minutes: dayjs.duration(seconds as number, 'seconds').asMinutes(),
         })),

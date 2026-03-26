@@ -53,6 +53,7 @@ export const useCredentials = () => {
     try {
       const usersAsAssertions = await getUsersAsAssertions({
         platformKey: getTenant(),
+        //@ts-ignore
         username: getUserName(),
         course: courseId,
       }).unwrap();
@@ -86,6 +87,7 @@ export const useCredentials = () => {
     try {
       const credentialAssertion = await createCredentialAssertion({
         platformKey: getTenant(),
+        //@ts-ignore
         username: getUserName(),
         entityId,
         requestBody,

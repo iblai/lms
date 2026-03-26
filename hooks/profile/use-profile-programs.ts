@@ -73,7 +73,7 @@ export const useProfilePrograms = ({
       ],
       true,
     );
-    const fetchedPrograms = response.data?.map((program: ProgramEnrollmentPlus) => ({
+    const fetchedPrograms = (response.data as unknown as ProgramEnrollmentPlus[])?.map((program: ProgramEnrollmentPlus) => ({
       ...program,
       metadata: {
         ...program.metadata,
@@ -115,6 +115,7 @@ export const useProfilePrograms = ({
       [
         {
           org: getOrg(),
+          //@ts-ignore
           username: getUserName(),
         },
       ],
