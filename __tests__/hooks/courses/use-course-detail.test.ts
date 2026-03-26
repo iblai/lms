@@ -212,7 +212,7 @@ describe('useCourseDetail', () => {
 
       expect(mockCreateStripeCheckoutSession).toHaveBeenCalledWith(
         expect.objectContaining({
-          org: undefined,
+          org: '',
         }),
       );
     });

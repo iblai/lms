@@ -331,7 +331,7 @@ describe('utils', () => {
       expect(capturedFetchBaseQueryConfig.credentials).toBe('omit');
     });
 
-    it('configures fetchBaseQuery with credentials include when specified', async () => {
+    it('configures fetchBaseQuery with credentials omit even when includeCredentials specified', async () => {
       mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
 
       await iblFetchBaseQuery(
@@ -340,7 +340,7 @@ describe('utils', () => {
         {},
       );
 
-      expect(capturedFetchBaseQueryConfig.credentials).toBe('include');
+      expect(capturedFetchBaseQueryConfig.credentials).toBe('omit');
     });
 
     it('prepareHeaders adds JWT Authorization for LMS service', async () => {
