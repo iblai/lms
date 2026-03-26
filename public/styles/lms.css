@@ -560,3 +560,6 @@ body .login-register .login-provider.button-oa2-apple-id:hover{
   border: 1px solid #000 !important;
   color: #fff !important;
 }
+body .fa{
+  font-family: 'FontAwesome' !important;
+}
