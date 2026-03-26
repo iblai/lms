@@ -1,3 +1,7 @@
+## [0.10.3]
+
+- feat: course outline > have progress checks per unit instead of current icon
+
 ## [0.10.2]
 
 - use legacy lms everywhere lms urls are required
