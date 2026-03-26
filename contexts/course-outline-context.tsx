@@ -4,7 +4,7 @@ import { createContext } from 'react';
 import { CourseEdxData, CourseOutlineChildNode } from '@/types/courses';
 
 export interface CourseOutlineContextType {
-  courseOutline: CourseOutlineChildNode[];
+  courseOutline: CourseOutlineChildNode;
   courseOutlineLoading: boolean;
   expandedModule: string;
   expandedLessons: string[];
@@ -21,7 +21,7 @@ export interface CourseOutlineContextType {
 }
 
 export const CourseOutlineContext = createContext<CourseOutlineContextType>({
-  courseOutline: [],
+  courseOutline: {} as CourseOutlineChildNode,
   courseOutlineLoading: false,
   expandedModule: '',
   expandedLessons: [],

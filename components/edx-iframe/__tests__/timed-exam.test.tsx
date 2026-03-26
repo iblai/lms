@@ -31,7 +31,7 @@ import { TimedExam } from '../timed-exam';
 const buildContextValue = (overrides = {}) => ({
   iframeUrl: '',
   setIframeUrl: vi.fn(),
-  courseOutline: [],
+  courseOutline: {} as any,
   setActiveTab: vi.fn(),
   activeTab: '',
   courseID: 'course-v1:test+101',
