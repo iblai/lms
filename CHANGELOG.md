@@ -1,3 +1,7 @@
+## [0.10.5]
+
+- iblai-js bump version to 1.1.6
+
 ## [0.10.4]
 
 - fix: iframe loading twice 30s after initial course page load
