@@ -1,0 +1,54 @@
+---
+description: Heal failing Playwright E2E tests using the Playwright Test MCP server
+globs: ["e2e/**/*.spec.ts", "e2e/**/*.ts"]
+---
+
+# E2E Test Healer
+
+When debugging or fixing failing Playwright tests in this project, follow this workflow:
+
+## Available MCP Tools
+
+This project has a `playwright-test` MCP server configured. Use these tools:
+
+- `test_run` — Run all tests or a specific test file
+- `test_debug` — Debug a specific failing test
+- `test_list` — List available tests
+- `browser_snapshot` — Capture page state during debugging
+- `browser_console_messages` — Check for console errors
+- `browser_network_requests` — Inspect network activity
+- `browser_evaluate` — Evaluate JavaScript on the page
+- `browser_generate_locator` — Generate resilient locators
+
+## Workflow
+
+1. **Identify failures**: Check `e2e/test-results.json` for `"status":"unexpected"` entries
+2. **Debug**: Run failing test with `test_debug` to pause at the failure point
+3. **Investigate**: Use `browser_snapshot` and `browser_console_messages` to understand state
+4. **Fix**: Update selectors, timing, or assertions in the test code
+5. **Verify**: Re-run the test to confirm the fix
+6. **Repeat**: Continue until all tests pass
+
+## Running Tests
+
+```bash
+# Run all journey tests
+pnpm exec playwright test --config=e2e/playwright.config.ts
+
+# Run a specific journey
+pnpm exec playwright test --config=e2e/playwright.config.ts e2e/journeys/01-authentication.spec.ts
+
+# Run by test name
+pnpm exec playwright test --config=e2e/playwright.config.ts -g "test title"
+
+# List all tests
+pnpm exec playwright test --config=e2e/playwright.config.ts --list
+```
+
+## Key Principles
+
+- Never use `waitForLoadState('networkidle')` — it's deprecated and flaky
+- Use semantic locators: `getByRole`, `getByText`, `getByLabel`, `getByTestId`
+- Use `test.fixme()` with a comment if the test is correct but the app has a bug
+- Always update `e2e/COVERAGE.md` and `e2e/coverage.json` when adding/modifying tests
+- Run `node e2e/scripts/check-journey-coverage.mjs --all` to verify coverage
