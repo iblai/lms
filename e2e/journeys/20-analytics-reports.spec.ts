@@ -14,7 +14,7 @@ import {
   shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor,
   shouldHaveCombinedReportDataTestIds,
   shouldShowCombiningReportsDialog,
-} from '../tests/shared';
+} from '../utils/data-reports-helpers';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 

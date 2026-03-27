@@ -53,5 +53,10 @@ docker-compose.override.yml
 .npmrc
 .yalc
 yalc.lock
-e2e/playwright-report
+# playwright
 test-results
+playwright-report
+e2e/playwright-report
+e2e/test-results.json
+playwright/.auth
+e2e/playwright/.auth

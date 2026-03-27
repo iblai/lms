@@ -119,6 +119,21 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "prettier": "^3.5.3",
+    "lint-staged": "^16.4.0",
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0"
+  },
+  "lint-staged": {
+    "*.ts?(x)": [
+      "pnpm prettier --write"
+    ],
+    "*.js?(x)": [
+      "pnpm prettier --write"
+    ],
+    "*.css": [
+      "pnpm prettier --write"
+    ]
   }
 }
