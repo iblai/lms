@@ -81,7 +81,7 @@
     "react-paginate": "^8.3.0",
     "react-pdf": "^9.2.1",
     "react-redux": "^9.2.0",
-    "react-resizable-panels": "^2.1.9",
+    "react-resizable-panels": "^4.8.0",
     "react-responsive": "10.0.1",
     "recharts": "2.15.0",
     "sonner": "^1.7.4",
