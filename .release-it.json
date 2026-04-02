@@ -1,16 +1,42 @@
 {
-    "plugins": {
-      "@release-it/conventional-changelog": {
-        "preset": "conventionalcommits"
-      }
-    },
-    "git": {
-      "tagName": "skills-v${version}",
-      "commitMessage": "chore(skills): release v${version}",
-      "requireCleanWorkingDir": false
-    },
-    "npm": false,
-    "prompt": {
-      "enabled": true
+  "git": {
+    "commit": true,
+    "commitMessage": "chore(skills): release v${version}",
+    "tag": true,
+    "tagName": "skills-v${version}",
+    "push": true,
+    "requireBranch": "main"
+  },
+  "npm": {
+    "publish": false
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "Features" },
+          { "type": "fix", "section": "Bug Fixes" },
+          { "type": "perf", "section": "Performance" },
+          { "type": "revert", "section": "Reverts" },
+          { "type": "refactor", "section": "Refactors" },
+          { "type": "chore", "section": "Chores" },
+          { "type": "docs", "section": "Documentation" },
+          { "type": "style", "section": "Styles" },
+          { "type": "test", "section": "Tests" },
+          { "type": "build", "section": "Build" },
+          { "type": "ci", "section": "CI" }
+        ]
+      },
+      "infile": "CHANGELOG.md",
+      "header": "# Changelog"
     }
+  },
+  "hooks": {
+    "before:init": ["git fetch --tags"]
   }
+}

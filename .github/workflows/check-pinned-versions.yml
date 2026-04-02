@@ -1,0 +1,32 @@
+name: Check Pinned Versions
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for unpinned dependency versions
+        run: |
+          UNPINNED=$(node -e "
+            const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
+            const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+            const bad = Object.entries(deps).filter(([, v]) => /[\^~]|^latest$/.test(v));
+            if (bad.length) {
+              bad.forEach(([n, v]) => console.log('  ' + n + ': ' + v));
+              process.exit(1);
+            }
+          " 2>&1) || {
+            echo "::error::Unpinned dependency versions found in package.json:"
+            echo "$UNPINNED"
+            echo ""
+            echo "All versions must be exact (no ^, ~, or 'latest'). Pin them to the lockfile version."
+            exit 1
+          }
+          echo "All dependency versions are pinned."

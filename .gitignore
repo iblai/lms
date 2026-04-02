@@ -17,6 +17,7 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+*.local
 
 # debug logs
 npm-debug.log*
@@ -50,7 +51,7 @@ Thumbs.db
 # docker
 docker-compose.override.yml
 
-.npmrc
+.npmrc.local
 .yalc
 yalc.lock
 e2e/playwright-report
