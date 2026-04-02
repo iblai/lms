@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.8](https://github.com/iblai/skillsai/compare/skills-v0.10.7...skills-v0.10.8) (2026-04-02)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.3.3 ([dc9e0d7](https://github.com/iblai/skillsai/commit/dc9e0d7ef56d488eae5b4164f39943c5edc8897a))
+
 ## [0.10.7](https://github.com/iblai/skillsai/compare/v0.10.6...skills-v0.10.7) (2026-04-02)
 
 ### Features
