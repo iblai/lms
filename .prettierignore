@@ -1,0 +1,8 @@
+node_modules
+.next
+out
+dist
+build
+pnpm-lock.yaml
+CHANGELOG.md
+src-tauri/target
