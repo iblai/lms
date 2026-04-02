@@ -11,6 +11,7 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName } from '@/utils/helpers';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
+import { MonetizationWrapper } from './monetization-wrapper';
 
 function DefaultPageLayout({ children }: { children: any }) {
   return (
@@ -62,6 +63,7 @@ export default function AppLayout({ children }: { children: any }) {
           />
         </div>
         <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <MonetizationWrapper />
         <div className="flex flex-col md:flex-row items-start h-full">
           <div className="flex flex-col gap-6 flex-1 h-full overflow-y-auto w-full pb-16">
             {children}
