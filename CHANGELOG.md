@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.10](https://github.com/iblai/skillsai/compare/skills-v0.10.9...skills-v0.10.10) (2026-04-02)
+
+### Chores
+
+* add prettier config and format on pre-commit ([9035d1a](https://github.com/iblai/skillsai/commit/9035d1ae69ed8ac63880e43257deaba058aff651))
+
 ## [0.10.9](https://github.com/iblai/skillsai/compare/skills-v0.10.8...skills-v0.10.9) (2026-04-02)
 
 ### Chores
