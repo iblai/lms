@@ -20,12 +20,13 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 //@ts-ignore
 import {
-  AccessCheckResponse,
   useCreateStripeCheckoutSessionMutation,
   useLazyCheckAccessQuery,
 } from "@iblai/iblai-js/data-layer";
-import { showMonetizationCheckoutModal } from "@iblai/iblai-js/web-utils";
+import { setDisplayMonetizationCheckoutModal } from "@iblai/iblai-js/web-utils";
+
 import { useDispatch } from "react-redux";
+import { useAppSelector } from "@/lib/hooks";
 
 export type CourseInfoLoadingState =
   | "not-started"
@@ -156,34 +157,36 @@ export const useCourseDetail = (courseId: string) => {
     },
   );
 
-  const handleOpenMonetizationCheckoutModal = (result: AccessCheckResponse | undefined) => {
-    if (!result) return;
-    dispatch(showMonetizationCheckoutModal(result));
+  const handleOpenMonetizationCheckoutModal = () => {
+    dispatch(setDisplayMonetizationCheckoutModal(true));
+  };
+
+  const handleCheckCourseMonetizationAccess = async (onComplete: (result:{ isError: boolean}) => void) => {
+    try {
+      const result = await checkAccess({
+        item_type: "course",
+        item_id: courseId,
+        platform_key: getTenant()
+      });
+      onComplete(result);
+    } catch (error) {
+      console.error("Error checking access:", error);
+    }
   };
 
   const handleFetchCourseEligibilityInfo = async () => {
     setCourseEligibilityLoading(true);
     // check access check endpoint
-    try {
-      const result = await checkAccess({
-        item_type: "mentor",
-        item_id: courseId,
-        platform_key: getTenant()
-      });
-      if (
-        result.isError &&
-        !result.data?.has_access &&
-        result.data?.pricing
-      ) {
+    handleCheckCourseMonetizationAccess((result) => {
+      if (result.isError) {
         setCourseEligibility({
           btn_label: PURCHASE_NOW_LABEL,
-          btn_action: () => handleOpenMonetizationCheckoutModal(result.data),
+          btn_action: () => handleOpenMonetizationCheckoutModal(),
         });
         return
       }
-    } catch (error) {
-      console.error("Error checking access:", error);
-    }
+    });
+
 
     const courseEligibility = await handleFetchCourseEligibility(courseId);
     if (!_.isEmpty(courseEligibility)) {
@@ -382,6 +385,7 @@ export const useCourseDetail = (courseId: string) => {
     handleOpenLesson,
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
+    handleCheckCourseMonetizationAccess,
     course,
     courseInfoLoadingState,
     courseOutline,

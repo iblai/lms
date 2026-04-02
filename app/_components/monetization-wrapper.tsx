@@ -1,47 +1,54 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useAppSelector } from '@/lib/hooks';
+import { useRef } from 'react';
+import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { getTenant } from '@/utils/helpers';
 // @ts-ignore
 import { TopBanner, PaywallModal } from '@iblai/iblai-js/web-containers';
+// @ts-ignore
+import { setDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
+import { useRouter } from 'next/navigation';
 
 export function MonetizationWrapper() {
+  const router = useRouter();
   const platformKey = getTenant();
-  const { displayMonetizationCheckoutModal, accessCheckResponse } = useAppSelector(
+  const dispatch = useAppDispatch();
+  const { displayMonetizationCheckoutModal, accessCheckResponse, paywallClosable, onClosePayload  } = useAppSelector(
     (state) => state.monetization,
   );
 
-  const pricing = accessCheckResponse?.pricing;
-  const itemId = accessCheckResponse?.item_id;
-  const itemType = accessCheckResponse?.item_type;
+  // Cache the last valid accessCheckResponse so it survives
+  // the Redux clear triggered by setDisplayMonetizationCheckoutModal(false)
+  const cachedResponseRef = useRef(accessCheckResponse);
+  if (accessCheckResponse) {
+    cachedResponseRef.current = accessCheckResponse;
+  }
 
-  const needsPurchase = displayMonetizationCheckoutModal && !!pricing;
-
-  const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (displayMonetizationCheckoutModal) {
-      setModalOpen(true);
-    }
-  }, [displayMonetizationCheckoutModal]);
+  const response = accessCheckResponse || cachedResponseRef.current;
+  const pricing = response?.pricing;
+  const itemId = response?.item_id;
+  const itemType = response?.item_type;
 
   const handleModalClose = () => {
-    setModalOpen(false);
+    if (onClosePayload === MONETIZATION_CLOSE_PAYLOAD.redirect_402) {
+      router.push('/error/402');
+    }
+    dispatch(setDisplayMonetizationCheckoutModal(false));
   };
 
-  if (!needsPurchase) return null;
+  if (!displayMonetizationCheckoutModal || !pricing) return null;
 
   return (
-    <>
-      <PaywallModal
-        open={modalOpen}
-        onClose={handleModalClose}
-        pricing={pricing}
-        platformKey={platformKey}
-        itemId={itemId}
-        itemType={itemType}
-      />
-    </>
+    <PaywallModal
+      open={displayMonetizationCheckoutModal}
+      onClose={handleModalClose}
+      pricing={pricing}
+      platformKey={platformKey}
+      itemId={itemId}
+      itemType={itemType}
+      closable={paywallClosable}
+      buttonClassName='bg-amber-500 text-white hover:bg-amber-600'
+    />
   );
 }
