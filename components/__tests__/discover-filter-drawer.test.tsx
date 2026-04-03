@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-vi.mock('@/contexts/facet-filter-context', () => {
-  const React = require('react');
+vi.mock('@/contexts/facet-filter-context', async () => {
+  const { createContext } = await import('react');
   return {
-    FacetFilterContext: React.createContext({
+    FacetFilterContext: createContext({
       filterDrawerOpen: false,
       setFilterDrawerOpen: () => {},
       facetsLoading: false,

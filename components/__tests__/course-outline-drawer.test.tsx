@@ -39,9 +39,15 @@ describe('CourseOutlineDrawer', () => {
       ...overrides,
     };
 
-    return ({ children }: { children: React.ReactNode }) => (
-      <CourseOutlineContext.Provider value={contextValue}>{children}</CourseOutlineContext.Provider>
-    );
+    function CourseOutlineDrawerTestWrapper({ children }: { children: React.ReactNode }) {
+      return (
+        <CourseOutlineContext.Provider value={contextValue}>
+          {children}
+        </CourseOutlineContext.Provider>
+      );
+    }
+
+    return CourseOutlineDrawerTestWrapper;
   };
 
   it('renders without crashing when open', () => {
