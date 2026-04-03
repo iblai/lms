@@ -7,6 +7,9 @@ import { useEffect } from 'react';
 import { BookOpen, Clock, Check } from 'lucide-react';
 import { SkeletonProfileInfoCard } from './skeleton-profile-info-card';
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
 import { useState } from 'react';
 import { UserActivityInfo } from '@/types/perlearner';
 import _ from 'lodash';

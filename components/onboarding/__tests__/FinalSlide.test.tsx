@@ -42,7 +42,7 @@ describe('FinalSlide', () => {
 
   it('renders the rocket animation image', () => {
     render(<FinalSlide {...defaultProps} />);
-    const img = screen.getByAlt('Rocket animation');
+    const img = screen.getByAltText('Rocket animation');
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute('src', expect.stringContaining('hebbkx1anhila5yf'));
   });

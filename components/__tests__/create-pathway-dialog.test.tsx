@@ -33,6 +33,13 @@ vi.mock('@/components/ui/select', () => ({
 
 import { CreatePathwayDialog } from '../create-pathway-dialog';
 
+/** Clicks an item row in the content list (avoids ambiguity once it also appears in Selected Content). */
+function clickContentInList(name: string) {
+  const label = screen.getAllByText(name).find((el) => el.closest('.cursor-pointer'));
+  if (!label) throw new Error(`Could not find list row for: ${name}`);
+  fireEvent.click(label);
+}
+
 describe('CreatePathwayDialog', () => {
   const defaultProps = {
     open: true,
@@ -139,7 +146,7 @@ describe('CreatePathwayDialog', () => {
 
   it('adds content when clicking on a content item', () => {
     render(<CreatePathwayDialog {...defaultProps} />);
-    fireEvent.click(screen.getByText('Leadership Development'));
+    clickContentInList('Leadership Development');
     // Should show "Selected Content:" label
     expect(screen.getByText('Selected Content:')).toBeInTheDocument();
     expect(screen.getAllByText('Leadership Development').length).toBeGreaterThanOrEqual(1);
@@ -147,7 +154,7 @@ describe('CreatePathwayDialog', () => {
 
   it('removes selected content when remove button is clicked', () => {
     render(<CreatePathwayDialog {...defaultProps} />);
-    fireEvent.click(screen.getByText('Leadership Development'));
+    clickContentInList('Leadership Development');
     expect(screen.getByText('Selected Content:')).toBeInTheDocument();
     // Find the remove button (X) in the selected content tag
     const selectedTag = screen.getByText('Selected Content:').parentElement;
@@ -160,8 +167,8 @@ describe('CreatePathwayDialog', () => {
 
   it('does not add duplicate content', () => {
     render(<CreatePathwayDialog {...defaultProps} />);
-    fireEvent.click(screen.getByText('Leadership Development'));
-    fireEvent.click(screen.getByText('Leadership Development'));
+    clickContentInList('Leadership Development');
+    clickContentInList('Leadership Development');
     // Should still only have it listed once in selected content
     const selectedSection = screen.getByText('Selected Content:').parentElement;
     const tags = selectedSection?.querySelectorAll('button');

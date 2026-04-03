@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 vi.mock('next/image', () => ({
@@ -79,15 +79,16 @@ describe('AccountDialog', () => {
 
   it('renders Basic tab by default', () => {
     render(<AccountDialog {...defaultProps} />);
-    expect(screen.getByText('Basic')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Basic' })).toBeInTheDocument();
   });
 
   it('renders all navigation tabs', () => {
     render(<AccountDialog {...defaultProps} />);
-    expect(screen.getByText('Basic')).toBeInTheDocument();
-    expect(screen.getByText('Social')).toBeInTheDocument();
-    expect(screen.getByText('Security')).toBeInTheDocument();
-    expect(screen.getByText('Admin')).toBeInTheDocument();
+    const nav = screen.getByRole('navigation');
+    expect(within(nav).getByRole('button', { name: 'Basic' })).toBeInTheDocument();
+    expect(within(nav).getByRole('button', { name: 'Social' })).toBeInTheDocument();
+    expect(within(nav).getByRole('button', { name: 'Security' })).toBeInTheDocument();
+    expect(within(nav).getByRole('button', { name: 'Admin' })).toBeInTheDocument();
   });
 
   it('renders Full Name field in basic tab', () => {
@@ -289,14 +290,12 @@ describe('AccountDialog', () => {
 
   it('closes dialog via X button', () => {
     render(<AccountDialog {...defaultProps} />);
-    // The X button has no text but is a ghost variant button in the header area
-    const buttons = screen.getAllByRole('button');
-    // Find the close X button (it's in the header area)
-    const closeButton = buttons.find((btn) => btn.className?.includes('rounded-full'));
-    if (closeButton) {
-      fireEvent.click(closeButton);
-      expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
-    }
+    const rounded = screen
+      .getAllByRole('button')
+      .filter((btn) => typeof btn.className === 'string' && btn.className.includes('rounded-full'));
+    const closeButton = rounded[rounded.length - 1];
+    fireEvent.click(closeButton);
+    expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('renders all users in admin tab', () => {

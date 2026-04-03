@@ -12,10 +12,7 @@ vi.mock('@/utils/helpers', () => ({
 const mockGetNotifications = vi.fn();
 
 vi.mock('@/services/notifications', () => ({
-  useLazyGetNotificationsQuery: vi.fn(() => [
-    mockGetNotifications,
-    { isLoading: false, isError: false },
-  ]),
+  useLazyGetNotificationsQuery: vi.fn(),
 }));
 
 vi.mock('../skeleton-multiplier', () => ({
@@ -36,6 +33,7 @@ vi.mock('../header/profile/user-avatar', () => ({
   UserAvatar: () => <div data-testid="user-avatar">Avatar</div>,
 }));
 
+import { useLazyGetNotificationsQuery } from '@/services/notifications';
 import { NotificationsDropdown } from '../notifications-dropdown';
 
 describe('NotificationsDropdown', () => {
@@ -44,6 +42,10 @@ describe('NotificationsDropdown', () => {
     mockGetNotifications.mockResolvedValue({
       data: { results: [] },
     });
+    vi.mocked(useLazyGetNotificationsQuery).mockReturnValue([
+      mockGetNotifications,
+      { isLoading: false, isError: false },
+    ] as any);
   });
 
   it('renders without crashing', () => {
@@ -145,7 +147,6 @@ describe('NotificationsDropdown', () => {
   });
 
   it('shows loading skeletons when loading', async () => {
-    const { useLazyGetNotificationsQuery } = await import('@/services/notifications');
     vi.mocked(useLazyGetNotificationsQuery).mockReturnValue([
       mockGetNotifications,
       { isLoading: true, isError: false },

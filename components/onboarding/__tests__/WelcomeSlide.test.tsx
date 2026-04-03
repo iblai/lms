@@ -77,6 +77,6 @@ describe('WelcomeSlide', () => {
   it('renders the rocket animation image', () => {
     mockUseTenantMetadata.mockReturnValue({ metadata: null });
     render(<WelcomeSlide {...defaultProps} />);
-    expect(screen.getByAlt('Rocket animation')).toBeInTheDocument();
+    expect(screen.getByAltText('Rocket animation')).toBeInTheDocument();
   });
 });

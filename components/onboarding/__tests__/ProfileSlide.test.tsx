@@ -196,13 +196,13 @@ describe('ProfileSlide', () => {
 
   it('shows profile image when provided', () => {
     renderProfileSlide({ profileImage: 'https://example.com/photo.jpg' });
-    const img = screen.getByAlt('Profile picture');
+    const img = screen.getByAltText('Profile picture');
     expect(img).toBeInTheDocument();
   });
 
   it('shows Upload icon when no profile image', () => {
     renderProfileSlide({ profileImage: null });
     // Upload icon is from lucide-react, rendered as svg
-    expect(screen.queryByAlt('Profile picture')).not.toBeInTheDocument();
+    expect(screen.queryByAltText('Profile picture')).not.toBeInTheDocument();
   });
 });

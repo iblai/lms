@@ -77,6 +77,24 @@ import { ProfileSidebar } from '../profile-sidebar';
 describe('ProfileSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseUserMetadata.mockReturnValue({ userMetaDataLoading: false });
+    mockUseLatestSkills.mockReturnValue({
+      latestSkills: [{ name: 'React' }],
+      latestSkillsLoading: false,
+    });
+    mockUseProfileCredentials.mockReturnValue({
+      fetchedCredentials: [{ entityId: '1' }],
+      isLoading: false,
+    });
+    mockUsePerLearnerInfoQuery.mockReturnValue({
+      userPerLearnerInfo: {
+        total_assessments: 10,
+        total_time_spent: 3600,
+        total_videos: 5,
+        course_completions: 2,
+      },
+      userPerLearnerInfoLoading: false,
+    });
   });
 
   it('renders without crashing', () => {

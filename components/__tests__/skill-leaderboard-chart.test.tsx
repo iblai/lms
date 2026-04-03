@@ -28,11 +28,13 @@ describe('SkillLeaderboardChart', () => {
 
   it('displays skill level names', () => {
     render(<SkillLeaderboardChart userSkillPoints={100} />);
-    expect(screen.getByText('Beginner')).toBeInTheDocument();
-    expect(screen.getByText('Novice')).toBeInTheDocument();
-    expect(screen.getByText('Intermediate')).toBeInTheDocument();
-    expect(screen.getByText('Advanced')).toBeInTheDocument();
-    expect(screen.getByText('Expert')).toBeInTheDocument();
+    const expectLevelVisible = (name: string) =>
+      expect(screen.getAllByText(name).length).toBeGreaterThanOrEqual(1);
+    expectLevelVisible('Beginner');
+    expectLevelVisible('Novice');
+    expectLevelVisible('Intermediate');
+    expectLevelVisible('Advanced');
+    expectLevelVisible('Expert');
   });
 
   it('displays user level as Beginner for low points', () => {

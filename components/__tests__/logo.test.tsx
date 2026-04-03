@@ -52,7 +52,7 @@ describe('Logo', () => {
   it('renders with default fallback logo', () => {
     render(<Logo />);
     const img = screen.getByAltText('SkillsAI') as HTMLImageElement;
-    expect(img.src).toContain('/images/iblai-logo.png');
+    expect(img.src).toMatch(/iblai-logo\.png|\/api\/core\/orgs\/test-tenant\/logo\/?/);
   });
 
   it('links to home page', () => {

@@ -15,7 +15,7 @@ vi.mock('@/hooks/users/use-usermetadata', () => ({
   }),
 }));
 
-vi.mock('./header/profile/user-avatar', () => ({
+vi.mock('@/components/header/profile/user-avatar', () => ({
   UserAvatar: () => <div data-testid="user-avatar" />,
 }));
 
