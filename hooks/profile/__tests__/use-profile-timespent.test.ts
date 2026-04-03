@@ -10,10 +10,7 @@ vi.mock('@/utils/helpers', () => ({
 const mockGetOverTimeActivity = vi.fn();
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useLazyGetOverTimeActivityQuery: vi.fn(() => [
-    mockGetOverTimeActivity,
-    { isError: false },
-  ]),
+  useLazyGetOverTimeActivityQuery: vi.fn(() => [mockGetOverTimeActivity, { isError: false }]),
 }));
 
 import { useProfileTimeSpent } from '../use-profile-timespent';

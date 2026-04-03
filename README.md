@@ -31,6 +31,7 @@ Whether you're an enterprise building an internal upskilling program, a universi
 ## Features
 
 ### Course Discovery & Enrollment
+
 - **Faceted search** — filter courses by subject, difficulty, skills, credential type, and content type
 - **Personalized recommendations** — AI-powered course suggestions based on learner profile and goals
 - **Course detail pages** — rich metadata with syllabus, learning outcomes, instructor bios, and prerequisites
@@ -38,6 +39,7 @@ Whether you're an enterprise building an internal upskilling program, a universi
 - **EdX LMS integration** — embedded course content, progress tracking, and grading via iframe
 
 ### Skills & Competency Tracking
+
 - **Skill inventory** — track earned skills with proficiency levels (0–5 scale)
 - **Skill points** — accumulate points from course and unit completions
 - **Skill leaderboards** — compare mastery across learners and cohorts
@@ -45,23 +47,27 @@ Whether you're an enterprise building an internal upskilling program, a universi
 - **Skills-to-course mapping** — see which courses develop which skills
 
 ### Credentials & Badges
+
 - **Digital credentials** — earn and display certificates, badges, and micro-credentials
 - **Credential verification** — issuer metadata, expiration tracking, and sharing
 - **Course-linked credentials** — automatic credential issuance on course completion
 
 ### Programs & Learning Pathways
+
 - **Multi-course programs** — structured program enrollments with progress tracking
 - **Curated pathways** — guided learning sequences toward specific career goals
 - **Program management** — pricing, enrollment windows, and custom metadata
 - **Pathway creation** — build and share custom pathways for teams or organizations
 
 ### Learner Profile & Analytics
+
 - **Activity dashboard** — courses enrolled, courses completed, skills acquired, time spent
 - **Time-spent charts** — daily/weekly learning activity visualization
 - **Public profile** — shareable learner profile with education, experience, and credentials
 - **Resume builder** — education history, work experience, and portfolio links
 
 ### Analytics (Admin)
+
 - **Overview dashboard** — platform-wide usage stats and engagement metrics
 - **User analytics** — per-learner activity and cohort trends
 - **Topic analysis** — most popular subjects and content breakdowns
@@ -70,6 +76,7 @@ Whether you're an enterprise building an internal upskilling program, a universi
 - **Custom reports** — generate and download data exports
 
 ### Enterprise & Platform
+
 - **Multi-tenancy** — full tenant isolation with per-org configuration, branding, and user management
 - **Role-based access control (RBAC)** — granular permissions with roles, policies, and group-based access
 - **SSO authentication** — Single Sign-On with configurable identity providers
@@ -83,17 +90,17 @@ Whether you're an enterprise building an internal upskilling program, a universi
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15, React 19, TypeScript |
-| Styling | Tailwind CSS 3, Radix UI, shadcn/ui |
-| State | Redux Toolkit, React-Redux |
-| Forms | React Hook Form, TanStack Form, Zod |
-| Charts | Recharts |
-| Animation | Framer Motion |
-| PDF | react-pdf, pdfjs-dist |
-| Testing | Vitest, Testing Library |
-| SDK | [@iblai/iblai-js](https://www.npmjs.com/package/@iblai/iblai-js) — unified data layer, components, and utilities |
+| Layer     | Technology                                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------------------------------- |
+| Framework | Next.js 15, React 19, TypeScript                                                                                 |
+| Styling   | Tailwind CSS 3, Radix UI, shadcn/ui                                                                              |
+| State     | Redux Toolkit, React-Redux                                                                                       |
+| Forms     | React Hook Form, TanStack Form, Zod                                                                              |
+| Charts    | Recharts                                                                                                         |
+| Animation | Framer Motion                                                                                                    |
+| PDF       | react-pdf, pdfjs-dist                                                                                            |
+| Testing   | Vitest, Testing Library                                                                                          |
+| SDK       | [@iblai/iblai-js](https://www.npmjs.com/package/@iblai/iblai-js) — unified data layer, components, and utilities |
 
 ---
 
@@ -250,24 +257,24 @@ The app uses **[@iblai/iblai-js](https://www.npmjs.com/package/@iblai/iblai-js)*
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NEXT_PUBLIC_AUTH_URL` | Yes | Authentication service URL |
-| `NEXT_PUBLIC_LMS_URL` | Yes | LMS platform URL |
-| `NEXT_PUBLIC_DM_URL` | Yes | Platform manager URL |
-| `NEXT_PUBLIC_AXD_URL` | Yes | API data service URL |
-| `NEXT_PUBLIC_MAIN_TENANT_KEY` | Yes | Primary tenant identifier |
-| `NEXT_PUBLIC_SKILLS_URL` | Yes | This app's public URL |
-| `NEXT_PUBLIC_IBL_PLATFORM` | Yes | Platform type (`skills`) |
-| `NEXT_PUBLIC_STRIPE_ENABLED` | No | Enable Stripe billing (`true`/`false`) |
-| `NEXT_PUBLIC_ENABLE_START_ROLE` | No | Enable onboarding skill self-assessment |
-| `NEXT_PUBLIC_ENABLE_MENTOR` | No | Enable embedded AI mentor sidebar |
-| `NEXT_PUBLIC_ENABLE_RBAC` | No | Enable role-based access control |
-| `NEXT_PUBLIC_HIDE_RECOMMENDED_TAB` | No | Hide recommendations page |
-| `NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED` | No | Enable enrollment prerequisite checks |
-| `NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC` | No | Use Gravatar for profile pictures |
-| `NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE` | No | Hide specific discovery filters |
-| `NEXT_PUBLIC_USE_FOOTER_MENUS` | No | Enable custom footer navigation |
+| Variable                                      | Required | Description                             |
+| --------------------------------------------- | -------- | --------------------------------------- |
+| `NEXT_PUBLIC_AUTH_URL`                        | Yes      | Authentication service URL              |
+| `NEXT_PUBLIC_LMS_URL`                         | Yes      | LMS platform URL                        |
+| `NEXT_PUBLIC_DM_URL`                          | Yes      | Platform manager URL                    |
+| `NEXT_PUBLIC_AXD_URL`                         | Yes      | API data service URL                    |
+| `NEXT_PUBLIC_MAIN_TENANT_KEY`                 | Yes      | Primary tenant identifier               |
+| `NEXT_PUBLIC_SKILLS_URL`                      | Yes      | This app's public URL                   |
+| `NEXT_PUBLIC_IBL_PLATFORM`                    | Yes      | Platform type (`skills`)                |
+| `NEXT_PUBLIC_STRIPE_ENABLED`                  | No       | Enable Stripe billing (`true`/`false`)  |
+| `NEXT_PUBLIC_ENABLE_START_ROLE`               | No       | Enable onboarding skill self-assessment |
+| `NEXT_PUBLIC_ENABLE_MENTOR`                   | No       | Enable embedded AI mentor sidebar       |
+| `NEXT_PUBLIC_ENABLE_RBAC`                     | No       | Enable role-based access control        |
+| `NEXT_PUBLIC_HIDE_RECOMMENDED_TAB`            | No       | Hide recommendations page               |
+| `NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED`      | No       | Enable enrollment prerequisite checks   |
+| `NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC`  | No       | Use Gravatar for profile pictures       |
+| `NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE` | No       | Hide specific discovery filters         |
+| `NEXT_PUBLIC_USE_FOOTER_MENUS`                | No       | Enable custom footer navigation         |
 
 ### Feature Flags
 
@@ -283,15 +290,15 @@ Feature flags are set via environment variables prefixed with `NEXT_PUBLIC_`. Th
 
 ## Scripts
 
-| Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start development server (port 3000) |
-| `pnpm build` | Production build |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint with auto-fix + type check |
-| `pnpm typecheck` | TypeScript type checking |
-| `pnpm format` | Format code with Prettier |
-| `pnpm test` | Run unit tests (Vitest) |
+| Script           | Description                           |
+| ---------------- | ------------------------------------- |
+| `pnpm dev`       | Start development server (port 3000)  |
+| `pnpm build`     | Production build                      |
+| `pnpm start`     | Start production server               |
+| `pnpm lint`      | Run ESLint with auto-fix + type check |
+| `pnpm typecheck` | TypeScript type checking              |
+| `pnpm format`    | Format code with Prettier             |
+| `pnpm test`      | Run unit tests (Vitest)               |
 
 ---
 

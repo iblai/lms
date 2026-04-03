@@ -18,10 +18,7 @@ const mockCreateCourseEnrollment = vi.fn();
 const mockGetCourseProgress = vi.fn();
 const mockGetCourseCompletion = vi.fn();
 vi.mock('@/services/course-metadata', () => ({
-  useCreateCourseEnrollmentMutation: () => [
-    mockCreateCourseEnrollment,
-    { isError: false },
-  ],
+  useCreateCourseEnrollmentMutation: () => [mockCreateCourseEnrollment, { isError: false }],
   useLazyGetCourseProgressQuery: () => [
     mockGetCourseProgress,
     { isLoading: false, isError: false },

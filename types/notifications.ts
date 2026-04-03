@@ -33,4 +33,3 @@ export interface NotificationResponse {
   previous: string | null;
   results: Notification[];
 }
-

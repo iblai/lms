@@ -21,10 +21,10 @@ export function ProfileTimeChart() {
     const { payload } = props;
 
     return (
-      <div className="flex justify-center w-full pt-0 pb-4">
+      <div className="flex w-full justify-center pt-0 pb-4">
         {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="flex items-center mx-2">
-            <div className="w-3 h-3 mr-2 bg-amber-500 opacity-70"></div>
+          <div key={`item-${index}`} className="mx-2 flex items-center">
+            <div className="mr-2 h-3 w-3 bg-amber-500 opacity-70"></div>
             <span className="text-xs text-gray-600">{entry.value}</span>
           </div>
         ))}
@@ -33,13 +33,13 @@ export function ProfileTimeChart() {
   };
 
   return (
-    <div className="border-b border-gray-200 pb-2 mb-4">
+    <div className="mb-4 border-b border-gray-200 pb-2">
       {timeSpentLoading ? (
-        <div className="h-64 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
         </div>
       ) : (
-        <div className="h-64 relative">
+        <div className="relative h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={timeSpentData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />

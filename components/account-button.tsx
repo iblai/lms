@@ -29,7 +29,7 @@ export function AccountButton() {
     <>
       <button
         onClick={() => setDialogOpen(true)}
-        className="flex items-center gap-2 text-gray-600 hover:text-amber-500 transition-colors"
+        className="flex items-center gap-2 text-gray-600 transition-colors hover:text-amber-500"
       >
         <Settings className="h-5 w-5" />
         <span className="hidden md:inline">Account</span>

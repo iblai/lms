@@ -14,7 +14,7 @@ try {
 }
 
 const ResumeBoxSkeleton = () => {
-  return <div className="w-full h-[200px] bg-gray-200 animate-pulse rounded-lg" />;
+  return <div className="h-[200px] w-full animate-pulse rounded-lg bg-gray-200" />;
 };
 export const ResumeBox = () => {
   const { data, isLoading, isError } = useGetUserResumeQuery([
@@ -53,47 +53,47 @@ export const ResumeBox = () => {
   }, [data]);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-medium text-gray-800 mb-4">Resume</h2>
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-lg font-medium text-gray-800">Resume</h2>
       {isLoading && <ResumeBoxSkeleton />}
       {((!isLoading && isError) || (!isLoading && !isError && !resumeUrl)) && (
         <DefaultEmptyBox message="No resume found." className="w-full" />
       )}
       {!isLoading && !isError && resumeUrl && !resumeLoadError && (
         <>
-          <div className="flex flex-col md:flex-row justify-center items-center p-2.5 bg-gray-100 rounded-lg mb-5">
-            <div className="flex items-center mb-2.5 md:mb-0 md:mr-5">
+          <div className="mb-5 flex flex-col items-center justify-center rounded-lg bg-gray-100 p-2.5 md:flex-row">
+            <div className="mb-2.5 flex items-center md:mr-5 md:mb-0">
               <button
                 onClick={goToPrevPage}
                 disabled={pageNumber <= 1}
-                className="bg-amber-500 text-white border-none px-3 py-2 mx-1 rounded hover:bg-amber-400 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="mx-1 rounded border-none bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 Previous Page
               </button>
-              <span className="font-bold mx-2.5">
+              <span className="mx-2.5 font-bold">
                 Page {pageNumber} of {numPages}
               </span>
               <button
                 onClick={goToNextPage}
                 disabled={pageNumber >= (numPages ?? 0)}
-                className="bg-amber-500 text-white border-none px-3 py-2 mx-1 rounded hover:bg-amber-400 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="mx-1 rounded border-none bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 Next Page
               </button>
             </div>
 
-            <div className="flex items-center mb-2.5 md:mb-0 md:mr-5">
+            <div className="mb-2.5 flex items-center md:mr-5 md:mb-0">
               <button
                 onClick={zoomOut}
                 disabled={scale <= 0.4}
-                className="bg-amber-500 text-white border-none px-3 py-2 mx-1 rounded hover:bg-amber-400 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="mx-1 rounded border-none bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 -
               </button>
-              <span className="font-bold mx-2.5">Zoom: {Math.round(scale * 100)}%</span>
+              <span className="mx-2.5 font-bold">Zoom: {Math.round(scale * 100)}%</span>
               <button
                 onClick={zoomIn}
-                className="bg-amber-500 text-white border-none px-3 py-2 mx-1 rounded hover:bg-amber-400 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="mx-1 rounded border-none bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 +
               </button>
@@ -102,13 +102,13 @@ export const ResumeBox = () => {
             <div className="flex items-center">
               <button
                 onClick={rotateLeft}
-                className="bg-amber-500 text-white border-none px-3 py-2 mx-1 rounded hover:bg-amber-400 transition-colors"
+                className="mx-1 rounded border-none bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-400"
               >
                 Rotate Left
               </button>
               <button
                 onClick={rotateRight}
-                className="bg-amber-500 text-white border-none px-3 py-2 mx-1 rounded hover:bg-amber-400 transition-colors"
+                className="mx-1 rounded border-none bg-amber-500 px-3 py-2 text-white transition-colors hover:bg-amber-400"
               >
                 Rotate Right
               </button>

@@ -1,21 +1,21 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { CreatePathwayModal } from "./create-pathway-modal"
-import { Plus } from "lucide-react"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { CreatePathwayModal } from './create-pathway-modal';
+import { Plus } from 'lucide-react';
 
 export function PathwayCreatorExample() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSavePathway = (pathwayData: any) => {
-    console.log("Saving pathway:", pathwayData)
+    console.log('Saving pathway:', pathwayData);
     // Here you would typically save the pathway data to your backend
-  }
+  };
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-lg font-medium text-gray-700">My Pathways</h2>
         <Button
           onClick={() => setIsModalOpen(true)}
@@ -26,7 +26,11 @@ export function PathwayCreatorExample() {
         </Button>
       </div>
 
-      <CreatePathwayModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={handleSavePathway} />
+      <CreatePathwayModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSave={handleSavePathway}
+      />
     </div>
-  )
+  );
 }

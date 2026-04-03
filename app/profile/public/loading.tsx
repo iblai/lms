@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PublicProfileLoading() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 p-6 space-y-8">
+    <div className="flex min-h-screen flex-col space-y-8 bg-gray-50 p-6">
       <Skeleton className="h-10 w-48" />
 
       <div className="space-y-4">
@@ -11,8 +11,8 @@ export default function PublicProfileLoading() {
 
         {/* Profile info skeleton */}
         <div className="pt-16">
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-48 mb-4" />
+          <Skeleton className="mb-2 h-8 w-64" />
+          <Skeleton className="mb-4 h-4 w-48" />
           <div className="flex space-x-2">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-6 w-6 rounded-full" />
@@ -31,5 +31,5 @@ export default function PublicProfileLoading() {
         <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     </div>
-  )
+  );
 }

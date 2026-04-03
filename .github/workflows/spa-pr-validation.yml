@@ -5,7 +5,7 @@ on:
     branches: [main]
     types: [labeled]
 
-run-name: "PR #${{ github.event.pull_request.number }} - Skills Test Validation"
+run-name: 'PR #${{ github.event.pull_request.number }} - Skills Test Validation'
 
 concurrency:
   group: pr-validation-skills-${{ github.event.pull_request.number }}
@@ -103,7 +103,7 @@ jobs:
     with:
       action: acquire
       app-type: testing
-      context: "PR #${{ github.event.pull_request.number }} - Skills Testing"
+      context: 'PR #${{ github.event.pull_request.number }} - Skills Testing'
       allowed-domains: '3'
       max-wait: 18000
 
@@ -278,7 +278,8 @@ jobs:
       git-token: ${{ secrets.GIT_TOKEN }}
 
   test-chrome:
-    needs: [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
+    needs:
+      [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
     if: >-
       always() &&
       vars.EXECUTION_MODE != 'parallel-browsers' &&
@@ -422,7 +423,8 @@ jobs:
   # PARALLEL BROWSER TESTS (when EXECUTION_MODE == 'parallel-browsers')
   # ============================================================
   test-chrome-parallel:
-    needs: [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
+    needs:
+      [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
     if: >-
       always() &&
       vars.EXECUTION_MODE == 'parallel-browsers' &&
@@ -443,7 +445,8 @@ jobs:
       workers: '3'
 
   test-firefox-parallel:
-    needs: [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
+    needs:
+      [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
     if: >-
       always() &&
       vars.EXECUTION_MODE == 'parallel-browsers' &&
@@ -464,7 +467,8 @@ jobs:
       workers: '3'
 
   test-safari-parallel:
-    needs: [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
+    needs:
+      [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
     if: >-
       always() &&
       vars.EXECUTION_MODE == 'parallel-browsers' &&
@@ -485,7 +489,8 @@ jobs:
       workers: '3'
 
   test-edge-parallel:
-    needs: [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
+    needs:
+      [gate, check-resumption, acquire-domain, deploy-auth, build-playwright-image, verify-chrome]
     if: >-
       always() &&
       vars.EXECUTION_MODE == 'parallel-browsers' &&
@@ -509,8 +514,19 @@ jobs:
   # SAVE TEST STATUS (for resumption on next run)
   # ============================================================
   save-status:
-    name: "Save Skills Status"
-    needs: [gate, test-chrome, test-firefox, test-safari, test-edge, test-chrome-parallel, test-firefox-parallel, test-safari-parallel, test-edge-parallel]
+    name: 'Save Skills Status'
+    needs:
+      [
+        gate,
+        test-chrome,
+        test-firefox,
+        test-safari,
+        test-edge,
+        test-chrome-parallel,
+        test-firefox-parallel,
+        test-safari-parallel,
+        test-edge-parallel,
+      ]
     if: always()
     runs-on: ubuntu-22.04
     environment: iblai.app
@@ -618,7 +634,34 @@ jobs:
   # RELEASE DOMAIN LOCK
   # ============================================================
   release-domain:
-    needs: [gate, acquire-domain, lint, typecheck, coverage, claude-review-quality, claude-review-uiux, check-prod-versions, build-app-image, build-playwright-image, deploy-app, deploy-auth, verify-chrome, test-chrome, verify-firefox, test-firefox, verify-safari, test-safari, verify-edge, test-edge, test-chrome-parallel, test-firefox-parallel, test-safari-parallel, test-edge-parallel, save-status]
+    needs:
+      [
+        gate,
+        acquire-domain,
+        lint,
+        typecheck,
+        coverage,
+        claude-review-quality,
+        claude-review-uiux,
+        check-prod-versions,
+        build-app-image,
+        build-playwright-image,
+        deploy-app,
+        deploy-auth,
+        verify-chrome,
+        test-chrome,
+        verify-firefox,
+        test-firefox,
+        verify-safari,
+        test-safari,
+        verify-edge,
+        test-edge,
+        test-chrome-parallel,
+        test-firefox-parallel,
+        test-safari-parallel,
+        test-edge-parallel,
+        save-status,
+      ]
     if: >-
       always() &&
       needs.acquire-domain.result == 'success'
@@ -633,7 +676,35 @@ jobs:
   # FINAL SUMMARY
   # ============================================================
   summary:
-    needs: [gate, acquire-domain, lint, typecheck, coverage, claude-review-quality, claude-review-uiux, check-prod-versions, build-app-image, build-playwright-image, deploy-app, deploy-auth, verify-chrome, test-chrome, verify-firefox, test-firefox, verify-safari, test-safari, verify-edge, test-edge, test-chrome-parallel, test-firefox-parallel, test-safari-parallel, test-edge-parallel, save-status, release-domain]
+    needs:
+      [
+        gate,
+        acquire-domain,
+        lint,
+        typecheck,
+        coverage,
+        claude-review-quality,
+        claude-review-uiux,
+        check-prod-versions,
+        build-app-image,
+        build-playwright-image,
+        deploy-app,
+        deploy-auth,
+        verify-chrome,
+        test-chrome,
+        verify-firefox,
+        test-firefox,
+        verify-safari,
+        test-safari,
+        verify-edge,
+        test-edge,
+        test-chrome-parallel,
+        test-firefox-parallel,
+        test-safari-parallel,
+        test-edge-parallel,
+        save-status,
+        release-domain,
+      ]
     if: always()
     runs-on: ubuntu-22.04
     env:

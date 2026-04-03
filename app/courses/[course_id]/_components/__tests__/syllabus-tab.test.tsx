@@ -118,9 +118,7 @@ describe('SyllabusTab', () => {
         {
           id: 'sec-1',
           display_name: 'Section 1',
-          children: [
-            { id: 'lesson-1', display_name: 'Lesson 1', children: [] },
-          ],
+          children: [{ id: 'lesson-1', display_name: 'Lesson 1', children: [] }],
         },
       ],
     };
@@ -161,9 +159,7 @@ describe('SyllabusTab', () => {
         {
           id: 'sec-1',
           display_name: 'Section 1',
-          children: [
-            { id: 'lesson-1', display_name: 'Empty Lesson', children: [] },
-          ],
+          children: [{ id: 'lesson-1', display_name: 'Empty Lesson', children: [] }],
         },
       ],
     };

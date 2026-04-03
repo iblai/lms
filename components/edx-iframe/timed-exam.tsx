@@ -166,24 +166,24 @@ export const TimedExam = () => {
       timeRemaining <= (examInfo.exam.attempt.critically_low_threshold_sec || 3600);
 
     return (
-      <div className="max-w-4xl mx-auto px-6 pt-6">
+      <div className="mx-auto max-w-4xl px-6 pt-6">
         <div
-          className={`border rounded-lg p-4 ${
+          className={`rounded-lg border p-4 ${
             isCriticalTime
-              ? 'bg-red-50 border-red-200'
+              ? 'border-red-200 bg-red-50'
               : isLowTime
-                ? 'bg-yellow-50 border-yellow-200'
-                : 'bg-blue-50 border-blue-200'
+                ? 'border-yellow-200 bg-yellow-50'
+                : 'border-blue-200 bg-blue-50'
           }`}
         >
-          <div className="text-sm text-gray-600 mb-4">
+          <div className="mb-4 text-sm text-gray-600">
             {showFullInstructions ? (
               <>
                 You are taking "{examInfo.exam.exam_name}" as a timed exam. The timer below shows
                 the time remaining in the exam. To receive credit for problems, you must select
                 "Submit" for each problem before you select "End My Exam".{' '}
                 <button
-                  className="text-blue-600 hover:text-blue-800 underline"
+                  className="text-blue-600 underline hover:text-blue-800"
                   onClick={() => setShowFullInstructions(false)}
                 >
                   Show less
@@ -193,7 +193,7 @@ export const TimedExam = () => {
               <>
                 You are taking "{examInfo.exam.exam_name}" as a timed exam.{' '}
                 <button
-                  className="text-blue-600 hover:text-blue-800 underline"
+                  className="text-blue-600 underline hover:text-blue-800"
                   onClick={() => setShowFullInstructions(true)}
                 >
                   Show more
@@ -205,12 +205,12 @@ export const TimedExam = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Clock
-                className={`w-5 h-5 ${
+                className={`h-5 w-5 ${
                   isCriticalTime ? 'text-red-600' : isLowTime ? 'text-yellow-600' : 'text-blue-600'
                 }`}
               />
               <span
-                className={`font-mono text-md font-semibold ${
+                className={`text-md font-mono font-semibold ${
                   isCriticalTime ? 'text-red-700' : isLowTime ? 'text-yellow-700' : 'text-blue-700'
                 }`}
                 aria-live="polite"
@@ -221,7 +221,7 @@ export const TimedExam = () => {
             </div>
             <button
               onClick={handleEndExam}
-              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               aria-describedby="end-exam-warning"
             >
               End My Exam
@@ -235,18 +235,18 @@ export const TimedExam = () => {
 
         {/* End Exam Confirmation Modal */}
         {showEndExamModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-full md:max-w-[40%] w-full mx-4 shadow-xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="mx-4 w-full max-w-full rounded-lg bg-white p-6 shadow-xl md:max-w-[40%]">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Are you sure that you want to submit your timed exam?
               </h2>
 
-              <p className="text-gray-700 mb-3">
+              <p className="mb-3 text-gray-700">
                 Make sure that you have selected "Submit" for each problem before you submit your
                 exam.
               </p>
 
-              <p className="text-gray-700 mb-6">
+              <p className="mb-6 text-gray-700">
                 After you submit your exam, your exam will be graded.
               </p>
 
@@ -254,13 +254,13 @@ export const TimedExam = () => {
                 <button
                   onClick={handleConfirmEndExam}
                   disabled={isSubmittingExam}
-                  className="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="rounded bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmittingExam ? 'Submitting...' : 'Yes, submit my timed exam.'}
                 </button>
                 <button
                   onClick={handleCancelEndExam}
-                  className="text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  className="rounded px-4 py-2 font-medium text-blue-600 transition-colors hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
                   No, I want to continue working.
                 </button>
@@ -280,14 +280,14 @@ export const TimedExam = () => {
   if (_.isEmpty(examInfo?.exam?.attempt) || _.isEmpty(examInfo?.active_attempt)) {
     return (
       <div className="sm:p-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 p-6">
           <div className="flex items-start gap-3">
-            <Clock className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
+            <Clock className="mt-1 h-6 w-6 flex-shrink-0 text-blue-600" />
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">
+              <h2 className="mb-3 text-xl font-semibold text-gray-900">
                 {examInfo.exam.exam_name} is a Timed Exam ({formatTimeLimit()})
               </h2>
-              <p className="text-gray-700 mb-4 leading-relaxed">
+              <p className="mb-4 leading-relaxed text-gray-700">
                 This exam has a time limit associated with it. To pass this exam, you must complete
                 the problems in the time allowed. After you select I am ready to start this timed
                 exam, you will have {formatTimeLimit()} to complete and submit the exam.
@@ -295,10 +295,10 @@ export const TimedExam = () => {
               <button
                 onClick={handleStartExam}
                 disabled={isStartingExam || isReadyToStart}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 aria-describedby="exam-time-info"
               >
-                <Clock className="w-4 h-4 hidden md:block" />
+                <Clock className="hidden h-4 w-4 md:block" />
                 {isStartingExam ? 'Starting exam...' : 'I am ready to start this timed exam.'}
               </button>
               <div id="exam-time-info" className="sr-only">
@@ -309,12 +309,12 @@ export const TimedExam = () => {
         </div>
 
         <div className="mb-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="mb-4 text-lg font-medium text-gray-900">
             Can I request additional time to complete my exam?
           </h3>
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-            <p className="text-gray-700 leading-relaxed">
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
+            <p className="leading-relaxed text-gray-700">
               If you have disabilities, you might be eligible for an additional time allowance on
               timed exams. Ask your course team for information about additional time allowances.
             </p>

@@ -31,16 +31,12 @@ test.describe('External Credential Mapping Feature', () => {
       await navigateToAdvancedSettings(page);
 
       // Look for External Credential Mapping text
-      const externalMappingTitle = page.getByText(
-        'External Credential Mapping'
-      );
+      const externalMappingTitle = page.getByText('External Credential Mapping');
       await expect(externalMappingTitle).toBeVisible({ timeout: 30000 });
       logger.info('External Credential Mapping card is visible');
     });
 
-    test('should expand and collapse the External Credential Mapping card', async ({
-      page,
-    }) => {
+    test('should expand and collapse the External Credential Mapping card', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Find the expand button for External Credential Mapping
@@ -78,7 +74,7 @@ test.describe('External Credential Mapping Feature', () => {
         logger.info('Content is hidden after collapsing');
       } catch {
         logger.info(
-          'Expand/collapse buttons not found - External Credential Mapping may not be available'
+          'Expand/collapse buttons not found - External Credential Mapping may not be available',
         );
         test.skip();
       }
@@ -90,12 +86,8 @@ test.describe('External Credential Mapping Feature', () => {
       await navigateToAdvancedSettings(page);
 
       // Find and click the Add button near External Credential Mapping
-      const externalMappingSection = page.getByLabel(
-        'External Credential Mapping'
-      );
-      const addButton = externalMappingSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const externalMappingSection = page.getByLabel('External Credential Mapping');
+      const addButton = externalMappingSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -114,9 +106,7 @@ test.describe('External Credential Mapping Feature', () => {
         });
         logger.info('Add External Mapping dialog opened');
       } catch {
-        logger.info(
-          'Add button not found - External Credential Mapping may not be available'
-        );
+        logger.info('Add button not found - External Credential Mapping may not be available');
         test.skip();
       }
     });
@@ -125,12 +115,8 @@ test.describe('External Credential Mapping Feature', () => {
       await navigateToAdvancedSettings(page);
 
       // Open Add dialog
-      const externalMappingSection = page.getByLabel(
-        'External Credential Mapping'
-      );
-      const addButton = externalMappingSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const externalMappingSection = page.getByLabel('External Credential Mapping');
+      const addButton = externalMappingSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -140,7 +126,7 @@ test.describe('External Credential Mapping Feature', () => {
         await expect(
           page.getByRole('dialog', {
             name: 'Add External Mapping',
-          })
+          }),
         ).toBeVisible({ timeout: 10000 });
 
         // Check for Credential dropdown
@@ -173,14 +159,10 @@ test.describe('External Credential Mapping Feature', () => {
         logger.info('Metadata textarea is visible');
 
         // Check for Cancel button
-        await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible(
-          { timeout: 5000 }
-        );
+        await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible({ timeout: 5000 });
 
         // Check for Create button
-        await expect(page.getByRole('button', { name: /create/i })).toBeVisible(
-          { timeout: 5000 }
-        );
+        await expect(page.getByRole('button', { name: /create/i })).toBeVisible({ timeout: 5000 });
         logger.info('All form fields verified');
       } catch (e) {
         logger.info('Could not verify form fields: ' + (e as Error).message);
@@ -192,12 +174,8 @@ test.describe('External Credential Mapping Feature', () => {
       await navigateToAdvancedSettings(page);
 
       // Open Add dialog
-      const externalMappingSection = page.getByLabel(
-        'External Credential Mapping'
-      );
-      const addButton = externalMappingSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const externalMappingSection = page.getByLabel('External Credential Mapping');
+      const addButton = externalMappingSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -225,18 +203,12 @@ test.describe('External Credential Mapping Feature', () => {
   });
 
   test.describe('Provider Warning', () => {
-    test('should show warning when no providers are configured', async ({
-      page,
-    }) => {
+    test('should show warning when no providers are configured', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Open Add dialog
-      const externalMappingSection = page.getByLabel(
-        'External Credential Mapping'
-      );
-      const addButton = externalMappingSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const externalMappingSection = page.getByLabel('External Credential Mapping');
+      const addButton = externalMappingSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -246,12 +218,12 @@ test.describe('External Credential Mapping Feature', () => {
         await expect(
           page.getByRole('dialog', {
             name: 'Add External Mapping',
-          })
+          }),
         ).toBeVisible({ timeout: 10000 });
 
         // Check if warning message is visible
         const warningMessage = page.getByText(
-          /configure a provider first in provider configuration/i
+          /configure a provider first in provider configuration/i,
         );
 
         try {
@@ -264,9 +236,7 @@ test.describe('External Credential Mapping Feature', () => {
           logger.info('Create button is disabled when no providers configured');
         } catch {
           // Warning may not be visible if providers are already configured
-          logger.info(
-            'Provider warning not visible - providers may already be configured'
-          );
+          logger.info('Provider warning not visible - providers may already be configured');
         }
       } catch (e) {
         logger.info('Could not test provider warning: ' + (e as Error).message);
@@ -299,15 +269,15 @@ test.describe('External Credential Mapping Feature', () => {
 
         if (await table.isVisible()) {
           // Check for table headers
-          await expect(
-            page.getByRole('columnheader', { name: /credential/i })
-          ).toBeVisible({ timeout: 5000 });
-          await expect(
-            page.getByRole('columnheader', { name: /provider/i })
-          ).toBeVisible({ timeout: 5000 });
-          await expect(
-            page.getByRole('columnheader', { name: /template id/i })
-          ).toBeVisible({ timeout: 5000 });
+          await expect(page.getByRole('columnheader', { name: /credential/i })).toBeVisible({
+            timeout: 5000,
+          });
+          await expect(page.getByRole('columnheader', { name: /provider/i })).toBeVisible({
+            timeout: 5000,
+          });
+          await expect(page.getByRole('columnheader', { name: /template id/i })).toBeVisible({
+            timeout: 5000,
+          });
           logger.info('Table headers are visible');
         } else {
           logger.info('Empty state is displayed');
@@ -320,9 +290,7 @@ test.describe('External Credential Mapping Feature', () => {
   });
 
   test.describe('Edit Mapping', () => {
-    test('should disable credential and provider fields when editing', async ({
-      page,
-    }) => {
+    test('should disable credential and provider fields when editing', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Expand the External Credential Mapping card
@@ -335,9 +303,7 @@ test.describe('External Credential Mapping Feature', () => {
         await expandButton.click();
 
         // Find an edit button (if mappings exist)
-        const editButton = page
-          .getByRole('button', { name: /edit.*mapping/i })
-          .first();
+        const editButton = page.getByRole('button', { name: /edit.*mapping/i }).first();
 
         try {
           await expect(editButton).toBeVisible({ timeout: 5000 });
@@ -365,15 +331,15 @@ test.describe('External Credential Mapping Feature', () => {
           logger.info('Provider dropdown is disabled when editing');
 
           // Should show message about credential not being changeable
-          await expect(
-            page.getByText(/credential cannot be changed/i)
-          ).toBeVisible({ timeout: 5000 });
+          await expect(page.getByText(/credential cannot be changed/i)).toBeVisible({
+            timeout: 5000,
+          });
           logger.info('Credential disabled message is visible');
 
           // Should show message about provider not being changeable
-          await expect(
-            page.getByText(/provider cannot be changed/i)
-          ).toBeVisible({ timeout: 5000 });
+          await expect(page.getByText(/provider cannot be changed/i)).toBeVisible({
+            timeout: 5000,
+          });
           logger.info('Provider disabled message is visible');
         } catch {
           logger.info('No mappings to edit');
@@ -390,12 +356,8 @@ test.describe('External Credential Mapping Feature', () => {
       await navigateToAdvancedSettings(page);
 
       // Open Add dialog
-      const externalMappingSection = page.getByLabel(
-        'External Credential Mapping'
-      );
-      const addButton = externalMappingSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const externalMappingSection = page.getByLabel('External Credential Mapping');
+      const addButton = externalMappingSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -405,7 +367,7 @@ test.describe('External Credential Mapping Feature', () => {
         await expect(
           page.getByRole('dialog', {
             name: 'Add External Mapping',
-          })
+          }),
         ).toBeVisible({ timeout: 10000 });
 
         // Enter invalid JSON in the metadata textarea
@@ -425,18 +387,12 @@ test.describe('External Credential Mapping Feature', () => {
   });
 
   test.describe('Credential Search', () => {
-    test('should have search input in credential dropdown', async ({
-      page,
-    }) => {
+    test('should have search input in credential dropdown', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Open Add dialog
-      const externalMappingSection = page.getByLabel(
-        'External Credential Mapping'
-      );
-      const addButton = externalMappingSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const externalMappingSection = page.getByLabel('External Credential Mapping');
+      const addButton = externalMappingSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -446,7 +402,7 @@ test.describe('External Credential Mapping Feature', () => {
         await expect(
           page.getByRole('dialog', {
             name: 'Add External Mapping',
-          })
+          }),
         ).toBeVisible({ timeout: 10000 });
 
         // Click on Credential dropdown
@@ -460,9 +416,7 @@ test.describe('External Credential Mapping Feature', () => {
         await expect(searchInput).toBeVisible({ timeout: 5000 });
         logger.info('Credential search input is visible');
       } catch (e) {
-        logger.info(
-          'Could not test credential search: ' + (e as Error).message
-        );
+        logger.info('Could not test credential search: ' + (e as Error).message);
         test.skip();
       }
     });

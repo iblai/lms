@@ -1,4 +1,4 @@
 export interface MarkdownMenuItem {
-    label: string;
-    link: string;
-  }
+  label: string;
+  link: string;
+}

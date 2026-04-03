@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SkillsLoading() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 p-6 space-y-8">
+    <div className="flex min-h-screen flex-col space-y-8 bg-gray-50 p-6">
       <Skeleton className="h-10 w-48" />
 
       <div className="space-y-4">
@@ -22,7 +22,7 @@ export default function SkillsLoading() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
@@ -38,5 +38,5 @@ export default function SkillsLoading() {
         <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     </div>
-  )
+  );
 }

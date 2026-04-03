@@ -11,9 +11,9 @@ export function CourseOutlineDrawer() {
 
   return (
     <Sheet open={courseOutlineDrawerOpen} onOpenChange={setCourseOutlineDrawerOpen}>
-      <SheetContent side="left" className="w-72 p-0 flex flex-col">
-        <SheetHeader className="p-4 border-b border-gray-200">
-          <SheetTitle className="font-semibold text-gray-800 text-left">
+      <SheetContent side="left" className="flex w-72 flex-col p-0">
+        <SheetHeader className="border-b border-gray-200 p-4">
+          <SheetTitle className="text-left font-semibold text-gray-800">
             {course?.display_name}
           </SheetTitle>
         </SheetHeader>

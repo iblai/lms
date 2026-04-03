@@ -1,29 +1,29 @@
 export function CourseCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-md border border-gray-200 bg-white flex flex-col h-full w-full relative shadow-sm">
+    <div className="relative flex h-full w-full flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
       {/* Shimmer overlay */}
-      <div className="absolute inset-0 animate-shimmer z-10 pointer-events-none"></div>
+      <div className="animate-shimmer pointer-events-none absolute inset-0 z-10"></div>
 
       {/* Image placeholder */}
-      <div className="relative aspect-video w-full skeleton-bg"></div>
+      <div className="skeleton-bg relative aspect-video w-full"></div>
 
       {/* Content placeholder */}
-      <div className="flex flex-col flex-1 p-4 justify-between">
+      <div className="flex flex-1 flex-col justify-between p-4">
         <div>
           {/* Duration placeholder */}
-          <div className="mb-2 h-4 w-24 skeleton-bg rounded-sm"></div>
+          <div className="skeleton-bg mb-2 h-4 w-24 rounded-sm"></div>
 
           {/* Title placeholder */}
-          <div className="h-4 w-full skeleton-bg rounded-sm mb-2"></div>
-          <div className="h-4 w-3/4 skeleton-bg rounded-sm"></div>
+          <div className="skeleton-bg mb-2 h-4 w-full rounded-sm"></div>
+          <div className="skeleton-bg h-4 w-3/4 rounded-sm"></div>
         </div>
 
         {/* Buttons placeholder */}
-        <div className="flex items-center justify-between mt-4">
-          <div className="h-8 w-8 skeleton-bg rounded-sm"></div>
-          <div className="h-8 w-8 skeleton-bg rounded-sm"></div>
+        <div className="mt-4 flex items-center justify-between">
+          <div className="skeleton-bg h-8 w-8 rounded-sm"></div>
+          <div className="skeleton-bg h-8 w-8 rounded-sm"></div>
         </div>
       </div>
     </div>
-  )
+  );
 }

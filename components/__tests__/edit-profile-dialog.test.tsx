@@ -17,7 +17,7 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
 }));
 
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => open ? <div data-testid="dialog">{children}</div> : null,
+  Dialog: ({ children, open }: any) => (open ? <div data-testid="dialog">{children}</div> : null),
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
   DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,
   DialogTitle: ({ children }: any) => <h2>{children}</h2>,
@@ -87,9 +87,7 @@ describe('EditProfileDialog', () => {
   });
 
   it('does not render dialog when closed', () => {
-    const { queryByTestId } = render(
-      <EditProfileDialog {...defaultProps} open={false} />,
-    );
+    const { queryByTestId } = render(<EditProfileDialog {...defaultProps} open={false} />);
     expect(queryByTestId('dialog')).not.toBeInTheDocument();
   });
 

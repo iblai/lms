@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { config } from "@/lib/config";
-import { useEffect, useState } from "react";
-import { getTenant } from "@/utils/helpers";
-import { useTenantMetadata } from "@iblai/iblai-js/web-utils";
+import Image from 'next/image';
+import Link from 'next/link';
+import { config } from '@/lib/config';
+import { useEffect, useState } from 'react';
+import { getTenant } from '@/utils/helpers';
+import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 export function Logo({
   width = 120,
   height = 40,
 }: {
-  variant?: "main" | "small" | "footer";
+  variant?: 'main' | 'small' | 'footer';
   width?: number;
   height?: number;
 }) {
@@ -38,12 +38,12 @@ export function Logo({
   return (
     <Link href="/" className="flex items-center">
       <Image
-        src={logoUrl || "/images/iblai-logo.png"}
+        src={logoUrl || '/images/iblai-logo.png'}
         loading="lazy"
         alt={config.settings.appName()}
         width={width}
         height={height}
-        className="h-6 sm:h-7 md:h-8 w-auto" // Reduced from h-8 sm:h-9 md:h-11
+        className="h-6 w-auto sm:h-7 md:h-8" // Reduced from h-8 sm:h-9 md:h-11
         //onError={handleLogoError}
       />
     </Link>

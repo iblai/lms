@@ -57,7 +57,7 @@ export function CredentialModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="max-h-[90vh] max-w-2xl overflow-y-auto"
         data-testid="credential-modal"
       >
         <DialogHeader>
@@ -71,7 +71,7 @@ export function CredentialModal({
           <div>
             <label
               htmlFor="credential-name"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Credential Name <span className="text-red-500">*</span>
             </label>
@@ -80,7 +80,7 @@ export function CredentialModal({
               type="text"
               value={credentialForm.name}
               onChange={(e) => setCredentialForm((prev) => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               placeholder="Enter credential name"
               data-testid="credential-name-input"
               aria-required="true"
@@ -91,7 +91,7 @@ export function CredentialModal({
           <div>
             <label
               htmlFor="credential-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Description
             </label>
@@ -102,7 +102,7 @@ export function CredentialModal({
                 setCredentialForm((prev) => ({ ...prev, description: e.target.value }))
               }
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               placeholder="Enter description"
               data-testid="credential-description-input"
             />
@@ -112,7 +112,7 @@ export function CredentialModal({
           <div>
             <label
               htmlFor="credential-issuer"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Issuer <span className="text-red-500">*</span>
             </label>
@@ -120,7 +120,7 @@ export function CredentialModal({
               id="credential-issuer"
               value={credentialForm.issuer}
               onChange={(e) => setCredentialForm((prev) => ({ ...prev, issuer: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               disabled={isLoadingIssuers}
               data-testid="credential-issuer-select"
               aria-required="true"
@@ -133,14 +133,14 @@ export function CredentialModal({
                 </option>
               ))}
             </select>
-            {isLoadingIssuers && <p className="text-xs text-gray-500 mt-1">Loading issuers...</p>}
+            {isLoadingIssuers && <p className="mt-1 text-xs text-gray-500">Loading issuers...</p>}
           </div>
 
           {/* Credential Type */}
           <div>
             <label
               htmlFor="credential-type"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Credential Type <span className="text-red-500">*</span>
             </label>
@@ -150,7 +150,7 @@ export function CredentialModal({
               onChange={(e) =>
                 setCredentialForm((prev) => ({ ...prev, credential_type: e.target.value }))
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               data-testid="credential-type-select"
               aria-required="true"
               aria-label="Select credential type"
@@ -168,7 +168,7 @@ export function CredentialModal({
           <div>
             <label
               htmlFor="credential-issuing-signal"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Issuing Signal <span className="text-red-500">*</span>
             </label>
@@ -178,7 +178,7 @@ export function CredentialModal({
               onChange={(e) =>
                 setCredentialForm((prev) => ({ ...prev, issuing_signal: e.target.value }))
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               data-testid="credential-issuing-signal-select"
               aria-required="true"
               aria-label="Select issuing signal"
@@ -193,7 +193,7 @@ export function CredentialModal({
           <div>
             <label
               htmlFor="credential-icon"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Icon Image
             </label>
@@ -204,14 +204,14 @@ export function CredentialModal({
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploadingImage}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 data-testid="credential-icon-input"
                 aria-label="Upload icon image"
               />
               {uploadingImage && <p className="text-xs text-gray-500">Uploading image...</p>}
               {credentialForm.icon_image && (
                 <div className="flex items-center gap-2">
-                  <div className="relative w-16 h-16 border border-gray-200 rounded">
+                  <div className="relative h-16 w-16 rounded border border-gray-200">
                     <Image
                       src={credentialForm.icon_image}
                       alt="Icon preview"
@@ -242,7 +242,7 @@ export function CredentialModal({
         <DialogFooter>
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             disabled={savingCredential}
             data-testid="credential-modal-cancel"
           >
@@ -257,7 +257,7 @@ export function CredentialModal({
               !credentialForm.credential_type ||
               !credentialForm.issuing_signal
             }
-            className="px-4 py-2 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] rounded-md text-sm font-medium hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)] disabled:cursor-not-allowed disabled:opacity-50"
             data-testid="credential-modal-submit"
           >
             {savingCredential ? 'Saving...' : editingCredential ? 'Update' : 'Create'}

@@ -130,11 +130,11 @@ export default function OnboardingFlow() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-amber-50/30 flex flex-col pb-20 pt-16 sm:pt-20">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-50 to-amber-50/30 pt-16 pb-20 sm:pt-20">
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
-        <div className="max-w-4xl mx-auto flex justify-center py-2 sm:py-4">
-          <div className="w-20 sm:w-24 h-8 sm:h-9 relative">
+      <div className="fixed top-0 right-0 left-0 z-50 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-4xl justify-center py-2 sm:py-4">
+          <div className="relative h-8 w-20 sm:h-9 sm:w-24">
             <Logo width={90} height={30} />
           </div>
         </div>
@@ -155,8 +155,8 @@ export default function OnboardingFlow() {
         }}
       >
         {/* Main Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-0">
-          <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden relative">
+        <div className="flex flex-1 flex-col items-center justify-center px-4 md:px-0">
+          <div className="relative w-full max-w-4xl overflow-hidden rounded-xl bg-white shadow-xl">
             <AnimatePresence mode="wait">
               {currentSlide === slides.indexOf('WelcomeSlide') && (
                 <WelcomeSlide onNext={nextSlide} onPrev={prevSlide} />
@@ -188,19 +188,19 @@ export default function OnboardingFlow() {
       </StartPageContext.Provider>
 
       {/* Fixed Footer Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-        <div className="max-w-4xl mx-auto flex justify-between items-center p-3 sm:p-4">
+      <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white shadow-lg">
+        <div className="mx-auto flex max-w-4xl items-center justify-between p-3 sm:p-4">
           <button
             onClick={prevSlide}
             disabled={currentSlide === 0}
-            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm ${
+            className={`flex items-center gap-1 rounded-lg px-2 py-2 text-xs transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
               currentSlide === 0
-                ? 'text-gray-300 cursor-not-allowed'
+                ? 'cursor-not-allowed text-gray-300'
                 : 'text-gray-600 hover:bg-gray-200'
             }`}
           >
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden xs:inline sm:inline">Previous</span>
+            <span className="xs:inline hidden sm:inline">Previous</span>
           </button>
 
           <div className="flex gap-2">
@@ -208,7 +208,7 @@ export default function OnboardingFlow() {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full transition-colors ${
+                className={`h-2 w-2 rounded-full transition-colors sm:h-2.5 sm:w-2.5 ${
                   currentSlide === index ? 'bg-amber-500' : 'bg-gray-300 hover:bg-gray-400'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
@@ -218,7 +218,7 @@ export default function OnboardingFlow() {
 
           <button
             onClick={currentSlide === totalSlides ? handleGetStarted : nextSlide}
-            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm ${
+            className={`flex items-center gap-1 rounded-lg px-2 py-2 text-xs transition-colors sm:gap-2 sm:px-4 sm:text-sm ${
               currentSlide === totalSlides - 1
                 ? 'bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)]'
                 : 'bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)]'

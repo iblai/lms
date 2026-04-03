@@ -32,29 +32,29 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
       className="relative overflow-hidden"
     >
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-gray-50/30 z-0"></div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-amber-50/50 to-gray-50/30"></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-100/20 rounded-full -translate-x-20 -translate-y-20 z-0"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-100/20 rounded-full translate-x-10 translate-y-20 z-0"></div>
+      <div className="absolute top-0 right-0 z-0 h-64 w-64 -translate-x-20 -translate-y-20 rounded-full bg-amber-100/20"></div>
+      <div className="absolute bottom-0 left-0 z-0 h-80 w-80 translate-x-10 translate-y-20 rounded-full bg-amber-100/20"></div>
 
       <div
-        className="relative z-10 p-6 sm:p-8 md:p-12 max-h-[70vh] overflow-y-auto scrollbar-hide"
+        className="scrollbar-hide relative z-10 max-h-[70vh] overflow-y-auto p-6 sm:p-8 md:p-12"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <div className="space-y-6 sm:space-y-8">
           {/* Profile Picture */}
-          <div className="border border-gray-200 rounded-lg p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">
+          <div className="rounded-lg border border-gray-200 p-4 sm:p-6">
+            <h3 className="mb-2 text-base font-medium text-gray-600 sm:text-lg">
               Profile Picture (Optional)
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 mb-4">
+            <p className="mb-4 text-xs text-gray-500 sm:text-sm">
               Add a photo to personalize your profile
             </p>
 
             <div className="flex justify-center">
               <div
-                className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-200 cursor-pointer"
+                className="relative h-20 w-20 cursor-pointer overflow-hidden rounded-full border-2 border-amber-200 sm:h-24 sm:w-24"
                 onClick={() => {
                   const fileInput = document.createElement('input');
                   fileInput.type = 'file';
@@ -72,8 +72,8 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
                     className="object-cover"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-                    <Upload className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <Upload className="h-5 w-5 text-gray-400 sm:h-6 sm:w-6" />
                   </div>
                 )}
               </div>
@@ -81,27 +81,27 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
           </div>
 
           {/* Social Networks */}
-          <div className="border border-gray-200 rounded-lg p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">
+          <div className="rounded-lg border border-gray-200 p-4 sm:p-6">
+            <h3 className="mb-2 text-base font-medium text-gray-600 sm:text-lg">
               Social Networks (Optional)
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 mb-4">
+            <p className="mb-4 text-xs text-gray-500 sm:text-sm">
               Add your social network profiles
             </p>
 
             <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
                   LinkedIn Profile
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Linkedin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Linkedin className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
                   </div>
                   <input
                     type="text"
                     placeholder="linkedin.com/in/username"
-                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-xs sm:text-sm"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-4 pl-10 text-xs focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none sm:text-sm"
                     value={fields.socialLinks.linkedin}
                     onChange={(e) =>
                       handleSocialLinksUpdate({
@@ -114,17 +114,17 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
                   X Profile
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Twitter className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Twitter className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
                   </div>
                   <input
                     type="text"
                     placeholder="twitter.com/username"
-                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-xs sm:text-sm"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-4 pl-10 text-xs focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none sm:text-sm"
                     value={fields.socialLinks.twitter}
                     onChange={(e) =>
                       handleSocialLinksUpdate({
@@ -137,17 +137,17 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
                   Facebook Profile
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Facebook className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Facebook className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
                   </div>
                   <input
                     type="text"
                     placeholder="facebook.com/username"
-                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-xs sm:text-sm"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pr-4 pl-10 text-xs focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none sm:text-sm"
                     value={fields.socialLinks.facebook}
                     onChange={(e) =>
                       handleSocialLinksUpdate({
@@ -166,7 +166,7 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
             <div
               className={`border-2 border-dashed ${
                 isDragging ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-gray-50'
-              } rounded-lg p-4 sm:p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors`}
+              } flex cursor-pointer flex-col items-center justify-center rounded-lg p-4 transition-colors hover:bg-gray-100 sm:p-8`}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -207,13 +207,13 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
             >
               {fields.resume ? (
                 <>
-                  <div className="flex items-center justify-center mb-2 text-amber-500">
+                  <div className="mb-2 flex items-center justify-center text-amber-500">
                     <Check className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 text-center">
+                  <p className="text-center text-xs font-medium text-gray-700 sm:text-sm">
                     {fields.resume.name}
                   </p>
-                  <p className="text-xs text-gray-500 text-center mt-1">
+                  <p className="mt-1 text-center text-xs text-gray-500">
                     {(fields.resume.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   <button
@@ -229,11 +229,11 @@ export default function ProfileSlide({ isDragging, setIsDragging }: ProfileSlide
                 </>
               ) : (
                 <>
-                  <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-amber-500 mb-2" />
-                  <p className="text-xs sm:text-sm text-gray-600 text-center">
+                  <Upload className="mb-2 h-6 w-6 text-amber-500 sm:h-8 sm:w-8" />
+                  <p className="text-center text-xs text-gray-600 sm:text-sm">
                     Drag and drop your resume here
                   </p>
-                  <p className="text-xs text-gray-500 text-center mt-1">(PDF up to 25MB)</p>
+                  <p className="mt-1 text-center text-xs text-gray-500">(PDF up to 25MB)</p>
                 </>
               )}
             </div>

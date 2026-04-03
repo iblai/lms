@@ -1,7 +1,13 @@
 'use client';
 
 import { UserProfileDropdown } from '@iblai/iblai-js/web-containers/next';
-import { getTenant, getUserName, handleLogout, handleTenantSwitch, onAccountDeleted } from '@/utils/helpers';
+import {
+  getTenant,
+  getUserName,
+  handleLogout,
+  handleTenantSwitch,
+  onAccountDeleted,
+} from '@/utils/helpers';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
@@ -62,7 +68,7 @@ export const UserProfileButton = () => {
       currentSPA={config.settings.appName() || 'skills'}
       // Customization
       helpCenterUrl=""
-      enableGravatarOnProfilePic={config.settings.enableGravatarOnProfilePic() !== "false"}
+      enableGravatarOnProfilePic={config.settings.enableGravatarOnProfilePic() !== 'false'}
       // Callbacks
       onLogout={handleLogout}
       onTenantChange={handleTenantChange}

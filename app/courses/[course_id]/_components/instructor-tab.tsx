@@ -13,8 +13,8 @@ interface InstructorTabProps {
 
 export function InstructorTab({ course, expandedSections, toggleSection }: InstructorTabProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-medium text-gray-800 mb-4">Instructors</h2>
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-lg font-medium text-gray-800">Instructors</h2>
       {(!course?.instructor_info?.instructors ||
         course.instructor_info.instructors.length === 0) && (
         <DefaultEmptyBox message="No instructor info available." />
@@ -23,10 +23,10 @@ export function InstructorTab({ course, expandedSections, toggleSection }: Instr
         {course?.instructor_info?.instructors?.map((instructor: any, index: number) => (
           <div
             key={`instructor-${index}`}
-            className="border border-gray-200 rounded-md overflow-hidden"
+            className="overflow-hidden rounded-md border border-gray-200"
           >
             <div
-              className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50"
+              className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
               onClick={() => toggleSection(`instructor-${index}`)}
             >
               <div className="flex items-center gap-3">
@@ -36,13 +36,13 @@ export function InstructorTab({ course, expandedSections, toggleSection }: Instr
                     alt={instructor.name || 'Instructor'}
                     width={40}
                     height={40}
-                    className="rounded-full object-cover border-2 border-amber-100"
+                    className="rounded-full border-2 border-amber-100 object-cover"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center border-2 border-amber-200">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-amber-200 bg-amber-100">
                     <User className="h-5 w-5 text-amber-500" />
                   </div>
                 )}
@@ -63,8 +63,8 @@ export function InstructorTab({ course, expandedSections, toggleSection }: Instr
             </div>
 
             {expandedSections[`instructor-${index}`] && (
-              <div className="border-t border-gray-200 p-4 bg-gray-50">
-                <div className="flex flex-col md:flex-row gap-6">
+              <div className="border-t border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-col gap-6 md:flex-row">
                   {/* Instructor Image */}
                   <div className="flex-shrink-0">
                     {instructor.image ? (
@@ -73,13 +73,13 @@ export function InstructorTab({ course, expandedSections, toggleSection }: Instr
                         alt={instructor.name || 'Instructor'}
                         width={120}
                         height={120}
-                        className="rounded-full object-cover border-4 border-amber-100"
+                        className="rounded-full border-4 border-amber-100 object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
                       />
                     ) : (
-                      <div className="w-[120px] h-[120px] rounded-full bg-amber-100 flex items-center justify-center border-4 border-amber-200">
+                      <div className="flex h-[120px] w-[120px] items-center justify-center rounded-full border-4 border-amber-200 bg-amber-100">
                         <User className="h-12 w-12 text-amber-500" />
                       </div>
                     )}
@@ -89,21 +89,21 @@ export function InstructorTab({ course, expandedSections, toggleSection }: Instr
                   <div className="flex-1 space-y-3">
                     {instructor.title && (
                       <div className="flex items-center text-gray-600">
-                        <Briefcase className="h-4 w-4 mr-2 text-amber-500" />
+                        <Briefcase className="mr-2 h-4 w-4 text-amber-500" />
                         <span className="text-sm">{instructor.title}</span>
                       </div>
                     )}
                     {instructor.organization && (
                       <div className="flex items-center text-gray-600">
-                        <Building className="h-4 w-4 mr-2 text-amber-500" />
+                        <Building className="mr-2 h-4 w-4 text-amber-500" />
                         <span className="text-sm">{instructor.organization}</span>
                       </div>
                     )}
 
                     {instructor.bio && (
-                      <div className="pt-3 border-t border-gray-200">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">About</h4>
-                        <p className="text-sm text-gray-600 leading-relaxed">{instructor.bio}</p>
+                      <div className="border-t border-gray-200 pt-3">
+                        <h4 className="mb-2 text-sm font-medium text-gray-700">About</h4>
+                        <p className="text-sm leading-relaxed text-gray-600">{instructor.bio}</p>
                       </div>
                     )}
                   </div>

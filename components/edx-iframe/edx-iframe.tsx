@@ -32,10 +32,7 @@ export const EdxIframe = () => {
   const { getIframeURL, findSequentialParent } = useEdxIframe();
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { navigator } = useCourseNavigator(
-    courseOutline,
-    currentUnitID || courseID,
-  );
+  const { navigator } = useCourseNavigator(courseOutline, currentUnitID || courseID);
 
   const [getExamInfo] = useLazyGetExamInfoQuery();
 
@@ -48,7 +45,9 @@ export const EdxIframe = () => {
         getIframeURL(courseID, courseOutline, async (url) => {
           try {
             const courseOutlineData = Array.isArray(courseOutline?.children)
-              ? courseOutline.children[navigator?.thirdLevelChildren[navigator?.currentIndex]?.chapterIndex]
+              ? courseOutline.children[
+                  navigator?.thirdLevelChildren[navigator?.currentIndex]?.chapterIndex
+                ]
               : courseOutline;
             const sequentialParentID = findSequentialParent(
               courseOutlineData,
@@ -192,11 +191,11 @@ export const EdxIframe = () => {
   return (
     <>
       {fetchingIframeData ? (
-        <div className="relative inset-0 flex justify-center items-center bg-white z-50 h-full">
-          <Loader2 className="w-10 h-10 animate-spin" />
+        <div className="relative inset-0 z-50 flex h-full items-center justify-center bg-white">
+          <Loader2 className="h-10 w-10 animate-spin" />
         </div>
       ) : (
-        <div className={cn('w-full p-6', `active-tab-${activeTab} course-edx-iframe-container`)} >
+        <div className={cn('w-full p-6', `active-tab-${activeTab} course-edx-iframe-container`)}>
           {examInfo && <TimedExam />}
           {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
             <iframe
@@ -216,30 +215,31 @@ export const EdxIframe = () => {
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"
             />
           )}
-          {iframeLoaded && activeTab === 'course' &&
+          {iframeLoaded &&
+            activeTab === 'course' &&
             !fetchingIframeData &&
             (!navigator.isPreviousHidden() || !navigator.isNextHidden()) && (
               <div
                 className={`flex ${
                   navigator.isPreviousHidden() ? 'justify-end' : 'justify-between'
-                } items-center mt-4`}
+                } mt-4 items-center`}
               >
                 {!navigator.isPreviousHidden() && (
                   <button
                     onClick={handlePreviousBtnClick}
-                    className="rounded-sm px-4 py-2 border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 flex items-center"
+                    className="flex items-center rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                   >
-                    <ChevronRight className="h-4 w-4 transform rotate-180 mr-1" />
+                    <ChevronRight className="mr-1 h-4 w-4 rotate-180 transform" />
                     Previous Lesson
                   </button>
                 )}
                 {!navigator.isNextHidden() && (
                   <button
                     onClick={handleNextBtnClick}
-                    className="rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] flex items-center hover:opacity-[var(--button-primary-hover-opacity)]"
+                    className="flex items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)]"
                   >
                     Next Lesson
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="ml-1 h-4 w-4" />
                   </button>
                 )}
               </div>

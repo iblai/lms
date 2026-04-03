@@ -20,25 +20,25 @@ export default function WelcomeSlide({}: OnboardingSlideProps) {
       className="relative overflow-hidden"
     >
       {/* Background - plain white */}
-      <div className="absolute inset-0 bg-white z-0"></div>
+      <div className="absolute inset-0 z-0 bg-white"></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-100/20 rounded-full -translate-x-20 -translate-y-20 z-0"></div>
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-100/20 rounded-full translate-x-10 translate-y-20 z-0"></div>
+      <div className="absolute top-0 right-0 z-0 h-64 w-64 -translate-x-20 -translate-y-20 rounded-full bg-amber-100/20"></div>
+      <div className="absolute bottom-0 left-0 z-0 h-64 w-64 translate-x-10 translate-y-20 rounded-full bg-amber-100/20"></div>
 
       <div
-        className="relative z-10 p-6 sm:p-8 md:p-12 max-h-[70vh] overflow-y-auto scrollbar-hide"
+        className="scrollbar-hide relative z-10 max-h-[70vh] overflow-y-auto p-6 sm:p-8 md:p-12"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-600 text-center mb-6 sm:mb-8">
+        <h2 className="mb-6 text-center text-xl font-bold text-gray-600 sm:mb-8 sm:text-2xl">
           Welcome to{' '}
           {metadata?.auth_web_skillsai?.display_title_info ||
             metadata?.platform_name ||
             'ibl.ai academy'}
         </h2>
 
-        <div className="text-center mb-8">
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+        <div className="mb-8 text-center">
+          <p className="mx-auto max-w-2xl text-sm text-gray-600 sm:text-base">
             Let's set your learning profile. It will be used to find instructional content
             personalized to your skills and goals. These selected resources, along with our
             AI-driven pedagogical method, will allow you to boost your career and set a successful
@@ -47,7 +47,7 @@ export default function WelcomeSlide({}: OnboardingSlideProps) {
         </div>
 
         <div className="flex justify-center">
-          <div className="relative w-48 h-48 sm:w-56 sm:h-56">
+          <div className="relative h-48 w-48 sm:h-56 sm:w-56">
             <motion.div
               animate={{
                 y: [0, -15, 0],
@@ -65,7 +65,7 @@ export default function WelcomeSlide({}: OnboardingSlideProps) {
                 alt="Rocket animation"
                 width={280}
                 height={280}
-                className="object-contain mx-auto"
+                className="mx-auto object-contain"
               />
             </motion.div>
           </div>

@@ -38,9 +38,7 @@ test.describe('Provider Configuration Feature', () => {
       logger.info('Provider Configuration card is visible');
     });
 
-    test('should expand and collapse the Provider Configuration card', async ({
-      page,
-    }) => {
+    test('should expand and collapse the Provider Configuration card', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Find the expand button for Provider Configuration
@@ -72,7 +70,7 @@ test.describe('Provider Configuration Feature', () => {
         logger.info('Table is hidden after collapsing');
       } catch {
         logger.info(
-          'Expand/collapse buttons not found - Provider Configuration may not be available'
+          'Expand/collapse buttons not found - Provider Configuration may not be available',
         );
         test.skip();
       }
@@ -87,9 +85,7 @@ test.describe('Provider Configuration Feature', () => {
       const providerConfigSection = page.getByLabel('Provider Configuration', {
         exact: true,
       });
-      const addButton = providerConfigSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const addButton = providerConfigSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -108,9 +104,7 @@ test.describe('Provider Configuration Feature', () => {
         });
         logger.info('Add Provider Configuration dialog opened');
       } catch {
-        logger.info(
-          'Add button not found - Provider Configuration may not be available'
-        );
+        logger.info('Add button not found - Provider Configuration may not be available');
         test.skip();
       }
     });
@@ -122,9 +116,7 @@ test.describe('Provider Configuration Feature', () => {
       const providerConfigSection = page.getByLabel('Provider Configuration', {
         exact: true,
       });
-      const addButton = providerConfigSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const addButton = providerConfigSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -134,7 +126,7 @@ test.describe('Provider Configuration Feature', () => {
         await expect(
           page.getByRole('dialog', {
             name: 'Add Provider Configuration',
-          })
+          }),
         ).toBeVisible({ timeout: 10000 });
 
         // Check for Provider Name input
@@ -153,14 +145,10 @@ test.describe('Provider Configuration Feature', () => {
         logger.info('Enabled switch is visible');
 
         // Check for Cancel button
-        await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible(
-          { timeout: 5000 }
-        );
+        await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible({ timeout: 5000 });
 
         // Check for Create button
-        await expect(page.getByRole('button', { name: /create/i })).toBeVisible(
-          { timeout: 5000 }
-        );
+        await expect(page.getByRole('button', { name: /create/i })).toBeVisible({ timeout: 5000 });
         logger.info('All form fields verified');
       } catch (e) {
         logger.info('Could not verify form fields: ' + (e as Error).message);
@@ -175,9 +163,7 @@ test.describe('Provider Configuration Feature', () => {
       const providerConfigSection = page.getByLabel('Provider Configuration', {
         exact: true,
       });
-      const addButton = providerConfigSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const addButton = providerConfigSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -205,9 +191,7 @@ test.describe('Provider Configuration Feature', () => {
   });
 
   test.describe('Configuration List', () => {
-    test('should display configurations in table when expanded', async ({
-      page,
-    }) => {
+    test('should display configurations in table when expanded', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Expand the Provider Configuration card
@@ -225,17 +209,13 @@ test.describe('Provider Configuration Feature', () => {
         logger.info('Table is visible');
 
         // Check for table headers
-        await expect(
-          page.getByRole('columnheader', { name: /provider/i })
-        ).toBeVisible({
+        await expect(page.getByRole('columnheader', { name: /provider/i })).toBeVisible({
           timeout: 5000,
         });
-        await expect(
-          page.getByRole('columnheader', { name: /configuration/i })
-        ).toBeVisible({ timeout: 5000 });
-        await expect(
-          page.getByRole('columnheader', { name: /status/i })
-        ).toBeVisible({
+        await expect(page.getByRole('columnheader', { name: /configuration/i })).toBeVisible({
+          timeout: 5000,
+        });
+        await expect(page.getByRole('columnheader', { name: /status/i })).toBeVisible({
           timeout: 5000,
         });
         logger.info('Table headers are visible');
@@ -245,9 +225,7 @@ test.describe('Provider Configuration Feature', () => {
       }
     });
 
-    test('should show empty state when no configurations exist', async ({
-      page,
-    }) => {
+    test('should show empty state when no configurations exist', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Expand the Provider Configuration card
@@ -281,9 +259,7 @@ test.describe('Provider Configuration Feature', () => {
   });
 
   test.describe('Edit Configuration', () => {
-    test('should disable provider name field when editing', async ({
-      page,
-    }) => {
+    test('should disable provider name field when editing', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Expand the Provider Configuration card
@@ -296,9 +272,7 @@ test.describe('Provider Configuration Feature', () => {
         await expandButton.click();
 
         // Find an edit button (if configurations exist)
-        const editButton = page
-          .getByRole('button', { name: /edit.*configuration/i })
-          .first();
+        const editButton = page.getByRole('button', { name: /edit.*configuration/i }).first();
 
         try {
           await expect(editButton).toBeVisible({ timeout: 5000 });
@@ -317,9 +291,9 @@ test.describe('Provider Configuration Feature', () => {
           logger.info('Provider name input is disabled when editing');
 
           // Should show message about provider name not being changeable
-          await expect(
-            page.getByText(/provider name cannot be changed/i)
-          ).toBeVisible({ timeout: 5000 });
+          await expect(page.getByText(/provider name cannot be changed/i)).toBeVisible({
+            timeout: 5000,
+          });
           logger.info('Provider name disabled message is visible');
         } catch {
           logger.info('No configurations to edit');
@@ -332,18 +306,14 @@ test.describe('Provider Configuration Feature', () => {
   });
 
   test.describe('Validation', () => {
-    test('should show error for invalid JSON configuration', async ({
-      page,
-    }) => {
+    test('should show error for invalid JSON configuration', async ({ page }) => {
       await navigateToAdvancedSettings(page);
 
       // Open Add dialog
       const providerConfigSection = page.getByLabel('Provider Configuration', {
         exact: true,
       });
-      const addButton = providerConfigSection
-        .getByRole('button', { name: /add/i })
-        .first();
+      const addButton = providerConfigSection.getByRole('button', { name: /add/i }).first();
 
       try {
         await expect(addButton).toBeVisible({ timeout: 10000 });
@@ -353,7 +323,7 @@ test.describe('Provider Configuration Feature', () => {
         await expect(
           page.getByRole('dialog', {
             name: 'Add Provider Configuration',
-          })
+          }),
         ).toBeVisible({ timeout: 10000 });
 
         // Enter invalid JSON in the configuration textarea

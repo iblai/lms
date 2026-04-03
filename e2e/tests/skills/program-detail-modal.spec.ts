@@ -84,9 +84,7 @@ async function closeProgramDetailModal(page: Page): Promise<void> {
  */
 async function isUserAdmin(page: Page): Promise<boolean> {
   const settingsTab = page.getByTestId('settings-tab');
-  const isSettingsVisible = await settingsTab
-    .isVisible({ timeout: 5000 })
-    .catch(() => false);
+  const isSettingsVisible = await settingsTab.isVisible({ timeout: 5000 }).catch(() => false);
   return isSettingsVisible;
 }
 
@@ -105,9 +103,7 @@ test.describe('Program Detail Modal', () => {
     await navigateToProgramsPage(page);
   });
 
-  test('Should display "No programs found" message when user has no programs', async ({
-    page,
-  }) => {
+  test('Should display "No programs found" message when user has no programs', async ({ page }) => {
     // This test verifies the empty state behavior
     // If programs are found, we skip this specific assertion
     const hasPrograms = await waitForProgramsToLoad(page);
@@ -124,9 +120,7 @@ test.describe('Program Detail Modal', () => {
     }
   });
 
-  test('Should open program detail modal when clicking on a program card', async ({
-    page,
-  }) => {
+  test('Should open program detail modal when clicking on a program card', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -139,9 +133,9 @@ test.describe('Program Detail Modal', () => {
     await openProgramDetailModal(page);
 
     // Verify modal content is displayed
-    await expect(
-      page.getByRole('heading', { name: 'Program Details' })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: 'Program Details' })).toBeVisible({
+      timeout: 5000,
+    });
     logger.info('Program detail modal title is visible');
 
     // Verify program name is displayed
@@ -151,9 +145,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Program name is displayed in modal');
 
     // Verify close button is present
-    await expect(page.getByRole('button', { name: 'Close modal' })).toBeVisible(
-      { timeout: 5000 }
-    );
+    await expect(page.getByRole('button', { name: 'Close modal' })).toBeVisible({ timeout: 5000 });
   });
 
   test('Should close modal when clicking Close button', async ({ page }) => {
@@ -198,9 +190,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Modal closed via X button');
   });
 
-  test('Should display Courses and Settings tabs for admin users', async ({
-    page,
-  }) => {
+  test('Should display Courses and Settings tabs for admin users', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -238,9 +228,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Settings tab is visible');
   });
 
-  test('Should not display Courses and Settings tabs for non-admin users', async ({
-    page,
-  }) => {
+  test('Should not display Courses and Settings tabs for non-admin users', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -267,9 +255,9 @@ test.describe('Program Detail Modal', () => {
     logger.info('Tabs are not visible for non-admin user');
 
     // Verify courses content is still visible (without tabs)
-    await expect(
-      page.getByRole('heading', { name: 'Courses in this Program' })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: 'Courses in this Program' })).toBeVisible({
+      timeout: 5000,
+    });
     logger.info('Courses content is visible for non-admin user');
   });
 
@@ -295,18 +283,16 @@ test.describe('Program Detail Modal', () => {
     }
 
     // Verify "Courses in this Program" heading is visible
-    await expect(
-      page.getByRole('heading', { name: 'Courses in this Program' })
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Courses in this Program' })).toBeVisible({
+      timeout: 10000,
+    });
     logger.info('Courses heading is visible');
 
     // Check for either courses or empty state
     const courseCard = page.getByTestId('course-card-0');
     const noCourses = page.getByText('No courses found under this program.');
 
-    const hasCourses = await courseCard
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasCourses) {
       logger.info('Course cards are displayed');
@@ -324,9 +310,7 @@ test.describe('Program Detail Modal', () => {
     }
   });
 
-  test('Should switch between Courses and Settings tabs for admin users', async ({
-    page,
-  }) => {
+  test('Should switch between Courses and Settings tabs for admin users', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -372,9 +356,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Switched back to Courses tab');
   });
 
-  test('Should display Settings form sections for admin users', async ({
-    page,
-  }) => {
+  test('Should display Settings form sections for admin users', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -404,27 +386,21 @@ test.describe('Program Detail Modal', () => {
     await expect(page.getByTestId('basic-information-section')).toBeVisible({
       timeout: 5000,
     });
-    await expect(
-      page.getByRole('group', { name: 'Basic Information' })
-    ).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Basic Information' })).toBeVisible();
     logger.info('Basic Information section is visible');
 
     // Verify Pricing & Dates section
     await expect(page.getByTestId('pricing-dates-section')).toBeVisible({
       timeout: 5000,
     });
-    await expect(
-      page.getByRole('group', { name: 'Pricing & Dates' })
-    ).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Pricing & Dates' })).toBeVisible();
     logger.info('Pricing & Dates section is visible');
 
     // Verify Visibility & Access section
     await expect(page.getByTestId('visibility-access-section')).toBeVisible({
       timeout: 5000,
     });
-    await expect(
-      page.getByRole('group', { name: 'Visibility & Access' })
-    ).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Visibility & Access' })).toBeVisible();
     logger.info('Visibility & Access section is visible');
 
     // Verify Images section
@@ -438,9 +414,7 @@ test.describe('Program Detail Modal', () => {
     await expect(page.getByTestId('social-promotion-section')).toBeVisible({
       timeout: 5000,
     });
-    await expect(
-      page.getByRole('group', { name: 'Social & Promotion' })
-    ).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Social & Promotion' })).toBeVisible();
     logger.info('Social & Promotion section is visible');
 
     // Verify Save Settings button
@@ -450,9 +424,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Save Settings button is visible');
   });
 
-  test('Should display Basic Information fields in Settings tab', async ({
-    page,
-  }) => {
+  test('Should display Basic Information fields in Settings tab', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -478,39 +450,33 @@ test.describe('Program Detail Modal', () => {
     });
 
     // Verify Subject field
-    await expect(
-      page.getByRole('textbox', { name: /computer science/i })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('textbox', { name: /computer science/i })).toBeVisible({
+      timeout: 5000,
+    });
     logger.info('Subject field is visible');
 
     // Verify URL Slug field
-    await expect(
-      page.getByRole('textbox', { name: /my-program/i })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('textbox', { name: /my-program/i })).toBeVisible({ timeout: 5000 });
     logger.info('URL Slug field is visible');
 
     // Verify Level field
     await expect(
-      page.getByRole('textbox', { name: /beginner, intermediate, advanced/i })
+      page.getByRole('textbox', { name: /beginner, intermediate, advanced/i }),
     ).toBeVisible({ timeout: 5000 });
     logger.info('Level field is visible');
 
     // Verify Language field
-    await expect(
-      page.getByRole('textbox', { name: /e\.g\., en/i })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('textbox', { name: /e\.g\., en/i })).toBeVisible({ timeout: 5000 });
     logger.info('Language field is visible');
 
     // Verify Description field
-    await expect(
-      page.getByRole('textbox', { name: /program description/i })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('textbox', { name: /program description/i })).toBeVisible({
+      timeout: 5000,
+    });
     logger.info('Description field is visible');
   });
 
-  test('Should display date fields in Pricing & Dates section', async ({
-    page,
-  }) => {
+  test('Should display date fields in Pricing & Dates section', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -609,9 +575,9 @@ test.describe('Program Detail Modal', () => {
     logger.info('Invitation Only switch is visible');
 
     // Verify Credential field
-    await expect(
-      page.getByRole('textbox', { name: /credential information/i })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('textbox', { name: /credential information/i })).toBeVisible({
+      timeout: 5000,
+    });
     logger.info('Credential field is visible');
   });
 
@@ -657,9 +623,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Card Image URL label is visible');
   });
 
-  test('Should display Save Settings button and be clickable', async ({
-    page,
-  }) => {
+  test('Should display Save Settings button and be clickable', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -695,9 +659,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Save Settings button is visible and enabled');
   });
 
-  test('Should navigate to course page when clicking on a course card', async ({
-    page,
-  }) => {
+  test('Should navigate to course page when clicking on a course card', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -710,9 +672,7 @@ test.describe('Program Detail Modal', () => {
 
     // Check if there are courses to click
     const courseCard = page.getByTestId('course-card-0');
-    const hasCourses = await courseCard
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!hasCourses) {
       logger.info('No courses in program - skipping course navigation test');
@@ -747,9 +707,7 @@ test.describe('Program Detail Modal', () => {
 
     // Check if progress section exists
     const progressSection = page.getByText('Progress').first();
-    const hasProgress = await progressSection
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const hasProgress = await progressSection.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!hasProgress) {
       logger.info('No progress data available - skipping progress bar test');
@@ -761,9 +719,7 @@ test.describe('Program Detail Modal', () => {
     logger.info('Progress section is visible');
   });
 
-  test('Should switch between My programs and Assigned programs tabs', async ({
-    page,
-  }) => {
+  test('Should switch between My programs and Assigned programs tabs', async ({ page }) => {
     // Verify My programs tab is visible and active by default
     const myProgramsTab = page.getByRole('button', { name: 'My programs' });
     await expect(myProgramsTab).toBeVisible({ timeout: 10000 });
@@ -820,9 +776,7 @@ test.describe('Program Detail Modal', () => {
     await closeProgramDetailModal(page);
   });
 
-  test('Should display loading state when fetching program details', async ({
-    page,
-  }) => {
+  test('Should display loading state when fetching program details', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -854,9 +808,7 @@ test.describe('Program Detail Modal', () => {
     });
   });
 
-  test('Should display Enroll button for unenrolled programs', async ({
-    page,
-  }) => {
+  test('Should display Enroll button for unenrolled programs', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -869,18 +821,14 @@ test.describe('Program Detail Modal', () => {
 
     // Check if Enroll button is visible (only shown for unenrolled programs)
     const enrollButton = page.getByTestId('enroll-button');
-    const hasEnrollButton = await enrollButton
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const hasEnrollButton = await enrollButton.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (hasEnrollButton) {
       await expect(enrollButton).toBeVisible({ timeout: 5000 });
       await expect(enrollButton).toBeEnabled();
       logger.info('Enroll button is visible and enabled');
     } else {
-      logger.info(
-        'User is already enrolled - Enroll button not displayed (expected)'
-      );
+      logger.info('User is already enrolled - Enroll button not displayed (expected)');
     }
   });
 

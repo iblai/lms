@@ -42,10 +42,10 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-tl-lg rounded-tr-lg rounded-bl-lg rounded-br-lg max-w-lg w-full flex flex-col h-[85vh]">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+      <div className="flex h-[85vh] w-full max-w-lg flex-col rounded-tl-lg rounded-tr-lg rounded-br-lg rounded-bl-lg bg-white">
         {/* Fixed Header */}
-        <div className="p-4 border-b rounded-tl-lg rounded-tr-lg border-gray-200 flex justify-between items-center bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30">
+        <div className="flex items-center justify-between rounded-tl-lg rounded-tr-lg border-b border-gray-200 bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30 p-4">
           <h3 className="text-lg font-medium text-[var(--text)]">Credential Details</h3>
           <button
             onClick={onClose}
@@ -63,8 +63,8 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
             }
           `}</style>
           {/* Credential Badge and Title Section */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-28 h-28 overflow-hidden mb-4 rounded-full border-4 border-[var(--primary-light)] shadow-lg">
+          <div className="mb-8 flex flex-col items-center">
+            <div className="mb-4 h-28 w-28 overflow-hidden rounded-full border-4 border-[var(--primary-light)] shadow-lg">
               <Image
                 src={credential?.credentialDetails?.iconImage || CREDENTIAL_DEFAULT_IMG}
                 alt={credential?.credentialDetails?.name || 'Credential'}
@@ -73,10 +73,10 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
                 className="h-full w-full object-contain"
               />
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text)] text-center">
+            <h2 className="text-center text-xl font-semibold text-[var(--text)]">
               Charles Foster, Admin
             </h2>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="mt-2 flex items-center gap-2">
               <Award className="h-4 w-4 text-[var(--primary)]" />
               <p className="text-base text-gray-600">
                 Issued by {credential?.credentialDetails?.issuerDetails?.name || '-'}
@@ -85,8 +85,8 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
           </div>
 
           {/* Credential Description */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100">
-            <p className="text-sm text-gray-600 leading-relaxed">
+          <div className="mb-6 rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <p className="text-sm leading-relaxed text-gray-600">
               A completion credential for {credential?.course?.name || 'a course'} was issued to{' '}
               {credential?.recipient?.name || credential?.recipient?.username || 'You'} on{' '}
               {dayjs(credential?.issuedOn).format('MMM D, YYYY')}.
@@ -94,15 +94,15 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
           </div>
           {/* Course Section with Image */}
           {!_.isEmpty(credential?.course) && (
-            <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
-              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                <h3 className="text-md font-medium text-gray-700 flex items-center gap-2">
+            <div className="mb-6 overflow-hidden rounded-lg border border-gray-200">
+              <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+                <h3 className="text-md flex items-center gap-2 font-medium text-gray-700">
                   <FileText className="h-4 w-4 text-[var(--primary)]" />
                   Course
                 </h3>
               </div>
-              <div className="p-4 flex items-center gap-4">
-                <div className="w-24 h-16 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
+              <div className="flex items-center gap-4 p-4">
+                <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                   <Image
                     src={ramdomCourseImg}
                     alt={credential?.course?.name || 'Course'}
@@ -112,7 +112,7 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
                   />
                 </div>
                 <div>
-                  <h4 className="text-[var(--primary)] font-medium text-sm">
+                  <h4 className="text-sm font-medium text-[var(--primary)]">
                     {credential?.course?.name || 'Course'}
                   </h4>
                 </div>
@@ -121,15 +121,15 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
           )}
 
           {/* Issue Date */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-              <h3 className="text-md font-medium text-gray-700 flex items-center gap-2">
+          <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+              <h3 className="text-md flex items-center gap-2 font-medium text-gray-700">
                 <Calendar className="h-4 w-4 text-[var(--primary)]" />
                 Issued on
               </h3>
             </div>
             <div className="p-4">
-              <p className="text-[var(--primary)] font-medium text-sm">
+              <p className="text-sm font-medium text-[var(--primary)]">
                 {dayjs(credential?.issuedOn).format('MMM D, YYYY')}
               </p>
             </div>
@@ -137,11 +137,11 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
         </div>
 
         {/* Fixed Footer with Download and Share Buttons */}
-        <div className="p-4 rounded-bl-lg border-t border-gray-200 bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30 flex justify-end gap-3">
+        <div className="flex justify-end gap-3 rounded-bl-lg border-t border-gray-200 bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30 p-4">
           {/* Download Button */}
           <button
             onClick={() => inBrowserPrint(certificateElement.current)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] rounded-md text-sm font-medium hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity shadow-sm"
+            className="flex items-center gap-2 rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-5 py-2.5 text-sm font-medium text-[var(--button-primary-text)] shadow-sm transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
           >
             <Download className="h-4 w-4" />
             Download Certificate

@@ -22,11 +22,12 @@ export function SyllabusTab({
   handleOpenLesson,
 }: SyllabusTabProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-medium text-gray-800 mb-4">Syllabus</h2>
-      {!courseOutlineLoading && (!courseOutline?.children || courseOutline.children.length === 0) && (
-        <DefaultEmptyBox message="No course syllabus found." />
-      )}
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-lg font-medium text-gray-800">Syllabus</h2>
+      {!courseOutlineLoading &&
+        (!courseOutline?.children || courseOutline.children.length === 0) && (
+          <DefaultEmptyBox message="No course syllabus found." />
+        )}
       <div className="space-y-3">
         {courseOutlineLoading && (
           <SkeletonMultiplier multiplier={6} Skeleton={SkeletonCourseSyllabus} />
@@ -34,10 +35,10 @@ export function SyllabusTab({
         {(courseOutline?.children || []).map((section: any, index: number) => (
           <div
             key={`${section.id}-${index}`}
-            className="border border-gray-200 rounded-md overflow-hidden"
+            className="overflow-hidden rounded-md border border-gray-200"
           >
             <div
-              className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50"
+              className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
               onClick={() => toggleSection(index)}
             >
               <h3 className="font-medium text-gray-800">{section.display_name}</h3>
@@ -60,9 +61,9 @@ export function SyllabusTab({
                         : () => {}
                     }
                     key={`${section.id}-${lesson.id}-${lessonIndex}`}
-                    className="flex items-center p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                    className="flex cursor-pointer items-center border-b border-gray-100 p-4 last:border-b-0 hover:bg-gray-50"
                   >
-                    <div className="text-amber-500 mr-3">
+                    <div className="mr-3 text-amber-500">
                       <Play className="h-5 w-5" />
                     </div>
                     <div className="flex-1">

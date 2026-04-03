@@ -26,7 +26,7 @@ export function ProfileSidebar() {
 
   return (
     <aside
-      className={`w-full sm:w-80 border-r border-gray-100 bg-white md:p-4 h-full overflow-y-auto md:block md:pb-20`}
+      className={`h-full w-full overflow-y-auto border-r border-gray-100 bg-white sm:w-80 md:block md:p-4 md:pb-20`}
     >
       {/* Profile Section */}
       {userMetaDataLoading ? <ProfileSectionSkeleton /> : <UserProfileBox />}

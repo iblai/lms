@@ -49,11 +49,11 @@ export function NotificationsDropdown() {
   }, [showOnlyUnread]);
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-sm shadow-lg border border-gray-200 z-50 overflow-hidden">
-      <div className="flex flex-col p-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-700 mb-2">Notifications</h3>
+    <div className="absolute top-full right-0 z-50 mt-2 w-80 overflow-hidden rounded-sm border border-gray-200 bg-white shadow-lg">
+      <div className="flex flex-col border-b border-gray-200 p-4">
+        <h3 className="mb-2 text-lg font-medium text-gray-700">Notifications</h3>
         <div className="flex items-center">
-          <span className="text-sm text-gray-500 mr-2">Only show unread</span>
+          <span className="mr-2 text-sm text-gray-500">Only show unread</span>
           <button
             className={`relative inline-flex h-6 w-11 items-center rounded-sm transition-colors focus:outline-none ${
               showOnlyUnread ? 'bg-amber-500' : 'bg-gray-200'
@@ -81,17 +81,17 @@ export function NotificationsDropdown() {
           filteredNotifications.map((notification: Notification, index) => (
             <div
               key={'Notification ' + index}
-              className="p-4 border-b border-gray-100 hover:bg-gray-50"
+              className="border-b border-gray-100 p-4 hover:bg-gray-50"
             >
               <div className="flex">
-                <div className="flex-shrink-0 mr-3">
+                <div className="mr-3 flex-shrink-0">
                   <UserAvatar />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-600">
                     {notification?.context?.template_data?.message_title || notification?.title}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="mt-1 text-xs text-gray-400">
                     {getTimeAgo(notification?.created_at)}
                   </p>
                 </div>

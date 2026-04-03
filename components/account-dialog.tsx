@@ -111,27 +111,27 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`p-0 overflow-hidden ${dialogWidthClass} h-[85vh] flex flex-row`}>
+      <DialogContent className={`overflow-hidden p-0 ${dialogWidthClass} flex h-[85vh] flex-row`}>
         {/* Left Sidebar */}
-        <div className="w-64 bg-[var(--dialog-sidebar-bg)] text-[var(--dialog-sidebar-text)] p-0 flex flex-col relative overflow-hidden">
+        <div className="relative flex w-64 flex-col overflow-hidden bg-[var(--dialog-sidebar-bg)] p-0 text-[var(--dialog-sidebar-text)]">
           {/* Decorative Circles - updated to be subtle on white background */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--primary-light)]/30 rounded-full -translate-x-20 -translate-y-20 z-0"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-[var(--primary-light)]/30 rounded-full translate-x-10 translate-y-20 z-0"></div>
+          <div className="absolute top-0 right-0 z-0 h-64 w-64 -translate-x-20 -translate-y-20 rounded-full bg-[var(--primary-light)]/30"></div>
+          <div className="absolute bottom-0 left-0 z-0 h-80 w-80 translate-x-10 translate-y-20 rounded-full bg-[var(--primary-light)]/30"></div>
 
           {/* Profile Section - update border color for white theme */}
-          <div className="flex flex-col items-center justify-center py-8 px-4 border-b border-[var(--primary-light)] relative z-10">
-            <div className="relative w-24 h-24 mb-4">
+          <div className="relative z-10 flex flex-col items-center justify-center border-b border-[var(--primary-light)] px-4 py-8">
+            <div className="relative mb-4 h-24 w-24">
               <Image
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-25%20at%2001.33.30-L2N6YxtKLEIuHnSaRgZYo4cZk49uNn.png"
                 alt="Profile"
                 width={96}
                 height={96}
-                className="rounded-full object-cover border-4 border-white shadow-md"
+                className="rounded-full border-4 border-white object-cover shadow-md"
               />
               <Button
                 size="icon"
                 variant="secondary"
-                className="absolute bottom-0 right-0 h-8 w-8 rounded-full p-1 shadow-md bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white"
+                className="absolute right-0 bottom-0 h-8 w-8 rounded-full bg-[var(--primary)] p-1 text-white shadow-md hover:bg-[var(--primary-dark)]"
               >
                 <User className="h-4 w-4" />
               </Button>
@@ -140,19 +140,19 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
               {accountInfo.fullName || 'Charles Foster, Admin'}
             </h2>
 
-            <div className="flex mt-4 space-x-2">
-              <div className="bg-[var(--badge-admin-bg)] px-3 py-1 rounded-md text-xs font-medium flex items-center text-[var(--badge-admin-text)]">
-                <User className="h-3 w-3 mr-1" />
+            <div className="mt-4 flex space-x-2">
+              <div className="flex items-center rounded-md bg-[var(--badge-admin-bg)] px-3 py-1 text-xs font-medium text-[var(--badge-admin-text)]">
+                <User className="mr-1 h-3 w-3" />
                 ADMIN
               </div>
-              <div className="bg-[var(--badge-default-bg)] px-3 py-1 rounded-md text-xs font-medium truncate max-w-[100px] text-[var(--badge-default-text)]">
+              <div className="max-w-[100px] truncate rounded-md bg-[var(--badge-default-bg)] px-3 py-1 text-xs font-medium text-[var(--badge-default-text)]">
                 0010500000...
               </div>
             </div>
           </div>
 
           {/* Navigation - update active tab styling for white theme */}
-          <nav className="flex-1 py-6 relative z-10">
+          <nav className="relative z-10 flex-1 py-6">
             <ul className="space-y-1">
               {[
                 { id: 'basic', label: 'Basic', icon: User },
@@ -163,13 +163,13 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                 <li key={tab.id}>
                   <button
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full text-left px-6 py-3 flex items-center ${
+                    className={`flex w-full items-center px-6 py-3 text-left ${
                       activeTab === tab.id
-                        ? 'bg-[var(--dialog-sidebar-active-bg)] border-l-4 border-[var(--dialog-sidebar-active-border)] text-[var(--dialog-sidebar-active-text)] font-medium'
-                        : 'hover:bg-[var(--sidebar-hover-bg)] text-[var(--dialog-sidebar-text)]'
+                        ? 'border-l-4 border-[var(--dialog-sidebar-active-border)] bg-[var(--dialog-sidebar-active-bg)] font-medium text-[var(--dialog-sidebar-active-text)]'
+                        : 'text-[var(--dialog-sidebar-text)] hover:bg-[var(--sidebar-hover-bg)]'
                     }`}
                   >
-                    <tab.icon className="h-5 w-5 mr-3" />
+                    <tab.icon className="mr-3 h-5 w-5" />
                     <span>{tab.label}</span>
                   </button>
                 </li>
@@ -179,8 +179,8 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
         </div>
 
         {/* Right Content */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          <DialogHeader className="px-6 py-4 border-b sticky top-0 bg-[var(--dialog-bg)] z-10 flex flex-row justify-between items-center">
+        <div className="flex flex-1 flex-col overflow-y-auto">
+          <DialogHeader className="sticky top-0 z-10 flex flex-row items-center justify-between border-b bg-[var(--dialog-bg)] px-6 py-4">
             <DialogTitle className="text-xl font-medium text-[var(--dialog-text)]">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </DialogTitle>
@@ -188,13 +188,13 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="rounded-full h-8 w-8 p-0"
+              className="h-8 w-8 rounded-full p-0"
             >
               <X className="h-5 w-5" />
             </Button>
           </DialogHeader>
 
-          <div className="p-6 space-y-6 bg-white overflow-y-auto flex-1 pb-16">
+          <div className="flex-1 space-y-6 overflow-y-auto bg-white p-6 pb-16">
             {activeTab === 'basic' && (
               <>
                 {/* Full Name */}
@@ -264,7 +264,7 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                     value={accountInfo.about}
                     onChange={(e) => handleInputChange('about', e.target.value)}
                     rows={4}
-                    className="resize-none w-full"
+                    className="w-full resize-none"
                     placeholder="Tell us about yourself"
                   />
                 </div>
@@ -361,9 +361,9 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                     Facebook
                   </Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <div className="bg-[#1877F2] text-white rounded w-6 h-6 flex items-center justify-center">
-                        <span className="font-bold text-lg">f</span>
+                    <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-[#1877F2] text-white">
+                        <span className="text-lg font-bold">f</span>
                       </div>
                     </div>
                     <Input
@@ -385,9 +385,9 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                     LinkedIn
                   </Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <div className="bg-[#0A66C2] text-white rounded w-6 h-6 flex items-center justify-center">
-                        <span className="font-bold text-sm">in</span>
+                    <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-[#0A66C2] text-white">
+                        <span className="text-sm font-bold">in</span>
                       </div>
                     </div>
                     <Input
@@ -409,8 +409,8 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                     X
                   </Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <div className="bg-black text-white rounded w-6 h-6 flex items-center justify-center">
+                    <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-black text-white">
                         <span className="font-bold">X</span>
                       </div>
                     </div>
@@ -427,8 +427,8 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
             )}
 
             {activeTab === 'security' && (
-              <div className="flex flex-col items-center justify-center max-w-md mx-auto pt-12">
-                <div className="text-gray-400 mb-4">
+              <div className="mx-auto flex max-w-md flex-col items-center justify-center pt-12">
+                <div className="mb-4 text-gray-400">
                   <svg
                     width="80"
                     height="80"
@@ -443,7 +443,7 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                 </div>
-                <p className="text-gray-500 text-center mb-8">Click to reset your password.</p>
+                <p className="mb-8 text-center text-gray-500">Click to reset your password.</p>
                 <Button
                   className="w-full bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)]"
                   onClick={handlePasswordReset}
@@ -457,17 +457,17 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
               <div className="space-y-6">
                 {/* Search Users */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="Search Users"
-                    className="pl-10 max-w-[300px]"
+                    className="max-w-[300px] pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
 
                 {/* Users Table */}
-                <div className="border rounded-lg overflow-hidden">
+                <div className="overflow-hidden rounded-lg border">
                   {/* Table Header */}
                   <div className="grid grid-cols-3 bg-gray-50 p-4 text-sm font-medium text-gray-500">
                     <div>Name</div>
@@ -478,10 +478,10 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
                   {/* Table Body */}
                   <div className="divide-y">
                     {filteredUsers.map((user) => (
-                      <div key={user.id} className="grid grid-cols-3 p-4 items-center">
+                      <div key={user.id} className="grid grid-cols-3 items-center p-4">
                         <div className="text-gray-700">{user.name}</div>
                         <div className="text-gray-700">{user.email}</div>
-                        <div className="pr-0 flex justify-end">
+                        <div className="flex justify-end pr-0">
                           <Select
                             value={user.role}
                             onValueChange={(value: 'Admin' | 'Student') =>
@@ -511,7 +511,7 @@ export function AccountDialog({ open, onOpenChange, onSave, initialInfo }: Accou
 
           {/* Footer with Save Button - hide on security tab */}
           {activeTab !== 'security' && (
-            <div className="border-t p-4 sticky bottom-0 w-full bg-[var(--dialog-bg)] flex justify-end shadow-md z-10">
+            <div className="sticky bottom-0 z-10 flex w-full justify-end border-t bg-[var(--dialog-bg)] p-4 shadow-md">
               <Button
                 onClick={handleSave}
                 className="bg-gradient-to-r from-gray-700 to-amber-500 text-white hover:opacity-90"

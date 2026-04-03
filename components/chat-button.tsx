@@ -122,7 +122,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
 
   if (isMentorsLoading || isMentorsFetching || !metadataLoaded) {
     return (
-      <div className="flex h-24 w-[45px] items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_0_15px_rgba(0,0,0,0.2)] relative">
+      <div className="relative flex h-24 w-[45px] items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
         <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
       </div>
     );
@@ -138,9 +138,9 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
       <div className="w-full px-4 pb-4">
         {alreadyOpened && mentorInUse && (
           <div
-            className={`fixed inset-0 bg-white z-50 flex flex-col ${isOpen ? 'flex' : 'hidden'}`}
+            className={`fixed inset-0 z-50 flex flex-col bg-white ${isOpen ? 'flex' : 'hidden'}`}
           >
-            <div className="flex items-center justify-between h-full relative">
+            <div className="relative flex h-full items-center justify-between">
               {/* <button
                 onClick={() => handleOpen(false)}
                 className={`fixed transform-rotate-90 left-[50%] top-[-30px] border-radius-[5px 0 0 5px] z-[2147483647] flex h-[85px] w-[25px] items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_0_15px_rgba(0,0,0,0.2)]`}
@@ -172,7 +172,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
         {!isOpen && (
           <button
             onClick={() => handleOpen(true)}
-            className="fixed bottom-20 right-6 w-14 h-14 flex items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] hover:shadow-[0_0_15px_rgba(0,0,0,0.2)] z-20"
+            className="fixed right-6 bottom-20 z-20 flex h-14 w-14 items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] hover:shadow-[0_0_15px_rgba(0,0,0,0.2)]"
           >
             <Image
               src="/images/mentor-loader.png"
@@ -189,10 +189,10 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
 
   // Desktop version - now part of the row layout, not fixed
   return (
-    <div className="h-full pl-4 pr-0 pt-4 z-[9] pb-30 relative">
+    <div className="relative z-[9] h-full pt-4 pr-0 pb-30 pl-4">
       <button
         onClick={() => handleOpen(!isOpen)}
-        className={`flex h-24 w-[45px] items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_0_15px_rgba(0,0,0,0.2)] relative ${
+        className={`relative flex h-24 w-[45px] items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_0_15px_rgba(0,0,0,0.2)] ${
           isOpen ? 'hidden' : 'block'
         }`}
         aria-label="Open chat assistant"
@@ -208,11 +208,11 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
 
       {alreadyOpened && mentorInUse && (
         <div
-          className={`w-[360px] rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] z-20 overflow-hidden h-[calc(100vh-120px)] flex flex-col mr-4 ${
+          className={`z-20 mr-4 flex h-[calc(100vh-120px)] w-[360px] flex-col overflow-hidden rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] ${
             isOpen ? 'flex' : 'hidden'
           }`}
         >
-          <div className="flex items-center justify-between h-full">
+          <div className="flex h-full items-center justify-between">
             {/* <button
               onClick={() => handleOpen(false)}
               className="absolute top-1 right-1 z-10 border border-gray-200 rounded-full p-1.5 text-gray-500 hover:bg-gray-100 bg-white shadow-sm"

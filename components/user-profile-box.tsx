@@ -13,12 +13,12 @@ export const UserProfileBox = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div
-            className=" overflow-hidden rounded-full border-2"
+            className="overflow-hidden rounded-full border-2"
             style={{ borderColor: 'var(--primary-light)' }}
           >
             <UserAvatar />
           </div>
-          <h2 className="text-sm md:text-base font-medium text-[var(--sidebar-text)]">
+          <h2 className="text-sm font-medium text-[var(--sidebar-text)] md:text-base">
             {userMetaData?.name}
           </h2>
         </div>

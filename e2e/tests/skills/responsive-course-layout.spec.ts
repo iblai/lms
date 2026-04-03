@@ -49,10 +49,18 @@ test.describe('Responsive Course Layout', () => {
     await expect(tabsContainer).toBeVisible({ timeout: 30000 });
 
     // Verify the Course, Progress, Dates, and Discussion tabs are inside it
-    await expect(tabsContainer.getByRole('link', { name: 'Course' })).toBeVisible({ timeout: 30000 });
-    await expect(tabsContainer.getByRole('link', { name: 'Progress' })).toBeVisible({ timeout: 30000 });
-    await expect(tabsContainer.getByRole('link', { name: 'Dates' })).toBeVisible({ timeout: 30000 });
-    await expect(tabsContainer.getByRole('link', { name: 'Discussion' })).toBeVisible({ timeout: 30000 });
+    await expect(tabsContainer.getByRole('link', { name: 'Course' })).toBeVisible({
+      timeout: 30000,
+    });
+    await expect(tabsContainer.getByRole('link', { name: 'Progress' })).toBeVisible({
+      timeout: 30000,
+    });
+    await expect(tabsContainer.getByRole('link', { name: 'Dates' })).toBeVisible({
+      timeout: 30000,
+    });
+    await expect(tabsContainer.getByRole('link', { name: 'Discussion' })).toBeVisible({
+      timeout: 30000,
+    });
 
     logger.info('Nav tabs container has overflow-x-auto and w-full');
   });

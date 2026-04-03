@@ -96,7 +96,9 @@ vi.mock('@tanstack/react-form', () => ({
 
 vi.mock('lodash', () => ({
   default: {
-    isEmpty: vi.fn((val) => !val || (typeof val === 'object' ? Object.keys(val).length === 0 : false)),
+    isEmpty: vi.fn(
+      (val) => !val || (typeof val === 'object' ? Object.keys(val).length === 0 : false),
+    ),
   },
 }));
 
@@ -461,8 +463,13 @@ describe('MediaBox', () => {
         Field: ({ name, children }: any) => {
           const field = {
             name,
-            state: { value: values[name as keyof typeof values], meta: { isValid: true, errors: [] } },
-            handleChange: vi.fn((val: any) => { values[name as keyof typeof values] = val; }),
+            state: {
+              value: values[name as keyof typeof values],
+              meta: { isValid: true, errors: [] },
+            },
+            handleChange: vi.fn((val: any) => {
+              values[name as keyof typeof values] = val;
+            }),
           };
           return children(field);
         },
@@ -503,7 +510,10 @@ describe('MediaBox', () => {
         Field: ({ name, children }: any) => {
           const field = {
             name,
-            state: { value: values[name as keyof typeof values], meta: { isValid: true, errors: [] } },
+            state: {
+              value: values[name as keyof typeof values],
+              meta: { isValid: true, errors: [] },
+            },
             handleChange: vi.fn(),
           };
           return children(field);
@@ -532,7 +542,10 @@ describe('MediaBox', () => {
         Field: ({ name, children }: any) => {
           const field = {
             name,
-            state: { value: values[name as keyof typeof values], meta: { isValid: true, errors: [] } },
+            state: {
+              value: values[name as keyof typeof values],
+              meta: { isValid: true, errors: [] },
+            },
             handleChange: vi.fn(),
           };
           return children(field);

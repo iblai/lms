@@ -27,7 +27,8 @@ const mockResetReportedSkills = vi.fn();
 const mockUpdateUserMetadata = vi.fn();
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useGetUserMetadataQuery: (...args: any[]) => (mockGetUserMetadataQuery as (...a: any[]) => any)(...args),
+  useGetUserMetadataQuery: (...args: any[]) =>
+    (mockGetUserMetadataQuery as (...a: any[]) => any)(...args),
   useLazyGetReportedSkillsQuery: vi.fn(() => [vi.fn(), { reset: mockResetReportedSkills }]),
   useUpdateUserMetadataMutation: vi.fn(() => [mockUpdateUserMetadata]),
 }));

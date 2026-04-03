@@ -59,11 +59,11 @@ export default function PublicProfilePage() {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto bg-white">
+      <div className="mx-auto max-w-5xl bg-white">
         {/* Profile Header */}
         <div className="relative">
           {/* Banner */}
-          <div className="h-48 w-full bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 relative overflow-hidden mt-8">
+          <div className="relative mt-8 h-48 w-full overflow-hidden bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300">
             <div className="absolute inset-0">
               <svg viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -78,15 +78,15 @@ export default function PublicProfilePage() {
             </div>
             <button
               onClick={() => openUserProfile('basic')}
-              className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow"
+              className="absolute top-4 right-4 rounded-full bg-white p-2 shadow-md transition-shadow hover:shadow-lg"
             >
               <Edit2 className="h-4 w-4 text-gray-600" />
             </button>
           </div>
 
           {/* Profile Picture */}
-          <div className="absolute left-6 bottom-0 transform translate-y-1/2">
-            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-white overflow-hidden shadow-lg">
+          <div className="absolute bottom-0 left-6 translate-y-1/2 transform">
+            <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-lg md:h-32 md:w-32">
               <UserAvatar size={120} containerClassName="h-full w-full" />
             </div>
           </div>
@@ -95,27 +95,27 @@ export default function PublicProfilePage() {
         {/* Profile Info */}
         <div className="px-6 pt-16 md:pt-20">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-semibold text-gray-600">
+            <h1 className="text-xl font-semibold text-gray-600 md:text-2xl">
               {userMetaData?.name}
             </h1>
             <button
               onClick={() => openUserProfile('basic')}
-              className="p-1 text-gray-400 hover:text-amber-500 hover:bg-gray-100 rounded-full transition-all"
+              className="rounded-full p-1 text-gray-400 transition-all hover:bg-gray-100 hover:text-amber-500"
             >
               <Edit className="h-4 w-4" />
             </button>
           </div>
-          {userMetaData?.bio && <p className="text-gray-600 mt-1">{userMetaData?.bio}</p>}
+          {userMetaData?.bio && <p className="mt-1 text-gray-600">{userMetaData?.bio}</p>}
 
           {/* Social Media Links */}
-          <div className="flex space-x-3 mt-3">
+          <div className="mt-3 flex space-x-3">
             {userMetaData?.social_links?.map((link: any) => (
               <a
                 key={link.platform}
                 href={`https://${link.platform}.com/${link.social_link}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-amber-500 hover:text-amber-600 transition-colors"
+                className="text-amber-500 transition-colors hover:text-amber-600"
               >
                 {link.platform === 'facebook' && <Facebook className="h-5 w-5" />}
                 {link.platform === 'linkedin' && <Linkedin className="h-5 w-5" />}
@@ -126,7 +126,7 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Profile Tabs */}
-        <div className="border-b border-gray-200 px-6 mt-6">
+        <div className="mt-6 border-b border-gray-200 px-6">
           <div className="flex space-x-8 overflow-x-auto">
             {[
               'About',
@@ -140,10 +140,10 @@ export default function PublicProfilePage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab.toLowerCase())}
-                className={`whitespace-nowrap py-2 px-1 text-sm font-medium border-b-2 ${
+                className={`border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap ${
                   activeTab === tab.toLowerCase()
                     ? 'border-amber-500 text-amber-500'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
                 {tab}
@@ -153,10 +153,10 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Tab Content */}
-        <div className="px-6 py-6 mb-10">
+        <div className="mb-10 px-6 py-6">
           {activeTab === 'about' && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-lg font-medium text-gray-800 mb-4">About</h2>
+            <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <h2 className="mb-4 text-lg font-medium text-gray-800">About</h2>
               <p className="text-gray-600">{userMetaData?.about}</p>
             </div>
           )}
