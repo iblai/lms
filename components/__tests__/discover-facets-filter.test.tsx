@@ -8,10 +8,10 @@ const mockHandleFilterFacets = vi.fn();
 const mockIsFacetTermSelected = vi.fn(() => false);
 const mockHandleSelectFacets = vi.fn();
 
-vi.mock('@/contexts/facet-filter-context', () => {
-  const React = require('react');
+vi.mock('@/contexts/facet-filter-context', async () => {
+  const { createContext } = await import('react');
   return {
-    FacetFilterContext: React.createContext({
+    FacetFilterContext: createContext({
       facetsLoading: false,
       isError: false,
       facets: [],
