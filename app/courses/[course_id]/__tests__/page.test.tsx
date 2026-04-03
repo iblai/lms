@@ -567,7 +567,11 @@ describe('CourseDetailsPage', () => {
     const mockSetMentorSidebarHidden = vi.fn();
 
     vi.mocked(useChatState).mockReturnValue({
+      isOpen: false,
+      setIsOpen: vi.fn(),
+      courseMentor: null,
       setCourseMentor: mockSetCourseMentor,
+      mentorSidebarHidden: false,
       setMentorSidebarHidden: mockSetMentorSidebarHidden,
     });
 
@@ -605,7 +609,11 @@ describe('CourseDetailsPage', () => {
     const mockSetMentorSidebarHidden = vi.fn();
 
     vi.mocked(useChatState).mockReturnValue({
+      isOpen: false,
+      setIsOpen: vi.fn(),
+      courseMentor: null,
       setCourseMentor: mockSetCourseMentor,
+      mentorSidebarHidden: false,
       setMentorSidebarHidden: mockSetMentorSidebarHidden,
     });
 

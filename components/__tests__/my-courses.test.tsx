@@ -12,9 +12,9 @@ vi.mock('next/link', () => ({
 }));
 
 const mockUseUserCourses = vi.fn(() => ({
-  userCourses: [],
+  userCourses: [] as { course_id: string }[],
   isLoadingUserCourses: false,
-  errorUserCourses: null,
+  errorUserCourses: null as Error | null,
 }));
 
 vi.mock('@/hooks/courses/use-user-courses', () => ({

@@ -16,8 +16,8 @@ vi.mock('@/utils/helpers', () => ({
 }));
 
 vi.mock('dayjs', () => {
-  const dayjs = (date: any) => ({
-    format: (fmt: string) => 'Jan 1, 2024',
+  const dayjs = (_date: any) => ({
+    format: (_fmt: string) => 'Jan 1, 2024',
   });
   dayjs.default = dayjs;
   return { default: dayjs };

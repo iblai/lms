@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useToast, toast, reducer } from '../use-toast';
 
@@ -79,7 +79,7 @@ describe('useToast', () => {
 
   it('toast function returns id, dismiss, and update', () => {
     let toastResult: any;
-    const { result } = renderHook(() => useToast());
+    renderHook(() => useToast());
 
     act(() => {
       toastResult = toast({ title: 'Test' });

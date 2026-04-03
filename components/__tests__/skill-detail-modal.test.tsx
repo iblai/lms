@@ -128,7 +128,7 @@ describe('SkillDetailModal', () => {
   });
 
   it('applies pulse animation when rating changes from original', () => {
-    const { container } = render(<SkillDetailModal {...defaultProps} />);
+    render(<SkillDetailModal {...defaultProps} />);
     const slider = screen.getByRole('slider', { name: 'Skill rating' });
     fireEvent.change(slider, { target: { value: '5' } });
     const confirmBtn = screen.getByText('Confirm');

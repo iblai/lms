@@ -61,7 +61,7 @@ describe('UserProfileModal', () => {
   });
 
   it('renders nothing when not open', () => {
-    const { container } = render(<UserProfileModal isOpen={false} onClose={vi.fn()} />);
+    render(<UserProfileModal isOpen={false} onClose={vi.fn()} />);
     expect(screen.queryByTestId('dialog')).not.toBeInTheDocument();
   });
 

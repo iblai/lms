@@ -52,7 +52,7 @@ describe('AboutTab', () => {
   });
 
   it('renders plain text overview in a <p> tag (not dangerouslySetInnerHTML)', () => {
-    const { container } = renderTab({
+    renderTab({
       description: 'Desc',
       overview: 'Plain text overview content',
     });

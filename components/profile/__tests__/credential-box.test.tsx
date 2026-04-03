@@ -6,7 +6,7 @@ import React from 'react';
 const mockUseProfileCredentials = vi.fn(() => ({
   isLoading: false,
   isError: false,
-  fetchedCredentials: [],
+  fetchedCredentials: [] as { entityId: string }[],
 }));
 
 vi.mock('@/hooks/profile/use-profile-credentials', () => ({

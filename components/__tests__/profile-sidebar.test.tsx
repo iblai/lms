@@ -135,7 +135,7 @@ describe('ProfileSidebar', () => {
     mockUsePerLearnerInfoQuery.mockReturnValue({
       userPerLearnerInfo: null,
       userPerLearnerInfoLoading: true,
-    });
+    } as any);
     render(<ProfileSidebar />);
     expect(screen.getByTestId('all-time-skeleton')).toBeInTheDocument();
     expect(screen.queryByTestId('all-time-box')).not.toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('ProfileSidebar', () => {
     mockUsePerLearnerInfoQuery.mockReturnValue({
       userPerLearnerInfo: undefined,
       userPerLearnerInfoLoading: false,
-    });
+    } as any);
     render(<ProfileSidebar />);
     expect(screen.getByText('All Time: 0')).toBeInTheDocument();
   });

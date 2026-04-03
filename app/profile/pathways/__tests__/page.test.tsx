@@ -45,7 +45,7 @@ vi.mock('@/components/pathway-detail-modal', () => ({
 }));
 
 vi.mock('@/components/create-pathway-modal', () => ({
-  CreatePathwayModal: ({ open, onOpenChange, onSave }: any) => (
+  CreatePathwayModal: ({ onOpenChange, onSave }: any) => (
     <div data-testid="create-pathway-modal">
       <button data-testid="save-pathway" onClick={() => onSave({ name: 'New Pathway' })}>
         Save

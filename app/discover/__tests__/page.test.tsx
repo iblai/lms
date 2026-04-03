@@ -60,7 +60,7 @@ vi.mock('@/components/discover-content-card', () => ({
 }));
 
 vi.mock('react-paginate', () => ({
-  default: ({ onPageChange, ...props }: any) => (
+  default: ({ onPageChange }: any) => (
     <div data-testid="paginate">
       <button data-testid="page-btn" onClick={() => onPageChange({ selected: 1 })}>
         Page 2

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { ScrollArea, ScrollBar } from '../scroll-area';
+import { ScrollArea } from '../scroll-area';
 
 describe('ScrollArea', () => {
   it('renders without crashing', () => {

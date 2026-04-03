@@ -20,7 +20,7 @@ const baseForm = {
 const defaultProps = {
   isOpen: true,
   onClose: vi.fn(),
-  editingCredential: null,
+  editingCredential: null as any | null,
   credentialForm: { ...baseForm },
   setCredentialForm: vi.fn(),
   issuers: [] as any[],

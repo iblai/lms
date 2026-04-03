@@ -19,7 +19,7 @@ vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
-const mockUseTenantMetadata = vi.fn(() => ({ metadata: null }));
+const mockUseTenantMetadata = vi.fn(() => ({ metadata: null as unknown }));
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: () => mockUseTenantMetadata(),

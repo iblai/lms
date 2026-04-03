@@ -44,6 +44,6 @@ describe('useEventCallback', () => {
     // When undefined is passed, the hook still returns a wrapper function
     // but calling it returns undefined since ref.current is undefined
     expect(typeof result.current).toBe('function');
-    expect(result.current()).toBeUndefined();
+    expect(result.current?.()).toBeUndefined();
   });
 });

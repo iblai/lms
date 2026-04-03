@@ -12,7 +12,7 @@ vi.mock('@/constants/assets', () => ({
 
 vi.mock('dayjs', () => {
   const dayjs = (date: any) => ({
-    format: (fmt: string) => (date ? 'Jan 1, 2024' : '-'),
+    format: (_fmt: string) => (date ? 'Jan 1, 2024' : '-'),
   });
   dayjs.default = dayjs;
   return { default: dayjs };
