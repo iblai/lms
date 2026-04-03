@@ -54,6 +54,7 @@ function MyComponent() {
 const { theme } = useTheme()
 
 return (
+
 <div style={{ color: theme.colors.primary.DEFAULT }}>
 Themed content
 </div>
@@ -70,6 +71,7 @@ function MyComponent() {
 const primaryColor = useThemedColor("primary.DEFAULT")
 
 return (
+
 <div style={{ color: primaryColor }}>
 Themed content
 </div>
@@ -84,6 +86,7 @@ import { Logo } from "@/components/logo"
 
 function Header() {
 return (
+
 <header>
 <Logo variant="main" />
 </header>
@@ -92,6 +95,7 @@ return (
 
 function Footer() {
 return (
+
 <footer>
 <Logo variant="footer" />
 </footer>
