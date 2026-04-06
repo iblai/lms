@@ -39,8 +39,8 @@ export const EducationBox = () => {
   };
   return (
     <>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-medium text-gray-800 mb-4">Education</h2>
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 text-lg font-medium text-gray-800">Education</h2>
         <div className="space-y-8">
           {isLoading && <SkeletonMultiplier multiplier={4} Skeleton={SkeletonEducationBox} />}
           {((!isLoading && error) ||
@@ -57,7 +57,7 @@ export const EducationBox = () => {
                   <h3 className="text-base font-medium text-amber-500">{_education.degree}</h3>
                   <button
                     onClick={() => handleEditEducation(_education)}
-                    className="ml-2 text-amber-500 hover:text-amber-600 transition-colors"
+                    className="ml-2 text-amber-500 transition-colors hover:text-amber-600"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>

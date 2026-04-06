@@ -1,9 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CourseDetailsLoading() {
   return (
-    <div className="flex flex-col h-screen bg-white">
-
+    <div className="flex h-screen flex-col bg-white">
       {/* Main content area with tabs and chat */}
       <div className="flex flex-1 overflow-hidden">
         {/* Main content area */}
@@ -25,7 +24,7 @@ export default function CourseDetailsLoading() {
 
           {/* Tab Content */}
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl">
+            <div className="grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
               <div className="md:col-span-1">
                 <div className="sticky top-6 space-y-6">
                   <Skeleton className="aspect-video w-full rounded-lg" />
@@ -41,15 +40,15 @@ export default function CourseDetailsLoading() {
               <div className="md:col-span-2">
                 <div className="space-y-6">
                   <div>
-                    <Skeleton className="h-6 w-48 mb-3" />
-                    <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="mb-3 h-6 w-48" />
+                    <Skeleton className="mb-2 h-4 w-full" />
+                    <Skeleton className="mb-2 h-4 w-full" />
+                    <Skeleton className="mb-2 h-4 w-full" />
                     <Skeleton className="h-4 w-3/4" />
                   </div>
 
                   <div>
-                    <Skeleton className="h-6 w-48 mb-3" />
+                    <Skeleton className="mb-3 h-6 w-48" />
                     <div className="space-y-2">
                       <Skeleton className="h-4 w-full" />
                       <Skeleton className="h-4 w-full" />
@@ -64,5 +63,5 @@ export default function CourseDetailsLoading() {
         </div>
       </div>
     </div>
-  )
+  );
 }

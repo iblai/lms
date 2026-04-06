@@ -167,9 +167,9 @@ export function PathwayDetailModal({
     handleFetchPathwayEnrollmentStatus();
   }, [pathway]);
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-        <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+      <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white">
+        <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30 p-4">
           <h3 className="text-lg font-medium text-[var(--text)]">Pathway Details</h3>
           <button
             onClick={onClose}
@@ -180,7 +180,7 @@ export function PathwayDetailModal({
         </div>
 
         <div
-          className="p-6 max-h-[70vh] overflow-y-auto"
+          className="max-h-[70vh] overflow-y-auto p-6"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -192,7 +192,7 @@ export function PathwayDetailModal({
             }
           `}</style>
 
-          <div className="relative h-48 w-full overflow-hidden rounded-lg mb-6">
+          <div className="relative mb-6 h-48 w-full overflow-hidden rounded-lg">
             <Image
               src={
                 pathway?.metadata?.banner_image_asset_path
@@ -208,23 +208,23 @@ export function PathwayDetailModal({
               }}
               priority
             />
-            <div className="absolute bottom-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+            <div className="absolute bottom-2 left-2 rounded bg-amber-500 px-2 py-1 text-xs text-white">
               PATHWAY
             </div>
           </div>
 
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">{pathway.name}</h2>
+          <h2 className="mb-2 text-xl font-semibold text-gray-800">{pathway.name}</h2>
           {!_.isEmpty(pathwayCompletion) && (
-            <div className="space-y-1 mb-6">
+            <div className="mb-6 space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Progress</span>
-                <span className="text-gray-800 font-medium">
+                <span className="font-medium text-gray-800">
                   {pathwayCompletion.completion_percentage || 0}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-gray-200">
                 <div
-                  className="bg-amber-500 h-2 rounded-full"
+                  className="h-2 rounded-full bg-amber-500"
                   style={{
                     width: `${pathwayCompletion.completion_percentage || 0}%`,
                   }}
@@ -234,9 +234,9 @@ export function PathwayDetailModal({
           )}
 
           <div className="border-t border-gray-200 pt-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-4">Content in this Pathway</h4>
+            <h4 className="mb-4 text-sm font-medium text-gray-700">Content in this Pathway</h4>
             {pathwayDetailLoading ? (
-              <div className="flex justify-center items-center h-full">
+              <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
               </div>
             ) : paths.length > 0 ? (
@@ -245,16 +245,16 @@ export function PathwayDetailModal({
                   <div
                     onClick={() => handleCourseClick(course)}
                     key={`${course.id}-${index}`}
-                    className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 transition-shadow hover:shadow-md"
                   >
-                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 className="text-md font-medium text-gray-700 flex items-center gap-2">
+                    <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+                      <h3 className="text-md flex items-center gap-2 font-medium text-gray-700">
                         <Clock className="h-4 w-4 text-amber-500" />
                         {course?.item_type === 'course' ? 'Course' : 'Resource'}
                       </h3>
                     </div>
-                    <div className="p-4 flex items-center gap-4">
-                      <div className="w-24 h-16 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
+                    <div className="flex items-center gap-4 p-4">
+                      <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                         <Image
                           src={
                             course?.item_type === 'resource'
@@ -272,16 +272,16 @@ export function PathwayDetailModal({
                         />
                       </div>
                       <div>
-                        <h4 className="text-amber-500 font-medium text-sm">{course.name}</h4>
+                        <h4 className="text-sm font-medium text-amber-500">{course.name}</h4>
                         {course?.data?.edx_data && (
                           <>
-                            <div className="flex items-center text-xs text-gray-500 mt-1">
-                              <Clock className="h-3 w-3 mr-1" />
+                            <div className="mt-1 flex items-center text-xs text-gray-500">
+                              <Clock className="mr-1 h-3 w-3" />
                               <span>{course.data.edx_data.duration}</span>
                             </div>
                             <div className="mt-1">
                               <span
-                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                className={`rounded-full px-2 py-0.5 text-xs ${
                                   course.completed
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-gray-100 text-gray-600'
@@ -304,7 +304,7 @@ export function PathwayDetailModal({
         </div>
 
         <div
-          className={`p-4 border-t border-gray-200 bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30 flex ${
+          className={`flex border-t border-gray-200 bg-gradient-to-r from-[var(--background-light)] to-[var(--primary-light)]/30 p-4 ${
             !enrollmentStatus && !isEnrollmentSuccess && !isEnrollmentLoading
               ? 'justify-between'
               : 'justify-end'
@@ -314,14 +314,14 @@ export function PathwayDetailModal({
             <button
               onClick={() => handleEnrollIntoPathway(pathway)}
               disabled={isEnrollmentSubmitting}
-              className="px-4 py-2 bg-amber-500 text-white rounded-md text-sm font-medium hover:bg-amber-600 transition-colors"
+              className="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600"
             >
               {isEnrollmentSubmitting ? 'Enrolling...' : 'Enroll Now'}
             </button>
           )}
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Close
           </button>

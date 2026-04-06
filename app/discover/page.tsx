@@ -71,19 +71,19 @@ export default function DiscoverPage() {
           setFilterDrawerOpen,
         }}
       >
-        <main className="flex-1 flex overflow-hidden">
+        <main className="flex flex-1 overflow-hidden">
           {/* Filters Sidebar */}
           <div
-            className="w-64 border-r border-gray-200 overflow-y-auto p-6 hidden md:block"
+            className="hidden w-64 overflow-y-auto border-r border-gray-200 p-6 md:block"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
           >
-            <h2 className="text-lg font-medium text-gray-600 mb-4">Explore Content</h2>
+            <h2 className="mb-4 text-lg font-medium text-gray-600">Explore Content</h2>
 
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-base font-medium text-gray-700">Filter By</h3>
               </div>
               <DiscoverFacetsFilter />
@@ -92,21 +92,21 @@ export default function DiscoverPage() {
 
           {/* Main Content */}
           <div
-            className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 pt-4 md:pt-6 pb-16 md:pb-6"
+            className="flex-1 overflow-y-auto px-3 pt-4 pb-16 sm:px-4 md:px-6 md:pt-6 md:pb-6"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
           >
             <div className="w-full pb-16">
-              <div className="flex items-center justify-between mb-4 md:hidden">
+              <div className="mb-4 flex items-center justify-between md:hidden">
                 <h1 className="text-xl font-semibold text-gray-600">Featured Learning Content</h1>
                 <Button variant="outline" size="sm" onClick={() => setFilterDrawerOpen(true)}>
-                  <Filter className="h-4 w-4 mr-2" />
+                  <Filter className="mr-2 h-4 w-4" />
                   Filter
                 </Button>
               </div>
-              <h1 className="text-xl font-semibold text-gray-600 mb-4 hidden md:block">
+              <h1 className="mb-4 hidden text-xl font-semibold text-gray-600 md:block">
                 Featured Learning Content
               </h1>
               {filterDrawerOpen && <DiscoverFilterDrawer />}
@@ -120,13 +120,13 @@ export default function DiscoverPage() {
                     return (
                       <div
                         key={`selected-facet-${selectedFacet}-${index}`}
-                        className="bg-gray-100 rounded-md px-3 py-1 flex items-center text-sm"
+                        className="flex items-center rounded-md bg-gray-100 px-3 py-1 text-sm"
                       >
-                        <span className="text-gray-600 mr-1 capitalize">{selectedFacet}:</span>
+                        <span className="mr-1 text-gray-600 capitalize">{selectedFacet}:</span>
                         {selectedFacets?.[selectedFacet]?.map(
                           (selectedTerm: string, index: number) => (
                             <React.Fragment key={index}>
-                              <span className="text-gray-600 capitalize ml-1">{selectedTerm}</span>
+                              <span className="ml-1 text-gray-600 capitalize">{selectedTerm}</span>
                               <button
                                 onClick={() => handleSelectFacets(selectedFacet, selectedTerm)}
                                 className="ml-1 text-gray-400 hover:text-gray-600"
@@ -147,7 +147,7 @@ export default function DiscoverPage() {
               )}
 
               {/* Course Grid */}
-              <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 w-full overflow-hidden">
+              <div className="grid w-full grid-cols-1 gap-4 overflow-hidden min-[450px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {contentsLoading && (
                   <SkeletonMultiplier multiplier={10} Skeleton={CourseCardSkeleton} />
                 )}
@@ -162,7 +162,7 @@ export default function DiscoverPage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex justify-end mt-8 mb-6">
+              <div className="mt-8 mb-6 flex justify-end">
                 <ReactPaginate
                   className="flex items-center space-x-2"
                   pageClassName="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"

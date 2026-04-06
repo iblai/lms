@@ -15,7 +15,7 @@ export function CredentialBox({ name, image, issuedOn, ...rest }: CredentialBoxP
   return (
     <div
       {...rest}
-      className="rounded-sm bg-[var(--sidebar-hover-bg)] p-3 transition-colors duration-300 hover:bg-[var(--sidebar-hover-bg)] cursor-pointer"
+      className="cursor-pointer rounded-sm bg-[var(--sidebar-hover-bg)] p-3 transition-colors duration-300 hover:bg-[var(--sidebar-hover-bg)]"
       /* onClick={() => {
                 if (onClose) onClose()
                 router.push("/profile/credentials")

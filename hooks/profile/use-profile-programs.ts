@@ -73,13 +73,15 @@ export const useProfilePrograms = ({
       ],
       true,
     );
-    const fetchedPrograms = (response.data as unknown as ProgramEnrollmentPlus[])?.map((program: ProgramEnrollmentPlus) => ({
-      ...program,
-      metadata: {
-        ...program.metadata,
-        image: getRandomCourseImage(),
-      },
-    }));
+    const fetchedPrograms = (response.data as unknown as ProgramEnrollmentPlus[])?.map(
+      (program: ProgramEnrollmentPlus) => ({
+        ...program,
+        metadata: {
+          ...program.metadata,
+          image: getRandomCourseImage(),
+        },
+      }),
+    );
     setPrograms(fetchedPrograms || []);
     setFilteredPrograms(fetchedPrograms || []);
     handleFetchProgramCompletions(fetchedPrograms || []);

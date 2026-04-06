@@ -238,8 +238,8 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
         }
       `}</style>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-white rounded-lg max-w-4xl w-full max-h-[85vh] overflow-hidden p-0 flex flex-col gap-0">
-          <div className="p-4 flex justify-between items-center border-b">
+        <DialogContent className="flex max-h-[85vh] w-full max-w-4xl flex-col gap-0 overflow-hidden rounded-lg bg-white p-0">
+          <div className="flex items-center justify-between border-b p-4">
             <h3 className="text-lg font-medium text-gray-600">Create New Pathway</h3>
             <button
               onClick={() => onOpenChange(false)}
@@ -249,10 +249,10 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row flex-1 overflow-auto">
+          <div className="flex flex-1 flex-col overflow-auto md:flex-row">
             {/* Left column - Pathway Details */}
             <div
-              className="p-6 md:w-1/2 overflow-y-auto bg-gray-50"
+              className="overflow-y-auto bg-gray-50 p-6 md:w-1/2"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
@@ -263,11 +263,11 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                 <div className="space-y-6">
                   {/* Cover Image Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
                       Pathway Cover Image
                     </label>
                     <div
-                      className="border border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors bg-white"
+                      className="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-6 transition-colors hover:bg-gray-100"
                       onClick={() => {
                         const input = document.createElement('input');
                         input.type = 'file';
@@ -297,19 +297,19 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                       }}
                     >
                       {coverImage ? (
-                        <div className="relative w-full h-40 mb-2">
+                        <div className="relative mb-2 h-40 w-full">
                           <Image
                             src={coverImage || '/placeholder.svg'}
                             alt="Pathway cover"
                             fill
-                            className="object-cover rounded-md"
+                            className="rounded-md object-cover"
                           />
                         </div>
                       ) : (
                         <>
-                          <Upload className="h-10 w-10 text-amber-500 mb-4" />
-                          <p className="text-gray-700 mb-1 font-medium">Upload a cover image</p>
-                          <p className="text-gray-500 text-sm">(Recommended size: 1280×720px)</p>
+                          <Upload className="mb-4 h-10 w-10 text-amber-500" />
+                          <p className="mb-1 font-medium text-gray-700">Upload a cover image</p>
+                          <p className="text-sm text-gray-500">(Recommended size: 1280×720px)</p>
                         </>
                       )}
                     </div>
@@ -319,7 +319,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                   <div>
                     <label
                       htmlFor="pathway-name"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="mb-2 block text-sm font-medium text-gray-700"
                     >
                       Pathway Name <span className="text-red-500">*</span>
                     </label>
@@ -329,7 +329,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                       value={pathwayData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       placeholder="Enter pathway name"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-gray-400 bg-white"
+                      className="w-full rounded-md border border-gray-200 bg-white px-4 py-2 placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none"
                     />
                   </div>
 
@@ -337,7 +337,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                   <div>
                     <label
                       htmlFor="subject"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="mb-2 block text-sm font-medium text-gray-700"
                     >
                       Subject/Category
                     </label>
@@ -347,7 +347,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                       value={pathwayData.subject}
                       onChange={(e) => handleInputChange('subject', e.target.value)}
                       placeholder="Enter subject"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-gray-400 bg-white"
+                      className="w-full rounded-md border border-gray-200 bg-white px-4 py-2 placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none"
                     />
                   </div>
 
@@ -355,7 +355,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                   <div>
                     <label
                       htmlFor="description"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="mb-2 block text-sm font-medium text-gray-700"
                     >
                       Description
                     </label>
@@ -365,7 +365,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       placeholder="Enter pathway description"
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none placeholder-gray-400 bg-white"
+                      className="w-full resize-none rounded-md border border-gray-200 bg-white px-4 py-2 placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -374,35 +374,35 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
 
             {/* Right column - Add Content */}
             <div
-              className="p-6 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 overflow-y-auto bg-white"
+              className="overflow-y-auto border-t border-gray-200 bg-white p-6 md:w-1/2 md:border-t-0 md:border-l"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
               }}
             >
-              <div className="space-y-0 flex flex-col h-full">
-                <h2 className="text-sm font-medium text-gray-700 mb-2">Add Content</h2>
+              <div className="flex h-full flex-col space-y-0">
+                <h2 className="mb-2 text-sm font-medium text-gray-700">Add Content</h2>
 
                 {/* Search Content */}
                 <div className="relative mb-4 flex items-center">
-                  <Search className="h-4 w-4 text-gray-400 absolute left-4" />
+                  <Search className="absolute left-4 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search content to add"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full py-2 pl-10 pr-4 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-gray-400 bg-gray-50 mb-2"
+                    className="mb-2 w-full rounded-md border border-gray-200 bg-gray-50 py-2 pr-4 pl-10 placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   />
                 </div>
 
                 {/* Selected Content Count */}
-                <div className="text-sm text-gray-600 mb-2 mt-3">
+                <div className="mt-3 mb-2 text-sm text-gray-600">
                   {selectedCourses.length + selectedResources.length} items selected
                 </div>
 
                 {/* Content List */}
                 <div
-                  className="space-y-3 flex-1 overflow-y-auto"
+                  className="flex-1 space-y-3 overflow-y-auto"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
@@ -415,11 +415,11 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                     searchedCourses.map((courseSearchResult: any) => (
                       <div
                         key={courseSearchResult?.data?.course_id}
-                        className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer transition-colors hover:border-gray-300"
+                        className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 transition-colors hover:border-gray-300"
                         onClick={() => handleCourseToggle(courseSearchResult?.data?.course_id)}
                       >
-                        <div className="flex items-center p-3 bg-white">
-                          <div className="w-12 h-12 relative flex-shrink-0 mr-3 rounded-md overflow-hidden">
+                        <div className="flex items-center bg-white p-3">
+                          <div className="relative mr-3 h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                             <Image
                               src={
                                 courseSearchResult?.data?.edx_data?.course_image_asset_path ||
@@ -439,7 +439,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                             </h3>
                           </div>
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            className={`flex h-6 w-6 items-center justify-center rounded-full ${
                               selectedCourses.includes(courseSearchResult?.data?.course_id)
                                 ? 'bg-amber-500 text-white'
                                 : 'bg-gray-100 text-gray-400'
@@ -458,11 +458,11 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                     searchedResources.map((resourceSearchResult: any) => (
                       <div
                         key={`resource-${resourceSearchResult?.id}`}
-                        className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer transition-colors hover:border-gray-300"
+                        className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 transition-colors hover:border-gray-300"
                         onClick={() => handleResourceToggle(resourceSearchResult?.id)}
                       >
-                        <div className="flex items-center p-3 bg-white">
-                          <div className="w-12 h-12 relative flex-shrink-0 mr-3 rounded-md overflow-hidden">
+                        <div className="flex items-center bg-white p-3">
+                          <div className="relative mr-3 h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
                             <Image
                               src={resourceSearchResult?.image || randomImage}
                               alt={resourceSearchResult?.name}
@@ -479,7 +479,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                             </h3>
                           </div>
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            className={`flex h-6 w-6 items-center justify-center rounded-full ${
                               selectedResources.includes(resourceSearchResult?.id)
                                 ? 'bg-amber-500 text-white'
                                 : 'bg-gray-100 text-gray-400'
@@ -496,12 +496,12 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                     ))}
 
                   {searchedCourses.length === 0 && searchedResources.length === 0 && (
-                    <div className="text-center py-8 border border-gray-200 rounded-lg">
+                    <div className="rounded-lg border border-gray-200 py-8 text-center">
                       <p className="text-gray-500">
                         No content found
                         {`${searchQuery.length > 2 ? ` matching "${searchQuery}"` : ''}`}
                       </p>
-                      <p className="text-sm text-gray-400 mt-1">Try a different search term</p>
+                      <p className="mt-1 text-sm text-gray-400">Try a different search term</p>
                     </div>
                   )}
                 </div>
@@ -510,10 +510,10 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
           </div>
 
           {/* Footer with action buttons */}
-          <div className="p-4 border-t border-gray-200 flex justify-end sticky bottom-0 bg-white mt-auto">
+          <div className="sticky bottom-0 mt-auto flex justify-end border-t border-gray-200 bg-white p-4">
             <button
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 mr-2"
+              className="mr-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </button>
@@ -523,12 +523,12 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
                 !pathwayData.name ||
                 (selectedCourses.length === 0 && selectedResources.length === 0)
               }
-              className={`flex items-center gap-0 px-5 py-2.5 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] rounded-md text-sm font-medium ${
+              className={`flex items-center gap-0 rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-5 py-2.5 text-sm font-medium text-[var(--button-primary-text)] ${
                 !pathwayData.name ||
                 (selectedCourses.length === 0 && selectedResources.length === 0)
-                  ? 'opacity-50 cursor-not-allowed'
+                  ? 'cursor-not-allowed opacity-50'
                   : 'hover:opacity-[var(--button-primary-hover-opacity)]'
-              } transition-opacity shadow-sm`}
+              } shadow-sm transition-opacity`}
             >
               Create Pathway
             </button>

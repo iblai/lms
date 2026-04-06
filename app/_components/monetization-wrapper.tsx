@@ -14,9 +14,8 @@ export function MonetizationWrapper() {
   const router = useRouter();
   const platformKey = getTenant();
   const dispatch = useAppDispatch();
-  const { displayMonetizationCheckoutModal, accessCheckResponse, paywallClosable, onClosePayload  } = useAppSelector(
-    (state) => state.monetization,
-  );
+  const { displayMonetizationCheckoutModal, accessCheckResponse, paywallClosable, onClosePayload } =
+    useAppSelector((state) => state.monetization);
 
   // Cache the last valid accessCheckResponse so it survives
   // the Redux clear triggered by setDisplayMonetizationCheckoutModal(false)
@@ -48,7 +47,7 @@ export function MonetizationWrapper() {
       itemId={itemId}
       itemType={itemType}
       closable={paywallClosable}
-      buttonClassName='bg-amber-500 text-white hover:bg-amber-600'
+      buttonClassName="bg-amber-500 text-white hover:bg-amber-600"
     />
   );
 }

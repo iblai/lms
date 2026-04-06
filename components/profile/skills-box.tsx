@@ -20,16 +20,16 @@ export const SkillsBox = () => {
     selfReportedSkillsError,
   } = useProfileSkills();
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-medium text-gray-800 mb-4">Skills</h2>
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-lg font-medium text-gray-800">Skills</h2>
 
       {/* Earned Skills Section */}
       <div className="mb-6">
-        <h3 className="text-base font-medium text-gray-700 mb-4">Earned</h3>
+        <h3 className="mb-4 text-base font-medium text-gray-700">Earned</h3>
         {!earnedSkillsLoading && (earnedSkillsError || _.isEmpty(earnedSkills?.resources)) && (
           <DefaultEmptyBox className="w-full" message="You don't have any earned skills yet." />
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {earnedSkillsLoading && <SkeletonMultiplier Skeleton={SkeletonSkillBox} multiplier={6} />}
           {!earnedSkillsLoading &&
             !earnedSkillsError &&
@@ -50,7 +50,7 @@ export const SkillsBox = () => {
 
       {/* Self-Reported Skills */}
       <div className="mb-6">
-        <h3 className="text-base font-medium text-gray-700 mb-4">Self-Reported</h3>
+        <h3 className="mb-4 text-base font-medium text-gray-700">Self-Reported</h3>
         {!selfReportedSkillsLoading && selfReportedSkillsError && (
           <DefaultEmptyBox
             className="w-full"
@@ -65,7 +65,7 @@ export const SkillsBox = () => {
               message="You don't have any self-reported skills yet."
             />
           )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {selfReportedSkillsLoading && (
             <SkeletonMultiplier Skeleton={SkeletonSkillBox} multiplier={6} />
           )}
@@ -87,14 +87,14 @@ export const SkillsBox = () => {
 
       {/* Desired Skills Section */}
       <div>
-        <h3 className="text-base font-medium text-gray-700 mb-4">Desired</h3>
+        <h3 className="mb-4 text-base font-medium text-gray-700">Desired</h3>
         {!desiredSkillsLoading && desiredSkillsError && (
           <DefaultEmptyBox className="w-full" message="You don't have any desired skills yet." />
         )}
         {!desiredSkillsLoading && !desiredSkillsError && _.isEmpty(desiredSkills?.skills) && (
           <DefaultEmptyBox className="w-full" message="You don't have any desired skills yet." />
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {desiredSkillsLoading && (
             <SkeletonMultiplier Skeleton={SkeletonSkillBox} multiplier={6} />
           )}

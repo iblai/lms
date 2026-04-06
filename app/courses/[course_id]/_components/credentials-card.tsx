@@ -171,12 +171,12 @@ export function CredentialsCard({
 
   return (
     <>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-medium text-gray-800">Credentials</h2>
           <button
             onClick={() => handleOpenCredentialModal()}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] rounded-md text-sm font-medium hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity"
+            className="flex items-center gap-2 rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
             data-testid="add-credential-button"
             aria-label="Add Credential"
           >
@@ -185,9 +185,9 @@ export function CredentialsCard({
           </button>
         </div>
 
-        <div className="border border-gray-200 rounded-md overflow-hidden">
+        <div className="overflow-hidden rounded-md border border-gray-200">
           <div
-            className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50"
+            className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
             onClick={() => toggleSection('credentials')}
             role="button"
             aria-expanded={expandedSections['credentials']}
@@ -210,8 +210,8 @@ export function CredentialsCard({
           {expandedSections['credentials'] && (
             <div className="border-t border-gray-200">
               {isLoadingCredentials ? (
-                <div className="p-8 flex justify-center">
-                  <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex justify-center p-8">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
                 </div>
               ) : credentials?.result?.data?.length === 0 ? (
                 <div className="p-8">
@@ -221,26 +221,26 @@ export function CredentialsCard({
                 <>
                   <div className="overflow-x-auto">
                     <table className="w-full" data-testid="credentials-table">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className="border-b border-gray-200 bg-gray-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                             Name
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                             Entity ID
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                             Issuer
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                             Credential Type
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 bg-white">
                         {credentials?.result?.data?.map((credential: any, index: number) => (
                           <tr
                             key={`credential-${index}`}
@@ -261,7 +261,7 @@ export function CredentialsCard({
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => handleOpenCredentialModal(credential)}
-                                  className="p-1 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                                  className="rounded p-1 text-amber-600 transition-colors hover:bg-amber-50 hover:text-amber-700"
                                   aria-label={`Edit ${credential.name}`}
                                   data-testid={`edit-credential-${index}`}
                                 >
@@ -269,7 +269,7 @@ export function CredentialsCard({
                                 </button>
                                 <button
                                   onClick={() => handleDeleteCredentialClick(credential.entityId)}
-                                  className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                  className="rounded p-1 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                                   aria-label={`Delete ${credential.name}`}
                                   data-testid={`delete-credential-${index}`}
                                 >
@@ -284,7 +284,7 @@ export function CredentialsCard({
                   </div>
 
                   {totalPages > 1 && (
-                    <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                    <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
                       <Pagination>
                         <PaginationContent>
                           <PaginationItem>

@@ -18,10 +18,7 @@ test.describe('skills test users, courses, programs invitation feature', () => {
   });
 
   test('Should be able to invite', async ({ page }) => {
-    const profileBtn = page
-      .getByRole('banner')
-      .locator('button[aria-haspopup="menu"]')
-      .last();
+    const profileBtn = page.getByRole('banner').locator('button[aria-haspopup="menu"]').last();
     const tenantDialog = await navigateToAccountComponent(page, profileBtn);
 
     const managementBtn = tenantDialog.getByRole('button', {
@@ -29,9 +26,7 @@ test.describe('skills test users, courses, programs invitation feature', () => {
     });
     await managementBtn.click();
 
-    const managementTabHeading = page
-      .getByRole('dialog')
-      .filter({ hasText: 'Management' });
+    const managementTabHeading = page.getByRole('dialog').filter({ hasText: 'Management' });
     await expect(managementTabHeading).toBeVisible({ timeout: 10000 });
 
     const inviteUserBtn = tenantDialog.getByRole('button', {

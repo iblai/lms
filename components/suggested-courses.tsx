@@ -26,12 +26,12 @@ export function SuggestedCourses() {
           Suggested Courses Based on Your Profile
         </h2> */}
         <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-600">
+          <h3 className="text-base font-semibold text-gray-600 sm:text-lg md:text-xl">
             Suggested Courses
           </h3>
           <Link
             href="/recommended"
-            className="rounded-md px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1"
+            className="flex items-center gap-1 rounded-md px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 sm:text-sm"
           >
             See More
             <ChevronRight className="h-4 w-4" />
@@ -41,7 +41,7 @@ export function SuggestedCourses() {
       {((!loading && isError) || (!loading && !isError && courses.length === 0)) && (
         <DefaultEmptyBox message="No suggested courses found." />
       )}
-      <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 w-full overflow-hidden">
+      <div className="grid w-full grid-cols-1 gap-4 overflow-hidden min-[450px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {loading && <SkeletonMultiplier multiplier={8} Skeleton={CourseCardSkeleton} />}
         {!loading &&
           !isError &&

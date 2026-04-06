@@ -1,19 +1,15 @@
-"use client";
-import { ProfileTabs } from "@/components/profile-tabs";
+'use client';
+import { ProfileTabs } from '@/components/profile-tabs';
 
-export default function ProfileLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Main content area */}
       <div
         className="flex-1 overflow-y-auto"
         style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         <style jsx>{`

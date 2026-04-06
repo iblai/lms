@@ -20,5 +20,9 @@ export default function CourseLayout({
     handleFetchCourseInfo();
   }, [courseId]);
 
-  return <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>{children}</CourseAccessGuard>;
+  return (
+    <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>
+      {children}
+    </CourseAccessGuard>
+  );
 }

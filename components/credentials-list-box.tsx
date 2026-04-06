@@ -12,14 +12,14 @@ export function CredentialsListBox({ credentials }: CredentialsListBoxProps) {
   return (
     <div className="mb-4 rounded-md border border-[var(--sidebar-border)] p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm md:text-base font-medium text-[var(--sidebar-text)]">Credentials</h3>
+        <h3 className="text-sm font-medium text-[var(--sidebar-text)] md:text-base">Credentials</h3>
         <Link
           href="/discover"
-          className="rounded-sm p-1 text-[var(--text-light)] hover:bg-[var(--sidebar-hover-bg)] group relative"
+          className="group relative rounded-sm p-1 text-[var(--text-light)] hover:bg-[var(--sidebar-hover-bg)]"
           aria-label="Add Credential"
         >
           <Plus className="h-5 w-5" />
-          <span className="absolute -top-8 right-0 w-28 bg-[var(--text-dark)] text-white text-xs rounded-sm py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <span className="pointer-events-none absolute -top-8 right-0 w-28 rounded-sm bg-[var(--text-dark)] px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             Add Credential
           </span>
         </Link>

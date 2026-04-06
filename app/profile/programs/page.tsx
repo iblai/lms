@@ -49,14 +49,14 @@ export default function ProgramsPage() {
     <>
       <div className="p-6">
         {/* Programs Tabs */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="mb-8 border-b border-gray-200">
           <div className="flex space-x-8">
             <button
               onClick={() => handleProgramTabChange(ENROLLED_TAB)}
-              className={`py-2 px-1 text-sm font-medium border-b-2 ${
+              className={`border-b-2 px-1 py-2 text-sm font-medium ${
                 activeTab === ENROLLED_TAB
                   ? 'border-amber-500 text-amber-500'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
               My programs
@@ -64,10 +64,10 @@ export default function ProgramsPage() {
             {metadataLoaded && !isSkillsAssignmentsFeatureHidden() && (
               <button
                 onClick={() => handleProgramTabChange(ASSIGNED_TAB)}
-                className={`py-2 px-1 text-sm font-medium border-b-2 ${
+                className={`border-b-2 px-1 py-2 text-sm font-medium ${
                   activeTab === ASSIGNED_TAB
                     ? 'border-amber-500 text-amber-500'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
                 Assigned programs
@@ -87,9 +87,9 @@ export default function ProgramsPage() {
         </div>
 
         {/* Search Bar and Create Program Button */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="relative w-64">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
@@ -97,7 +97,7 @@ export default function ProgramsPage() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none"
             />
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function ProgramsPage() {
           )}
 
         {/* Programs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {/* Program Cards */}
           {isLoading && <SkeletonMultiplier Skeleton={SkeletonPathwayBox} multiplier={4} />}
           {!isLoading &&
@@ -122,7 +122,7 @@ export default function ProgramsPage() {
             filteredPrograms.map((program: CustomProgramEnrollmentPlus, index: number) => (
               <div
                 key={index}
-                className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow cursor-pointer"
+                className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
                 onClick={() => setSelectedProgram(program)}
                 data-testid={'program-card'}
               >
@@ -143,27 +143,27 @@ export default function ProgramsPage() {
                     }}
                   />
                   <div
-                    className="absolute bottom-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded"
+                    className="absolute bottom-2 left-2 rounded bg-amber-500 px-2 py-1 text-xs text-white"
                     data-testid="program-badge"
                   >
                     PROGRAM
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-sm font-medium text-gray-800 mb-2">{program.name || ''}</h3>
+                  <h3 className="mb-2 text-sm font-medium text-gray-800">{program.name || ''}</h3>
                   {programCompletions.length > 0 && programCompletions[index] && (
                     <div className="space-y-1">
                       {programCompletions.length > 0 && programCompletions[index] && (
                         <>
                           <div className="flex justify-between text-xs">
                             <span className="text-gray-600">Progress</span>
-                            <span className="text-gray-800 font-medium">
+                            <span className="font-medium text-gray-800">
                               {programCompletions[index].completion_percentage || 0}%
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="h-1.5 w-full rounded-full bg-gray-200">
                             <div
-                              className="bg-amber-500 h-1.5 rounded-full"
+                              className="h-1.5 rounded-full bg-amber-500"
                               style={{
                                 width: `${programCompletions[index].completion_percentage}%`,
                               }}

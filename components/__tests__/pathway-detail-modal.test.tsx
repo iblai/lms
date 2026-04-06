@@ -360,7 +360,10 @@ describe('PathwayDetailModal', () => {
     // We need to trigger enrollment twice before the first resolves
     let resolveEnrollment: any;
     mockCreateCatalogPathwaySelfEnrollment.mockImplementation(
-      () => new Promise((resolve) => { resolveEnrollment = resolve; })
+      () =>
+        new Promise((resolve) => {
+          resolveEnrollment = resolve;
+        }),
     );
 
     render(<PathwayDetailModal {...defaultProps} />);

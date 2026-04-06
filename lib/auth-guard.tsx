@@ -22,4 +22,4 @@ export function AuthGuard({ children, fallback }: Props): React.ReactElement {
   }
 
   return <>{children}</>;
-} 
+}

@@ -62,9 +62,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     const courseTab = page.getByRole('link', { name: 'Course' }).first();
     const progressTab = page.getByRole('link', { name: 'Progress' }).first();
     const datesTab = page.getByRole('link', { name: 'Dates' }).first();
-    const discussionTab = page
-      .getByRole('link', { name: 'Discussion' })
-      .first();
+    const discussionTab = page.getByRole('link', { name: 'Discussion' }).first();
 
     await expect(courseTab).toBeVisible({ timeout: 120000 });
     await expect(progressTab).toBeVisible({ timeout: 120000 });
@@ -83,11 +81,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     const courseIframe = page.frameLocator('iframe').first();
 
     // Wait for network activity to settle first
-    await page
-      .waitForLoadState('networkidle', { timeout: 120000 })
-      .catch(() => {
-        logger.info('Page networkidle timeout, continuing...');
-      });
+    await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+      logger.info('Page networkidle timeout, continuing...');
+    });
 
     // Wait for actual content to appear in the iframe using FrameLocator
     // This approach is more resilient to iframe reloads
@@ -95,13 +91,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     await expect(bodyLocator).toBeVisible({ timeout: 120000 });
 
     // Wait for content to be present (not just empty body)
-    await bodyLocator
-      .waitFor({ state: 'visible', timeout: 120000 })
-      .catch(() => {
-        logger.info(
-          'Body visibility wait timeout, trying alternative approach...'
-        );
-      });
+    await bodyLocator.waitFor({ state: 'visible', timeout: 120000 }).catch(() => {
+      logger.info('Body visibility wait timeout, trying alternative approach...');
+    });
 
     // Verify content is present by checking for any text or elements
     const hasContent = await bodyLocator
@@ -124,7 +116,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     const courseCurrentUrl = page.url();
     const courseUrlPattern = /\/course-content\/.*/;
     const isNotOtherTab = !courseCurrentUrl.match(
-      /\/course-content\/.*\/(progress|dates|discussion|instructor)(\/|\?|$)/
+      /\/course-content\/.*\/(progress|dates|discussion|instructor)(\/|\?|$)/,
     );
     if (courseUrlPattern.test(courseCurrentUrl) && isNotOtherTab) {
       logger.info(`Course tab URL confirmed: ${courseCurrentUrl}`);
@@ -144,22 +136,18 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     const progressIframe = page.frameLocator('iframe').first();
 
     // Wait for network activity to settle first
-    await page
-      .waitForLoadState('networkidle', { timeout: 120000 })
-      .catch(() => {
-        logger.info('Page networkidle timeout, continuing...');
-      });
+    await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+      logger.info('Page networkidle timeout, continuing...');
+    });
 
     // Wait for iframe body to be visible (ensures iframe content has loaded)
     const progressBodyLocator = progressIframe.locator('body');
     await expect(progressBodyLocator).toBeVisible({ timeout: 120000 });
 
     // Wait for actual content to appear in the iframe (not just empty body)
-    await progressBodyLocator
-      .waitFor({ state: 'visible', timeout: 120000 })
-      .catch(() => {
-        logger.info('Body visibility wait timeout, continuing...');
-      });
+    await progressBodyLocator.waitFor({ state: 'visible', timeout: 120000 }).catch(() => {
+      logger.info('Body visibility wait timeout, continuing...');
+    });
 
     // Verify content is present by checking for any text or elements
     const hasProgressContent = await progressBodyLocator
@@ -176,9 +164,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
         .evaluate((el) => el.textContent?.trim() || '')
         .catch(() => '');
       if (textContent.length === 0) {
-        logger.warn(
-          'No content detected in Progress tab iframe, but continuing...'
-        );
+        logger.warn('No content detected in Progress tab iframe, but continuing...');
       }
     }
 
@@ -187,8 +173,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
 
     // Verify URL matches Progress tab pattern (check after content loads, don't wait for navigation)
     const currentUrl = page.url();
-    const progressUrlPattern =
-      /\/course-content\/course-v1:.*\/progress(\/|\?.*)?$/;
+    const progressUrlPattern = /\/course-content\/course-v1:.*\/progress(\/|\?.*)?$/;
     if (!progressUrlPattern.test(currentUrl)) {
       logger.warn(`URL doesn't match Progress pattern: ${currentUrl}`);
     } else {
@@ -218,22 +203,18 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     const datesIframe = page.frameLocator('iframe').first();
 
     // Wait for network activity to settle first
-    await page
-      .waitForLoadState('networkidle', { timeout: 120000 })
-      .catch(() => {
-        logger.info('Page networkidle timeout, continuing...');
-      });
+    await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+      logger.info('Page networkidle timeout, continuing...');
+    });
 
     // Wait for iframe body to be visible (ensures iframe content has loaded)
     const datesBodyLocator = datesIframe.locator('body');
     await expect(datesBodyLocator).toBeVisible({ timeout: 120000 });
 
     // Wait for actual content to appear in the iframe (not just empty body)
-    await datesBodyLocator
-      .waitFor({ state: 'visible', timeout: 120000 })
-      .catch(() => {
-        logger.info('Body visibility wait timeout, continuing...');
-      });
+    await datesBodyLocator.waitFor({ state: 'visible', timeout: 120000 }).catch(() => {
+      logger.info('Body visibility wait timeout, continuing...');
+    });
 
     // Verify content is present by checking for any text or elements
     const hasDatesContent = await datesBodyLocator
@@ -250,9 +231,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
         .evaluate((el) => el.textContent?.trim() || '')
         .catch(() => '');
       if (textContent.length === 0) {
-        logger.warn(
-          'No content detected in Dates tab iframe, but continuing...'
-        );
+        logger.warn('No content detected in Dates tab iframe, but continuing...');
       }
     }
 
@@ -291,22 +270,18 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     let discussionIframe = page.frameLocator('iframe').first();
 
     // Wait for network activity to settle first
-    await page
-      .waitForLoadState('networkidle', { timeout: 120000 })
-      .catch(() => {
-        logger.info('Page networkidle timeout, continuing...');
-      });
+    await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+      logger.info('Page networkidle timeout, continuing...');
+    });
 
     // Wait for iframe body to be visible (ensures iframe content has loaded)
     const discussionBodyLocator = discussionIframe.locator('body');
     await expect(discussionBodyLocator).toBeVisible({ timeout: 120000 });
 
     // Wait for actual content to appear in the iframe (not just empty body)
-    await discussionBodyLocator
-      .waitFor({ state: 'visible', timeout: 120000 })
-      .catch(() => {
-        logger.info('Body visibility wait timeout, continuing...');
-      });
+    await discussionBodyLocator.waitFor({ state: 'visible', timeout: 120000 }).catch(() => {
+      logger.info('Body visibility wait timeout, continuing...');
+    });
 
     // Verify content is present by checking for any text or elements
     const hasDiscussionContent = await discussionBodyLocator
@@ -323,9 +298,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
         .evaluate((el) => el.textContent?.trim() || '')
         .catch(() => '');
       if (textContent.length === 0) {
-        logger.warn(
-          'No content detected in Discussion tab iframe, but continuing...'
-        );
+        logger.warn('No content detected in Discussion tab iframe, but continuing...');
       }
     }
 
@@ -335,12 +308,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
 
     // Verify URL matches Discussion tab pattern (check after content loads, don't wait for navigation)
     const discussionCurrentUrl = page.url();
-    const discussionUrlPattern =
-      /\/course-content\/course-v1:.*\/discussion(\/|\?.*)?$/;
+    const discussionUrlPattern = /\/course-content\/course-v1:.*\/discussion(\/|\?.*)?$/;
     if (!discussionUrlPattern.test(discussionCurrentUrl)) {
-      logger.warn(
-        `URL doesn't match Discussion pattern: ${discussionCurrentUrl}`
-      );
+      logger.warn(`URL doesn't match Discussion pattern: ${discussionCurrentUrl}`);
     } else {
       logger.info(`Discussion tab URL confirmed: ${discussionCurrentUrl}`);
     }
@@ -409,16 +379,14 @@ test.describe('Course Tab Navigation and Content Validation', () => {
         .catch(() => null),
     ]).catch(() => {
       logger.info(
-        'Timeout waiting for threads or no-posts message, continuing with thread check...'
+        'Timeout waiting for threads or no-posts message, continuing with thread check...',
       );
     });
 
     // Additional wait for network activity to settle
-    await page
-      .waitForLoadState('networkidle', { timeout: 120000 })
-      .catch(() => {
-        logger.info('Network idle timeout, continuing...');
-      });
+    await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+      logger.info('Network idle timeout, continuing...');
+    });
 
     // Wait for threads to actually appear - try both selectors
     // First try with role="option"
@@ -448,9 +416,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       try {
         // Wait for either threads to appear or "Nothing here yet" message
         await Promise.race([
-          discussionThreads
-            .first()
-            .waitFor({ state: 'visible', timeout: 30000 }),
+          discussionThreads.first().waitFor({ state: 'visible', timeout: 30000 }),
           discussionIframe
             .getByText(/Nothing here yet/i)
             .waitFor({ state: 'visible', timeout: 30000 }),
@@ -474,20 +440,17 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     // 2. When no posts exist: Skips thread interaction, but still tests "Add a post" functionality
     const noPostsMessage = discussionIframe.getByText(/Nothing here yet/i);
     const hasNoPosts = await noPostsMessage.isVisible().catch(() => false);
-    const allDiscussionActivityMessage = discussionIframe.getByText(
-      /All discussion activity/i
-    );
+    const allDiscussionActivityMessage = discussionIframe.getByText(/All discussion activity/i);
     const hasAllDiscussionActivity = await allDiscussionActivityMessage
       .isVisible()
       .catch(() => false);
 
     // Determine if we should skip post interaction tests (when no posts exist initially)
-    const hasNoInitialPosts =
-      threadCount === 0 && (hasNoPosts || hasAllDiscussionActivity);
+    const hasNoInitialPosts = threadCount === 0 && (hasNoPosts || hasAllDiscussionActivity);
 
     if (hasNoInitialPosts) {
       logger.info(
-        'No discussion threads found and empty state message is present - skipping thread interaction, but will still test "Add a post" functionality'
+        'No discussion threads found and empty state message is present - skipping thread interaction, but will still test "Add a post" functionality',
       );
     } else {
       expect(threadCount).toBeGreaterThan(0);
@@ -501,29 +464,20 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       await firstThread.click();
 
       // Wait for thread to load on the right side
-      await page
-        .waitForLoadState('networkidle', { timeout: 120000 })
-        .catch(() => {
-          logger.info(
-            'Network idle timeout after clicking thread, continuing...'
-          );
-        });
+      await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+        logger.info('Network idle timeout after clicking thread, continuing...');
+      });
 
       // Wait a bit for thread content to render
       await page.waitForTimeout(2000);
 
       // Verify thread content is displayed - use a more flexible approach
       // Look for any heading, article, or content area that indicates thread loaded
-      const threadContentHeading5 =
-        discussionIframe.locator('heading[level=5]');
-      const threadContentHeading2 =
-        discussionIframe.locator('heading[level=2]');
-      const threadContentHeading1 =
-        discussionIframe.locator('heading[level=1]');
-      const threadContentHeading3 =
-        discussionIframe.locator('heading[level=3]');
-      const threadContentHeading4 =
-        discussionIframe.locator('heading[level=4]');
+      const threadContentHeading5 = discussionIframe.locator('heading[level=5]');
+      const threadContentHeading2 = discussionIframe.locator('heading[level=2]');
+      const threadContentHeading1 = discussionIframe.locator('heading[level=1]');
+      const threadContentHeading3 = discussionIframe.locator('heading[level=3]');
+      const threadContentHeading4 = discussionIframe.locator('heading[level=4]');
       const threadArticle = discussionIframe.locator('article');
       const threadMain = discussionIframe.locator('main');
 
@@ -543,12 +497,8 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       const hasHeading4 = await threadContentHeading4
         .isVisible({ timeout: 10000 })
         .catch(() => false);
-      const hasArticle = await threadArticle
-        .isVisible({ timeout: 10000 })
-        .catch(() => false);
-      const hasMain = await threadMain
-        .isVisible({ timeout: 10000 })
-        .catch(() => false);
+      const hasArticle = await threadArticle.isVisible({ timeout: 10000 }).catch(() => false);
+      const hasMain = await threadMain.isVisible({ timeout: 10000 }).catch(() => false);
 
       // Check if there's substantial content using FrameLocator (handles cross-origin iframes)
       // Don't use waitForFunction with iframe.contentDocument as it fails for cross-origin iframes
@@ -574,9 +524,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       if (threadLoaded) {
         logger.info('Discussion thread loaded successfully');
       } else {
-        logger.warn(
-          'Could not verify thread content with specific selectors, but continuing...'
-        );
+        logger.warn('Could not verify thread content with specific selectors, but continuing...');
         // Don't fail the test - thread might have loaded but with different structure
       }
     }
@@ -609,9 +557,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     await expect(topicAreaCombobox).toBeVisible({ timeout: 120000 });
 
     // Check if General is selected
-    const generalOption = discussionIframe
-      .getByRole('option', { name: 'General' })
-      .first();
+    const generalOption = discussionIframe.getByRole('option', { name: 'General' }).first();
     const isGeneralSelected = await generalOption
       .getAttribute('selected')
       .then((val) => val !== null)
@@ -628,16 +574,12 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     // Fill in post content
     // The content editor is in a nested iframe
     // Try to find the rich text editor iframe
-    const richTextIframe = discussionIframe.frameLocator(
-      'iframe[title="Rich Text Area"]'
-    );
+    const richTextIframe = discussionIframe.frameLocator('iframe[title="Rich Text Area"]');
 
     // Get the content editor within the nested iframe
     // Try label first, fallback to body
     let contentEditor = richTextIframe.getByLabel(/Rich Text Area/i);
-    const hasLabel = await contentEditor
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const hasLabel = await contentEditor.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!hasLabel) {
       contentEditor = richTextIframe.locator('body');
@@ -670,17 +612,13 @@ test.describe('Course Tab Navigation and Content Validation', () => {
 
     await Promise.race([
       // Wait for "Submitting" button to disappear
-      submittingButton
-        .waitFor({ state: 'hidden', timeout: 120000 })
-        .catch(() => {
-          logger.info('Submitting button may have already disappeared');
-        }),
+      submittingButton.waitFor({ state: 'hidden', timeout: 120000 }).catch(() => {
+        logger.info('Submitting button may have already disappeared');
+      }),
       // Or wait for the form to close (Add a post heading disappears)
-      addPostFormHeading
-        .waitFor({ state: 'hidden', timeout: 120000 })
-        .catch(() => {
-          logger.info('Add post form may have already closed');
-        }),
+      addPostFormHeading.waitFor({ state: 'hidden', timeout: 120000 }).catch(() => {
+        logger.info('Add post form may have already closed');
+      }),
     ]).catch(() => {
       logger.warn('Timeout waiting for submission to complete, continuing...');
     });
@@ -723,8 +661,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       });
 
       // Wait for iframe body to be visible (ensures iframe has loaded)
-      const discussionBodyLocatorRefresh =
-        refreshedDiscussionIframe.locator('body');
+      const discussionBodyLocatorRefresh = refreshedDiscussionIframe.locator('body');
       await expect(discussionBodyLocatorRefresh).toBeVisible({
         timeout: 120000,
       });
@@ -759,7 +696,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       logger.info('New post appeared in the refreshed discussion list');
     } else {
       logger.info(
-        'Skipping post verification navigation (started with no posts, proceeding to Instructor tab)'
+        'Skipping post verification navigation (started with no posts, proceeding to Instructor tab)',
       );
     }
 
@@ -772,18 +709,14 @@ test.describe('Course Tab Navigation and Content Validation', () => {
     // 1. When Instructor tab exists: Tests tab navigation and content validation
     // 2. When Instructor tab doesn't exist: Skips gracefully without failing
     logger.info(
-      '=== Proceeding to Instructor tab test (this always runs after Discussion tab) ==='
+      '=== Proceeding to Instructor tab test (this always runs after Discussion tab) ===',
     );
-    const instructorTab = page
-      .getByRole('link', { name: 'Instructor' })
-      .first();
-    const instructorTabExists = await instructorTab
-      .isVisible()
-      .catch(() => false);
+    const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
+    const instructorTabExists = await instructorTab.isVisible().catch(() => false);
 
     if (!instructorTabExists) {
       logger.info(
-        'Instructor tab not available, skipping test (this is expected for some courses)'
+        'Instructor tab not available, skipping test (this is expected for some courses)',
       );
       // Skip the entire Instructor tab test when tab is not present
     } else {
@@ -798,11 +731,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       const instructorIframe = page.frameLocator('iframe').first();
 
       // Wait for network activity to settle first
-      await page
-        .waitForLoadState('networkidle', { timeout: 120000 })
-        .catch(() => {
-          logger.info('Page networkidle timeout, continuing...');
-        });
+      await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+        logger.info('Page networkidle timeout, continuing...');
+      });
 
       // Wait for actual content to appear in the iframe using FrameLocator
       // This approach is more resilient to iframe reloads
@@ -810,13 +741,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       await expect(instructorBodyLocator).toBeVisible({ timeout: 120000 });
 
       // Wait for content to be present (not just empty body)
-      await instructorBodyLocator
-        .waitFor({ state: 'visible', timeout: 120000 })
-        .catch(() => {
-          logger.info(
-            'Body visibility wait timeout, trying alternative approach...'
-          );
-        });
+      await instructorBodyLocator.waitFor({ state: 'visible', timeout: 120000 }).catch(() => {
+        logger.info('Body visibility wait timeout, trying alternative approach...');
+      });
 
       // Verify content is present by checking for any text or elements
       const hasInstructorContent = await instructorBodyLocator
@@ -837,14 +764,11 @@ test.describe('Course Tab Navigation and Content Validation', () => {
 
       // Verify URL matches Instructor tab pattern (check after content loads, don't wait for navigation)
       const instructorCurrentUrl = page.url();
-      const instructorUrlPattern =
-        /\/course-content\/.*\/instructor(\/|\?.*)?$/;
+      const instructorUrlPattern = /\/course-content\/.*\/instructor(\/|\?.*)?$/;
       if (instructorUrlPattern.test(instructorCurrentUrl)) {
         logger.info(`Instructor tab URL confirmed: ${instructorCurrentUrl}`);
       } else {
-        logger.warn(
-          `URL doesn't match Instructor pattern: ${instructorCurrentUrl}`
-        );
+        logger.warn(`URL doesn't match Instructor pattern: ${instructorCurrentUrl}`);
       }
 
       logger.info('Instructor tab test completed successfully');
@@ -890,7 +814,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
           return (
             urlString.includes('/course-content/') &&
             !urlString.match(
-              /\/course-content\/.*\/(progress|dates|discussion|instructor)(\/|\?|$)/
+              /\/course-content\/.*\/(progress|dates|discussion|instructor)(\/|\?|$)/,
             )
           );
         },
@@ -943,11 +867,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
       const tabIframe = page.frameLocator('iframe').first();
 
       // Wait for network activity to settle first
-      await page
-        .waitForLoadState('networkidle', { timeout: 120000 })
-        .catch(() => {
-          logger.info('Page networkidle timeout, continuing...');
-        });
+      await page.waitForLoadState('networkidle', { timeout: 120000 }).catch(() => {
+        logger.info('Page networkidle timeout, continuing...');
+      });
 
       // Wait for iframe body to be visible (ensures iframe content has loaded)
       const iframeBodyLocator = tabIframe.locator('body');
@@ -955,11 +877,9 @@ test.describe('Course Tab Navigation and Content Validation', () => {
 
       // Wait for actual content to appear in the iframe (not just empty body)
       // This ensures the tab content has loaded before checking for errors
-      await iframeBodyLocator
-        .waitFor({ state: 'visible', timeout: 120000 })
-        .catch(() => {
-          logger.info('Body visibility wait timeout, continuing...');
-        });
+      await iframeBodyLocator.waitFor({ state: 'visible', timeout: 120000 }).catch(() => {
+        logger.info('Body visibility wait timeout, continuing...');
+      });
 
       // Verify content is present by checking for any text or elements
       const hasContent = await iframeBodyLocator
@@ -978,7 +898,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
         // If still no content, log a warning but continue to error check
         if (textContent.length === 0) {
           logger.warn(
-            `No content detected in ${tab.name} tab iframe, but continuing error check...`
+            `No content detected in ${tab.name} tab iframe, but continuing error check...`,
           );
         }
       }
@@ -991,9 +911,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
           if (tab.urlPattern(urlObj)) {
             logger.info(`${tab.name} tab URL confirmed: ${currentTabUrl}`);
           } else {
-            logger.warn(
-              `${tab.name} tab URL doesn't match pattern: ${currentTabUrl}`
-            );
+            logger.warn(`${tab.name} tab URL doesn't match pattern: ${currentTabUrl}`);
           }
         } catch (error) {
           logger.warn(`Failed to verify ${tab.name} tab URL: ${error}`);
@@ -1002,9 +920,7 @@ test.describe('Course Tab Navigation and Content Validation', () => {
         if (tab.urlPattern.test(currentTabUrl)) {
           logger.info(`${tab.name} tab URL confirmed: ${currentTabUrl}`);
         } else {
-          logger.warn(
-            `${tab.name} tab URL doesn't match pattern: ${currentTabUrl}`
-          );
+          logger.warn(`${tab.name} tab URL doesn't match pattern: ${currentTabUrl}`);
         }
       }
 

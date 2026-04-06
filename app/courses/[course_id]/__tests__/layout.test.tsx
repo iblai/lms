@@ -23,7 +23,11 @@ vi.mock('@/hooks/courses/use-course-detail', () => ({
 
 vi.mock('@/components/course-access-guard', () => ({
   CourseAccessGuard: ({ children, course, courseInfoLoadingState }: any) => (
-    <div data-testid="course-access-guard" data-loading-state={courseInfoLoadingState} data-platform-key={course?.platform_key}>
+    <div
+      data-testid="course-access-guard"
+      data-loading-state={courseInfoLoadingState}
+      data-platform-key={course?.platform_key}
+    >
       {children}
     </div>
   ),
@@ -86,7 +90,10 @@ describe('CourseLayout', () => {
         <div>children</div>
       </CourseLayout>,
     );
-    expect(screen.getByTestId('course-access-guard')).toHaveAttribute('data-loading-state', 'loading');
+    expect(screen.getByTestId('course-access-guard')).toHaveAttribute(
+      'data-loading-state',
+      'loading',
+    );
   });
 
   it('calls handleFetchCourseInfo on mount', () => {

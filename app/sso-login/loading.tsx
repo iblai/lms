@@ -1,4 +1,4 @@
-import { Loader } from "@iblai/iblai-js/web-containers";
+import { Loader } from '@iblai/iblai-js/web-containers';
 
 export default function SsoLoginLoading() {
   return (

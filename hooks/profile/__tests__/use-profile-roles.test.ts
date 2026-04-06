@@ -17,10 +17,7 @@ vi.mock('sonner', () => ({
 const mockCreateCatalogRole = vi.fn();
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useCreateCatalogRoleMutation: vi.fn(() => [
-    mockCreateCatalogRole,
-    { isError: false },
-  ]),
+  useCreateCatalogRoleMutation: vi.fn(() => [mockCreateCatalogRole, { isError: false }]),
 }));
 
 vi.mock('@iblai/iblai-api', () => ({}));

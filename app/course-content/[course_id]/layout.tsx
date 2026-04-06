@@ -19,7 +19,10 @@ import { CourseAccessGuard } from '@/components/course-access-guard';
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { setAdvancedDisplayMonetizationCheckoutModal, setDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import {
+  setAdvancedDisplayMonetizationCheckoutModal,
+  setDisplayMonetizationCheckoutModal,
+} from '@iblai/iblai-js/web-utils';
 import { useDispatch } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 
@@ -58,17 +61,19 @@ export default function CourseContentLayout({
   const checkCourseMonetizationAccess = async () => {
     await handleCheckCourseMonetizationAccess((result) => {
       if (result.isError) {
-        dispatch(setAdvancedDisplayMonetizationCheckoutModal({
-          showModal:true,
-          paywallClosable:true,
-          onClosePayload:MONETIZATION_CLOSE_PAYLOAD.redirect_402
-        }));
+        dispatch(
+          setAdvancedDisplayMonetizationCheckoutModal({
+            showModal: true,
+            paywallClosable: true,
+            onClosePayload: MONETIZATION_CLOSE_PAYLOAD.redirect_402,
+          }),
+        );
       }
     });
   };
 
   useEffect(() => {
-    checkCourseMonetizationAccess()
+    checkCourseMonetizationAccess();
     handleFetchCourseInfo();
     handleFetchCourseProgress();
     handleFetchCourseCompletion(getUserId());
@@ -156,10 +161,10 @@ export default function CourseContentLayout({
         <main className="flex flex-1 overflow-hidden">
           {/* Course sidebar */}
           <div
-            className="w-72 border-r border-gray-200 overflow-y-auto hidden md:block pl-4"
+            className="hidden w-72 overflow-y-auto border-r border-gray-200 pl-4 md:block"
             style={{ scrollbarWidth: 'none', height: 'calc(100% - 60px)' }}
           >
-            <div className="p-4 border-b border-gray-200">
+            <div className="border-b border-gray-200 p-4">
               <h2 className="font-semibold text-gray-800">{course?.display_name}</h2>
             </div>
 
@@ -167,15 +172,15 @@ export default function CourseContentLayout({
           </div>
 
           {/* Main content area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden">
             {/* Course navigation tabs */}
             <div className="border-b border-gray-200">
-              <div className="flex overflow-x-auto w-full">
+              <div className="flex w-full overflow-x-auto">
                 <Link
                   href={`/course-content/${resolvedParams.course_id}/course${
                     currentCourseInfo?.id ? `?unit_id=${currentCourseInfo?.id}` : ''
                   }`}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                  className={`border-b-2 px-4 py-3 text-sm font-medium ${
                     activeTab === 'course'
                       ? 'border-amber-500 text-amber-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -185,7 +190,7 @@ export default function CourseContentLayout({
                 </Link>
                 <Link
                   href={`/course-content/${resolvedParams.course_id}/progress`}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                  className={`border-b-2 px-4 py-3 text-sm font-medium ${
                     activeTab === 'progress'
                       ? 'border-amber-500 text-amber-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -195,7 +200,7 @@ export default function CourseContentLayout({
                 </Link>
                 <Link
                   href={`/course-content/${resolvedParams.course_id}/dates`}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                  className={`border-b-2 px-4 py-3 text-sm font-medium ${
                     activeTab === 'dates'
                       ? 'border-amber-500 text-amber-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -205,7 +210,7 @@ export default function CourseContentLayout({
                 </Link>
                 <Link
                   href={`/course-content/${resolvedParams.course_id}/discussion`}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                  className={`border-b-2 px-4 py-3 text-sm font-medium ${
                     activeTab === 'forum'
                       ? 'border-amber-500 text-amber-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -216,7 +221,7 @@ export default function CourseContentLayout({
                 {departmentMemberCheck?.is_platform_admin && (
                   <Link
                     href={`/course-content/${resolvedParams.course_id}/instructor`}
-                    className={`px-4 py-3 text-sm font-medium border-b-2 ${
+                    className={`border-b-2 px-4 py-3 text-sm font-medium ${
                       activeTab === 'instructor'
                         ? 'border-amber-500 text-amber-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -226,53 +231,53 @@ export default function CourseContentLayout({
                   </Link>
                 )}
               </div>
-              <div className="flex items-center px-4 py-2 bg-gray-50">
+              <div className="flex items-center bg-gray-50 px-4 py-2">
                 <button
                   onClick={() => setCourseOutlineDrawerOpen(true)} // Open the new course outline drawer
-                  className="xl:hidden p-2 -ml-2 mr-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-500" // Updated here
+                  className="mr-2 -ml-2 p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset xl:hidden" // Updated here
                   aria-label="Open course outline"
                 >
                   <ListTree className="h-5 w-5" /> {/* Changed icon to ListTree */}
                 </button>
                 <div
-                  className="flex justify-between items-center flex-1 overflow-x-auto whitespace-nowrap md:whitespace-normal"
+                  className="flex flex-1 items-center justify-between overflow-x-auto whitespace-nowrap md:whitespace-normal"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
                   }}
                 >
-                  <div className="flex items-center text-xs text-gray-500 min-w-0 flex-shrink-0 pr-4">
-                    <Link href="#" className="hover:text-amber-600 flex-shrink-0">
+                  <div className="flex min-w-0 flex-shrink-0 items-center pr-4 text-xs text-gray-500">
+                    <Link href="#" className="flex-shrink-0 hover:text-amber-600">
                       {course?.display_name}
                     </Link>
                     {currentParentIds && currentParentIds.module.id && (
                       <>
-                        <ChevronRight className="h-3 w-3 mx-1 flex-shrink-0" />
-                        <Link href="#" className="hover:text-amber-600 flex-shrink-0">
+                        <ChevronRight className="mx-1 h-3 w-3 flex-shrink-0" />
+                        <Link href="#" className="flex-shrink-0 hover:text-amber-600">
                           {currentParentIds.module.display_name}
                         </Link>
                       </>
                     )}
                     {currentParentIds && currentParentIds.lesson.id && (
                       <>
-                        <ChevronRight className="h-3 w-3 mx-1 flex-shrink-0" />
-                        <Link href="#" className="hover:text-amber-600 flex-shrink-0">
+                        <ChevronRight className="mx-1 h-3 w-3 flex-shrink-0" />
+                        <Link href="#" className="flex-shrink-0 hover:text-amber-600">
                           {currentParentIds.lesson.display_name}
                         </Link>
                       </>
                     )}
-                    <ChevronRight className="h-3 w-3 mx-1 flex-shrink-0" />
-                    <span className="text-gray-700 flex-shrink-0">
+                    <ChevronRight className="mx-1 h-3 w-3 flex-shrink-0" />
+                    <span className="flex-shrink-0 text-gray-700">
                       {currentCourseInfo?.display_name}
                     </span>
                   </div>
-                  <div className="flex items-center flex-shrink-0">
-                    <div className="text-xs text-gray-600 mr-4 flex items-center">
-                      <span className="font-medium mr-1">Progress:</span>
-                      <div className="w-16 h-1.5 bg-gray-200 rounded-full mx-1">
+                  <div className="flex flex-shrink-0 items-center">
+                    <div className="mr-4 flex items-center text-xs text-gray-600">
+                      <span className="mr-1 font-medium">Progress:</span>
+                      <div className="mx-1 h-1.5 w-16 rounded-full bg-gray-200">
                         <div
-                          className="h-full bg-amber-500 rounded-full"
+                          className="h-full rounded-full bg-amber-500"
                           style={{
                             width: `${Math.min(
                               100,

@@ -23,23 +23,23 @@ Example:
 \`\`\`typescript
 // Change the primary color
 colors: {
-  primary: {
-    light: "#FDE68A", // amber-200
-    DEFAULT: "#D97706", // amber-600
-    dark: "#B45309", // amber-700
-  },
-  // ...
+primary: {
+light: "#FDE68A", // amber-200
+DEFAULT: "#D97706", // amber-600
+dark: "#B45309", // amber-700
+},
+// ...
 }
 
 // Update the logo
 logo: {
-  main: {
-    src: "/images/your-logo.png",
-    alt: "Your Company",
-    width: 120,
-    height: 48,
-  },
-  // ...
+main: {
+src: "/images/your-logo.png",
+alt: "Your Company",
+width: 120,
+height: 48,
+},
+// ...
 }
 \`\`\`
 
@@ -51,13 +51,14 @@ logo: {
 import { useTheme } from "@/components/theme-provider"
 
 function MyComponent() {
-  const { theme } = useTheme()
-  
-  return (
-    <div style={{ color: theme.colors.primary.DEFAULT }}>
-      Themed content
-    </div>
-  )
+const { theme } = useTheme()
+
+return (
+
+<div style={{ color: theme.colors.primary.DEFAULT }}>
+Themed content
+</div>
+)
 }
 \`\`\`
 
@@ -67,13 +68,14 @@ function MyComponent() {
 import useThemedColor from "@/hooks/use-themed-color"
 
 function MyComponent() {
-  const primaryColor = useThemedColor("primary.DEFAULT")
-  
-  return (
-    <div style={{ color: primaryColor }}>
-      Themed content
-    </div>
-  )
+const primaryColor = useThemedColor("primary.DEFAULT")
+
+return (
+
+<div style={{ color: primaryColor }}>
+Themed content
+</div>
+)
 }
 \`\`\`
 
@@ -83,19 +85,21 @@ function MyComponent() {
 import { Logo } from "@/components/logo"
 
 function Header() {
-  return (
-    <header>
-      <Logo variant="main" />
-    </header>
-  )
+return (
+
+<header>
+<Logo variant="main" />
+</header>
+)
 }
 
 function Footer() {
-  return (
-    <footer>
-      <Logo variant="footer" />
-    </footer>
-  )
+return (
+
+<footer>
+<Logo variant="footer" />
+</footer>
+)
 }
 \`\`\`
 
@@ -105,9 +109,9 @@ The theme system automatically generates CSS variables that you can use in your 
 
 \`\`\`css
 .my-element {
-  color: var(--primary);
-  background-color: var(--background-light);
-  border: 1px solid var(--border);
+color: var(--primary);
+background-color: var(--background-light);
+border: 1px solid var(--border);
 }
 \`\`\`
 
@@ -139,19 +143,19 @@ You can override the theme for a specific part of your application:
 import { ThemeProvider } from "@/components/theme-provider"
 
 function CustomThemedSection() {
-  const customTheme = {
-    colors: {
-      primary: {
-        DEFAULT: "#3B82F6", // blue-500
-      }
-    }
-  }
-  
-  return (
-    <ThemeProvider theme={customTheme}>
-      <YourComponent />
-    </ThemeProvider>
-  )
+const customTheme = {
+colors: {
+primary: {
+DEFAULT: "#3B82F6", // blue-500
+}
+}
+}
+
+return (
+<ThemeProvider theme={customTheme}>
+<YourComponent />
+</ThemeProvider>
+)
 }
 \`\`\`
 
@@ -161,6 +165,6 @@ function CustomThemedSection() {
 2. Avoid hardcoding colors, fonts, or other visual properties
 3. Use the provided hooks and components to access theme values
 4. When adding new components, ensure they respect the theme configuration
-\`\`\`
+   \`\`\`
 
 Let's create an example of how to use the theme in a component:

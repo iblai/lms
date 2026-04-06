@@ -22,8 +22,8 @@ export default function CredentialsPage() {
     <>
       <div className="p-6 pt-8">
         {/* Search Bar */}
-        <div className="relative w-64 mb-6">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+        <div className="relative mb-6 w-64">
+          <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
           <input
@@ -31,12 +31,12 @@ export default function CredentialsPage() {
             placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="w-full rounded-md border border-gray-200 bg-gray-100 py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none"
           />
         </div>
 
         {/* Credentials Heading */}
-        <h2 className="text-lg font-medium text-gray-700 mb-4">
+        <h2 className="mb-4 text-lg font-medium text-gray-700">
           Credentials ({filteredCredentials.length})
         </h2>
         {(!isLoading && isError) ||
@@ -44,7 +44,7 @@ export default function CredentialsPage() {
             <DefaultEmptyBox message="No credentials found." className="w-full" />
           ))}
         {/* Credentials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {/* Credential Cards */}
           {isLoading && <SkeletonMultiplier Skeleton={CredentialMiniBoxSkeleton} multiplier={8} />}
           {!isLoading &&

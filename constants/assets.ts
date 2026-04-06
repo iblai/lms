@@ -1,1 +1,1 @@
-export const CREDENTIAL_DEFAULT_IMG = "/images/credentials/default_badge.png"
+export const CREDENTIAL_DEFAULT_IMG = '/images/credentials/default_badge.png';

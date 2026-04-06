@@ -44,9 +44,7 @@ describe('useRecommendedCourses', () => {
   });
 
   it('fetches courses on mount', async () => {
-    renderHook(() =>
-      useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
-    );
+    renderHook(() => useRecommendedCourses({ limit: 8, search: '', forceLimit: false }));
 
     await waitFor(() => {
       expect(mockGetRecommendationsAiSearch).toHaveBeenCalled();
@@ -145,9 +143,7 @@ describe('useRecommendedCourses', () => {
   it('includes search_terms when search is provided', async () => {
     mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations: [] } });
 
-    renderHook(() =>
-      useRecommendedCourses({ limit: 8, search: 'python', forceLimit: false }),
-    );
+    renderHook(() => useRecommendedCourses({ limit: 8, search: 'python', forceLimit: false }));
 
     await waitFor(() => {
       expect(mockGetRecommendationsAiSearch).toHaveBeenCalledWith(
@@ -165,9 +161,7 @@ describe('useRecommendedCourses', () => {
     });
     mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations: [] } });
 
-    renderHook(() =>
-      useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
-    );
+    renderHook(() => useRecommendedCourses({ limit: 8, search: '', forceLimit: false }));
 
     await waitFor(() => {
       expect(mockGetRecommendationsAiSearch).toHaveBeenCalledWith(

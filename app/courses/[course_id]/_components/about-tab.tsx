@@ -95,18 +95,18 @@ export function AboutTab({ course }: AboutTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-medium text-gray-800 mb-4">Course Description</h2>
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 text-lg font-medium text-gray-800">Course Description</h2>
         <p className="text-gray-600">{course.description}</p>
       </div>
 
       {isOverviewValid(course.overview) && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-medium text-gray-800 mb-4">Course Overview</h2>
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 text-lg font-medium text-gray-800">Course Overview</h2>
           {isHtmlContent(course.overview || '') ? (
             <div
               ref={overviewRef}
-              className="text-gray-600 prose prose-sm max-w-none [&_h2]:text-base [&_h2]:font-medium [&_h2]:text-gray-800 [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-gray-700 [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:text-gray-600 [&_p]:mb-2 [&_a]:text-amber-600 [&_a]:hover:text-amber-700 [&_img]:rounded-lg [&_img]:my-2 [&_section]:mb-4 [&_article]:mb-3 course-overview-content"
+              className="prose prose-sm course-overview-content max-w-none text-gray-600 [&_a]:text-amber-600 [&_a]:hover:text-amber-700 [&_article]:mb-3 [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-medium [&_h2]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-gray-700 [&_img]:my-2 [&_img]:rounded-lg [&_p]:mb-2 [&_p]:text-gray-600 [&_section]:mb-4"
               dangerouslySetInnerHTML={{ __html: course.overview || '' }}
             />
           ) : (

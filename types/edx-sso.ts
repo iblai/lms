@@ -1,3 +1,3 @@
 export interface EdxSSOTokenResponse {
-    sso_auth_token: string;
+  sso_auth_token: string;
 }

@@ -83,12 +83,14 @@ export default function CourseDetailsPage() {
   return (
     <>
       {(courseInfoLoadingState === 'not-started' || courseInfoLoadingState === 'loading') && (
-        <div className="flex-1 flex justify-center items-center">
-          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
         </div>
       )}
 
-      {courseInfoLoadingState === 'failure' && !course && <DefaultEmptyBox message="No course data found." />}
+      {courseInfoLoadingState === 'failure' && !course && (
+        <DefaultEmptyBox message="No course data found." />
+      )}
 
       {courseInfoLoadingState === 'successful' && course && (
         <div className="flex flex-1 overflow-hidden">
@@ -107,8 +109,8 @@ export default function CourseDetailsPage() {
             `}</style>
             {/* Course Title */}
             <div className="border-b border-gray-200 p-6">
-              <div className="max-w-6xl mx-auto">
-                <h1 className="text-base md:text-lg font-semibold text-gray-600">
+              <div className="mx-auto max-w-6xl">
+                <h1 className="text-base font-semibold text-gray-600 md:text-lg">
                   {course.display_name}
                 </h1>
               </div>
@@ -117,24 +119,24 @@ export default function CourseDetailsPage() {
             {/* Tabs */}
             <div className="border-b border-gray-200">
               <div className="px-6">
-                <div className="max-w-6xl mx-auto">
-                  <div className="flex space-x-8 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="mx-auto max-w-6xl">
+                  <div className="flex space-x-8 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <button
                       onClick={() => setActiveTab('about')}
-                      className={`py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap shrink-0 ${
+                      className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
                         activeTab === 'about'
                           ? 'border-amber-500 text-amber-500'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                       }`}
                     >
                       About
                     </button>
                     <button
                       onClick={() => setActiveTab('syllabus')}
-                      className={`py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap shrink-0 ${
+                      className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
                         activeTab === 'syllabus'
                           ? 'border-amber-500 text-amber-500'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                       }`}
                     >
                       Syllabus
@@ -142,10 +144,10 @@ export default function CourseDetailsPage() {
                     {course?.learning_info && course.learning_info.length > 0 && (
                       <button
                         onClick={() => setActiveTab('learning-info')}
-                        className={`py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap shrink-0 ${
+                        className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
                           activeTab === 'learning-info'
                             ? 'border-amber-500 text-amber-500'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                         }`}
                       >
                         Learning Info
@@ -155,10 +157,10 @@ export default function CourseDetailsPage() {
                       course.instructor_info.instructors.length > 0 && (
                         <button
                           onClick={() => setActiveTab('instructor')}
-                          className={`py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap shrink-0 ${
+                          className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
                             activeTab === 'instructor'
                               ? 'border-amber-500 text-amber-500'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                           }`}
                         >
                           Instructors
@@ -167,10 +169,10 @@ export default function CourseDetailsPage() {
                     {departmentMemberCheck?.is_platform_admin && (
                       <button
                         onClick={() => setActiveTab('configuration')}
-                        className={`py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap shrink-0 ${
+                        className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
                           activeTab === 'configuration'
                             ? 'border-amber-500 text-amber-500'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                         }`}
                       >
                         Configuration
@@ -182,8 +184,8 @@ export default function CourseDetailsPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="p-6 w-full h-full bg-amber-50 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="h-full w-full overflow-y-auto bg-amber-50 p-6">
+              <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="md:col-span-2">
                   {activeTab === 'about' && <AboutTab course={course} />}
 
@@ -217,7 +219,7 @@ export default function CourseDetailsPage() {
                 </div>
                 <div className="md:col-span-1">
                   <div className="sticky top-6 space-y-6">
-                    <div className="aspect-video relative rounded-lg overflow-hidden bg-white flex items-center justify-center border border-gray-200">
+                    <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white">
                       <Image
                         src={`${config.urls.lms()}${course.course_image_asset_path}`}
                         alt={course.title}
@@ -233,30 +235,30 @@ export default function CourseDetailsPage() {
                     ) : (
                       <button
                         onClick={courseEligibility.btn_action}
-                        className="w-full py-3 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] rounded-md font-medium hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity"
+                        className="w-full rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] py-3 font-medium text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
                         disabled={courseEligibility.disabled}
                       >
                         {courseEligibility.btn_label}
                       </button>
                     )}
 
-                    <div className="space-y-4 bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
                       <div className="flex items-center text-gray-600">
-                        <DollarSign className="h-5 w-5 text-amber-500 mr-3" />
+                        <DollarSign className="mr-3 h-5 w-5 text-amber-500" />
                         <span>{course.course_price}</span>
                       </div>
                       <div className="flex items-center text-gray-600">
-                        <Globe className="h-5 w-5 text-amber-500 mr-3" />
+                        <Globe className="mr-3 h-5 w-5 text-amber-500" />
                         <span>{course.language}</span>
                       </div>
                       {course?.duration && (
                         <div className="flex items-center text-gray-600">
-                          <Clock className="h-5 w-5 text-amber-500 mr-3" />
+                          <Clock className="mr-3 h-5 w-5 text-amber-500" />
                           <span>{course.duration}</span>
                         </div>
                       )}
                       <div className="flex items-center text-gray-600">
-                        <Calendar className="h-5 w-5 text-amber-500 mr-3" />
+                        <Calendar className="mr-3 h-5 w-5 text-amber-500" />
                         <span>{dayjs(course.start_date).format('MMM D, YYYY')}</span>
                       </div>
                     </div>

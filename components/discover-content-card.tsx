@@ -27,7 +27,7 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
   return (
     <>
       <div onClick={handleContentClick} className="block h-full">
-        <div className="overflow-hidden rounded-md border border-gray-200 bg-white transition-transform duration-500 ease-in-out hover:scale-105 flex flex-col h-full w-full cursor-pointer shadow-sm">
+        <div className="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm transition-transform duration-500 ease-in-out hover:scale-105">
           <div className="relative aspect-video w-full overflow-hidden">
             <Image
               src={content.image || randomImage}
@@ -38,13 +38,13 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
                 e.currentTarget.src = randomImage;
               }}
             />
-            <div className="absolute bottom-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-sm uppercase">
+            <div className="absolute bottom-2 left-2 rounded-sm bg-amber-500 px-2 py-1 text-xs text-white uppercase">
               {content.contentType}
             </div>
           </div>
-          <div className="flex flex-col flex-1 p-4 pb-6 justify-between">
+          <div className="flex flex-1 flex-col justify-between p-4 pb-6">
             <div>
-              <h3 className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2 h-10">
+              <h3 className="line-clamp-2 h-10 text-xs font-medium text-gray-900 sm:text-sm">
                 {content.title}
               </h3>
             </div>

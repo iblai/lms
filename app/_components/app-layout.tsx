@@ -15,8 +15,8 @@ import { MonetizationWrapper } from './monetization-wrapper';
 
 function DefaultPageLayout({ children }: { children: any }) {
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex-1 overflow-auto main-content">{children}</div>
+    <div className="flex h-screen flex-col">
+      <div className="main-content flex-1 overflow-auto">{children}</div>
     </div>
   );
 }
@@ -26,11 +26,14 @@ export default function AppLayout({ children }: { children: any }) {
     useChatState();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const username = getUserName();
-  const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery({
-    params: { username },
-  }, {
-    skip: !username,
-  });
+  const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery(
+    {
+      params: { username },
+    },
+    {
+      skip: !username,
+    },
+  );
   const { metadataLoaded, isMentorAIEnabled } = useTenantMetadata({
     org: getTenant(),
   });
@@ -53,7 +56,7 @@ export default function AppLayout({ children }: { children: any }) {
 
   return (
     <DefaultPageLayout>
-      <div className="flex flex-col h-screen bg-white overflow-hidden">
+      <div className="flex h-screen flex-col overflow-hidden bg-white">
         {/* Make the NavBar sticky at the top */}
         <div className="sticky top-0 z-40 w-full">
           <NavBar
@@ -64,8 +67,8 @@ export default function AppLayout({ children }: { children: any }) {
         </div>
         <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <MonetizationWrapper />
-        <div className="flex flex-col md:flex-row items-start h-full">
-          <div className="flex flex-col gap-6 flex-1 h-full overflow-y-auto w-full pb-16">
+        <div className="flex h-full flex-col items-start md:flex-row">
+          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
             {children}
             <Footer />
           </div>
@@ -74,7 +77,7 @@ export default function AppLayout({ children }: { children: any }) {
             isMentorAIEnabled() &&
             !isUserMetadataLoading &&
             userMetadata?.enable_sidebar_ai_mentor_display !== false && (
-              <div className={`${isMobile ? 'fixed bottom-0 right-0 z-50 pb-30' : 'h-full'}  `}>
+              <div className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}>
                 <ChatButton isMobile={isMobile} />
               </div>
             )}

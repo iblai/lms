@@ -157,7 +157,7 @@ export default function RootLayout({
   }
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${openSans.className} flex flex-col h-screen overflow-hidden`}>
+      <body className={`${openSans.className} flex h-screen flex-col overflow-hidden`}>
         <Script src="/env.js" strategy="afterInteractive" />
         <StoreProvider>
           <Providers>

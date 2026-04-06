@@ -40,9 +40,7 @@ export async function switchAndVerifyProgramTab(page: Page, tabName: string) {
 }
 
 export async function verifyProgramTabContent(page: Page, tabName: string) {
-  const hasData = !(await page
-    .getByText(pathwaySelectors.noDataText)
-    .isVisible());
+  const hasData = !(await page.getByText(pathwaySelectors.noDataText).isVisible());
 
   if (hasData) {
     await verifyProgramDataState(page);
@@ -72,9 +70,7 @@ async function verifyProgramEmptyState(page: Page) {
 }
 
 export async function assertCoursePageContent(page: Page) {
-  await expect(
-    page.getByRole('heading', { name: /Course Description/i })
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Course Description/i })).toBeVisible();
 }
 
 export async function acessEnroll(page: Page) {
@@ -92,7 +88,7 @@ export async function acessEnroll(page: Page) {
   if (isEnrollVisible) {
     console.log('➡️ Clicking Enroll Now');
     await assertCoursePageContent(page);
-    await enrollBtn.first().click(), await page.waitForTimeout(5000);
+    (await enrollBtn.first().click(), await page.waitForTimeout(5000));
     await assertCourseComponentsLoaded(page);
     return;
   }
@@ -100,7 +96,7 @@ export async function acessEnroll(page: Page) {
   if (isAccessVisible) {
     console.log('➡️ Clicking Access Course');
     await assertCoursePageContent(page);
-    await accessBtn.first().click(), await page.waitForTimeout(5000);
+    (await accessBtn.first().click(), await page.waitForTimeout(5000));
     await assertCourseComponentsLoaded(page);
     return;
   }
@@ -125,9 +121,7 @@ async function assertCourseComponentsLoaded(page: Page) {
   });
 
   // Now check for text content inside the iframe
-  await expect(iframeLocator.locator('text=Welcome to the Course')).toBeVisible(
-    { timeout: 10000 }
-  );
+  await expect(iframeLocator.locator('text=Welcome to the Course')).toBeVisible({ timeout: 10000 });
 }
 
 function verifyDataPathwayState(page: Page) {

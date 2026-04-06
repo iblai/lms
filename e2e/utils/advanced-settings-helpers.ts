@@ -60,10 +60,7 @@ export async function navigateToAdvancedSettings(page: Page): Promise<Locator> {
 /**
  * Close the account settings dialog
  */
-export async function closeAccountDialog(
-  page: Page,
-  dialog: Locator
-): Promise<void> {
+export async function closeAccountDialog(page: Page, dialog: Locator): Promise<void> {
   const closeButton = dialog.getByRole('button', { name: 'Close' });
   await expect(closeButton).toBeVisible({ timeout: 5000 });
   await closeButton.click();
@@ -74,10 +71,7 @@ export async function closeAccountDialog(
 /**
  * Expand the Advanced CSS section
  */
-export async function expandAdvancedCssSection(
-  page: Page,
-  dialog: Locator
-): Promise<Locator> {
+export async function expandAdvancedCssSection(page: Page, dialog: Locator): Promise<Locator> {
   // Check if the section is already expanded
   const collapseButton = dialog.getByRole('button', {
     name: 'Collapse Advanced CSS',
@@ -106,10 +100,7 @@ export async function expandAdvancedCssSection(
 /**
  * Save the CSS and wait for the save operation to complete
  */
-export async function saveCssAndWait(
-  page: Page,
-  dialog: Locator
-): Promise<void> {
+export async function saveCssAndWait(page: Page, dialog: Locator): Promise<void> {
   const saveButton = dialog.getByRole('button', { name: 'Save advanced CSS' });
   await expect(saveButton).toBeVisible();
   await expect(saveButton).toBeEnabled({ timeout: 10_000 });
@@ -123,10 +114,7 @@ export async function saveCssAndWait(
 /**
  * Discard CSS changes
  */
-export async function discardCssChanges(
-  page: Page,
-  dialog: Locator
-): Promise<void> {
+export async function discardCssChanges(page: Page, dialog: Locator): Promise<void> {
   const discardButton = dialog.getByRole('button', { name: 'Discard changes' });
   await expect(discardButton).toBeVisible({ timeout: 5000 });
   await discardButton.click();

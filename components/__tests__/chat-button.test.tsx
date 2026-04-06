@@ -34,10 +34,7 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
 
 const mockGetMentors = vi.fn();
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useLazyGetMentorsQuery: vi.fn(() => [
-    mockGetMentors,
-    { isLoading: false, isFetching: false },
-  ]),
+  useLazyGetMentorsQuery: vi.fn(() => [mockGetMentors, { isLoading: false, isFetching: false }]),
 }));
 
 vi.mock('sonner', () => ({
@@ -55,7 +52,9 @@ vi.mock('@iblai/iblai-web-mentor', () => ({}));
 
 vi.mock('lodash', () => ({
   default: {
-    isEmpty: vi.fn((val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0)),
+    isEmpty: vi.fn(
+      (val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
+    ),
   },
 }));
 
@@ -71,9 +70,7 @@ const defaultContextValue = {
 };
 
 const renderWithContext = (ui: React.ReactElement, contextValue = defaultContextValue) => {
-  return render(
-    <ChatContext.Provider value={contextValue}>{ui}</ChatContext.Provider>,
-  );
+  return render(<ChatContext.Provider value={contextValue}>{ui}</ChatContext.Provider>);
 };
 
 describe('useChatState', () => {
@@ -238,9 +235,12 @@ describe('ChatButton', () => {
     mockGetMentors.mockResolvedValue({ data: { results: [] } });
 
     renderWithContext(<ChatButton />);
-    await waitFor(() => {
-      // Should call toast.error
-    }, { timeout: 500 });
+    await waitFor(
+      () => {
+        // Should call toast.error
+      },
+      { timeout: 500 },
+    );
   });
 
   it('handles mentor fetch error gracefully', async () => {
