@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.11](https://github.com/iblai/skillsai/compare/skills-v0.10.10...skills-v0.10.11) (2026-04-06)
+
+### Bug Fixes
+
+* added client error boundaries (error.tsx, global-error.tsx) that redirect exceptions to /error/500. ([79f85d1](https://github.com/iblai/skillsai/commit/79f85d10955660c719fc66cef17c544b94e1b610))
+* lint issue fixed ([8535181](https://github.com/iblai/skillsai/commit/85351811859fc0b4dfdc098c9ba075514cb16fe1))
+* tests coverage added ([f8e9b68](https://github.com/iblai/skillsai/commit/f8e9b683665d27fd4512c4c829a4d84f817b8640))
+* tests coverage added ([de65565](https://github.com/iblai/skillsai/commit/de65565fc58e3998fe57b0694db64ef97ccc0b98))
+* tests coverage added ([6d6db52](https://github.com/iblai/skillsai/commit/6d6db529ad8054ac6d21c43b755f33da2f0b91c4))
+* typecheck issues fixed ([9f0b472](https://github.com/iblai/skillsai/commit/9f0b4727f6f3da4b2b31370568b7c2e4d35e93ee))
+
 ## [0.10.10](https://github.com/iblai/skillsai/compare/skills-v0.10.9...skills-v0.10.10) (2026-04-02)
 
 ### Chores
