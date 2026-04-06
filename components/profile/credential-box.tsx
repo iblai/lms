@@ -9,13 +9,13 @@ export const CredentialBox = () => {
     search: '',
   });
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-medium text-gray-800 mb-4">Credentials</h2>
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-lg font-medium text-gray-800">Credentials</h2>
       {(!isLoading && isError) ||
         (!isLoading && !isError && fetchedCredentials?.length === 0 && (
           <DefaultEmptyBox message="No credentials found." className="w-full" />
         ))}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {isLoading && <SkeletonMultiplier Skeleton={CredentialMiniBoxSkeleton} multiplier={8} />}
         {!isLoading &&
           !isError &&

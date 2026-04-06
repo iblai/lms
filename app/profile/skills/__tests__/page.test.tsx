@@ -14,9 +14,7 @@ vi.mock('lucide-react', () => ({
 vi.mock('lodash', () => ({
   default: {
     isEmpty: vi.fn(
-      (val: any) =>
-        !val ||
-        (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
+      (val: any) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
     ),
   },
 }));

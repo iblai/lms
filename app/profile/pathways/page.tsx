@@ -56,14 +56,14 @@ export default function PathwaysPage() {
     <>
       <div className="p-6">
         {/* Pathways Tabs */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="mb-8 border-b border-gray-200">
           <div className="flex space-x-8">
             <button
               onClick={() => handlePathwayTabChange(CATALOG_TAB)}
-              className={`py-2 px-1 text-sm font-medium border-b-2 ${
+              className={`border-b-2 px-1 py-2 text-sm font-medium ${
                 activeTab === CATALOG_TAB
                   ? 'border-amber-500 text-amber-500'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
               My pathways
@@ -71,10 +71,10 @@ export default function PathwaysPage() {
             {metadataLoaded && !isSkillsAssignmentsFeatureHidden() && (
               <button
                 onClick={() => handlePathwayTabChange(ASSIGNED_TAB)}
-                className={`py-2 px-1 text-sm font-medium border-b-2 ${
+                className={`border-b-2 px-1 py-2 text-sm font-medium ${
                   activeTab === ASSIGNED_TAB
                     ? 'border-amber-500 text-amber-500'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
                 Assigned pathways
@@ -82,19 +82,19 @@ export default function PathwaysPage() {
             )}
             <button
               onClick={() => handlePathwayTabChange(ENROLLED_TAB)}
-              className={`py-2 px-1 text-sm font-medium border-b-2 ${
+              className={`border-b-2 px-1 py-2 text-sm font-medium ${
                 activeTab === ENROLLED_TAB
                   ? 'border-amber-500 text-amber-500'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
               Enrolled pathways
             </button>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="relative w-full md:w-64">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
@@ -102,12 +102,12 @@ export default function PathwaysPage() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-md border border-gray-200 bg-gray-100 py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none"
             />
           </div>
           {activeTab === CATALOG_TAB && (
             <button
-              className="flex items-center gap-2 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] px-4 py-2 rounded-md hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity"
+              className="flex items-center gap-2 rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
               onClick={() => setCreateDialogOpen(true)}
             >
               <Plus className="h-4 w-4" />
@@ -127,7 +127,7 @@ export default function PathwaysPage() {
             <DefaultEmptyBox message={`No pathways found matching ${searchQuery} query.`} />
           )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {isLoading && <SkeletonMultiplier Skeleton={SkeletonPathwayBox} multiplier={4} />}
           {!isLoading &&
             !isError &&
@@ -135,7 +135,7 @@ export default function PathwaysPage() {
             filteredPathways.map((pathway, index) => (
               <div
                 key={index}
-                className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow cursor-pointer"
+                className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
                 onClick={() => setSelectedPathway(pathway)}
               >
                 <div className="relative h-32 w-full overflow-hidden">
@@ -145,25 +145,25 @@ export default function PathwaysPage() {
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute bottom-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute bottom-2 left-2 rounded bg-amber-500 px-2 py-1 text-xs text-white">
                     PATHWAY
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-sm font-medium text-gray-800 mb-2">{pathway?.name || ''}</h3>
+                  <h3 className="mb-2 text-sm font-medium text-gray-800">{pathway?.name || ''}</h3>
                   {pathwayCompletions.length > 0 && pathwayCompletions[index] && (
                     <div className="space-y-1">
                       {pathwayCompletions.length > 0 && pathwayCompletions[index] && (
                         <>
                           <div className="flex justify-between text-xs">
                             <span className="text-gray-600">Progress</span>
-                            <span className="text-gray-800 font-medium">
+                            <span className="font-medium text-gray-800">
                               {pathwayCompletions[index].completion_percentage || 0}%
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="h-1.5 w-full rounded-full bg-gray-200">
                             <div
-                              className="bg-amber-500 h-1.5 rounded-full"
+                              className="h-1.5 rounded-full bg-amber-500"
                               style={{
                                 width: `${pathwayCompletions[index].completion_percentage}%`,
                               }}

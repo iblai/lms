@@ -37,10 +37,7 @@ const mockGetCourseProgress = vi.fn();
 const mockGetCourseCompletion = vi.fn();
 
 vi.mock('@/services/course-metadata', () => ({
-  useCreateCourseEnrollmentMutation: vi.fn(() => [
-    mockCreateCourseEnrollment,
-    { isError: false },
-  ]),
+  useCreateCourseEnrollmentMutation: vi.fn(() => [mockCreateCourseEnrollment, { isError: false }]),
   useLazyGetCourseProgressQuery: vi.fn(() => [
     mockGetCourseProgress,
     { isLoading: false, isError: false },
@@ -299,9 +296,7 @@ describe('useCourseDetail', () => {
       act(() => {
         result.current.handleOpenLesson('lesson-1');
       });
-      expect(mockPush).toHaveBeenCalledWith(
-        '/course-content/course-123/course?unit_id=lesson-1',
-      );
+      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course?unit_id=lesson-1');
     });
 
     it('does not navigate when lessonId is null', () => {

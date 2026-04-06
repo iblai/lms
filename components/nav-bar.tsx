@@ -59,12 +59,12 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
   };
 
   return (
-    <header className="bg-[var(--navbar-bg)] border-b border-[var(--border)] h-16 md:h-20 flex-shrink-0">
-      <div className="h-full px-4 sm:px-6 md:px-6 lg:px-8 flex items-center justify-between">
-        <div className="flex items-center h-full">
+    <header className="h-16 flex-shrink-0 border-b border-[var(--border)] bg-[var(--navbar-bg)] md:h-20">
+      <div className="flex h-full items-center justify-between px-4 sm:px-6 md:px-6 lg:px-8">
+        <div className="flex h-full items-center">
           <button
             onClick={onMenuClick}
-            className="md:hidden rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--primary)] mr-3"
+            className="mr-3 rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset md:hidden"
             aria-label="Open sidebar"
           >
             <Menu className="h-6 w-6" />
@@ -75,14 +75,14 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
 
           {/* Navigation Links */}
           {shouldShowNavLinks() && (
-            <nav className="hidden md:flex ml-8 space-x-6 h-full items-center">
+            <nav className="ml-8 hidden h-full items-center space-x-6 md:flex">
               <Link
                 href="/home"
                 className={`text-sm font-medium ${
                   activePage === 'home'
-                    ? 'text-[var(--navbar-active-text)] border-b-2 border-[var(--navbar-active-border)]'
+                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
                     : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } h-full flex items-center`}
+                } flex h-full items-center`}
               >
                 Home
               </Link>
@@ -90,9 +90,9 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 href="/profile"
                 className={`text-sm font-medium ${
                   activePage === 'profile'
-                    ? 'text-[var(--navbar-active-text)] border-b-2 border-[var(--navbar-active-border)]'
+                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
                     : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } h-full flex items-center`}
+                } flex h-full items-center`}
               >
                 Profile
               </Link>
@@ -101,9 +101,9 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                   href="/recommended"
                   className={`text-sm font-medium ${
                     activePage === 'recommended'
-                      ? 'text-[var(--navbar-active-text)] border-b-2 border-[var(--navbar-active-border)]'
+                      ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
                       : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                  } h-full flex items-center`}
+                  } flex h-full items-center`}
                 >
                   Recommended
                 </Link>
@@ -112,9 +112,9 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 href="/discover"
                 className={`text-sm font-medium ${
                   activePage === 'discover' && !activePage.startsWith('course')
-                    ? 'text-[var(--navbar-active-text)] border-b-2 border-[var(--navbar-active-border)]'
+                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
                     : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } h-full flex items-center`}
+                } flex h-full items-center`}
               >
                 Discover
               </Link>
@@ -134,13 +134,13 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               {/* Updated Search Bar */}
               {isDesktop && (
                 <div className="relative" style={{ width: 'clamp(12rem, 20vw, 16rem)' }}>
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
                     <Search className="h-4 w-4 text-[var(--text-light)]" />
                   </div>
                   <input
                     type="text"
                     placeholder="Search"
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-[var(--border)] rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -153,23 +153,23 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                   {!searchVisible ? (
                     <button
                       onClick={() => setSearchVisible(!searchVisible)}
-                      className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--primary)]"
+                      className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
                     >
                       <Search className="h-5 w-5" />
                     </button>
                   ) : (
-                    <div className="flex items-center space-x-2 flex-1">
+                    <div className="flex flex-1 items-center space-x-2">
                       <div className="relative flex-1">
                         <div
                           onClick={() => handleFormSubmit()}
-                          className="absolute inset-y-0 left-3 flex items-center pointer-events-none"
+                          className="pointer-events-none absolute inset-y-0 left-3 flex items-center"
                         >
                           <Search className="h-4 w-4 text-[var(--text-light)]" />
                         </div>
                         <input
                           type="text"
                           placeholder="Search"
-                          className="w-full pl-10 pr-4 py-2 bg-white border border-[var(--border)] rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                          className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
                           autoFocus
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
@@ -177,7 +177,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                       </div>
                       <button
                         onClick={() => setSearchVisible(!searchVisible)}
-                        className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--primary)]"
+                        className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
                       >
                         <X className="h-5 w-5" />
                       </button>
@@ -205,7 +205,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 hasPermission && (
                   <Link
                     href="/analytics"
-                    className="rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs lg:text-sm font-medium text-[var(--button-primary-text)] whitespace-nowrap h-[38px] hidden md:flex items-center hover:opacity-[var(--button-primary-hover-opacity)]"
+                    className="hidden h-[38px] items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs font-medium whitespace-nowrap text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)] md:flex lg:text-sm"
                   >
                     AI Analytics
                   </Link>

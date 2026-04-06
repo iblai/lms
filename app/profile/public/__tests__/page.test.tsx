@@ -137,10 +137,7 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useUserTenants } from '@/utils/localstorage';
 
 // Helper component that provides context
-function renderWithContext(
-  isUserProfileOpen = false,
-  userProfileTargetTab = 'basic',
-) {
+function renderWithContext(isUserProfileOpen = false, userProfileTargetTab = 'basic') {
   return render(
     <AppContext.Provider
       value={{

@@ -1,7 +1,7 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function SkeletonCourseAccessBtn() {
   return (
-    <Skeleton className="w-full h-[44px] rounded-md bg-gradient-to-r from-gray-200 to-gray-300 animate-pulse" />
+    <Skeleton className="h-[44px] w-full animate-pulse rounded-md bg-gradient-to-r from-gray-200 to-gray-300" />
   );
 }

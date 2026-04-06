@@ -65,7 +65,10 @@ describe('CourseAccessGuard', () => {
   describe('authorized access', () => {
     it('renders children when course platform_key matches tenant', () => {
       render(
-        <CourseAccessGuard course={{ platform_key: 'test-tenant' } as any} courseInfoLoadingState="successful">
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant' } as any}
+          courseInfoLoadingState="successful"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );
@@ -74,7 +77,10 @@ describe('CourseAccessGuard', () => {
 
     it('renders children when course platform_key is "main"', () => {
       render(
-        <CourseAccessGuard course={{ platform_key: 'main' } as any} courseInfoLoadingState="successful">
+        <CourseAccessGuard
+          course={{ platform_key: 'main' } as any}
+          courseInfoLoadingState="successful"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );
@@ -83,7 +89,10 @@ describe('CourseAccessGuard', () => {
 
     it('does not redirect when platform_key matches tenant', () => {
       render(
-        <CourseAccessGuard course={{ platform_key: 'test-tenant' } as any} courseInfoLoadingState="successful">
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant' } as any}
+          courseInfoLoadingState="successful"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );
@@ -92,7 +101,10 @@ describe('CourseAccessGuard', () => {
 
     it('does not redirect when platform_key is "main"', () => {
       render(
-        <CourseAccessGuard course={{ platform_key: 'main' } as any} courseInfoLoadingState="successful">
+        <CourseAccessGuard
+          course={{ platform_key: 'main' } as any}
+          courseInfoLoadingState="successful"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );
@@ -103,7 +115,10 @@ describe('CourseAccessGuard', () => {
   describe('unauthorized tenant', () => {
     it('redirects to /error/403 when platform_key differs from tenant', () => {
       render(
-        <CourseAccessGuard course={{ platform_key: 'other-tenant' } as any} courseInfoLoadingState="successful">
+        <CourseAccessGuard
+          course={{ platform_key: 'other-tenant' } as any}
+          courseInfoLoadingState="successful"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );
@@ -112,7 +127,10 @@ describe('CourseAccessGuard', () => {
 
     it('shows spinner instead of children when tenant is unauthorized', () => {
       render(
-        <CourseAccessGuard course={{ platform_key: 'other-tenant' } as any} courseInfoLoadingState="successful">
+        <CourseAccessGuard
+          course={{ platform_key: 'other-tenant' } as any}
+          courseInfoLoadingState="successful"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );

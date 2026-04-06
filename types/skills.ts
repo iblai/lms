@@ -42,7 +42,7 @@ export interface UserSkill {
 }
 
 export interface CatalogSearchSkill {
-  type: "skill";
+  type: 'skill';
   data: {
     id: number;
     name: string;

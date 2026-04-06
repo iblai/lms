@@ -1,5 +1,5 @@
-import { useGetUserPerLearnerInfoQuery } from "@/services/perlearner";
-import { getOrg, getUserName } from "@/utils/helpers";
+import { useGetUserPerLearnerInfoQuery } from '@/services/perlearner';
+import { getOrg, getUserName } from '@/utils/helpers';
 
 export function usePerLearnerInfoQuery() {
   const {

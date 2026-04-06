@@ -98,9 +98,7 @@ describe('ErrorPage', () => {
       render(<ErrorPage />);
       expect(screen.getByText('Something Went Wrong')).toBeInTheDocument();
       expect(
-        screen.getByText(
-          'An unexpected error occurred. Please try again or contact support.',
-        ),
+        screen.getByText('An unexpected error occurred. Please try again or contact support.'),
       ).toBeInTheDocument();
     });
 
@@ -130,7 +128,7 @@ describe('ErrorPage', () => {
     });
 
     it('falls back to config supportEmail when getSupportEmail returns falsy', () => {
-      mockGetSupportEmail.mockReturnValue("");
+      mockGetSupportEmail.mockReturnValue('');
       vi.mocked(config.settings.supportEmail).mockReturnValue('fallback@support.com');
       render(<ErrorPage />);
       const supportLink = screen.getByText('Contact Support');

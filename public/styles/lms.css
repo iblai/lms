@@ -21,7 +21,7 @@ li {
   color: #374151 !important;
 }
 
-.course-wrapper .course-content .xblock > div:first-child[style*="background"] {
+.course-wrapper .course-content .xblock > div:first-child[style*='background'] {
   background: linear-gradient(
     135deg,
     rgba(251, 191, 36, 1) 73%,
@@ -40,12 +40,12 @@ li {
 /* --- GLOBAL / BASE STYLES --- */
 body {
   font-family:
-    "Open Sans",
+    'Open Sans',
     -apple-system,
-    "system-ui",
-    "Segoe UI",
+    'system-ui',
+    'Segoe UI',
     Roboto,
-    "Helvetica Neue",
+    'Helvetica Neue',
     Arial,
     sans-serif !important;
   font-size: 14px !important;
@@ -67,12 +67,12 @@ h6,
 .hd-4,
 .hd-5 {
   font-family:
-    "Open Sans",
+    'Open Sans',
     -apple-system,
-    "system-ui",
-    "Segoe UI",
+    'system-ui',
+    'Segoe UI',
     Roboto,
-    "Helvetica Neue",
+    'Helvetica Neue',
     Arial,
     sans-serif !important;
   color: #4a5568 !important;
@@ -119,12 +119,12 @@ li,
 label,
 small {
   font-family:
-    "Open Sans",
+    'Open Sans',
     -apple-system,
-    "system-ui",
-    "Segoe UI",
+    'system-ui',
+    'Segoe UI',
     Roboto,
-    "Helvetica Neue",
+    'Helvetica Neue',
     Arial,
     sans-serif !important;
 }
@@ -163,7 +163,7 @@ a:hover {
   border-bottom: 3px solid transparent !important;
   border-radius: 0 !important;
   background-color: transparent !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   transition: all 0.2s ease !important;
   text-decoration: none !important;
 }
@@ -188,7 +188,7 @@ a:hover {
   padding: 8px 16px !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   transition: all 0.2s ease !important;
 }
 .instructor-info-action a:hover {
@@ -207,13 +207,13 @@ a:hover {
 }
 /* --- FORM ELEMENTS --- */
 textarea,
-input[type="text"],
-input[type="email"],
-input[type="search"],
-input[type="number"],
-input[type="url"],
+input[type='text'],
+input[type='email'],
+input[type='search'],
+input[type='number'],
+input[type='url'],
 select {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 14px !important;
   color: #4a5568 !important;
   background-color: #ffffff !important;
@@ -223,11 +223,11 @@ select {
   transition: border-color 0.2s ease !important;
 }
 textarea:focus,
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="search"]:focus,
-input[type="number"]:focus,
-input[type="url"]:focus,
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='search']:focus,
+input[type='number']:focus,
+input[type='url']:focus,
 select:focus {
   border-color: #f59e0b !important;
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
@@ -238,14 +238,14 @@ input::placeholder {
   color: #9ca3af !important;
 }
 /* --- CHECKBOXES --- */
-input[type="checkbox"] {
+input[type='checkbox'] {
   accent-color: #f59e0b !important;
 }
 /* --- ACTION BUTTONS (Enroll, Generate Report, etc.) --- */
-input[type="button"],
-input[type="submit"],
+input[type='button'],
+input[type='submit'],
 button:not(.btn-link):not(.instructor-nav .btn-link) {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 8px 16px !important;
@@ -259,23 +259,23 @@ button:not(.btn-link):not(.instructor-nav .btn-link) {
   box-shadow: none !important;
   text-shadow: none !important;
 }
-input[type="button"]:hover,
-input[type="submit"]:hover,
+input[type='button']:hover,
+input[type='submit']:hover,
 button:not(.btn-link):not(.instructor-nav .btn-link):hover {
   background-color: #d97706 !important;
   background-image: none !important;
 }
 /* Secondary buttons (Unenroll, Remove, Delete) - outline style */
-input[type="button"][value="Unenroll"],
-input[type="button"][name*="delete"],
-input[type="button"][name*="remove"],
+input[type='button'][value='Unenroll'],
+input[type='button'][name*='delete'],
+input[type='button'][name*='remove'],
 .btn-secondary {
   background-color: transparent !important;
   background-image: none !important;
   color: #f59e0b !important;
   border: 2px solid #f59e0b !important;
 }
-input[type="button"][value="Unenroll"]:hover,
+input[type='button'][value='Unenroll']:hover,
 .btn-secondary:hover {
   background-color: #f59e0b !important;
   color: #ffffff !important;
@@ -292,7 +292,7 @@ a.blue-button,
   padding: 8px 16px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   text-decoration: none !important;
   box-shadow: none !important;
   text-shadow: none !important;
@@ -308,7 +308,7 @@ a.blue-button:hover {
 /* --- DATA TABLES --- */
 .data-display-table,
 table {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 14px !important;
 }
 .data-display-table th,
@@ -337,10 +337,10 @@ table tbody tr:hover {
   font-weight: 600 !important;
 }
 /* Total row */
-td[style*="green"],
-td[style*="color: green"],
-span[style*="green"],
-span[style*="color: green"] {
+td[style*='green'],
+td[style*='color: green'],
+span[style*='green'],
+span[style*='color: green'] {
   color: #f59e0b !important;
   font-weight: 700 !important;
 }
@@ -360,7 +360,7 @@ hr {
   padding: 10px 16px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   margin-bottom: 4px !important;
 }
 .special-exam-header:hover,
@@ -434,7 +434,7 @@ label {
   color: #4a5568 !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 /* --- ENROLLMENT LINKS --- */
 .enrollment-status-link,
@@ -496,11 +496,7 @@ body.view-courseware p {
   margin-top: 10px !important;
 }
 
-.xmodule_display.xmodule_VideoBlock
-  .video
-  .video-wrapper
-  .video-controls
-  .control {
+.xmodule_display.xmodule_VideoBlock .video .video-wrapper .video-controls .control {
   background-color: initial !important;
   padding: initial !important;
   color: initial !important;
@@ -511,9 +507,7 @@ button.problem-action-btn {
   background-color: initial !important;
 }
 body .login-register .login-provider.button-oa2-google-oauth2,
-.financial-assistance-wrapper
-  .financial-assistance-form
-  .login-provider.button-oa2-google-oauth2 {
+.financial-assistance-wrapper .financial-assistance-form .login-provider.button-oa2-google-oauth2 {
   color: white !important;
   border-color: #4285f4 !important;
   background-color: #4285f4 !important;
@@ -521,9 +515,7 @@ body .login-register .login-provider.button-oa2-google-oauth2,
 }
 
 body .login-register .login-provider.button-oa2-apple-id,
-.financial-assistance-wrapper
-  .financial-assistance-form
-  .login-provider.button-oa2-apple-id {
+.financial-assistance-wrapper .financial-assistance-form .login-provider.button-oa2-apple-id {
   color: white !important;
   border-color: #000 !important;
   background-color: #000 !important;
@@ -555,11 +547,11 @@ body .login-register .login-provider.button-oa2-google-oauth2:hover {
   border: 1px solid #287ae6 !important;
   color: #fff !important;
 }
-body .login-register .login-provider.button-oa2-apple-id:hover{
+body .login-register .login-provider.button-oa2-apple-id:hover {
   background-color: #000 !important;
   border: 1px solid #000 !important;
   color: #fff !important;
 }
-body .fa{
+body .fa {
   font-family: 'FontAwesome' !important;
 }

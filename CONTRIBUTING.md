@@ -20,11 +20,11 @@ Thank you for your interest in contributing to skillsAI! This guide will help yo
 
 ### Prerequisites
 
-| Tool | Version | Install |
-|------|---------|---------|
+| Tool    | Version | Install                                          |
+| ------- | ------- | ------------------------------------------------ |
 | Node.js | 25.3.0+ | [nvm](https://github.com/nvm-sh/nvm) recommended |
-| pnpm | 10+ | `npm install -g pnpm` |
-| Git | 2.30+ | [git-scm.com](https://git-scm.com) |
+| pnpm    | 10+     | `npm install -g pnpm`                            |
+| Git     | 2.30+   | [git-scm.com](https://git-scm.com)               |
 
 ### Fork & Clone
 
@@ -164,6 +164,7 @@ pnpm test           # Single run
 Use the pattern: `<type>/<scope>/<description>`
 
 **Types:**
+
 - `feat` — new feature
 - `fix` — bug fix
 - `chore` — maintenance, dependencies, config
@@ -172,9 +173,11 @@ Use the pattern: `<type>/<scope>/<description>`
 - `test` — adding or updating tests
 
 **Scope** (optional but encouraged):
+
 - `courses`, `discover`, `profile`, `skills`, `credentials`, `analytics`, `auth`, `ui`, `billing`, etc.
 
 **Examples:**
+
 ```
 feat/discover/add-difficulty-filter
 fix/courses/handle-enrollment-error
@@ -193,6 +196,7 @@ type(scope): description
 ```
 
 **Examples:**
+
 ```
 feat(skills): add skill leaderboard component
 fix(discover): correct pagination on faceted search
@@ -203,6 +207,7 @@ test(profile): add unit tests for education box
 ```
 
 **Rules:**
+
 - Use imperative mood: "add feature" not "added feature"
 - Keep the first line under 72 characters
 - Reference issue numbers in the body when applicable: `Closes #123`
@@ -276,12 +281,14 @@ skillsAI targets **WCAG 2.1 AA** compliance. All contributions should meet these
 ### Before Submitting
 
 1. **Sync with upstream:**
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. **Run the full check suite:**
+
    ```bash
    pnpm lint
    pnpm typecheck

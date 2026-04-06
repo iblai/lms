@@ -1,6 +1,6 @@
-import { useGetUserCredentialsQuery } from "@/services/credentials";
-import { getTenant, getUserName } from "@/utils/helpers";
-import { useEffect, useState } from "react";
+import { useGetUserCredentialsQuery } from '@/services/credentials';
+import { getTenant, getUserName } from '@/utils/helpers';
+import { useEffect, useState } from 'react';
 
 /**
  * Hook to fetch and manage user credentials
@@ -8,9 +8,7 @@ import { useEffect, useState } from "react";
  * @param options.maxCredentials - Optional maximum number of credentials to return
  * @returns Object containing credentials array, loading state, and any error
  */
-export function useCredentials({
-  maxCredentials,
-}: { maxCredentials?: number } = {}) {
+export function useCredentials({ maxCredentials }: { maxCredentials?: number } = {}) {
   const {
     data,
     isLoading: credentialsLoading,
@@ -23,8 +21,7 @@ export function useCredentials({
   const [credentials, setCredentials] = useState<Credential[]>([]);
 
   useEffect(() => {
-    const credentialsArray =
-      Array.isArray(data) && data.length > 0 ? data[0]?.data : [];
+    const credentialsArray = Array.isArray(data) && data.length > 0 ? data[0]?.data : [];
     const result =
       maxCredentials && maxCredentials > 0
         ? credentialsArray.slice(0, maxCredentials)

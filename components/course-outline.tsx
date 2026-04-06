@@ -12,10 +12,7 @@ const getCompletionRatio = (node: CourseOutlineChildNode): number => {
     return node.complete ? 1 : 0;
   }
   const totalChildren = node.children.length;
-  const completedScore = node.children.reduce(
-    (acc, child) => acc + getCompletionRatio(child),
-    0
-  );
+  const completedScore = node.children.reduce((acc, child) => acc + getCompletionRatio(child), 0);
   return completedScore / totalChildren;
 };
 
@@ -106,7 +103,7 @@ export const CourseOutline = () => {
   } = useContext(CourseOutlineContext);
   return (
     <div
-      className="overflow-y-auto h-full md:h-[calc(100%-35px)]"
+      className="h-full overflow-y-auto md:h-[calc(100%-35px)]"
       style={{ scrollbarWidth: 'none' }}
     >
       {courseOutlineLoading ? (
@@ -117,28 +114,28 @@ export const CourseOutline = () => {
           <div key={module.id} className="border-b border-gray-200">
             <button
               onClick={() => toggleModule(module.id)}
-              className={`w-full text-left p-3 flex items-center justify-between hover:bg-gray-50 ${
+              className={`flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 ${
                 expandedModule === module.id ? 'bg-gray-50' : ''
               }`}
             >
               <span className="text-sm font-medium text-gray-700">{module.display_name}</span>
               <ChevronRight
                 className={`h-4 w-4 text-gray-500 transition-transform ${
-                  expandedModule === module.id ? 'transform rotate-90' : ''
+                  expandedModule === module.id ? 'rotate-90 transform' : ''
                 }`}
               />
             </button>
 
             {expandedModule === module.id && module.children && (
-              <div className="pl-6 pr-2 pb-2">
+              <div className="pr-2 pb-2 pl-6">
                 {module.children.map((lesson) => (
                   <div key={lesson.id}>
                     <button
                       onClick={() => toggleLesson(lesson.id)}
-                      className={`w-full text-left p-2 text-sm flex items-center justify-between rounded-sm mb-1 ${
+                      className={`mb-1 flex w-full items-center justify-between rounded-sm p-2 text-left text-sm ${
                         currentChapter === lesson.id
                           ? 'bg-amber-50 text-amber-700'
-                          : 'hover:bg-gray-50 text-gray-600'
+                          : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex items-center">
@@ -150,7 +147,7 @@ export const CourseOutline = () => {
                       {lesson.children && lesson.children.length > 0 && (
                         <ChevronRight
                           className={`h-4 w-4 text-gray-500 transition-transform ${
-                            expandedLessons.includes(lesson.id) ? 'transform rotate-90' : ''
+                            expandedLessons.includes(lesson.id) ? 'rotate-90 transform' : ''
                           }`}
                         />
                       )}
@@ -159,15 +156,15 @@ export const CourseOutline = () => {
                     {lesson.children &&
                       lesson.children.length > 0 &&
                       expandedLessons.includes(lesson.id) && (
-                        <div className="pl-6 pr-2 pb-2">
+                        <div className="pr-2 pb-2 pl-6">
                           {lesson.children.map((sublesson) => (
                             <button
                               key={sublesson.id}
                               onClick={() => selectLesson(sublesson.id)}
-                              className={`w-full text-left p-2 text-sm flex items-center rounded-sm mb-1 ${
+                              className={`mb-1 flex w-full items-center rounded-sm p-2 text-left text-sm ${
                                 currentLesson === sublesson.id
                                   ? 'bg-amber-50 text-amber-700'
-                                  : 'hover:bg-gray-50 text-gray-600'
+                                  : 'text-gray-600 hover:bg-gray-50'
                               }`}
                             >
                               <div className="mr-2 flex-shrink-0">

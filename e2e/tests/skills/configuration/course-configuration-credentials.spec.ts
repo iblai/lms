@@ -22,9 +22,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     await waitForPageReady(page);
   });
 
-  test('Should display Configuration tab only for admin users', async ({
-    page,
-  }) => {
+  test('Should display Configuration tab only for admin users', async ({ page }) => {
     // Wait for "My Courses" section to be visible
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
     await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -53,15 +51,11 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
       await expect(configurationTab).toBeVisible({ timeout: 5000 });
       logger.info('Configuration tab is visible - user is admin');
     } catch {
-      logger.info(
-        'Configuration tab is NOT visible - user is not admin (expected behavior)'
-      );
+      logger.info('Configuration tab is NOT visible - user is not admin (expected behavior)');
     }
   });
 
-  test('Should navigate to Configuration tab and display credentials section', async ({
-    page,
-  }) => {
+  test('Should navigate to Configuration tab and display credentials section', async ({ page }) => {
     // Navigate to a course
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
     await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -83,9 +77,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     try {
       await expect(configurationTab).toBeVisible({ timeout: 5000 });
     } catch {
-      logger.info(
-        'Configuration tab not available - skipping test (user is not admin)'
-      );
+      logger.info('Configuration tab not available - skipping test (user is not admin)');
       test.skip();
       return;
     }
@@ -177,9 +169,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     const credentialTypeSelect = page.getByTestId('credential-type-select');
     await expect(credentialTypeSelect).toBeVisible({ timeout: 10000 });
 
-    const issuingSignalSelect = page.getByTestId(
-      'credential-issuing-signal-select'
-    );
+    const issuingSignalSelect = page.getByTestId('credential-issuing-signal-select');
     await expect(issuingSignalSelect).toBeVisible({ timeout: 10000 });
 
     logger.info('All form fields are visible');
@@ -194,9 +184,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     logger.info('Modal closed successfully');
   });
 
-  test('Should validate required fields when creating credential', async ({
-    page,
-  }) => {
+  test('Should validate required fields when creating credential', async ({ page }) => {
     // Navigate to course and Configuration tab
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
     await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -240,9 +228,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
 
     // Verify button is disabled when required fields are empty
     await expect(createButton).toBeDisabled();
-    logger.info(
-      'Create button is disabled when required fields are empty (expected behavior)'
-    );
+    logger.info('Create button is disabled when required fields are empty (expected behavior)');
 
     // Close modal
     const cancelButton = page.getByTestId('credential-modal-cancel');
@@ -250,9 +236,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     await expect(modal).not.toBeVisible({ timeout: 10000 });
   });
 
-  test('Should display credential list and pagination if available', async ({
-    page,
-  }) => {
+  test('Should display credential list and pagination if available', async ({ page }) => {
     // Navigate to course and Configuration tab
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
     await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -291,11 +275,9 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     const isExpanded = await credentialListToggle.getAttribute('aria-expanded');
     if (isExpanded === 'false') {
       await credentialListToggle.click();
-      await expect(credentialListToggle).toHaveAttribute(
-        'aria-expanded',
-        'true',
-        { timeout: 5000 }
-      );
+      await expect(credentialListToggle).toHaveAttribute('aria-expanded', 'true', {
+        timeout: 5000,
+      });
     }
 
     // Check if credentials table or empty state is displayed
@@ -344,9 +326,7 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     }
   });
 
-  test('Should verify edit and delete actions are available for credentials', async ({
-    page,
-  }) => {
+  test('Should verify edit and delete actions are available for credentials', async ({ page }) => {
     // Navigate to course and Configuration tab
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
     await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -385,11 +365,9 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
     const isExpanded = await credentialListToggle.getAttribute('aria-expanded');
     if (isExpanded === 'false') {
       await credentialListToggle.click();
-      await expect(credentialListToggle).toHaveAttribute(
-        'aria-expanded',
-        'true',
-        { timeout: 5000 }
-      );
+      await expect(credentialListToggle).toHaveAttribute('aria-expanded', 'true', {
+        timeout: 5000,
+      });
     }
 
     // Check if credentials table has rows
@@ -414,14 +392,10 @@ test.describe('Course Configuration Tab - Credentials Feature', () => {
         await expect(deleteButton).toBeVisible({ timeout: 5000 });
         logger.info('Delete button is visible');
       } else {
-        logger.info(
-          'No credentials in the table - cannot verify action buttons'
-        );
+        logger.info('No credentials in the table - cannot verify action buttons');
       }
     } catch {
-      logger.info(
-        'Credentials table not visible - likely no credentials exist'
-      );
+      logger.info('Credentials table not visible - likely no credentials exist');
     }
   });
 });

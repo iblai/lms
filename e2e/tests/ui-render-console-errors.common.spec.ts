@@ -48,10 +48,10 @@ const ignoredErrors = new Set([
   'youtube',
   'The resource from “https://drive.google.com',
   new RegExp(
-    'A resource is blocked by OpaqueResponseBlocking, please check browser console for details'
+    'A resource is blocked by OpaqueResponseBlocking, please check browser console for details',
   ),
   new RegExp(
-    'Error occurred: {readyState: 4, getResponseHeader: , getAllResponseHeaders: , setRequestHeader: , overrideMimeType: }'
+    'Error occurred: {readyState: 4, getResponseHeader: , getAllResponseHeaders: , setRequestHeader: , overrideMimeType: }',
   ),
   new RegExp('.*Failed to load resource.*'),
   new RegExp('.*Intercom Messenger error.*'),

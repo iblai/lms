@@ -9,12 +9,12 @@ export function DiscoverFilterDrawer() {
   const { filterDrawerOpen, setFilterDrawerOpen } = useContext(FacetFilterContext);
   return (
     <Sheet open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
-      <SheetContent side="left" className="w-72 p-0 flex flex-col">
-        <SheetHeader className="p-4 border-b border-gray-200 flex flex-row items-center justify-between">
-          <SheetTitle className="font-semibold text-gray-800 text-left">Explore Content</SheetTitle>
+      <SheetContent side="left" className="flex w-72 flex-col p-0">
+        <SheetHeader className="flex flex-row items-center justify-between border-b border-gray-200 p-4">
+          <SheetTitle className="text-left font-semibold text-gray-800">Explore Content</SheetTitle>
         </SheetHeader>
         <div
-          className="overflow-y-auto flex-1 p-6 pb-16"
+          className="flex-1 overflow-y-auto p-6 pb-16"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',

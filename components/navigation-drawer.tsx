@@ -54,19 +54,19 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={onClose} />
+        <div className="bg-opacity-50 fixed inset-0 z-40 bg-black md:hidden" onClick={onClose} />
       )}
 
       {/* Drawer */}
       <div
-        className={`fixed left-0 top-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
+        className={`fixed top-0 left-0 z-50 h-full w-80 transform bg-white shadow-lg transition-transform duration-300 ease-in-out md:hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 border-b h-20 md:h-24">
+        <div className="flex h-20 items-center justify-between border-b px-4 md:h-24">
           <Logo variant="small" />
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
@@ -83,9 +83,9 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
                   <Link
                     href={item.href}
                     onClick={onClose}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
                       isActive
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        ? 'border border-amber-200 bg-amber-50 text-amber-700'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >

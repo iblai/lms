@@ -20,7 +20,9 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
 import TranscriptsPage from '../page';
 
 describe('TranscriptsPage', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('renders without crashing', () => {
     const { container } = render(<TranscriptsPage />);

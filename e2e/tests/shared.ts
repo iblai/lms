@@ -20,10 +20,7 @@ export async function inviteUserTest(page: Page, inviteModal: Locator) {
   //await expect(inviteModal).toHaveText(uniqueEmail);
 }
 
-export async function navigateToAccountComponent(
-  page: Page,
-  profileBtn: Locator
-) {
+export async function navigateToAccountComponent(page: Page, profileBtn: Locator) {
   //const profileBtn = page.locator('nav button[aria-haspopup="menu"]').last();
   await profileBtn.waitFor({ state: 'visible' });
   await profileBtn.click();
@@ -35,9 +32,7 @@ export async function navigateToAccountComponent(
   await expect(tenantBtn).toBeVisible();
   await tenantBtn.click();
 
-  const tenantDialog = page
-    .getByRole('dialog')
-    .filter({ hasText: 'organization' });
+  const tenantDialog = page.getByRole('dialog').filter({ hasText: 'organization' });
   await expect(tenantDialog).toBeVisible();
 
   return tenantDialog;
@@ -62,7 +57,7 @@ export async function shouldDisplayReportCards(
     ariaLabel: string;
     description: string;
     expectsCsvEditor: boolean;
-  }[]
+  }[],
 ) {
   const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
@@ -148,15 +143,9 @@ export async function shouldOpenCSVEditorDialog(page: Page) {
   await expect(csvTable).toBeVisible();
 
   // Verify action buttons
-  await expect(
-    csvEditorDialog.getByRole('button', { name: 'Cancel' })
-  ).toBeVisible();
-  await expect(
-    csvEditorDialog.getByRole('button', { name: 'Save' })
-  ).toBeVisible();
-  await expect(
-    csvEditorDialog.getByRole('button', { name: 'Close' }).first()
-  ).toBeVisible();
+  await expect(csvEditorDialog.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  await expect(csvEditorDialog.getByRole('button', { name: 'Save' })).toBeVisible();
+  await expect(csvEditorDialog.getByRole('button', { name: 'Close' }).first()).toBeVisible();
 
   logger.info('CSV Editor dialog opened successfully');
 }
@@ -202,7 +191,7 @@ export async function shouldDisplayCSVInEditableTableFormat(page: Page) {
   expect(rowCount).toBeGreaterThan(0);
 
   logger.info(
-    `CSV table has ${headerCount} columns and ${rowCount - 1} data rows (excluding Add Row)`
+    `CSV table has ${headerCount} columns and ${rowCount - 1} data rows (excluding Add Row)`,
   );
 }
 
@@ -234,11 +223,7 @@ export async function shouldAllowEditingCellValuesInCSVEditor(page: Page) {
   const table = csvEditorDialog.getByRole('table', {
     name: 'CSV data table',
   });
-  const firstEditableCell = table
-    .locator('tbody tr')
-    .first()
-    .locator('td')
-    .nth(1);
+  const firstEditableCell = table.locator('tbody tr').first().locator('td').nth(1);
   const isCellVisible = await firstEditableCell.isVisible().catch(() => false);
 
   if (!isCellVisible) {
@@ -248,9 +233,7 @@ export async function shouldAllowEditingCellValuesInCSVEditor(page: Page) {
   }
 
   // Get initial value
-  const initialButton = firstEditableCell
-    .locator('button, div[role="button"]')
-    .first();
+  const initialButton = firstEditableCell.locator('button, div[role="button"]').first();
   const initialText = await initialButton.textContent();
 
   // Click on cell to activate edit mode
@@ -269,9 +252,7 @@ export async function shouldAllowEditingCellValuesInCSVEditor(page: Page) {
 
   // Verify the cell shows the new value
   await expect(firstEditableCell).toContainText(testValue);
-  logger.info(
-    `Successfully edited cell value from "${initialText}" to "${testValue}"`
-  );
+  logger.info(`Successfully edited cell value from "${initialText}" to "${testValue}"`);
 }
 
 export async function shouldAddNewRowWhenClickingAddRowButton(page: Page) {
@@ -313,9 +294,7 @@ export async function shouldAddNewRowWhenClickingAddRowButton(page: Page) {
   const newRowCount = await table.locator('tbody tr').count();
   expect(newRowCount).toBe(initialRowCount + 1);
 
-  logger.info(
-    `Added new row. Row count changed from ${initialRowCount} to ${newRowCount}`
-  );
+  logger.info(`Added new row. Row count changed from ${initialRowCount} to ${newRowCount}`);
 }
 
 export async function shouldSaveEditedCSVAndTriggerDownload(page: Page) {
@@ -364,9 +343,7 @@ export async function shouldSaveEditedCSVAndTriggerDownload(page: Page) {
   logger.info(`CSV file "${filename}" downloaded successfully`);
 }
 
-export async function shouldCloseCSVEditorWithoutSavingWhenClickingCancel(
-  page: Page
-) {
+export async function shouldCloseCSVEditorWithoutSavingWhenClickingCancel(page: Page) {
   const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
@@ -508,9 +485,7 @@ export async function shouldOpenCSVEditorForUserMetadataReport(page: Page) {
   await dataReportsTab.click();
   await waitForPageReady(page);
 
-  const userMetadataReportCard = page.getByLabel(
-    'User Metadata Report report card'
-  );
+  const userMetadataReportCard = page.getByLabel('User Metadata Report report card');
   const isVisible = await userMetadataReportCard.isVisible().catch(() => false);
 
   if (!isVisible) {
@@ -543,9 +518,7 @@ export async function shouldOpenCSVEditorForUserMetadataReport(page: Page) {
   await expect(csvEditorDialog).not.toBeVisible({ timeout: 5000 });
 }
 
-export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(
-  page: Page
-) {
+export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(page: Page) {
   const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
@@ -582,9 +555,7 @@ export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(
     logger.info(`Chat History report downloaded: ${filename}`);
   } catch {
     // Download may have completed silently or taken longer
-    logger.info(
-      'Chat History download may have completed without triggering download event'
-    );
+    logger.info('Chat History download may have completed without triggering download event');
   }
 
   // Verify CSV Editor dialog did NOT open for Chat History
@@ -595,9 +566,7 @@ export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(
   expect(dialogOpened).toBeFalsy();
 }
 
-export async function shouldDisableOtherDownloadButtonsWhileGeneratingReport(
-  page: Page
-) {
+export async function shouldDisableOtherDownloadButtonsWhileGeneratingReport(page: Page) {
   const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
@@ -626,9 +595,7 @@ export async function shouldDisableOtherDownloadButtonsWhileGeneratingReport(
 
   // Note: This behavior depends on implementation - may need adjustment
   if (isSecondDisabled) {
-    logger.info(
-      'Other download buttons correctly disabled during report generation'
-    );
+    logger.info('Other download buttons correctly disabled during report generation');
   }
 
   // Wait for dialog or download to complete
@@ -641,10 +608,7 @@ export async function shouldDisableOtherDownloadButtonsWhileGeneratingReport(
     .catch(() => false);
 
   if (dialogVisible) {
-    await csvEditorDialog
-      .getByRole('button', { name: 'Close' })
-      .first()
-      .click();
+    await csvEditorDialog.getByRole('button', { name: 'Close' }).first().click();
   }
 }
 
@@ -659,18 +623,14 @@ export async function shouldShowCombiningReportsDialog(page: Page) {
   await waitForPageReady(page);
 
   // Look for report cards with the combined recommendation data-testid
-  const combinedReportCard = page.locator(
-    '[data-testid="combined-recommendation-report-card"]'
-  );
+  const combinedReportCard = page.locator('[data-testid="combined-recommendation-report-card"]');
   const isVisible = await combinedReportCard
     .first()
     .isVisible()
     .catch(() => false);
 
   if (!isVisible) {
-    logger.info(
-      'No combined recommendation report cards found - feature may not be enabled'
-    );
+    logger.info('No combined recommendation report cards found - feature may not be enabled');
     test.skip();
     return;
   }
@@ -682,16 +642,12 @@ export async function shouldShowCombiningReportsDialog(page: Page) {
   await downloadButton.click();
 
   // Wait for the combining reports dialog to appear
-  const combiningDialog = page.locator(
-    '[data-testid="combining-reports-dialog"]'
-  );
+  const combiningDialog = page.locator('[data-testid="combining-reports-dialog"]');
   await expect(combiningDialog).toBeVisible({ timeout: 30000 });
 
   // Verify dialog content
   await expect(combiningDialog.getByText('Combining Reports')).toBeVisible();
-  await expect(
-    combiningDialog.getByText('Loading & combining recommendations data')
-  ).toBeVisible();
+  await expect(combiningDialog.getByText('Loading & combining recommendations data')).toBeVisible();
 
   logger.info('Combining reports dialog displayed successfully');
 }
@@ -702,9 +658,7 @@ export async function shouldCancelCombiningReports(page: Page) {
   await dataReportsTab.click();
   await waitForPageReady(page);
 
-  const combinedReportCard = page.locator(
-    '[data-testid="combined-recommendation-report-card"]'
-  );
+  const combinedReportCard = page.locator('[data-testid="combined-recommendation-report-card"]');
   const isVisible = await combinedReportCard
     .first()
     .isVisible()
@@ -723,9 +677,7 @@ export async function shouldCancelCombiningReports(page: Page) {
   await downloadButton.click();
 
   // Wait for the combining dialog
-  const combiningDialog = page.locator(
-    '[data-testid="combining-reports-dialog"]'
-  );
+  const combiningDialog = page.locator('[data-testid="combining-reports-dialog"]');
   await expect(combiningDialog).toBeVisible({ timeout: 30000 });
 
   // Click the cancel button
@@ -746,15 +698,11 @@ export async function shouldHaveCombinedReportDataTestIds(page: Page) {
   await waitForPageReady(page);
 
   // Check for combined recommendation report cards
-  const combinedReportCards = page.locator(
-    '[data-testid="combined-recommendation-report-card"]'
-  );
+  const combinedReportCards = page.locator('[data-testid="combined-recommendation-report-card"]');
   const count = await combinedReportCards.count();
 
   if (count === 0) {
-    logger.info(
-      'No combined recommendation report cards found - feature may not be enabled'
-    );
+    logger.info('No combined recommendation report cards found - feature may not be enabled');
     test.skip();
     return;
   }
@@ -763,14 +711,10 @@ export async function shouldHaveCombinedReportDataTestIds(page: Page) {
   for (let i = 0; i < count; i++) {
     const card = combinedReportCards.nth(i);
     await expect(card).toBeVisible();
-    await expect(
-      card.getByRole('button', { name: 'Download report' })
-    ).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Download report' })).toBeVisible();
   }
 
-  logger.info(
-    `Found ${count} report cards with combined recommendation data-testid`
-  );
+  logger.info(`Found ${count} report cards with combined recommendation data-testid`);
 }
 
 export async function shouldCombineRecommendationReports(page: Page) {
@@ -779,9 +723,7 @@ export async function shouldCombineRecommendationReports(page: Page) {
   await dataReportsTab.click();
   await waitForPageReady(page);
 
-  const combinedReportCard = page.locator(
-    '[data-testid="combined-recommendation-report-card"]'
-  );
+  const combinedReportCard = page.locator('[data-testid="combined-recommendation-report-card"]');
   const isVisible = await combinedReportCard
     .first()
     .isVisible()
@@ -801,15 +743,11 @@ export async function shouldCombineRecommendationReports(page: Page) {
 
   // Wait for combining to complete and CSV editor to open
   // First, wait for the combining dialog to appear
-  const combiningDialog = page.locator(
-    '[data-testid="combining-reports-dialog"]'
-  );
+  const combiningDialog = page.locator('[data-testid="combining-reports-dialog"]');
 
   // Either the dialog shows (reports being combined) or CSV editor opens directly
   const dialogOrEditor = await Promise.race([
-    combiningDialog
-      .waitFor({ state: 'visible', timeout: 10000 })
-      .then(() => 'dialog'),
+    combiningDialog.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'dialog'),
     page
       .getByRole('dialog', { name: 'Edit CSV Data' })
       .waitFor({ state: 'visible', timeout: 60000 })
@@ -833,9 +771,7 @@ export async function shouldCombineRecommendationReports(page: Page) {
   const headerCount = await headerCells.count();
   expect(headerCount).toBeGreaterThan(0);
 
-  logger.info(
-    `Combined reports opened in CSV editor with ${headerCount} columns`
-  );
+  logger.info(`Combined reports opened in CSV editor with ${headerCount} columns`);
 
   // Close the editor
   await csvEditorDialog.getByRole('button', { name: 'Close' }).first().click();

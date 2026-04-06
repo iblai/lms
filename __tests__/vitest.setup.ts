@@ -1,4 +1,34 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+
+// jsdom: matchMedia (useIsMobile, embla-carousel, etc.)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  configurable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// jsdom: scrollIntoView (cmdk, profile-tabs, etc.)
+Element.prototype.scrollIntoView = vi.fn() as typeof Element.prototype.scrollIntoView;
+
+// jsdom: IntersectionObserver (embla-carousel, etc.)
+globalThis.IntersectionObserver = class IntersectionObserver {
+  disconnect() {}
+  observe() {}
+  takeRecords() {
+    return [];
+  }
+  unobserve() {}
+} as unknown as typeof IntersectionObserver;
 
 // Mock localStorage for tests that need it
 class LocalStorageMock implements Storage {

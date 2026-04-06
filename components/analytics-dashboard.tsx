@@ -32,11 +32,11 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 p-6 bg-white">
-      <div className="flex justify-between items-start">
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="flex items-start justify-between">
         <div>
           <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-          <p className="text-3xl font-semibold text-gray-800 my-1">{value}</p>
+          <p className="my-1 text-3xl font-semibold text-gray-800">{value}</p>
           <p className="text-xs text-amber-600">{subtitle}</p>
         </div>
         <div className="text-amber-500">{icon}</div>
@@ -48,11 +48,11 @@ function StatCard({
 // Analytics Dashboard component
 export function AnalyticsDashboard() {
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Platform Overview</h1>
+    <div className="mx-auto max-w-6xl p-6">
+      <h1 className="mb-6 text-2xl font-bold text-gray-800">Platform Overview</h1>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <StatCard
           title="Total Users"
           value="245,000"
@@ -80,9 +80,9 @@ export function AnalyticsDashboard() {
       </div>
 
       {/* User Growth Chart */}
-      <div className="rounded-lg border border-gray-200 p-6 bg-white">
-        <h2 className="text-base font-medium text-gray-800 mb-1">User Growth</h2>
-        <p className="text-xs text-gray-500 mb-4">Monthly active users over time</p>
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <h2 className="mb-1 text-base font-medium text-gray-800">User Growth</h2>
+        <p className="mb-4 text-xs text-gray-500">Monthly active users over time</p>
         <div className="h-[300px] w-full">
           <ChartContainer
             config={{

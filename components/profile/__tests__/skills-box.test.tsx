@@ -123,7 +123,7 @@ describe('SkillsBox', () => {
     });
     render(<SkillsBox />);
     const emptyBoxes = screen.getAllByTestId('empty-box');
-    expect(emptyBoxes.some((box) => box.textContent?.includes("earned skills"))).toBe(true);
+    expect(emptyBoxes.some((box) => box.textContent?.includes('earned skills'))).toBe(true);
   });
 
   it('shows empty box when earned skills is empty object', () => {
@@ -146,7 +146,7 @@ describe('SkillsBox', () => {
     });
     render(<SkillsBox />);
     const emptyBoxes = screen.getAllByTestId('empty-box');
-    expect(emptyBoxes.some((box) => box.textContent?.includes("self-reported"))).toBe(true);
+    expect(emptyBoxes.some((box) => box.textContent?.includes('self-reported'))).toBe(true);
   });
 
   it('shows empty box when desired skills error', () => {
@@ -156,7 +156,7 @@ describe('SkillsBox', () => {
     });
     render(<SkillsBox />);
     const emptyBoxes = screen.getAllByTestId('empty-box');
-    expect(emptyBoxes.some((box) => box.textContent?.includes("desired"))).toBe(true);
+    expect(emptyBoxes.some((box) => box.textContent?.includes('desired'))).toBe(true);
   });
 
   it('shows empty box when self-reported skills is empty', () => {

@@ -1,15 +1,11 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 
-import {
-  Profile,
-  InviteUserDialog,
-  InvitedUsersDialog,
-} from "@iblai/iblai-js/web-containers";
-import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
-import { getTenant, getUserName } from "@/utils/helpers";
-import { config } from "@/lib/config";
+import { Profile, InviteUserDialog, InvitedUsersDialog } from '@iblai/iblai-js/web-containers';
+import { Dialog, DialogTitle, DialogContent } from '@/components/ui/dialog';
+import { getTenant, getUserName } from '@/utils/helpers';
+import { config } from '@/lib/config';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -18,12 +14,10 @@ interface UserProfileModalProps {
 
 export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
   const params = {
-    tenantKey: getTenant()
-  }
-  const [isInviteUserDialogOpen, setIsInviteUserDialogOpen] =
-    React.useState(false);
-  const [isInvitedUsersDialogOpen, setIsInvitedUsersDialogOpen] =
-    React.useState(false);
+    tenantKey: getTenant(),
+  };
+  const [isInviteUserDialogOpen, setIsInviteUserDialogOpen] = React.useState(false);
+  const [isInvitedUsersDialogOpen, setIsInvitedUsersDialogOpen] = React.useState(false);
   React.useEffect(() => {
     if (!isOpen) {
       const active = document.activeElement;
@@ -54,13 +48,13 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             //onInviteClick={() => setIsInviteUserDialogOpen(true)}
             tenant={params.tenantKey}
             username={getUserName()}
-            onClose={()=>{}}
+            onClose={() => {}}
             customization={{
               showMentorAIDisplayCheckbox: true,
               showLeaderboardDisplayCheckbox: true,
               showUsernameField: false,
               showPlatformName: false,
-              useGravatarPicFallback: config.settings.enableGravatarOnProfilePic() !== "false",
+              useGravatarPicFallback: config.settings.enableGravatarOnProfilePic() !== 'false',
             }}
           />
           {isInviteUserDialogOpen && (

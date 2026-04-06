@@ -68,7 +68,7 @@ export function Footer() {
       <footer
         className={`${
           isOpen ? 'hidden sm:flex' : 'flex'
-        } fixed bottom-0 left-0 justify-between items-center py-3 px-6 border-t border-gray-200 text-sm text-gray-600 bg-white z-40 transition-all duration-300 ${
+        } fixed bottom-0 left-0 z-40 items-center justify-between border-t border-gray-200 bg-white px-6 py-3 text-sm text-gray-600 transition-all duration-300 ${
           isOpen ? 'w-[calc(100%-var(--chat-width))]' : 'w-full'
         }`}
       >
@@ -78,7 +78,7 @@ export function Footer() {
               target="_blank"
               href={menu.link}
               key={`footer-menu-${index}`}
-              className="hover:text-amber-500 transition-colors"
+              className="transition-colors hover:text-amber-500"
             >
               {menu.label}
             </Link>

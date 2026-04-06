@@ -44,13 +44,11 @@ vi.mock('use-debounce', () => ({
 }));
 
 vi.mock('next/image', () => ({
-  default: ({ src, alt, fill, ...props }: any) => (
-    <img src={src} alt={alt || ''} {...props} />
-  ),
+  default: ({ src, alt, fill, ...props }: any) => <img src={src} alt={alt || ''} {...props} />,
 }));
 
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => open ? <div data-testid="dialog">{children}</div> : null,
+  Dialog: ({ children, open }: any) => (open ? <div data-testid="dialog">{children}</div> : null),
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
 }));
 
@@ -132,9 +130,7 @@ describe('CreatePathwayModal', () => {
   });
 
   it('does not render when closed', () => {
-    const { queryByTestId } = render(
-      <CreatePathwayModal {...defaultProps} open={false} />,
-    );
+    const { queryByTestId } = render(<CreatePathwayModal {...defaultProps} open={false} />);
     expect(queryByTestId('dialog')).not.toBeInTheDocument();
   });
 
@@ -467,13 +463,15 @@ describe('CreatePathwayModal', () => {
     // Mock document.createElement to capture the input element
     const originalCreateElement = document.createElement.bind(document);
     let capturedInput: any = null;
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementationOnce((tag: string) => {
-      if (tag === 'input') {
-        capturedInput = { type: '', accept: '', onchange: null as any, click: vi.fn() };
-        return capturedInput;
-      }
-      return originalCreateElement(tag);
-    });
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementationOnce((tag: string) => {
+        if (tag === 'input') {
+          capturedInput = { type: '', accept: '', onchange: null as any, click: vi.fn() };
+          return capturedInput;
+        }
+        return originalCreateElement(tag);
+      });
 
     await act(async () => {
       if (uploadArea) fireEvent.click(uploadArea);
@@ -518,7 +516,9 @@ describe('CreatePathwayModal', () => {
         onload: null as any,
         result: 'data:image/jpeg;base64,fake',
       };
-      const FileReaderSpy = vi.spyOn(window, 'FileReader').mockImplementationOnce(() => mockReaderInstance as any);
+      const FileReaderSpy = vi
+        .spyOn(window, 'FileReader')
+        .mockImplementationOnce(() => mockReaderInstance as any);
 
       await act(async () => {
         capturedInput.onchange({ target: mockTarget });
@@ -562,10 +562,7 @@ describe('CreatePathwayModal', () => {
     } as any);
     // @ts-ignore
     const { useLazyGetResourceSearchQuery } = await import('@iblai/iblai-js/data-layer');
-    vi.mocked(useLazyGetResourceSearchQuery).mockReturnValue([
-      vi.fn(),
-      { isLoading: true },
-    ] as any);
+    vi.mocked(useLazyGetResourceSearchQuery).mockReturnValue([vi.fn(), { isLoading: true }] as any);
     render(<CreatePathwayModal {...defaultProps} />);
     await waitFor(() => {
       expect(screen.queryByTestId('skeleton-multiplier')).toBeInTheDocument();

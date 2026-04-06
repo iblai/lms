@@ -1,7 +1,6 @@
-
-import { getUserName } from "@/utils/helpers";
+import { getUserName } from '@/utils/helpers';
 // @ts-ignore
-import { useGetUserMetadataQuery } from "@iblai/iblai-js/data-layer";
+import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 
 export const useUserMetadata = () => {
   const username = getUserName();
@@ -9,10 +8,12 @@ export const useUserMetadata = () => {
     data: userMetaData,
     isLoading: userMetaDataLoading,
     isError: userMetaDataError,
-  } = useGetUserMetadataQuery({
-    params: {
-      username,
-    }},
+  } = useGetUserMetadataQuery(
+    {
+      params: {
+        username,
+      },
+    },
     {
       skip: !username,
     },

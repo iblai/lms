@@ -67,9 +67,7 @@ describe('useProfilePathways', () => {
   });
 
   it('fetches catalog pathways on mount when contentType is catalog', async () => {
-    const mockPathways = [
-      { name: 'Pathway 1', pathway_uuid: 'uuid-1', metadata: {} },
-    ];
+    const mockPathways = [{ name: 'Pathway 1', pathway_uuid: 'uuid-1', metadata: {} }];
     mockGetPathwayList.mockResolvedValue({ data: mockPathways });
 
     const { result } = renderHook(() =>

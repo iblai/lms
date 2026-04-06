@@ -14,38 +14,20 @@ const mockGetUserDesiredSkills = vi.fn();
 const mockGetPerLearnerInfo = vi.fn();
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useLazyGetUserReportedSkillsQuery: vi.fn(() => [
-    mockGetUserReportedSkills,
-    { isError: false },
-  ]),
-  useLazyGetUserSkillsPointsQuery: vi.fn(() => [
-    mockGetUserSkillsPoints,
-    { isError: false },
-  ]),
-  useLazyGetUserDesiredSkillsQuery: vi.fn(() => [
-    mockGetUserDesiredSkills,
-    { isError: false },
-  ]),
-  useLazyGetPerLearnerInfoQuery: vi.fn(() => [
-    mockGetPerLearnerInfo,
-    { isError: false },
-  ]),
+  useLazyGetUserReportedSkillsQuery: vi.fn(() => [mockGetUserReportedSkills, { isError: false }]),
+  useLazyGetUserSkillsPointsQuery: vi.fn(() => [mockGetUserSkillsPoints, { isError: false }]),
+  useLazyGetUserDesiredSkillsQuery: vi.fn(() => [mockGetUserDesiredSkills, { isError: false }]),
+  useLazyGetPerLearnerInfoQuery: vi.fn(() => [mockGetPerLearnerInfo, { isError: false }]),
 }));
 
 const mockGetUserCredentials = vi.fn();
 vi.mock('@/services/credentials', () => ({
-  useLazyGetUserCredentialsQuery: vi.fn(() => [
-    mockGetUserCredentials,
-    { isError: false },
-  ]),
+  useLazyGetUserCredentialsQuery: vi.fn(() => [mockGetUserCredentials, { isError: false }]),
 }));
 
 const mockGetUserEnrolledCourses = vi.fn();
 vi.mock('@/services/courses', () => ({
-  useLazyGetUserEnrolledCoursesQuery: vi.fn(() => [
-    mockGetUserEnrolledCourses,
-    { isError: false },
-  ]),
+  useLazyGetUserEnrolledCoursesQuery: vi.fn(() => [mockGetUserEnrolledCourses, { isError: false }]),
 }));
 
 const mockGetUserEnrolledPrograms = vi.fn();
@@ -55,10 +37,7 @@ vi.mock('@/services/catalog', () => ({
     mockGetUserEnrolledPrograms,
     { isError: false },
   ]),
-  useLazyGetUserCatalogPathwaysQuery: vi.fn(() => [
-    mockGetUserCatalogPathways,
-    { error: null },
-  ]),
+  useLazyGetUserCatalogPathwaysQuery: vi.fn(() => [mockGetUserCatalogPathways, { error: null }]),
 }));
 
 import { useProfileActivityStats } from '../use-profile-activity-stats';

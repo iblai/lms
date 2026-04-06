@@ -54,9 +54,12 @@ export const useCourseDetail = (courseId: string) => {
     handleFetchCourseCompletionOutlines,
     handleFetchCourseEligibility,
   } = useCourseMetadata();
-  const [courseInfoLoadingState, setCourseInfoLoadingState] = useState<CourseInfoLoadingState>('not-started');
+  const [courseInfoLoadingState, setCourseInfoLoadingState] =
+    useState<CourseInfoLoadingState>('not-started');
   const [course, setCourse] = useState<CourseEdxData | null>(null);
-  const [courseOutline, setCourseOutline] = useState<CourseOutlineChildNode>({} as CourseOutlineChildNode);
+  const [courseOutline, setCourseOutline] = useState<CourseOutlineChildNode>(
+    {} as CourseOutlineChildNode,
+  );
   const [courseOutlineLoading, setCourseOutlineLoading] = useState(false);
   const [courseEligibilityLoading, setCourseEligibilityLoading] = useState(false);
   const [courseButtonActionLoading, setCourseButtonActionLoading] = useState(false);
