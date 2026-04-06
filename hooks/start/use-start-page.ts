@@ -28,13 +28,15 @@ export const useStartPage = () => {
   });
   const router = useRouter();
   const username = getUserName();
-  const { data: userMetadata } = useGetUserMetadataQuery({
-    params: {
-      username,
-    }},
+  const { data: userMetadata } = useGetUserMetadataQuery(
+    {
+      params: {
+        username,
+      },
+    },
     {
       skip: !username,
-    }
+    },
   );
   const canShowSkillsToast = metadata?.enable_skills_screen_on_start_page !== false;
   const canShowRolesToast = metadata?.enable_roles_screen_on_start_page !== false;

@@ -52,9 +52,7 @@ vi.mock('@/components/skill-leaderboard-chart', () => ({
 
 // Mock SkeletonActivityStatBox
 vi.mock('@/components/skeleton-activity-stat-box', () => ({
-  SkeletonActivityStatBox: () => (
-    <div data-testid="skeleton-activity-stat-box">Loading...</div>
-  ),
+  SkeletonActivityStatBox: () => <div data-testid="skeleton-activity-stat-box">Loading...</div>,
 }));
 
 import ProfilePage from '../page';
@@ -219,9 +217,7 @@ describe('ProfilePage', () => {
       isLoading: false,
     } as any);
     vi.mocked(useProfileActivityStats).mockReturnValue({
-      stats: [
-        { loading: false, label: 'Points', value: 250 },
-      ],
+      stats: [{ loading: false, label: 'Points', value: 250 }],
     } as any);
 
     render(<ProfilePage />);
@@ -240,9 +236,7 @@ describe('ProfilePage', () => {
       isLoading: false,
     } as any);
     vi.mocked(useProfileActivityStats).mockReturnValue({
-      stats: [
-        { loading: false, label: 'Courses', value: 10 },
-      ],
+      stats: [{ loading: false, label: 'Courses', value: 10 }],
     } as any);
 
     render(<ProfilePage />);

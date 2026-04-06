@@ -157,7 +157,10 @@ describe('useCredentials', () => {
       const { result } = renderHook(() => useCredentials());
       let response: any;
       await act(async () => {
-        response = await result.current.handleCreateCredentialAssertion('entity-1', mockAssertion as any);
+        response = await result.current.handleCreateCredentialAssertion(
+          'entity-1',
+          mockAssertion as any,
+        );
       });
 
       expect(response).toEqual(mockAssertion);
@@ -365,7 +368,9 @@ describe('useCredentials', () => {
 
   describe('handleFetchIssuers', () => {
     it('fetches and sets issuers on success', async () => {
-      const mockIssuersResponse = { result: { data: [{ entityId: 'issuer-1', name: 'Issuer 1' }] } };
+      const mockIssuersResponse = {
+        result: { data: [{ entityId: 'issuer-1', name: 'Issuer 1' }] },
+      };
       mockGetIssuers.mockReturnValue(mockWithUnwrap(mockIssuersResponse));
 
       const { result } = renderHook(() => useCredentials());

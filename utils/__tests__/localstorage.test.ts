@@ -113,7 +113,10 @@ describe('LocalStorageService', () => {
 
   it('setItem calls localStorage.setItem with JSON-stringified value', async () => {
     await service.setItem('user', { name: 'Alice' });
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user', JSON.stringify({ name: 'Alice' }));
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'user',
+      JSON.stringify({ name: 'Alice' }),
+    );
   });
 
   it('removeItem calls localStorage.removeItem', async () => {
@@ -167,7 +170,10 @@ describe('setLocalStorageItem', () => {
 
   it('stores JSON-stringified value', () => {
     setLocalStorageItem('config', { theme: 'dark' });
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('config', JSON.stringify({ theme: 'dark' }));
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'config',
+      JSON.stringify({ theme: 'dark' }),
+    );
   });
 
   it('stores string value', () => {
@@ -408,18 +414,12 @@ describe('handleTenantSwitch', () => {
 
   it('saves redirect when saveRedirect is true', async () => {
     await handleTenantSwitch('test-tenant', true);
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-      'redirect-to',
-      '/dashboard?tab=overview',
-    );
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('redirect-to', '/dashboard?tab=overview');
   }, 10000);
 
   it('does not save redirect when saveRedirect is false', async () => {
     await handleTenantSwitch('test-tenant', false);
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith(
-      'redirect-to',
-      expect.any(String),
-    );
+    expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('redirect-to', expect.any(String));
   }, 10000);
 
   it('updates window.location.href to auth URL', async () => {

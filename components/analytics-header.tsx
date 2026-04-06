@@ -1,21 +1,21 @@
-"use client"
+'use client';
 
-import { Search } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { Search } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export function AnalyticsHeader() {
   return (
     <header className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex h-16 md:h-20 items-center px-2 sm:px-4 md:px-6">
-        <div className="mr-2 sm:mr-4 md:mr-12 flex-shrink-0">
+      <div className="mx-auto flex h-16 items-center px-2 sm:px-4 md:h-20 md:px-6">
+        <div className="mr-2 flex-shrink-0 sm:mr-4 md:mr-12">
           <Link href="/" className="flex items-center">
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/iblai-logo-xs%20%281%29-3UYOVbXjsuvGoUnKYWGIO19nDDgFOV.png"
               alt="ibl.ai Logo"
               width={60}
               height={36}
-              className="h-6 sm:h-7 md:h-8 w-auto"
+              className="h-6 w-auto sm:h-7 md:h-8"
               priority
             />
           </Link>
@@ -31,16 +31,20 @@ export function AnalyticsHeader() {
             <input
               type="text"
               placeholder="Search"
-              className="w-40 sm:w-48 lg:w-64 rounded-md border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 h-[38px]"
+              className="h-[38px] w-40 rounded-md border border-gray-300 py-2 pr-4 pl-10 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none sm:w-48 lg:w-64"
             />
           </div>
 
-          <button className="rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs lg:text-sm font-medium text-[var(--button-primary-text)] whitespace-nowrap h-[38px] flex items-center hover:opacity-[var(--button-primary-hover-opacity)]">
+          <button className="flex h-[38px] items-center rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs font-medium whitespace-nowrap text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)] lg:text-sm">
             Skills AI
           </button>
-          <button className="text-xs lg:text-sm font-medium text-gray-600 h-[38px] flex items-center">Invites</button>
-          <button className="text-xs lg:text-sm font-medium text-gray-600 h-[38px] flex items-center">Downloads</button>
-          <div className="h-8 w-8 md:h-9 md:w-9 overflow-hidden rounded-full flex-shrink-0">
+          <button className="flex h-[38px] items-center text-xs font-medium text-gray-600 lg:text-sm">
+            Invites
+          </button>
+          <button className="flex h-[38px] items-center text-xs font-medium text-gray-600 lg:text-sm">
+            Downloads
+          </button>
+          <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full md:h-9 md:w-9">
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/close-up-portrait-of-smiling-handsome-young-caucasian-man-face-looking-at-camera-on-isolated-light-gray-studio-background-photo%201-tmQMOUyqiWPK9DqErlAU45FIFQeiY8.png"
               alt="Profile"
@@ -52,5 +56,5 @@ export function AnalyticsHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

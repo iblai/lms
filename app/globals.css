@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 @tailwind utilities;
 
 @config '../tailwind.config.ts';
@@ -7,7 +7,7 @@
 @plugin 'tailwind-scrollbar';
 
 /* SDK: custom base styles (CSS variables, no Tailwind utilities) */
-@import "@iblai/iblai-js/web-containers/styles";
+@import '@iblai/iblai-js/web-containers/styles';
 
 /* SDK: scan compiled components so Tailwind generates their utility classes */
 @source "../node_modules/@iblai/iblai-js/dist/web-containers/source";
@@ -23,7 +23,7 @@ body {
 }
 
 body {
-  font-family: "Open Sans", Arial, Helvetica, sans-serif;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
@@ -258,7 +258,7 @@ body {
   }
 }
 /* TODO temporary fix for image size in profile component dialog */
-.profile-component-dialog img[alt="Organization logo"] {
+.profile-component-dialog img[alt='Organization logo'] {
   max-width: 192px;
 }
 @media (max-width: 768px) {

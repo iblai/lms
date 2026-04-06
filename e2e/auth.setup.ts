@@ -9,14 +9,10 @@ setup(
     hostUrl: SKILL_HOST,
     authHost: AUTH_HOST,
     appName: 'skills',
-    postLoginUrlMatcher: (url) =>
-      url.href.includes('/home') || url.href.includes('/start'),
+    postLoginUrlMatcher: (url) => url.href.includes('/home') || url.href.includes('/start'),
     authFlow:
-      (process.env.AUTH_FLOW as
-        | 'username_password'
-        | 'magic_link'
-        | 'sso'
-        | 'direct_sso') || 'username_password',
+      (process.env.AUTH_FLOW as 'username_password' | 'magic_link' | 'sso' | 'direct_sso') ||
+      'username_password',
     authIdp: process.env.AUTH_IDP,
-  })
+  }),
 );

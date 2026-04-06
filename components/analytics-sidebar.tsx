@@ -1,46 +1,54 @@
-"use client"
+'use client';
 
-import { CircleUser, FileText, LayoutGrid, Clock, Sparkles, ChevronDown, ChevronRight } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useState } from "react"
+import {
+  CircleUser,
+  FileText,
+  LayoutGrid,
+  Clock,
+  Sparkles,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 export function AnalyticsSidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   // Determine which sections should be expanded based on the current path
   const initialExpanded = {
-    users: pathname.includes("/analytics/users/"),
+    users: pathname.includes('/analytics/users/'),
     content:
-      pathname.includes("/analytics/courses") ||
-      pathname.includes("/analytics/programs") ||
-      pathname.includes("/analytics/pathways") ||
-      pathname.includes("/analytics/resources"),
-    engagement: pathname.includes("/analytics/engagement/"),
-    agents: pathname.includes("/analytics/agents/"),
-  }
+      pathname.includes('/analytics/courses') ||
+      pathname.includes('/analytics/programs') ||
+      pathname.includes('/analytics/pathways') ||
+      pathname.includes('/analytics/resources'),
+    engagement: pathname.includes('/analytics/engagement/'),
+    agents: pathname.includes('/analytics/agents/'),
+  };
 
   // State to track which sections are expanded
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(initialExpanded)
-  const isActive = (path: string) => pathname === path
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(initialExpanded);
+  const isActive = (path: string) => pathname === path;
 
   // Toggle section expansion
   const toggleSection = (section: string) => {
     setExpanded((prev) => ({
       ...prev,
       [section]: !prev[section],
-    }))
-  }
+    }));
+  };
 
   return (
-    <aside className="hidden md:block w-80 border border-gray-200 rounded-lg bg-white h-full overflow-y-auto m-4">
-      <nav className="flex flex-col mt-4">
+    <aside className="m-4 hidden h-full w-80 overflow-y-auto rounded-lg border border-gray-200 bg-white md:block">
+      <nav className="mt-4 flex flex-col">
         <Link
           href="/analytics"
-          className={`relative flex items-center px-6 py-3 border-b border-gray-100 ${
-            isActive("/analytics")
-              ? "bg-amber-50 before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-              : "hover:bg-gray-50"
+          className={`relative flex items-center border-b border-gray-100 px-6 py-3 ${
+            isActive('/analytics')
+              ? 'bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+              : 'hover:bg-gray-50'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -52,8 +60,8 @@ export function AnalyticsSidebar() {
         {/* Users section with dropdown */}
         <div>
           <button
-            onClick={() => toggleSection("users")}
-            className={`relative flex items-center justify-between w-full px-6 py-3 border-b border-gray-100 text-left hover:bg-gray-50`}
+            onClick={() => toggleSection('users')}
+            className={`relative flex w-full items-center justify-between border-b border-gray-100 px-6 py-3 text-left hover:bg-gray-50`}
           >
             <div className="flex items-center gap-3">
               <CircleUser className="h-5 w-5 text-amber-500" />
@@ -71,42 +79,42 @@ export function AnalyticsSidebar() {
             <div className="bg-white">
               <Link
                 href="/analytics/users/registered"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/users/registered")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/users/registered')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/users/registered") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/users/registered') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Registered Users
                 </span>
               </Link>
               <Link
                 href="/analytics/users/active"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/users/active")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/users/active')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/users/active") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/users/active') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Active Users
                 </span>
               </Link>
               <Link
                 href="/analytics/users/at-risk"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/users/at-risk")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/users/at-risk')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/users/at-risk") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/users/at-risk') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   At-Risk Users
                 </span>
@@ -118,8 +126,8 @@ export function AnalyticsSidebar() {
         {/* Content section with dropdown */}
         <div>
           <button
-            onClick={() => toggleSection("content")}
-            className={`relative flex items-center justify-between w-full px-6 py-3 border-b border-gray-100 text-left hover:bg-gray-50`}
+            onClick={() => toggleSection('content')}
+            className={`relative flex w-full items-center justify-between border-b border-gray-100 px-6 py-3 text-left hover:bg-gray-50`}
           >
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-amber-500" />
@@ -137,56 +145,56 @@ export function AnalyticsSidebar() {
             <div className="bg-white">
               <Link
                 href="/analytics/courses"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/courses")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/courses')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/courses") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/courses') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Courses
                 </span>
               </Link>
               <Link
                 href="/analytics/programs"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/programs")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/programs')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/programs") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/programs') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Programs
                 </span>
               </Link>
               <Link
                 href="/analytics/pathways"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/pathways")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/pathways')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/pathways") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/pathways') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Pathways
                 </span>
               </Link>
               <Link
                 href="/analytics/resources"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/resources")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/resources')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/resources") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/resources') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Resources
                 </span>
@@ -198,8 +206,8 @@ export function AnalyticsSidebar() {
         {/* Engagement section with dropdown */}
         <div>
           <button
-            onClick={() => toggleSection("engagement")}
-            className={`relative flex items-center justify-between w-full px-6 py-3 border-b border-gray-100 text-left hover:bg-gray-50`}
+            onClick={() => toggleSection('engagement')}
+            className={`relative flex w-full items-center justify-between border-b border-gray-100 px-6 py-3 text-left hover:bg-gray-50`}
           >
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-amber-500" />
@@ -217,28 +225,28 @@ export function AnalyticsSidebar() {
             <div className="bg-white">
               <Link
                 href="/analytics/engagement/skills"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/engagement/skills")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/engagement/skills')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/engagement/skills") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/engagement/skills') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Skills
                 </span>
               </Link>
               <Link
                 href="/analytics/engagement/credentials"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/engagement/credentials")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/engagement/credentials')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/engagement/credentials") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/engagement/credentials') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Credentials
                 </span>
@@ -250,8 +258,8 @@ export function AnalyticsSidebar() {
         {/* Agents section with dropdown */}
         <div>
           <button
-            onClick={() => toggleSection("agents")}
-            className={`relative flex items-center justify-between w-full px-6 py-3 border-b border-gray-100 text-left hover:bg-gray-50`}
+            onClick={() => toggleSection('agents')}
+            className={`relative flex w-full items-center justify-between border-b border-gray-100 px-6 py-3 text-left hover:bg-gray-50`}
           >
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-amber-500" />
@@ -269,42 +277,42 @@ export function AnalyticsSidebar() {
             <div className="bg-white">
               <Link
                 href="/analytics/agents"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/agents")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/agents')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/agents") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/agents') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   AI Agents
                 </span>
               </Link>
               <Link
                 href="/analytics/agents/topics"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/agents/topics")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/agents/topics')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/agents/topics") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/agents/topics') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Topics
                 </span>
               </Link>
               <Link
                 href="/analytics/agents/cost"
-                className={`flex items-center px-6 py-2 pl-14 border-b border-gray-100 ${
-                  isActive("/analytics/agents/cost")
-                    ? "bg-amber-50 relative before:absolute before:right-0 before:top-0 before:h-full before:w-1 before:bg-amber-500"
-                    : "hover:bg-gray-50"
+                className={`flex items-center border-b border-gray-100 px-6 py-2 pl-14 ${
+                  isActive('/analytics/agents/cost')
+                    ? 'relative bg-amber-50 before:absolute before:top-0 before:right-0 before:h-full before:w-1 before:bg-amber-500'
+                    : 'hover:bg-gray-50'
                 }`}
               >
                 <span
-                  className={`text-sm ${isActive("/analytics/agents/cost") ? "text-amber-600 font-medium" : "text-gray-600"}`}
+                  className={`text-sm ${isActive('/analytics/agents/cost') ? 'font-medium text-amber-600' : 'text-gray-600'}`}
                 >
                   Cost
                 </span>
@@ -314,5 +322,5 @@ export function AnalyticsSidebar() {
         </div>
       </nav>
     </aside>
-  )
+  );
 }

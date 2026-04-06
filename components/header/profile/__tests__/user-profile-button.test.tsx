@@ -103,7 +103,9 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="show-learner-mode-switch">{String(props.showLearnerModeSwitch)}</span>
       <span data-testid="billing-enabled">{String(props.billingEnabled)}</span>
       <span data-testid="current-spa">{props.currentSPA}</span>
-      <span data-testid="enable-gravatar-on-profile-pic">{String(props.enableGravatarOnProfilePic)}</span>
+      <span data-testid="enable-gravatar-on-profile-pic">
+        {String(props.enableGravatarOnProfilePic)}
+      </span>
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>

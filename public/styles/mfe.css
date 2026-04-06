@@ -1,60 +1,55 @@
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,700");
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,600,700');
 body,
 body * {
-  font-family: "Open Sans" !important;
+  font-family: 'Open Sans' !important;
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
 
 @font-face {
-  font-family: "HKGrotesk, sans-serif";
-  src: url("https://learn.iblai.app/fonts/HKGrotesk, sans-serif-LightItalic.otf")
-    format("opentype");
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-LightItalic.otf') format('opentype');
   font-weight: 300;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "HKGrotesk, sans-serif";
-  src: url("https://learn.iblai.app/fonts/HKGrotesk, sans-serif-BoldItalic.otf")
-    format("opentype");
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-BoldItalic.otf') format('opentype');
   font-weight: 700;
   font-style: italic;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "HKGrotesk, sans-serif";
-  src: url("https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Light.otf")
-    format("opentype");
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Light.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "HKGrotesk, sans-serif";
-  src: url("https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Medium.otf")
-    format("opentype");
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Medium.otf') format('opentype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "HKGrotesk, sans-serif";
-  src: url("https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Regular.otf")
-    format("opentype");
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "HKGrotesk, sans-serif";
-  src: url("https://learn.iblai.app/fonts/HKGrotesk, sans-serif-MediumItalic.otf")
-    format("opentype");
+  font-family: 'HKGrotesk, sans-serif';
+  src: url('https://learn.iblai.app/fonts/HKGrotesk, sans-serif-MediumItalic.otf')
+    format('opentype');
   font-weight: 500;
   font-style: italic;
   font-display: swap;
@@ -143,11 +138,7 @@ footer.d-flex,
   display: none !important;
 }
 
-#course-content
-  .discussion-module
-  .inline-discussion
-  .add_post_btn_container
-  button.new-post-btn {
+#course-content .discussion-module .inline-discussion .add_post_btn_container button.new-post-btn {
   background-color: transparent !important;
 }
 
@@ -209,12 +200,12 @@ footer.d-flex,
 /* --- GLOBAL / BASE STYLES --- */
 body {
   font-family:
-    "Open Sans",
+    'Open Sans',
     -apple-system,
-    "system-ui",
-    "Segoe UI",
+    'system-ui',
+    'Segoe UI',
     Roboto,
-    "Helvetica Neue",
+    'Helvetica Neue',
     Arial,
     sans-serif !important;
   font-size: 14px !important;
@@ -240,12 +231,12 @@ h4,
 h5,
 h6 {
   font-family:
-    "Open Sans",
+    'Open Sans',
     -apple-system,
-    "system-ui",
-    "Segoe UI",
+    'system-ui',
+    'Segoe UI',
     Roboto,
-    "Helvetica Neue",
+    'Helvetica Neue',
     Arial,
     sans-serif !important;
   color: #4a5568 !important;
@@ -273,12 +264,12 @@ li,
 label,
 small {
   font-family:
-    "Open Sans",
+    'Open Sans',
     -apple-system,
-    "system-ui",
-    "Segoe UI",
+    'system-ui',
+    'Segoe UI',
     Roboto,
-    "Helvetica Neue",
+    'Helvetica Neue',
     Arial,
     sans-serif !important;
 }
@@ -320,7 +311,7 @@ a:hover,
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 8px 16px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   transition: all 0.2s ease !important;
 }
 .btn-outline-primary:hover {
@@ -336,7 +327,7 @@ a:hover,
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 8px 16px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 .btn-inverse-outline-primary:hover {
   background-color: #d97706 !important;
@@ -347,7 +338,7 @@ a:hover,
   color: #f59e0b !important;
   background-color: transparent !important;
   border: none !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 .btn-link:hover {
   color: #d97706 !important;
@@ -374,12 +365,12 @@ svg.donut .donut-segment-group circle {
 }
 .donut-chart-number {
   fill: #4a5568 !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-weight: 700 !important;
 }
 .donut-chart-label {
   fill: #4a5568 !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 /* --- GRADE BAR --- */
 svg.grade-bar rect.grade-bar__base {
@@ -390,7 +381,7 @@ svg.grade-bar .grade-bar--passing {
 }
 svg.grade-bar .grade-bar--current-non-passing,
 svg.grade-bar .grade-bar--current-passing,
-svg.grade-bar rect[class*="grade-bar--current"] {
+svg.grade-bar rect[class*='grade-bar--current'] {
   fill: #f59e0b !important;
 }
 svg.grade-bar .grade-bar__divider {
@@ -399,7 +390,7 @@ svg.grade-bar .grade-bar__divider {
 /* --- GRADE POPOVERS/BADGES --- */
 .popover {
   border-radius: 6px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 13px !important;
 }
 /* Passing grade badge (50% - bottom arrow popover) */
@@ -437,7 +428,7 @@ svg.grade-bar .grade-bar__divider {
 }
 /* --- DATA TABLE (Grade Summary) --- */
 .pgn__data-table {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 14px !important;
 }
 .pgn__data-table thead th {
@@ -547,7 +538,7 @@ footer,
 }
 /* --- TOAST NOTIFICATIONS --- */
 .toast-container {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 /* --- COLUMN TEXT COLOR FIX --- */
 .col-12 {
@@ -616,7 +607,7 @@ footer,
   font-size: 12px !important;
   font-weight: 600 !important;
   padding: 3px 8px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
 }
@@ -634,11 +625,11 @@ footer,
    (Use with shared base/typography from progress)
    ============================================= */
 /* --- PILL TAB NAVIGATION (My posts / All posts / Topics / Learners) --- */
-.header-action-bar .nav-pills{
-  gap:4px
+.header-action-bar .nav-pills {
+  gap: 4px;
 }
 .nav-pills .nav-link {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   border-radius: 6px !important;
@@ -653,7 +644,8 @@ footer,
   color: #d97706 !important;
   border-color: #f59e0b !important;
 }
-.nav-pills .nav-link.active, .nav-pills a.nav-link.active {
+.nav-pills .nav-link.active,
+.nav-pills a.nav-link.active {
   background-color: #f59e0b !important;
   color: #ffffff !important;
   border-color: #f59e0b !important;
@@ -667,7 +659,7 @@ footer,
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 8px 16px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   transition: all 0.2s ease !important;
 }
 .btn-brand:hover {
@@ -676,7 +668,7 @@ footer,
 /* --- SEARCH FIELD --- */
 .pgn__searchfield input,
 .pgn__searchfield .form-control {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   font-size: 14px !important;
   color: #4a5568 !important;
   border: 1px solid #e5e7eb !important;
@@ -763,7 +755,7 @@ span.author-name.text-primary-500,
 .min-content-height p,
 .min-content-height .h4 {
   color: #9ca3af !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 /* --- POST DETAIL VIEW --- */
 .discussion-post h3,
@@ -772,8 +764,8 @@ span.author-name.text-primary-500,
   font-size: 18px !important;
   font-weight: 600 !important;
 }
-[class*="post-body"],
-[class*="post-content"] p {
+[class*='post-body'],
+[class*='post-content'] p {
   color: #4a5568 !important;
   font-size: 14px !important;
   line-height: 1.6 !important;
@@ -787,7 +779,7 @@ span.author-name.text-primary-500,
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 8px 16px !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 .btn-outline-dark:hover {
   background-color: #f59e0b !important;
@@ -801,7 +793,7 @@ span.author-name.text-primary-500,
   border-radius: 6px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
 }
 .btn-primary:hover {
   background-color: #d97706 !important;
@@ -826,8 +818,7 @@ input:focus {
 }
 /* Floating labels */
 .pgn__form-control-floating-label-text,
-.pgn__form-control-floating-label-content:focus-within
-  .pgn__form-control-floating-label-text {
+.pgn__form-control-floating-label-content:focus-within .pgn__form-control-floating-label-text {
   color: #f59e0b !important;
 }
 /* Checkbox */
@@ -835,7 +826,7 @@ input:focus {
   background-color: #f59e0b !important;
   border-color: #f59e0b !important;
 }
-input[type="checkbox"]:checked {
+input[type='checkbox']:checked {
   accent-color: #f59e0b !important;
 }
 /* Collapsible card (Topics section) */
@@ -869,7 +860,7 @@ input[type="checkbox"]:checked {
 }
 /* --- DROPDOWN MENUS (sort, filters) --- */
 .pgn__dropdown .dropdown-menu {
-  font-family: "Open Sans", sans-serif !important;
+  font-family: 'Open Sans', sans-serif !important;
   border: 1px solid #e5e7eb !important;
   border-radius: 6px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
@@ -911,11 +902,11 @@ input[type="checkbox"]:checked {
   display: none !important;
 }
 @media (min-width: 768px) {
-  .app-container > [data-testid="instructor-toolbar"] {
+  .app-container > [data-testid='instructor-toolbar'] {
     position: absolute;
     right: 0;
   }
 }
-body .fa{
+body .fa {
   font-family: 'FontAwesome' !important;
 }

@@ -119,9 +119,7 @@ describe('ResumeBox', () => {
   it('shows PDF viewer when resume is available', () => {
     mockGetUserResumeQuery.mockReturnValue({
       data: {
-        files: [
-          { name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' },
-        ],
+        files: [{ name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' }],
       },
       isLoading: false,
       isError: false,
@@ -133,9 +131,7 @@ describe('ResumeBox', () => {
   it('shows navigation controls when resume is available', () => {
     mockGetUserResumeQuery.mockReturnValue({
       data: {
-        files: [
-          { name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' },
-        ],
+        files: [{ name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' }],
       },
       isLoading: false,
       isError: false,
@@ -148,9 +144,7 @@ describe('ResumeBox', () => {
   it('shows zoom controls when resume is available', () => {
     mockGetUserResumeQuery.mockReturnValue({
       data: {
-        files: [
-          { name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' },
-        ],
+        files: [{ name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' }],
       },
       isLoading: false,
       isError: false,
@@ -164,9 +158,7 @@ describe('ResumeBox', () => {
   it('shows rotation controls when resume is available', () => {
     mockGetUserResumeQuery.mockReturnValue({
       data: {
-        files: [
-          { name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' },
-        ],
+        files: [{ name: 'resume.pdf', url: 'https://example.com/resume.pdf', type: 'resume' }],
       },
       isLoading: false,
       isError: false,

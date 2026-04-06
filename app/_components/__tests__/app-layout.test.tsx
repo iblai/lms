@@ -133,7 +133,11 @@ describe('AppLayout', () => {
   it('renders DefaultPageLayout for NON_AUTH_PAGES (/start)', () => {
     vi.mocked(usePathname).mockReturnValue('/start');
 
-    render(<AppLayout><div data-testid="child">Page Content</div></AppLayout>);
+    render(
+      <AppLayout>
+        <div data-testid="child">Page Content</div>
+      </AppLayout>,
+    );
 
     // Should render children directly without NavBar
     expect(screen.queryByTestId('navbar')).not.toBeInTheDocument();
@@ -143,7 +147,11 @@ describe('AppLayout', () => {
   it('renders DefaultPageLayout for NON_AUTH_PAGES (/sso-login)', () => {
     vi.mocked(usePathname).mockReturnValue('/sso-login');
 
-    render(<AppLayout><div data-testid="child">SSO Login</div></AppLayout>);
+    render(
+      <AppLayout>
+        <div data-testid="child">SSO Login</div>
+      </AppLayout>,
+    );
 
     expect(screen.queryByTestId('navbar')).not.toBeInTheDocument();
     expect(screen.getByTestId('child')).toBeInTheDocument();
@@ -152,7 +160,11 @@ describe('AppLayout', () => {
   it('renders DefaultPageLayout for root path (/)', () => {
     vi.mocked(usePathname).mockReturnValue('/');
 
-    render(<AppLayout><div data-testid="child">Root</div></AppLayout>);
+    render(
+      <AppLayout>
+        <div data-testid="child">Root</div>
+      </AppLayout>,
+    );
 
     expect(screen.queryByTestId('navbar')).not.toBeInTheDocument();
     expect(screen.getByTestId('child')).toBeInTheDocument();
@@ -161,7 +173,11 @@ describe('AppLayout', () => {
   it('renders full layout (NavBar, Footer) for auth pages', () => {
     vi.mocked(usePathname).mockReturnValue('/home');
 
-    render(<AppLayout><div>Content</div></AppLayout>);
+    render(
+      <AppLayout>
+        <div>Content</div>
+      </AppLayout>,
+    );
 
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
@@ -171,7 +187,11 @@ describe('AppLayout', () => {
   it('renders children within auth layout', () => {
     vi.mocked(usePathname).mockReturnValue('/profile');
 
-    render(<AppLayout><div data-testid="page-children">Profile Page</div></AppLayout>);
+    render(
+      <AppLayout>
+        <div data-testid="page-children">Profile Page</div>
+      </AppLayout>,
+    );
 
     expect(screen.getByTestId('page-children')).toBeInTheDocument();
   });

@@ -269,9 +269,7 @@ describe('TimedExam', () => {
     renderTimedExam({ examInfo: startedExamInfo });
     fireEvent.click(screen.getByText('Show more'));
     expect(screen.getByText('Show less')).toBeInTheDocument();
-    expect(
-      screen.getByText(/To receive credit for problems/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/To receive credit for problems/)).toBeInTheDocument();
   });
 
   it('toggles back to short instructions when Show less is clicked', () => {
@@ -459,10 +457,7 @@ describe('TimedExam', () => {
       await Promise.resolve();
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Failed to auto-submit exam:',
-      expect.any(Error),
-    );
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to auto-submit exam:', expect.any(Error));
     consoleSpy.mockRestore();
   });
 
@@ -511,9 +506,7 @@ describe('TimedExam', () => {
 
   it('disables start button when starting exam', async () => {
     mockStartExam.mockReturnValue({
-      unwrap: vi.fn().mockImplementation(
-        () => new Promise<void>(() => {}),
-      ),
+      unwrap: vi.fn().mockImplementation(() => new Promise<void>(() => {})),
     });
 
     renderTimedExam({ examInfo: noAttemptExamInfo });
@@ -584,7 +577,10 @@ describe('TimedExam', () => {
   it('shows "Submitting..." text when isSubmittingExam is true', async () => {
     // @ts-ignore
     const { useUpdateExamAttemptMutation } = await import('@iblai/iblai-js/data-layer');
-    vi.mocked(useUpdateExamAttemptMutation as any).mockReturnValue([mockUpdateExamAttempt, { isLoading: true }]);
+    vi.mocked(useUpdateExamAttemptMutation as any).mockReturnValue([
+      mockUpdateExamAttempt,
+      { isLoading: true },
+    ]);
     renderTimedExam({ examInfo: startedExamInfo });
     fireEvent.click(screen.getByText('End My Exam'));
     expect(screen.getByText('Submitting...')).toBeInTheDocument();

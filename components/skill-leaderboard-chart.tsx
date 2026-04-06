@@ -87,7 +87,7 @@ interface TooltipProps {
 const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-md shadow-sm">
+      <div className="rounded-md border border-gray-200 bg-white p-3 shadow-sm">
         <p className="text-sm font-medium">{`Level: ${payload[0].payload.level}`}</p>
         <p className="text-xs text-gray-600">{`Skill Points: ${Math.round(payload[0].value)}`}</p>
         <p className="text-xs text-gray-600">{`Percentile: ${label}%`}</p>
@@ -151,7 +151,7 @@ export function SkillLeaderboardChart({ userSkillPoints = 0 }: SkillLeaderboardC
 
   return (
     <>
-      <div className="flex justify-between mb-2 px-2">
+      <div className="mb-2 flex justify-between px-2">
         {skillLevels.map((level) => (
           <div key={level.name} className="text-center">
             <p className="text-xs font-medium text-gray-700">{level.name}</p>
@@ -159,8 +159,8 @@ export function SkillLeaderboardChart({ userSkillPoints = 0 }: SkillLeaderboardC
         ))}
       </div>
 
-      <div className="h-[250px] sm:h-[300px] w-full overflow-x-auto">
-        <div className="min-w-[600px] h-full">
+      <div className="h-[250px] w-full overflow-x-auto sm:h-[300px]">
+        <div className="h-full min-w-[600px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -228,7 +228,7 @@ export function SkillLeaderboardChart({ userSkillPoints = 0 }: SkillLeaderboardC
         </div>
       </div>
 
-      <div className="mt-4 flex justify-between items-center">
+      <div className="mt-4 flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-600">
             Your Level: <span className="font-medium text-amber-500">{getUserLevel()}</span>

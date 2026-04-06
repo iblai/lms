@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 import {
   Upload,
   FileText,
@@ -10,22 +10,22 @@ import {
   FileArchive,
   FileCode,
   File,
-} from "lucide-react";
-import { getUserName } from "@/utils/helpers";
+} from 'lucide-react';
+import { getUserName } from '@/utils/helpers';
 // @ts-ignore
-import { useGetUserResumeQuery } from "@iblai/iblai-js/data-layer";
-import { getTenant } from "@/utils/helpers";
-import { SkeletonMultiplier } from "../skeleton-multiplier";
-import { UploadedFile } from "@/types/career";
-import { DefaultEmptyBox } from "../default-empty-box";
-import Link from "next/link";
-import { useForm } from "@tanstack/react-form";
-import { toast } from "sonner";
-import { useCreateUserResumeMutation } from "@/services/career";
-import _ from "lodash";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { useTenantMetadata } from "@iblai/iblai-js/web-utils";
+import { useGetUserResumeQuery } from '@iblai/iblai-js/data-layer';
+import { getTenant } from '@/utils/helpers';
+import { SkeletonMultiplier } from '../skeleton-multiplier';
+import { UploadedFile } from '@/types/career';
+import { DefaultEmptyBox } from '../default-empty-box';
+import Link from 'next/link';
+import { useForm } from '@tanstack/react-form';
+import { toast } from 'sonner';
+import { useCreateUserResumeMutation } from '@/services/career';
+import _ from 'lodash';
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
+import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 /**
  * Extrait le nom du fichier à partir d'un chemin d'URL
@@ -33,7 +33,7 @@ import { useTenantMetadata } from "@iblai/iblai-js/web-utils";
  * @returns Le nom du fichier
  */
 const getFileNameFromPath = (path: string): string => {
-  return path.split("/").pop() || path || "";
+  return path.split('/').pop() || path || '';
 };
 
 /**
@@ -42,43 +42,31 @@ const getFileNameFromPath = (path: string): string => {
  * @returns Le composant d'icône Lucide approprié
  */
 const getFileIcon = (fileName: string) => {
-  const extension = fileName.split(".").pop()?.toLowerCase() || "";
+  const extension = fileName.split('.').pop()?.toLowerCase() || '';
 
   // Images
-  if (["jpg", "jpeg", "png", "gif", "svg", "webp"].includes(extension)) {
+  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension)) {
     return <FileImage className="h-4 w-4" />;
   }
   // Documents
-  if (["pdf", "doc", "docx", "txt", "rtf"].includes(extension)) {
+  if (['pdf', 'doc', 'docx', 'txt', 'rtf'].includes(extension)) {
     return <FileText className="h-4 w-4" />;
   }
   // Vidéos
-  if (["mp4", "webm", "avi", "mov"].includes(extension)) {
+  if (['mp4', 'webm', 'avi', 'mov'].includes(extension)) {
     return <FileVideo className="h-4 w-4" />;
   }
   // Audio
-  if (["mp3", "wav", "ogg", "flac"].includes(extension)) {
+  if (['mp3', 'wav', 'ogg', 'flac'].includes(extension)) {
     return <FileAudio className="h-4 w-4" />;
   }
   // Archives
-  if (["zip", "rar", "7z", "tar", "gz"].includes(extension)) {
+  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) {
     return <FileArchive className="h-4 w-4" />;
   }
   // Code
   if (
-    [
-      "js",
-      "ts",
-      "jsx",
-      "tsx",
-      "html",
-      "css",
-      "json",
-      "py",
-      "java",
-      "c",
-      "cpp",
-    ].includes(extension)
+    ['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'json', 'py', 'java', 'c', 'cpp'].includes(extension)
   ) {
     return <FileCode className="h-4 w-4" />;
   }
@@ -87,9 +75,9 @@ const getFileIcon = (fileName: string) => {
 };
 
 const MediaSkeleton = () => (
-  <div className="flex items-center border border-gray-200 rounded-md p-2.5 bg-white animate-pulse">
-    <div className="mr-2 h-4 w-4 bg-gray-200 rounded-full"></div>
-    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+  <div className="flex animate-pulse items-center rounded-md border border-gray-200 bg-white p-2.5">
+    <div className="mr-2 h-4 w-4 rounded-full bg-gray-200"></div>
+    <div className="h-4 w-3/4 rounded bg-gray-200"></div>
   </div>
 );
 
@@ -100,85 +88,78 @@ export const MediaBox = () => {
       username: getUserName(),
     },
   ]);
-  const { metadataLoaded, isSkillsResumeFeatureHidden } =
-    useTenantMetadata({ org: getTenant() });
-  const [createUserResume, { isError: isUploadError }] =
-    useCreateUserResumeMutation();
+  const { metadataLoaded, isSkillsResumeFeatureHidden } = useTenantMetadata({ org: getTenant() });
+  const [createUserResume, { isError: isUploadError }] = useCreateUserResumeMutation();
   const [file, setFile] = useState<File | undefined>(undefined);
   const form = useForm({
     defaultValues: {
-      link_1: "",
+      link_1: '',
       isResume: false,
-      file: "",
+      file: '',
     },
     onSubmit: async ({ value }) => {
       const formData = new FormData();
-      formData.append("user", getUserName());
-      formData.append("platform", getTenant());
+      formData.append('user', getUserName());
+      formData.append('platform', getTenant());
       switch (activeUploadTab) {
         case LINK_TAB:
           try {
             const totalLinks = (data.links || []).length;
-            (data.links || []).forEach(
-              (link: Partial<UploadedFile>, index: number) => {
-                formData.append(
-                  "link_" + (totalLinks + 1 - index),
-                  link?.url || ""
-                );
-              }
-            );
-            formData.append("link_1", value.link_1);
+            (data.links || []).forEach((link: Partial<UploadedFile>, index: number) => {
+              formData.append('link_' + (totalLinks + 1 - index), link?.url || '');
+            });
+            formData.append('link_1', value.link_1);
             await createUserResume({
               username: getUserName(),
               platform_key: getTenant(),
               resume: formData,
             });
             if (isUploadError) {
-              throw new Error("Error uploading media");
+              throw new Error('Error uploading media');
             }
             refetch();
-            toast.success("Media uploaded successfully");
+            toast.success('Media uploaded successfully');
             form.reset();
           } catch (error) {
-            toast.error("Error uploading media");
+            toast.error('Error uploading media');
           }
           break;
         default:
           //case FILE
           if (!file) {
-            toast.error("Please upload a file.");
+            toast.error('Please upload a file.');
             return;
           }
           try {
             if (value.isResume) {
-              formData.append("resume", file);
+              formData.append('resume', file);
             } else {
-              formData.append("additional_files", file);
-              formData.append("file_type_portfolio_sample.pdf", "portfolio");
+              formData.append('additional_files', file);
+              formData.append('file_type_portfolio_sample.pdf', 'portfolio');
             }
             await createUserResume({
               username: getUserName(),
               platform_key: getTenant(),
               resume: formData,
-              method: "POST",
+              method: 'POST',
             });
             if (isUploadError) {
-              throw new Error("Error uploading media");
+              throw new Error('Error uploading media');
             }
             refetch();
             setFile(undefined);
             setUploadedFileIsPDF(false);
-            toast.success("Media uploaded successfully");
+            toast.success('Media uploaded successfully');
             form.reset();
           } catch (error) {
-            toast.error("Error uploading media");
+            toast.error('Error uploading media');
           }
           break;
       }
     },
   });
-  const FILE_TAB = "file";
-  const LINK_TAB = "link";
+  const FILE_TAB = 'file';
+  const LINK_TAB = 'link';
   const [activeUploadTab, setActiveUploadTab] = useState(FILE_TAB);
   const [uploadedMedia, setUploadedMedia] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -195,10 +176,10 @@ export const MediaBox = () => {
     }
     if (file.size > 26214400) {
       // 25MB in bytes
-      toast.error("File size should be less than 25MB");
+      toast.error('File size should be less than 25MB');
       return;
     }
-    if (file.type === "application/pdf") {
+    if (file.type === 'application/pdf') {
       if (metadataLoaded && !isSkillsResumeFeatureHidden()) {
         setUploadedFileIsPDF(true);
       }
@@ -213,7 +194,7 @@ export const MediaBox = () => {
         ...(data.links?.map((link: Partial<UploadedFile>) => ({
           name: link.url,
           url: link.url,
-          type: "link",
+          type: 'link',
         })) || []),
       ];
       setUploadedMedia(medias);
@@ -222,7 +203,7 @@ export const MediaBox = () => {
 
   const handleSubmit = () => {
     if (!form.state.isFormValid) {
-      toast.error("Please fill in all fields");
+      toast.error('Please fill in all fields');
       return;
     }
     if (form.state.isSubmitting) {
@@ -232,7 +213,7 @@ export const MediaBox = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -240,24 +221,20 @@ export const MediaBox = () => {
           form.handleSubmit();
         }}
       >
-        <form.Subscribe
-          selector={(state) => [state.isSubmitting]}
-        >
+        <form.Subscribe selector={(state) => [state.isSubmitting]}>
           {([isSubmitting]) => (
-            <div className="flex flex-col md:flex-row gap-8">
+            <div className="flex flex-col gap-8 md:flex-row">
               {/* Upload Media Section */}
               <div className="w-full md:w-1/3">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">
-                  Upload Media
-                </h2>
+                <h2 className="mb-4 text-lg font-medium text-gray-800">Upload Media</h2>
 
                 {/* Upload Tabs */}
-                <div className="flex mb-4">
+                <div className="mb-4 flex">
                   <button
                     className={`flex-1 py-2 text-center font-medium transition-colors ${
                       activeUploadTab === FILE_TAB
-                        ? "bg-white border-t border-l border-r border-amber-200 text-amber-600"
-                        : "bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100"
+                        ? 'border-t border-r border-l border-amber-200 bg-white text-amber-600'
+                        : 'border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
                     }`}
                     onClick={() => setActiveUploadTab(FILE_TAB)}
                   >
@@ -266,8 +243,8 @@ export const MediaBox = () => {
                   <button
                     className={`flex-1 py-2 text-center font-medium transition-colors ${
                       activeUploadTab === LINK_TAB
-                        ? "bg-white border-t border-l border-r border-amber-200 text-amber-600"
-                        : "bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100"
+                        ? 'border-t border-r border-l border-amber-200 bg-white text-amber-600'
+                        : 'border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
                     }`}
                     onClick={() => setActiveUploadTab(LINK_TAB)}
                   >
@@ -282,9 +259,9 @@ export const MediaBox = () => {
                       onClick={() => {
                         inputRef.current?.click();
                       }}
-                      className="border-2 border-dashed border-amber-200 rounded-md p-8 flex flex-col items-center justify-center text-center bg-amber-50/30 hover:bg-amber-50 transition-colors cursor-pointer"
+                      className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-amber-200 bg-amber-50/30 p-8 text-center transition-colors hover:bg-amber-50"
                     >
-                      <Upload className="h-10 w-10 text-amber-500 mb-4" />
+                      <Upload className="mb-4 h-10 w-10 text-amber-500" />
                       <input
                         ref={inputRef}
                         id="file-input"
@@ -292,28 +269,20 @@ export const MediaBox = () => {
                         onChange={handleFileUpload}
                         className="hidden"
                       />
-                      <p className="text-gray-700 mb-1 font-medium">
-                        Drag and drop your file here
-                      </p>
-                      <p className="text-gray-500 text-sm">(Up to 25MB)</p>
+                      <p className="mb-1 font-medium text-gray-700">Drag and drop your file here</p>
+                      <p className="text-sm text-gray-500">(Up to 25MB)</p>
                     </div>
                     {file && (
-                      <p className="text-gray-500 text-sm mt-4">
-                        Selected file : {file.name}
-                      </p>
+                      <p className="mt-4 text-sm text-gray-500">Selected file : {file.name}</p>
                     )}
                     {uploadedFileIsPDF && (
-                      <form.Field
-                        name="isResume"
-                      >
+                      <form.Field name="isResume">
                         {(field) => (
-                          <div className="flex items-center gap-3 mt-4">
+                          <div className="mt-4 flex items-center gap-3">
                             <Checkbox
                               id={field.name}
                               checked={field.state.value}
-                              onCheckedChange={(checked) =>
-                                field.handleChange(!!checked)
-                              }
+                              onCheckedChange={(checked) => field.handleChange(!!checked)}
                             />
                             <Label htmlFor={field.name}>This is a resume</Label>
                           </div>
@@ -322,20 +291,20 @@ export const MediaBox = () => {
                     )}
                   </>
                 ) : (
-                  <div className="border-2 border-amber-200 rounded-md p-6 bg-white">
+                  <div className="rounded-md border-2 border-amber-200 bg-white p-6">
                     <form.Field
                       name="link_1"
                       validators={{
                         onChange: ({ value }) =>
                           /* activeUploadTab === LINK_TAB &&  */ !value && //valid url
-                          "Link is required",
+                          'Link is required',
                       }}
                     >
                       {(field) => (
                         <div className="mb-4">
                           <label
                             htmlFor={field.name}
-                            className="block text-sm font-medium text-gray-700 mb-2"
+                            className="mb-2 block text-sm font-medium text-gray-700"
                           >
                             Enter URL
                           </label>
@@ -343,21 +312,20 @@ export const MediaBox = () => {
                             id={field.name}
                             type="url"
                             placeholder="https://example.com/resource"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-700"
+                            className="w-full rounded-md border border-gray-200 px-4 py-2 text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                             onChange={(e) => field.handleChange(e.target.value)}
                           />
                           {!field.state.meta.isValid && (
-                            <p className="text-red-500 text-sm">
-                              {field.state.meta.errors.join(", ")}
+                            <p className="text-sm text-red-500">
+                              {field.state.meta.errors.join(', ')}
                             </p>
                           )}
                         </div>
                       )}
                     </form.Field>
 
-                    <p className="text-xs text-gray-500 mb-2">
-                      Add links to websites, documents, videos, or other online
-                      resources
+                    <p className="mb-2 text-xs text-gray-500">
+                      Add links to websites, documents, videos, or other online resources
                     </p>
                   </div>
                 )}
@@ -367,36 +335,25 @@ export const MediaBox = () => {
                   type="submit"
                   disabled={!!isSubmitting}
                   onClick={handleSubmit}
-                  className="w-full mt-4 py-2 bg-gradient-to-r from-gray-700 to-amber-500 text-white rounded-md hover:opacity-90 transition-opacity font-medium"
+                  className="mt-4 w-full rounded-md bg-gradient-to-r from-gray-700 to-amber-500 py-2 font-medium text-white transition-opacity hover:opacity-90"
                 >
                   {isSubmitting
-                    ? "Uploading..."
+                    ? 'Uploading...'
                     : activeUploadTab === FILE_TAB
-                    ? "Upload File"
-                    : "Add Link"}
+                      ? 'Upload File'
+                      : 'Add Link'}
                 </button>
               </div>
 
               {/* Uploaded Media Section */}
               <div className="w-full md:w-2/3">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">
-                  Uploaded Media
-                </h2>
-                {((!isLoading && isError) ||
-                    (!isLoading && !isError && !uploadedMedia.length)) && (
-                    <DefaultEmptyBox
-                      message="No media found."
-                      className="w-full"
-                    />
-                  )}
+                <h2 className="mb-4 text-lg font-medium text-gray-800">Uploaded Media</h2>
+                {((!isLoading && isError) || (!isLoading && !isError && !uploadedMedia.length)) && (
+                  <DefaultEmptyBox message="No media found." className="w-full" />
+                )}
                 {/* Media Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {isLoading && (
-                    <SkeletonMultiplier
-                      Skeleton={MediaSkeleton}
-                      multiplier={12}
-                    />
-                  )}
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+                  {isLoading && <SkeletonMultiplier Skeleton={MediaSkeleton} multiplier={12} />}
                   {!isLoading &&
                     !isError &&
                     uploadedMedia.length &&
@@ -408,14 +365,10 @@ export const MediaBox = () => {
                           href={media.url}
                           target="_blank"
                           title={fileName}
-                          className="flex items-center border border-gray-200 rounded-md p-2.5 bg-white hover:bg-amber-50 transition-colors cursor-pointer text-sm truncate shadow-sm hover:shadow-md"
+                          className="flex cursor-pointer items-center truncate rounded-md border border-gray-200 bg-white p-2.5 text-sm shadow-sm transition-colors hover:bg-amber-50 hover:shadow-md"
                         >
-                          <span className="mr-2 text-amber-500">
-                            {getFileIcon(fileName)}
-                          </span>
-                          <span className="truncate text-gray-700">
-                            {fileName}
-                          </span>
+                          <span className="mr-2 text-amber-500">{getFileIcon(fileName)}</span>
+                          <span className="truncate text-gray-700">{fileName}</span>
                         </Link>
                       );
                     })}

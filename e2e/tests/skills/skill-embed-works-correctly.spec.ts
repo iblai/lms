@@ -60,9 +60,7 @@ test.describe('Admin Activities', () => {
       await profileMenuItem.click();
 
       // Locate Profile dialog
-      const profileDialog = page
-        .getByRole('dialog')
-        .filter({ hasText: 'Basic' });
+      const profileDialog = page.getByRole('dialog').filter({ hasText: 'Basic' });
 
       // Locate Display Mentor AI checkbox
       const displayMentorCheckbox = profileDialog.getByRole('checkbox', {
@@ -73,8 +71,7 @@ test.describe('Admin Activities', () => {
       await displayMentorCheckbox.waitFor({ state: 'attached' });
 
       // Get current checked state of the checkbox
-      const isCheckboxChecked =
-        await displayMentorCheckbox.getAttribute('aria-checked');
+      const isCheckboxChecked = await displayMentorCheckbox.getAttribute('aria-checked');
 
       // Check and click checkbox if not checked
       if (isCheckboxChecked === 'true') {
@@ -91,9 +88,7 @@ test.describe('Admin Activities', () => {
       await saveChangesButton.click();
 
       // Verify checkbox state updated
-      await expect(
-        displayMentorCheckbox.getAttribute('aria-checked')
-      ).toBeTruthy();
+      await expect(displayMentorCheckbox.getAttribute('aria-checked')).toBeTruthy();
 
       // Locate and click Close button on profile dialog
       const closeProfileDialogButton = profileDialog.getByRole('button', {
@@ -109,9 +104,7 @@ test.describe('Admin Activities', () => {
       await tenantMenuItem.click();
 
       // Locate tenant dialog
-      const tenantDialog = page
-        .getByRole('dialog')
-        .filter({ hasText: 'organization' });
+      const tenantDialog = page.getByRole('dialog').filter({ hasText: 'organization' });
 
       // Click Advanced button inside tenant dialog
       const advancedButton = tenantDialog.getByRole('button', {

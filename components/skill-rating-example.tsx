@@ -32,12 +32,12 @@ export function SkillRatingExample() {
 
   return (
     <div className="p-6">
-      <h2 className="text-lg font-medium mb-4">Skill Rating Example</h2>
+      <h2 className="mb-4 text-lg font-medium">Skill Rating Example</h2>
 
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <div className="flex items-center">
-          <span className="font-medium mr-2">{skill.name}:</span>
-          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+          <span className="mr-2 font-medium">{skill.name}:</span>
+          <span className="rounded-full bg-blue-100 px-2 py-1 text-sm text-blue-800">
             Level {skill.rating}
           </span>
         </div>

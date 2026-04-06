@@ -20,7 +20,10 @@ vi.mock('next/navigation', () => ({
 // Mock lodash
 vi.mock('lodash', () => ({
   default: {
-    isEmpty: vi.fn((val: any) => !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0)),
+    isEmpty: vi.fn(
+      (val: any) =>
+        !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
+    ),
   },
 }));
 

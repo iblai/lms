@@ -173,7 +173,7 @@ export function EditEducationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 overflow-hidden max-w-md w-full">
+      <DialogContent className="w-full max-w-md overflow-hidden p-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -193,7 +193,7 @@ export function EditEducationDialog({
             {([isSubmitting, isCurrent, startYear, startMonth, endYear]) => (
               <>
                 <DialogTitle>
-                  <div className="flex items-center justify-between p-4 border-b">
+                  <div className="flex items-center justify-between border-b p-4">
                     <h2 className="text-lg font-medium">
                       {education?.id ? 'Edit' : 'Add'} Education
                     </h2>
@@ -207,7 +207,7 @@ export function EditEducationDialog({
                   </div>
                 </DialogTitle>
 
-                <div className="p-6 max-h-[70vh] overflow-y-auto">
+                <div className="max-h-[70vh] overflow-y-auto p-6">
                   <div className="space-y-6">
                     {/* Degree */}
                     <form.Field
@@ -220,7 +220,7 @@ export function EditEducationDialog({
                         <div className="space-y-2">
                           <Label
                             htmlFor={field.name}
-                            className="text-sm font-medium text-gray-700 block"
+                            className="block text-sm font-medium text-gray-700"
                           >
                             Degree
                           </Label>
@@ -229,11 +229,11 @@ export function EditEducationDialog({
                             type="text"
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-md text-gray-700"
+                            className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700"
                             placeholder="e.g., Bachelor of Science"
                           />
                           {!field.state.meta.isValid && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-sm text-red-500">
                               {field.state.meta.errors.join(', ')}
                             </p>
                           )}
@@ -252,7 +252,7 @@ export function EditEducationDialog({
                         <div className="space-y-2">
                           <Label
                             htmlFor={field.name}
-                            className="text-sm font-medium text-gray-700 block"
+                            className="block text-sm font-medium text-gray-700"
                           >
                             Field of study
                           </Label>
@@ -260,7 +260,7 @@ export function EditEducationDialog({
                             value={field.state.value}
                             onValueChange={(value) => field.handleChange(value)}
                           >
-                            <SelectTrigger className="w-full px-3 py-2 h-auto bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                            <SelectTrigger className="h-auto w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700">
                               <SelectValue placeholder="Select field of study" />
                             </SelectTrigger>
                             <SelectContent>
@@ -272,7 +272,7 @@ export function EditEducationDialog({
                             </SelectContent>
                           </Select>
                           {!field.state.meta.isValid && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-sm text-red-500">
                               {field.state.meta.errors.join(', ')}
                             </p>
                           )}
@@ -291,7 +291,7 @@ export function EditEducationDialog({
                         <div className="space-y-2">
                           <Label
                             htmlFor={field.name}
-                            className="text-sm font-medium text-gray-700 block"
+                            className="block text-sm font-medium text-gray-700"
                           >
                             Institution
                           </Label>
@@ -299,7 +299,7 @@ export function EditEducationDialog({
                             value={field.state.value.toString()}
                             onValueChange={(value) => field.handleChange(value)}
                           >
-                            <SelectTrigger className="w-full px-3 py-2 h-auto bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                            <SelectTrigger className="h-auto w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700">
                               <SelectValue placeholder="Select institution" />
                             </SelectTrigger>
                             <SelectContent>
@@ -311,7 +311,7 @@ export function EditEducationDialog({
                             </SelectContent>
                           </Select>
                           {!field.state.meta.isValid && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-sm text-red-500">
                               {field.state.meta.errors.join(', ')}
                             </p>
                           )}
@@ -320,7 +320,7 @@ export function EditEducationDialog({
                             onClick={() => {
                               setOpenAddInstitutionDialog(true);
                             }}
-                            className="flex items-center gap-1 text-blue-500 hover:text-blue-600 font-medium text-sm mt-1"
+                            className="mt-1 flex items-center gap-1 text-sm font-medium text-blue-500 hover:text-blue-600"
                           >
                             <Plus className="h-4 w-4" />
                             Add new institution
@@ -366,7 +366,7 @@ export function EditEducationDialog({
                                 value={field.state.value.toString()}
                                 onValueChange={(value) => field.handleChange(value)}
                               >
-                                <SelectTrigger className="w-full px-3 py-2 h-auto bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                                <SelectTrigger className="h-auto w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700">
                                   <SelectValue placeholder="Month" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -378,7 +378,7 @@ export function EditEducationDialog({
                                 </SelectContent>
                               </Select>
                               {!field.state.meta.isValid && (
-                                <p className="text-red-500 text-sm">
+                                <p className="text-sm text-red-500">
                                   {field.state.meta.errors.join(', ')}
                                 </p>
                               )}
@@ -397,7 +397,7 @@ export function EditEducationDialog({
                                 value={field.state.value.toString()}
                                 onValueChange={(value) => field.handleChange(value)}
                               >
-                                <SelectTrigger className="w-full px-3 py-2 h-auto bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                                <SelectTrigger className="h-auto w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700">
                                   <SelectValue placeholder="Year" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -409,7 +409,7 @@ export function EditEducationDialog({
                                 </SelectContent>
                               </Select>
                               {!field.state.meta.isValid && (
-                                <p className="text-red-500 text-sm">
+                                <p className="text-sm text-red-500">
                                   {field.state.meta.errors.join(', ')}
                                 </p>
                               )}
@@ -445,7 +445,7 @@ export function EditEducationDialog({
                                   value={field.state.value.toString()}
                                   onValueChange={(value) => field.handleChange(value)}
                                 >
-                                  <SelectTrigger className="w-full px-3 py-2 h-auto bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                                  <SelectTrigger className="h-auto w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700">
                                     <SelectValue placeholder="Month" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -457,7 +457,7 @@ export function EditEducationDialog({
                                   </SelectContent>
                                 </Select>
                                 {!field.state.meta.isValid && (
-                                  <p className="text-red-500 text-sm">
+                                  <p className="text-sm text-red-500">
                                     {field.state.meta.errors.join(', ')}
                                   </p>
                                 )}
@@ -483,7 +483,7 @@ export function EditEducationDialog({
                                   value={field.state.value.toString()}
                                   onValueChange={(value) => field.handleChange(value)}
                                 >
-                                  <SelectTrigger className="w-full px-3 py-2 h-auto bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                                  <SelectTrigger className="h-auto w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700">
                                     <SelectValue placeholder="Year" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -495,7 +495,7 @@ export function EditEducationDialog({
                                   </SelectContent>
                                 </Select>
                                 {!field.state.meta.isValid && (
-                                  <p className="text-red-500 text-sm">
+                                  <p className="text-sm text-red-500">
                                     {field.state.meta.errors.join(', ')}
                                   </p>
                                 )}
@@ -523,7 +523,7 @@ export function EditEducationDialog({
                         <div className="space-y-2">
                           <Label
                             htmlFor={field.name}
-                            className="text-sm font-medium text-gray-700 block"
+                            className="block text-sm font-medium text-gray-700"
                           >
                             Grade
                           </Label>
@@ -532,11 +532,11 @@ export function EditEducationDialog({
                             type="number"
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-md text-gray-700"
+                            className="w-full rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700"
                             placeholder="e.g., 3.5"
                           />
                           {!field.state.meta.isValid && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-sm text-red-500">
                               {field.state.meta.errors.join(', ')}
                             </p>
                           )}
@@ -549,7 +549,7 @@ export function EditEducationDialog({
                         <div className="space-y-2">
                           <Label
                             htmlFor={field.name}
-                            className="text-sm font-medium text-gray-700 block"
+                            className="block text-sm font-medium text-gray-700"
                           >
                             Description
                           </Label>
@@ -557,7 +557,7 @@ export function EditEducationDialog({
                             id={field.name}
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-md text-gray-700 min-h-[100px] resize-y"
+                            className="min-h-[100px] w-full resize-y rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-700"
                             placeholder="Describe your education experience"
                           />
                         </div>
@@ -565,11 +565,11 @@ export function EditEducationDialog({
                     </form.Field>
                   </div>
                 </div>
-                <div className="border-t p-4 flex justify-end gap-3">
+                <div className="flex justify-end gap-3 border-t p-4">
                   <button
                     type="button"
                     onClick={() => onOpenChange(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 font-medium transition-colors hover:bg-gray-50"
+                    className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -577,14 +577,14 @@ export function EditEducationDialog({
                     <button
                       onClick={() => handleDelete()}
                       type="button"
-                      className="px-4 py-2 border border-red-300 text-red-600 rounded-md font-medium transition-colors hover:bg-red-50"
+                      className="rounded-md border border-red-300 px-4 py-2 font-medium text-red-600 transition-colors hover:bg-red-50"
                     >
                       {isDeleting ? 'Deleting...' : 'Delete Education'}
                     </button>
                   )}
                   <button
                     onClick={() => handleSubmit()}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 transition-colors"
+                    className="rounded-md bg-blue-500 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-600"
                     disabled={!!isSubmitting}
                   >
                     {isSubmitting ? 'Saving...' : 'Save'}

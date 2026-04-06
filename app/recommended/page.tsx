@@ -27,9 +27,9 @@ export default function RecommendedPage() {
           msOverflowStyle: 'none',
         }}
       >
-        <div className="flex flex-col md:flex-row items-start h-full">
+        <div className="flex h-full flex-col items-start md:flex-row">
           <div
-            className="flex flex-col gap-6 flex-1 h-full overflow-y-auto w-full px-6 py-6 pb-16 md:pb-6"
+            className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto px-6 py-6 pb-16 md:pb-6"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
@@ -44,13 +44,13 @@ export default function RecommendedPage() {
               }
             `}</style>
             <div>
-              <h1 className="text-base sm:text-lg md:text-xl font-semibold text-gray-600 mb-6">
+              <h1 className="mb-6 text-base font-semibold text-gray-600 sm:text-lg md:text-xl">
                 Recommended for Me
               </h1>
 
-              <div className="flex justify-between items-center mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <div className="relative w-64">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
                     <Search className="h-4 w-4 text-gray-400" />
                   </div>
                   <input
@@ -58,11 +58,11 @@ export default function RecommendedPage() {
                     placeholder="Search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    className="w-full rounded-md border border-gray-200 bg-gray-100 py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-amber-500 focus:outline-none"
                   />
                 </div>
 
-                <button className="flex items-center gap-2 bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] px-4 py-2 rounded-md hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity">
+                <button className="flex items-center gap-2 rounded-md bg-[var(--button-primary-bg)] px-4 py-2 text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]">
                   <Plus className="h-4 w-4" />
                   <span>Recommended Courses</span>
                 </button>
@@ -72,7 +72,7 @@ export default function RecommendedPage() {
               )}
 
               {/* Course Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-10">
+              <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {isLoading && <SkeletonMultiplier Skeleton={CourseCardSkeleton} multiplier={6} />}
                 {!isLoading &&
                   !isError &&

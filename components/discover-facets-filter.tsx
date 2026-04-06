@@ -33,7 +33,7 @@ export const DiscoverFacetsFilter = () => {
       return (
         <div className="mb-4" key={index}>
           <div
-            className="flex items-center justify-between cursor-pointer mb-2"
+            className="mb-2 flex cursor-pointer items-center justify-between"
             onClick={() => handleToggleFacet(facet?.slug)}
           >
             <h4 className="text-sm font-medium text-gray-700 capitalize">{facet?.label}</h4>
@@ -46,11 +46,11 @@ export const DiscoverFacetsFilter = () => {
 
           {facet?.expanded && (
             <div className="space-y-3">
-              <div className="bg-gray-100 rounded-md p-2 mb-2">
+              <div className="mb-2 rounded-md bg-gray-100 p-2">
                 <input
                   type="text"
                   placeholder="Filter"
-                  className="w-full bg-transparent border-none text-sm focus:outline-none"
+                  className="w-full border-none bg-transparent text-sm focus:outline-none"
                   onChange={(e) => handleFilterFacets(facet.slug, e.target.value)}
                 />
               </div>
@@ -60,7 +60,7 @@ export const DiscoverFacetsFilter = () => {
                   <input
                     type="checkbox"
                     id={`${facet.slug}-${term.key}`}
-                    className="h-4 w-4 text-amber-500 rounded border-gray-300 focus:ring-amber-500 accent-amber-500"
+                    className="h-4 w-4 rounded border-gray-300 text-amber-500 accent-amber-500 focus:ring-amber-500"
                     checked={isFacetTermSelected(facet.slug, term.key) || false}
                     onChange={() => handleSelectFacets(facet.slug, term.key)}
                   />

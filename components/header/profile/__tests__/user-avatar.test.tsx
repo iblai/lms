@@ -47,9 +47,7 @@ vi.mock('@/components/ui/avatar', () => ({
       {children}
     </div>
   ),
-  AvatarImage: ({ src, alt }: any) => (
-    <img data-testid="avatar-image" src={src} alt={alt} />
-  ),
+  AvatarImage: ({ src, alt }: any) => <img data-testid="avatar-image" src={src} alt={alt} />,
   AvatarFallback: ({ children, className }: any) => (
     <div data-testid="avatar-fallback" className={className}>
       {children}
@@ -94,7 +92,7 @@ describe('UserAvatar', () => {
 
       expect(screen.getByTestId('avatar-image')).toHaveAttribute(
         'src',
-        'https://example.com/photo.jpg'
+        'https://example.com/photo.jpg',
       );
     });
 

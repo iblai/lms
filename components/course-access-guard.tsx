@@ -38,8 +38,8 @@ export function CourseAccessGuard({
 
   if (!isLoaded || isUnauthorizedTenant || isNotFound) {
     return (
-      <div className="flex-1 flex justify-center items-center">
-        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-1 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
       </div>
     );
   }

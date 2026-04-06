@@ -18,4 +18,4 @@ export function RouterLoading({ children }: { children: React.ReactNode }): Reac
   }
 
   return <>{children}</>;
-} 
+}

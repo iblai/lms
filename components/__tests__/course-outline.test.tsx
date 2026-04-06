@@ -13,9 +13,7 @@ vi.mock('../skeleton-course-outline', () => ({
   SkeletonCourseOutline: () => <div />,
 }));
 
-const makeNode = (
-  overrides: Partial<CourseOutlineChildNode> = {},
-): CourseOutlineChildNode => ({
+const makeNode = (overrides: Partial<CourseOutlineChildNode> = {}): CourseOutlineChildNode => ({
   id: 'node-1',
   block_id: 'block-1',
   type: 'html',
@@ -58,7 +56,9 @@ describe('CourseOutline', () => {
       makeNode({ id: 'mod-1', display_name: 'Module 1', children: [] }),
       makeNode({ id: 'mod-2', display_name: 'Module 2', children: [] }),
     ];
-    renderWithContext({ courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }) });
+    renderWithContext({
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
+    });
     expect(screen.getByText('Module 1')).toBeInTheDocument();
     expect(screen.getByText('Module 2')).toBeInTheDocument();
   });
@@ -74,7 +74,10 @@ describe('CourseOutline', () => {
         ],
       }),
     ];
-    renderWithContext({ courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }), expandedModule: 'mod-1' });
+    renderWithContext({
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
+      expandedModule: 'mod-1',
+    });
     expect(screen.getByText('Lesson 1')).toBeInTheDocument();
     expect(screen.getByText('Lesson 2')).toBeInTheDocument();
   });
@@ -82,7 +85,10 @@ describe('CourseOutline', () => {
   it('calls toggleModule on module click', () => {
     const toggleModule = vi.fn();
     const modules = [makeNode({ id: 'mod-1', display_name: 'Module 1' })];
-    renderWithContext({ courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }), toggleModule });
+    renderWithContext({
+      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
+      toggleModule,
+    });
     fireEvent.click(screen.getByText('Module 1'));
     expect(toggleModule).toHaveBeenCalledWith('mod-1');
   });
@@ -94,9 +100,7 @@ describe('CompletionIcon rendering', () => {
       makeNode({
         id: 'mod-1',
         display_name: 'Module 1',
-        children: [
-          makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: false }),
-        ],
+        children: [makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: false })],
       }),
     ];
     const { container } = renderWithContext({
@@ -118,9 +122,7 @@ describe('CompletionIcon rendering', () => {
       makeNode({
         id: 'mod-1',
         display_name: 'Module 1',
-        children: [
-          makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: true }),
-        ],
+        children: [makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: true })],
       }),
     ];
     const { container } = renderWithContext({
@@ -269,9 +271,7 @@ describe('CompletionIcon rendering', () => {
           makeNode({
             id: 'lesson-1',
             display_name: 'Lesson 1',
-            children: [
-              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
-            ],
+            children: [makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false })],
           }),
         ],
       }),

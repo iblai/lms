@@ -103,28 +103,28 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="p-0 overflow-hidden max-w-md">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent className="max-w-md overflow-hidden p-0">
+          <DialogHeader className="border-b px-6 py-4">
             <DialogTitle className="text-lg font-medium text-gray-800">
               Edit Profile Information
             </DialogTitle>
           </DialogHeader>
 
-          <div className="p-6 space-y-6">
+          <div className="space-y-6 p-6">
             {/* Current Position Section */}
             <div className="space-y-3">
               <h3 className="text-base font-medium text-gray-700">Current Position</h3>
               <input
                 type="text"
                 value={experience}
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-md text-gray-700"
+                className="w-full rounded-md border border-gray-200 bg-gray-100 px-4 py-3 text-gray-700"
                 placeholder="Institution name"
                 disabled={true}
                 readOnly={true}
               />
               <button
                 onClick={() => setEditExperienceOpen(true)}
-                className="flex items-center gap-2 text-amber-500 hover:text-amber-600 font-medium text-sm"
+                className="flex items-center gap-2 text-sm font-medium text-amber-500 hover:text-amber-600"
               >
                 <Plus className="h-4 w-4" />
                 Add new position
@@ -137,14 +137,14 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               <input
                 type="text"
                 value={education}
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-md text-gray-700"
+                className="w-full rounded-md border border-gray-200 bg-gray-100 px-4 py-3 text-gray-700"
                 placeholder="Institution name"
                 disabled={true}
                 readOnly={true}
               />
               <button
                 onClick={() => setEditEducationOpen(true)}
-                className="flex items-center gap-2 text-amber-500 hover:text-amber-600 font-medium text-sm"
+                className="flex items-center gap-2 text-sm font-medium text-amber-500 hover:text-amber-600"
               >
                 <Plus className="h-4 w-4" />
                 Add new education
@@ -152,10 +152,10 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
             </div>
           </div>
 
-          <div className="border-t p-4 flex justify-end space-x-3">
+          <div className="flex justify-end space-x-3 border-t p-4">
             <button
               onClick={() => onOpenChange(false)}
-              className="px-6 py-2 border border-amber-500 rounded-md text-amber-500 font-medium transition-colors hover:bg-amber-50"
+              className="rounded-md border border-amber-500 px-6 py-2 font-medium text-amber-500 transition-colors hover:bg-amber-50"
             >
               Close
             </button>

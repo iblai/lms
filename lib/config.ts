@@ -6,12 +6,10 @@ const env = {
   NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
   NEXT_PUBLIC_MFE_URL: process.env.NEXT_PUBLIC_MFE_URL,
   NEXT_PUBLIC_SPA_ANALYTICS_URL: process.env.NEXT_PUBLIC_SPA_ANALYTICS_URL,
-  NEXT_PUBLIC_HIDE_RECOMMENDED_TAB:
-    process.env.NEXT_PUBLIC_HIDE_RECOMMENDED_TAB,
+  NEXT_PUBLIC_HIDE_RECOMMENDED_TAB: process.env.NEXT_PUBLIC_HIDE_RECOMMENDED_TAB,
   NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE:
     process.env.NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE,
-  NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED:
-    process.env.NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED,
+  NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED: process.env.NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED,
   NEXT_PUBLIC_ENABLE_START_ROLE: process.env.NEXT_PUBLIC_ENABLE_START_ROLE,
   NEXT_PUBLIC_USE_FOOTER_MENUS: process.env.NEXT_PUBLIC_USE_FOOTER_MENUS,
   NEXT_PUBLIC_FOOTER_MENUS: process.env.NEXT_PUBLIC_FOOTER_MENUS,
@@ -20,61 +18,49 @@ const env = {
   NEXT_PUBLIC_ENABLE_MENTOR: process.env.NEXT_PUBLIC_ENABLE_MENTOR,
   NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC:
     process.env.NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC,
-  NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME:
-    process.env.NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME,
-  NEXT_PUBLIC_PLATFORM_BASE_DOMAIN:
-    process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN,
+  NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME: process.env.NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME,
+  NEXT_PUBLIC_PLATFORM_BASE_DOMAIN: process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN,
   NEXT_PUBLIC_ENABLE_RBAC: process.env.NEXT_PUBLIC_ENABLE_RBAC,
   NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
 };
 
-const runtimeEnv = () =>
-  typeof window !== "undefined" ? window.__ENV__ || {} : {};
+const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
 
-export const getEnv = (key: keyof typeof env, fallback = ""): string => {
+export const getEnv = (key: keyof typeof env, fallback = ''): string => {
   return runtimeEnv()[key] ?? env[key] ?? fallback;
 };
 
-const apiBaseUrl = () =>
-  getEnv("NEXT_PUBLIC_API_BASE_URL", "https://api.iblai.app");
+const apiBaseUrl = () => getEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.iblai.app');
 
 export const config = {
-  environment: () => getEnv("NODE_ENV", "development"),
+  environment: () => getEnv('NODE_ENV', 'development'),
   urls: {
     apiBase: apiBaseUrl,
     dm: () => `${apiBaseUrl()}/dm`,
     axd: () => `${apiBaseUrl()}/axd`,
-    lms: () => getEnv("NEXT_PUBLIC_LMS_URL", "https://lms.iblai.app"),
-    legacyLmsUrl: () => getEnv("NEXT_PUBLIC_LMS_URL", "https://lms.iblai.app"),
+    lms: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://lms.iblai.app'),
+    legacyLmsUrl: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://lms.iblai.app'),
     studio: () => `${apiBaseUrl()}/studio`,
-    auth: () => getEnv("NEXT_PUBLIC_AUTH_URL", "https://login.iblai.app"),
-    mfe: () => getEnv("NEXT_PUBLIC_MFE_URL", "https://apps.learn.iblai.app"),
-    analytics: () =>
-      getEnv("NEXT_PUBLIC_SPA_ANALYTICS_URL", "https://analytics.iblai.app"),
-    mentor: () =>
-      getEnv("NEXT_PUBLIC_MENTOR_URL", "https://mentorai.iblai.app"),
+    auth: () => getEnv('NEXT_PUBLIC_AUTH_URL', 'https://login.iblai.app'),
+    mfe: () => getEnv('NEXT_PUBLIC_MFE_URL', 'https://apps.learn.iblai.app'),
+    analytics: () => getEnv('NEXT_PUBLIC_SPA_ANALYTICS_URL', 'https://analytics.iblai.app'),
+    mentor: () => getEnv('NEXT_PUBLIC_MENTOR_URL', 'https://mentorai.iblai.app'),
   },
   settings: {
-    hideRecommendedTab: () =>
-      getEnv("NEXT_PUBLIC_HIDE_RECOMMENDED_TAB", "false") === "true",
-    discoverFacetsToHide: () =>
-      getEnv("NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE", ""),
-    appName: () => "skills",
+    hideRecommendedTab: () => getEnv('NEXT_PUBLIC_HIDE_RECOMMENDED_TAB', 'false') === 'true',
+    discoverFacetsToHide: () => getEnv('NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE', ''),
+    appName: () => 'skills',
     courseEligibilityEnabled: () =>
-      getEnv("NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED", "false") === "true",
-    startPageEnabled: () =>
-      getEnv("NEXT_PUBLIC_ENABLE_START_ROLE", "false") === "true",
-    footerMenusEnabled: () =>
-      getEnv("NEXT_PUBLIC_USE_FOOTER_MENUS", "false") === "true",
-    footerMenus: () => getEnv("NEXT_PUBLIC_FOOTER_MENUS", ""),
-    copyright: () => getEnv("NEXT_PUBLIC_COPYRIGHT", ""),
-    mentorEnabled: () => getEnv("NEXT_PUBLIC_ENABLE_MENTOR", "true") === "true",
-    enableGravatarOnProfilePic: () =>
-      getEnv("NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC", "true"),
-    defaultEmbeddedMentorName: () =>
-      getEnv("NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME", "mentorAI"),
-    platformBaseDomain: () => getEnv("NEXT_PUBLIC_PLATFORM_BASE_DOMAIN", ""),
-    enableRBAC: () => getEnv("NEXT_PUBLIC_ENABLE_RBAC", "false") === "true",
-    supportEmail: () => getEnv("NEXT_PUBLIC_SUPPORT_EMAIL", "support@ibl.ai"),
+      getEnv('NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED', 'false') === 'true',
+    startPageEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_START_ROLE', 'false') === 'true',
+    footerMenusEnabled: () => getEnv('NEXT_PUBLIC_USE_FOOTER_MENUS', 'false') === 'true',
+    footerMenus: () => getEnv('NEXT_PUBLIC_FOOTER_MENUS', ''),
+    copyright: () => getEnv('NEXT_PUBLIC_COPYRIGHT', ''),
+    mentorEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_MENTOR', 'true') === 'true',
+    enableGravatarOnProfilePic: () => getEnv('NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC', 'true'),
+    defaultEmbeddedMentorName: () => getEnv('NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME', 'mentorAI'),
+    platformBaseDomain: () => getEnv('NEXT_PUBLIC_PLATFORM_BASE_DOMAIN', ''),
+    enableRBAC: () => getEnv('NEXT_PUBLIC_ENABLE_RBAC', 'false') === 'true',
+    supportEmail: () => getEnv('NEXT_PUBLIC_SUPPORT_EMAIL', 'support@ibl.ai'),
   },
 };

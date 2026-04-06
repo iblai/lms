@@ -340,15 +340,15 @@ export function AdvancedSettingsCard({
 
   return (
     <TooltipProvider>
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-medium text-gray-800">Advanced Settings</h2>
           {hasChanges && (
             <button
               type="button"
               onClick={handleSave}
               disabled={isSavingAdvancedSettings}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] text-[var(--button-primary-text)] rounded-md text-sm font-medium hover:opacity-[var(--button-primary-hover-opacity)] transition-opacity disabled:opacity-50"
+              className="flex items-center gap-2 rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)] disabled:opacity-50"
               data-testid="save-advanced-settings-button"
               aria-label={
                 isSavingAdvancedSettings ? 'Saving advanced settings' : 'Save advanced settings'
@@ -365,9 +365,9 @@ export function AdvancedSettingsCard({
           )}
         </div>
 
-        <div className="border border-gray-200 rounded-md overflow-hidden">
+        <div className="overflow-hidden rounded-md border border-gray-200">
           <div
-            className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50"
+            className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
             onClick={() => toggleSection('advancedSettings')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -404,12 +404,12 @@ export function AdvancedSettingsCard({
             >
               {isLoadingAdvancedSettings ? (
                 <div
-                  className="p-8 flex justify-center"
+                  className="flex justify-center p-8"
                   role="status"
                   aria-label="Loading advanced settings"
                   data-testid="advanced-settings-loading"
                 >
-                  <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
                 </div>
               ) : !advancedSettings ? (
                 <div className="p-8">
@@ -418,10 +418,10 @@ export function AdvancedSettingsCard({
               ) : (
                 <>
                   {/* Search Bar */}
-                  <div className="p-4 border-b border-gray-200" role="search">
+                  <div className="border-b border-gray-200 p-4" role="search">
                     <div className="relative">
                       <Search
-                        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                        className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
                         aria-hidden="true"
                       />
                       <input
@@ -431,14 +431,14 @@ export function AdvancedSettingsCard({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search settings..."
                         aria-label="Search advanced settings"
-                        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        className="w-full rounded-md border border-gray-300 py-2 pr-10 pl-10 text-sm focus:border-transparent focus:ring-2 focus:ring-amber-500 focus:outline-none"
                         data-testid="advanced-settings-search"
                       />
                       {searchQuery && (
                         <button
                           type="button"
                           onClick={() => setSearchQuery('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           aria-label="Clear search"
                           data-testid="advanced-settings-search-clear"
                         >
@@ -454,7 +454,7 @@ export function AdvancedSettingsCard({
                     </div>
                   ) : (
                     <div
-                      className="p-4 space-y-4 max-h-[600px] overflow-y-auto"
+                      className="max-h-[600px] space-y-4 overflow-y-auto p-4"
                       role="list"
                       aria-label="Advanced settings list"
                       data-testid="advanced-settings-list"
@@ -463,10 +463,10 @@ export function AdvancedSettingsCard({
                         <div
                           key={key}
                           role="listitem"
-                          className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors"
+                          className="rounded-lg border border-gray-100 p-4 transition-colors hover:border-gray-200"
                           data-testid={`setting-${key}`}
                         >
-                          <div className="flex items-start justify-between gap-4 mb-2">
+                          <div className="mb-2 flex items-start justify-between gap-4">
                             <div className="flex items-center gap-2">
                               <label
                                 htmlFor={`setting-${key}`}

@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from 'react';
 
-import { useEventCallback } from "./use-event-callback";
-import { useEventListener } from "./use-event-listener";
+import { useEventCallback } from './use-event-callback';
+import { useEventListener } from './use-event-listener';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface WindowEventMap {
-    "local-storage": CustomEvent;
+    'local-storage': CustomEvent;
   }
 }
 
@@ -18,7 +18,7 @@ type UseLocalStorageOptions<T> = {
   initializeWithValue?: boolean;
 };
 
-const IS_SERVER = typeof window === "undefined";
+const IS_SERVER = typeof window === 'undefined';
 
 export function useLocalStorage<T>(
   key: string,
@@ -44,22 +44,21 @@ export function useLocalStorage<T>(
         return options.deserializer(value);
       }
       // Support 'undefined' as a value
-      if (value === "undefined") {
+      if (value === 'undefined') {
         return undefined as unknown as T;
       }
 
-      const defaultValue =
-        initialValue instanceof Function ? initialValue() : initialValue;
+      const defaultValue = initialValue instanceof Function ? initialValue() : initialValue;
 
       let parsed: unknown;
       try {
-        if (value.trim().startsWith("{") || value.trim().startsWith("[")) {
+        if (value.trim().startsWith('{') || value.trim().startsWith('[')) {
           parsed = JSON.parse(value);
         } else {
           parsed = value;
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
+        console.error('Error parsing JSON:', error);
         return defaultValue; // Return initialValue if parsing fails
       }
 
@@ -71,8 +70,7 @@ export function useLocalStorage<T>(
   // Get from local storage then
   // parse stored json or return initialValue
   const readValue = useCallback((): T => {
-    const initialValueToUse =
-      initialValue instanceof Function ? initialValue() : initialValue;
+    const initialValueToUse = initialValue instanceof Function ? initialValue() : initialValue;
 
     // Prevent build error "window is undefined" but keep working
     if (IS_SERVER) {
@@ -117,7 +115,7 @@ export function useLocalStorage<T>(
       setStoredValue(newValue);
 
       // We dispatch a custom event so every similar useLocalStorage hook is notified
-      window.dispatchEvent(new StorageEvent("local-storage", { key }));
+      window.dispatchEvent(new StorageEvent('local-storage', { key }));
     } catch (error) {
       console.warn(`Error setting localStorage key “${key}”:`, error);
     }
@@ -131,8 +129,7 @@ export function useLocalStorage<T>(
       );
     }
 
-    const defaultValue =
-      initialValue instanceof Function ? initialValue() : initialValue;
+    const defaultValue = initialValue instanceof Function ? initialValue() : initialValue;
 
     // Remove the key from local storage
     window.localStorage.removeItem(key);
@@ -141,7 +138,7 @@ export function useLocalStorage<T>(
     setStoredValue(defaultValue);
 
     // We dispatch a custom event so every similar useLocalStorage hook is notified
-    window.dispatchEvent(new StorageEvent("local-storage", { key }));
+    window.dispatchEvent(new StorageEvent('local-storage', { key }));
   });
 
   useEffect(() => {
@@ -160,11 +157,11 @@ export function useLocalStorage<T>(
   );
 
   // this only works for other documents, not the current one
-  useEventListener("storage", handleStorageChange);
+  useEventListener('storage', handleStorageChange);
 
   // this is a custom event, triggered in writeValueToLocalStorage
   // See: useLocalStorage()
-  useEventListener("local-storage", handleStorageChange);
+  useEventListener('local-storage', handleStorageChange);
 
   return [storedValue, setValue, removeValue];
 }

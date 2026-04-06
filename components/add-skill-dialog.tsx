@@ -109,9 +109,9 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b">
-          <div className="flex justify-between items-center">
+      <DialogContent className="overflow-hidden p-0 sm:max-w-md">
+        <DialogHeader className="border-b px-6 py-4">
+          <div className="flex items-center justify-between">
             <DialogTitle className="text-lg font-medium text-gray-600">
               {getDialogTitle()}
             </DialogTitle>
@@ -121,7 +121,7 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
         <div className="p-6">
           {/* Search input */}
           <div className="relative mb-4">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
@@ -130,7 +130,7 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
               placeholder="Search skills..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm"
+              className="w-full rounded-md border border-gray-200 bg-gray-50 py-2 pr-4 pl-10 text-sm text-gray-700 focus:ring-1 focus:ring-amber-500 focus:outline-none"
             />
           </div>
 
@@ -140,7 +140,7 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
           )}
 
           {/* Skills list */}
-          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+          <div className="max-h-[300px] space-y-2 overflow-y-auto pr-1">
             {isFetchingSkills && (
               <SkeletonMultiplier multiplier={6} Skeleton={SkeletonAddSkillsLoading} />
             )}
@@ -151,7 +151,7 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
                 <div
                   key={`skill-${index}`}
                   onClick={() => handleSkillSelect(skill?.data)}
-                  className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                  className={`flex cursor-pointer items-center rounded-md border p-3 transition-colors ${
                     selectedSkill?.skill_id === skill?.data?.skill_id
                       ? 'border-amber-500 bg-amber-50'
                       : 'border-gray-200 hover:bg-gray-50'
@@ -163,7 +163,7 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
                     </div>
                   </div>
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    className={`flex h-6 w-6 items-center justify-center rounded-full ${
                       selectedSkill?.skill_id === skill?.data?.skill_id
                         ? 'bg-amber-500 text-white'
                         : 'bg-gray-100 text-gray-400'
@@ -181,14 +181,14 @@ export function AddSkillDialog({ open, onOpenChange, type, existingSkills }: Add
         </div>
 
         {/* Footer with action button */}
-        <div className="border-t p-4 flex justify-end">
+        <div className="flex justify-end border-t p-4">
           <button
             onClick={handleAddSkill}
             disabled={!selectedSkill}
-            className={`px-4 py-2 rounded-md text-white font-medium transition-colors ${
+            className={`rounded-md px-4 py-2 font-medium text-white transition-colors ${
               selectedSkill
                 ? 'bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] hover:opacity-[var(--button-primary-hover-opacity)]'
-                : 'bg-gray-300 cursor-not-allowed'
+                : 'cursor-not-allowed bg-gray-300'
             }`}
           >
             {updatingSkill ? 'Submitting...' : 'Add Skill'}

@@ -25,10 +25,7 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
 
 const mockGetAssignedPrograms = vi.fn();
 vi.mock('@/services/catalog', () => ({
-  useLazyGetAssignedProgramsQuery: vi.fn(() => [
-    mockGetAssignedPrograms,
-    { isError: false },
-  ]),
+  useLazyGetAssignedProgramsQuery: vi.fn(() => [mockGetAssignedPrograms, { isError: false }]),
 }));
 
 vi.mock('@iblai/iblai-api', () => ({}));

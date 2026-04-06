@@ -55,14 +55,14 @@ export function ProfileInfoCards() {
     handleGetPerLearnerActivity();
   }, []);
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {/* Last Accessed Card */}
       {isLoading ? (
         <SkeletonMultiplier multiplier={3} Skeleton={SkeletonProfileInfoCard} />
       ) : (
         <>
-          <div className="border border-[var(--border)] rounded-sm p-4 flex items-start">
-            <div className="w-12 h-12 bg-[var(--primary-light)] rounded-sm flex items-center justify-center mr-4">
+          <div className="flex items-start rounded-sm border border-[var(--border)] p-4">
+            <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-sm bg-[var(--primary-light)]">
               <BookOpen className="h-5 w-5 text-[var(--primary)]" />
             </div>
             <div>
@@ -76,8 +76,8 @@ export function ProfileInfoCards() {
           </div>
 
           {/* Joined Card */}
-          <div className="border border-[var(--border)] rounded-sm p-4 flex items-start">
-            <div className="w-12 h-12 bg-[var(--primary-light)] rounded-sm flex items-center justify-center mr-4">
+          <div className="flex items-start rounded-sm border border-[var(--border)] p-4">
+            <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-sm bg-[var(--primary-light)]">
               <Check className="h-5 w-5 text-[var(--primary)]" />
             </div>
             <div>
@@ -91,8 +91,8 @@ export function ProfileInfoCards() {
           </div>
 
           {/* Total Time Spent Card */}
-          <div className="border border-[var(--border)] rounded-sm p-4 flex items-start">
-            <div className="w-12 h-12 bg-[var(--primary-light)] rounded-sm flex items-center justify-center mr-4">
+          <div className="flex items-start rounded-sm border border-[var(--border)] p-4">
+            <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-sm bg-[var(--primary-light)]">
               <Clock className="h-5 w-5 text-[var(--primary)]" />
             </div>
             <div>
@@ -109,8 +109,8 @@ export function ProfileInfoCards() {
       {topContentLoading ? (
         <SkeletonProfileInfoCard />
       ) : (
-        <div className="border border-[var(--border)] rounded-sm p-4">
-          <h3 className="text-sm text-[var(--text-light)] mb-4">Top Content</h3>
+        <div className="rounded-sm border border-[var(--border)] p-4">
+          <h3 className="mb-4 text-sm text-[var(--text-light)]">Top Content</h3>
           <div className="flex items-center justify-between">
             <Link
               href={`/courses/${topContent?.course_id}`}

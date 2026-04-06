@@ -21,9 +21,9 @@ async function navigateToConfigurationTab(page: Page): Promise<boolean> {
   });
 
   // Click on the first course - re-locate immediately before clicking
-  await expect(
-    page.getByLabel('My Courses Grid').getByRole('link').first()
-  ).toBeVisible({ timeout: 120000 });
+  await expect(page.getByLabel('My Courses Grid').getByRole('link').first()).toBeVisible({
+    timeout: 120000,
+  });
   await page.getByLabel('My Courses Grid').getByRole('link').first().click();
   logger.info('Clicked on first course');
 
@@ -148,9 +148,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     await waitForPageReady(page);
   });
 
-  test('Should display Advanced Settings section in Configuration tab', async ({
-    page,
-  }) => {
+  test('Should display Advanced Settings section in Configuration tab', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -158,9 +156,9 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
 
     // Verify Advanced Settings heading is visible
-    await expect(
-      page.getByRole('heading', { name: 'Advanced Settings' })
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Advanced Settings' })).toBeVisible({
+      timeout: 10000,
+    });
     logger.info('Advanced Settings heading is visible');
 
     // Verify the toggle section is visible
@@ -170,15 +168,11 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     logger.info('Advanced Settings toggle is visible');
 
     // Verify content is not visible by default (collapsed state)
-    await expect(
-      page.getByTestId('advanced-settings-content')
-    ).not.toBeVisible();
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible();
     logger.info('Advanced Settings content is hidden by default');
   });
 
-  test('Should expand and collapse Advanced Settings section', async ({
-    page,
-  }) => {
+  test('Should expand and collapse Advanced Settings section', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -191,9 +185,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     });
 
     // Verify content is not visible when collapsed (default state)
-    await expect(
-      page.getByTestId('advanced-settings-content')
-    ).not.toBeVisible();
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible();
     logger.info('Content is hidden by default (collapsed)');
 
     // Click to expand
@@ -212,9 +204,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     await page.getByTestId('advanced-settings-toggle').click();
 
     // Verify content is hidden after collapse
-    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible(
-      { timeout: 5000 }
-    );
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible({ timeout: 5000 });
     logger.info('Collapsed Advanced Settings - content is hidden');
   });
 
@@ -237,31 +227,24 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
     // Verify search input is visible with proper attributes
     await expect(page.getByTestId('advanced-settings-search')).toBeVisible();
-    await expect(page.getByTestId('advanced-settings-search')).toHaveAttribute(
-      'type',
-      'search'
-    );
+    await expect(page.getByTestId('advanced-settings-search')).toHaveAttribute('type', 'search');
     await expect(page.getByTestId('advanced-settings-search')).toHaveAttribute(
       'placeholder',
-      'Search settings...'
+      'Search settings...',
     );
     await expect(page.getByTestId('advanced-settings-search')).toHaveAttribute(
       'aria-label',
-      'Search advanced settings'
+      'Search advanced settings',
     );
     logger.info('Search input has correct attributes');
 
     // Type in search input - re-locate before interacting
     await page.getByTestId('advanced-settings-search').fill('test search');
-    await expect(page.getByTestId('advanced-settings-search')).toHaveValue(
-      'test search'
-    );
+    await expect(page.getByTestId('advanced-settings-search')).toHaveValue('test search');
     logger.info('Search input accepts text');
 
     // Verify clear button appears
-    await expect(
-      page.getByTestId('advanced-settings-search-clear')
-    ).toBeVisible({ timeout: 2000 });
+    await expect(page.getByTestId('advanced-settings-search-clear')).toBeVisible({ timeout: 2000 });
     logger.info('Clear button is visible');
 
     // Click clear button - re-locate before clicking
@@ -270,9 +253,9 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     logger.info('Clear button works correctly');
 
     // Verify clear button is hidden when search is empty
-    await expect(
-      page.getByTestId('advanced-settings-search-clear')
-    ).not.toBeVisible({ timeout: 2000 });
+    await expect(page.getByTestId('advanced-settings-search-clear')).not.toBeVisible({
+      timeout: 2000,
+    });
   });
 
   test('Should filter settings based on search query', async ({ page }) => {
@@ -303,9 +286,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
 
     // Search for a non-existent term
-    await page
-      .getByTestId('advanced-settings-search')
-      .fill('xyznonexistent123');
+    await page.getByTestId('advanced-settings-search').fill('xyznonexistent123');
 
     // Wait for filter to apply by checking for empty state
     await expect(page.getByTestId('advanced-settings-empty')).toBeVisible({
@@ -330,9 +311,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     logger.info('Settings restored after clearing search');
   });
 
-  test('Should display setting fields with appropriate input types', async ({
-    page,
-  }) => {
+  test('Should display setting fields with appropriate input types', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -351,9 +330,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     const settingsList = page.getByTestId('advanced-settings-list');
     await expect(settingsList).toBeVisible();
 
-    const settingsCount = await settingsList
-      .locator('[role="listitem"]')
-      .count();
+    const settingsCount = await settingsList.locator('[role="listitem"]').count();
 
     if (settingsCount === 0) {
       logger.info('No settings available to verify field types');
@@ -376,9 +353,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
       // Each setting should have some form of input
       const inputCount = await setting
-        .locator(
-          'input, button[role="switch"], button[role="combobox"], textarea'
-        )
+        .locator('input, button[role="switch"], button[role="combobox"], textarea')
         .count();
       expect(inputCount).toBeGreaterThan(0);
 
@@ -386,9 +361,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
   });
 
-  test('Should show Save Changes button when settings are modified', async ({
-    page,
-  }) => {
+  test('Should show Save Changes button when settings are modified', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -404,19 +377,15 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
 
     // Verify save button is NOT visible initially
-    await expect(
-      page.getByTestId('save-advanced-settings-button')
-    ).not.toBeVisible({ timeout: 2000 });
+    await expect(page.getByTestId('save-advanced-settings-button')).not.toBeVisible({
+      timeout: 2000,
+    });
     logger.info('Save button is hidden initially (no changes)');
 
     // Try to find a text input to modify
     const settingsList = page.getByTestId('advanced-settings-list');
-    const textInputCount = await settingsList
-      .locator('input[type="text"]')
-      .count();
-    const switchCount = await settingsList
-      .locator('button[role="switch"]')
-      .count();
+    const textInputCount = await settingsList.locator('input[type="text"]').count();
+    const switchCount = await settingsList.locator('button[role="switch"]').count();
 
     if (textInputCount > 0) {
       // Modify a text input
@@ -426,25 +395,22 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
       logger.info('Modified text input value');
 
       // Save button should now be visible
-      await expect(
-        page.getByTestId('save-advanced-settings-button')
-      ).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('save-advanced-settings-button')).toBeVisible({
+        timeout: 5000,
+      });
       logger.info('Save button appeared after modification');
 
       // Restore original value (cleanup) - re-locate before interacting
-      await settingsList
-        .locator('input[type="text"]')
-        .first()
-        .fill(originalValue);
+      await settingsList.locator('input[type="text"]').first().fill(originalValue);
     } else if (switchCount > 0) {
       // Toggle a switch
       await settingsList.locator('button[role="switch"]').first().click();
       logger.info('Toggled switch');
 
       // Save button should now be visible
-      await expect(
-        page.getByTestId('save-advanced-settings-button')
-      ).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('save-advanced-settings-button')).toBeVisible({
+        timeout: 5000,
+      });
       logger.info('Save button appeared after modification');
 
       // Toggle back (cleanup) - re-locate before clicking
@@ -471,9 +437,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
     // Find a help button
     const settingsList = page.getByTestId('advanced-settings-list');
-    const helpButtonCount = await settingsList
-      .locator('button[aria-label^="Help for"]')
-      .count();
+    const helpButtonCount = await settingsList.locator('button[aria-label^="Help for"]').count();
 
     if (helpButtonCount === 0) {
       logger.info('No help buttons found to test tooltip');
@@ -481,10 +445,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
 
     // Hover over the first help button
-    await settingsList
-      .locator('button[aria-label^="Help for"]')
-      .first()
-      .hover();
+    await settingsList.locator('button[aria-label^="Help for"]').first().hover();
 
     // Wait for tooltip to appear
     await expect(page.locator('[role="tooltip"]')).toBeVisible({
@@ -511,9 +472,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     });
 
     // Verify content is not visible initially (collapsed by default)
-    await expect(
-      page.getByTestId('advanced-settings-content')
-    ).not.toBeVisible();
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible();
     logger.info('Content is hidden by default (collapsed)');
 
     // Focus the toggle
@@ -529,15 +488,11 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
     // Press Space to collapse
     await page.keyboard.press('Space');
-    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible(
-      { timeout: 5000 }
-    );
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible({ timeout: 5000 });
     logger.info('Toggle collapsed via Space key - content is hidden');
   });
 
-  test('Should display loading state when fetching Advanced Settings', async ({
-    page,
-  }) => {
+  test('Should display loading state when fetching Advanced Settings', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -545,9 +500,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
 
     // Verify content is not visible initially (collapsed by default)
-    await expect(
-      page.getByTestId('advanced-settings-content')
-    ).not.toBeVisible();
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible();
     logger.info('Content is hidden by default (collapsed)');
 
     // Click to expand and check for loading state
@@ -561,10 +514,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
       // Verify loading has proper accessibility attributes
       await expect(loadingState).toHaveAttribute('role', 'status');
-      await expect(loadingState).toHaveAttribute(
-        'aria-label',
-        'Loading advanced settings'
-      );
+      await expect(loadingState).toHaveAttribute('aria-label', 'Loading advanced settings');
       logger.info('Loading state has proper accessibility attributes');
 
       // Wait for loading to complete
@@ -581,9 +531,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     logger.info('Advanced Settings content loaded');
   });
 
-  test('Should show Save button when toggling a switch setting', async ({
-    page,
-  }) => {
+  test('Should show Save button when toggling a switch setting', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -599,16 +547,14 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     }
 
     // Verify save button is NOT visible initially
-    await expect(
-      page.getByTestId('save-advanced-settings-button')
-    ).not.toBeVisible({ timeout: 2000 });
+    await expect(page.getByTestId('save-advanced-settings-button')).not.toBeVisible({
+      timeout: 2000,
+    });
     logger.info('Save button is hidden initially');
 
     // Find a switch setting to toggle
     const settingsList = page.getByTestId('advanced-settings-list');
-    const switchCount = await settingsList
-      .locator('button[role="switch"]')
-      .count();
+    const switchCount = await settingsList.locator('button[role="switch"]').count();
 
     if (switchCount === 0) {
       logger.info('No switch settings found to test');
@@ -631,24 +577,22 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     logger.info(`Switch toggled to: ${expectedState}`);
 
     // Verify Save button appears
-    await expect(page.getByTestId('save-advanced-settings-button')).toBeVisible(
-      { timeout: 5000 }
-    );
+    await expect(page.getByTestId('save-advanced-settings-button')).toBeVisible({ timeout: 5000 });
     logger.info('Save button appeared after toggling switch');
 
     // Toggle back to restore original state (cleanup)
     await settingsList.locator('button[role="switch"]').first().click();
-    await expect(
-      settingsList.locator('button[role="switch"]').first()
-    ).toHaveAttribute('aria-checked', initialState || 'false', {
-      timeout: 5000,
-    });
+    await expect(settingsList.locator('button[role="switch"]').first()).toHaveAttribute(
+      'aria-checked',
+      initialState || 'false',
+      {
+        timeout: 5000,
+      },
+    );
     logger.info('Switch restored to original state');
   });
 
-  test('Should save settings successfully when Save Changes is clicked', async ({
-    page,
-  }) => {
+  test('Should save settings successfully when Save Changes is clicked', async ({ page }) => {
     const isAdmin = await navigateToConfigurationTab(page);
     if (!isAdmin) {
       test.skip();
@@ -665,9 +609,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
     // Find a text input to modify
     const settingsList = page.getByTestId('advanced-settings-list');
-    const textInputCount = await settingsList
-      .locator('input[type="text"]')
-      .count();
+    const textInputCount = await settingsList.locator('input[type="text"]').count();
 
     if (textInputCount === 0) {
       logger.info('No text inputs found to test save functionality');
@@ -677,15 +619,11 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     // Get the first text input and its current value
     const textInput = settingsList.locator('input[type="text"]').first();
     const originalValue = await textInput.inputValue();
-    const testValue = originalValue
-      ? `${originalValue} test`
-      : 'test value for save';
+    const testValue = originalValue ? `${originalValue} test` : 'test value for save';
 
     // Modify the input
     await textInput.fill(testValue);
-    logger.info(
-      `Modified text input from "${originalValue}" to "${testValue}"`
-    );
+    logger.info(`Modified text input from "${originalValue}" to "${testValue}"`);
 
     // Verify Save button appears
     const saveButton = page.getByTestId('save-advanced-settings-button');
@@ -701,9 +639,9 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
     logger.info('Save completed - button hidden (no pending changes)');
 
     // Verify the value persists after save
-    await expect(
-      settingsList.locator('input[type="text"]').first()
-    ).toHaveValue(testValue, { timeout: 5000 });
+    await expect(settingsList.locator('input[type="text"]').first()).toHaveValue(testValue, {
+      timeout: 5000,
+    });
     logger.info('Value persisted after save');
   });
 
@@ -724,9 +662,7 @@ test.describe('Course Configuration Tab - Advanced Settings Feature', () => {
 
     // Find a combobox setting
     const settingsList = page.getByTestId('advanced-settings-list');
-    const comboboxCount = await settingsList
-      .locator('button[role="combobox"]')
-      .count();
+    const comboboxCount = await settingsList.locator('button[role="combobox"]').count();
 
     if (comboboxCount === 0) {
       logger.info('No combobox settings found');

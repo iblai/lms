@@ -1,11 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import {
-  expect,
-  StepFn,
-  waitForPageLoad,
-  safeWaitForURL,
-} from '@iblai/iblai-js/playwright';
+import { expect, StepFn, waitForPageLoad, safeWaitForURL } from '@iblai/iblai-js/playwright';
 import { AUTH_HOST } from './utils';
 import { MENTOR_NEXTJS_HOST, SKILL_HOST } from './utils';
 
@@ -17,7 +12,7 @@ export interface SignUpCredentials {
 export async function signUpWithEmailAndPassword(
   page: Page,
   credentials?: SignUpCredentials,
-  alreadyInSignupPage = false
+  alreadyInSignupPage = false,
 ) {
   logger.info('Checking for user credentials');
 
@@ -37,11 +32,9 @@ export async function signUpWithEmailAndPassword(
     await signUpButton.click();
 
     // Wait for the sign up page to load
-    await safeWaitForURL(
-      page,
-      (url) => url.href.startsWith(AUTH_HOST + '/account/create'),
-      { timeout: 60000 }
-    );
+    await safeWaitForURL(page, (url) => url.href.startsWith(AUTH_HOST + '/account/create'), {
+      timeout: 60000,
+    });
   }
 
   // Click on the continue with Password button
@@ -87,7 +80,7 @@ export async function loginWithEmailAndPassword(
   page: Page,
   username: string,
   password: string,
-  hostUrl: string
+  hostUrl: string,
 ) {
   /* logger.info('Checking for email input field');
   const emailInput = page.locator('input[placeholder="Email or Username"]');
@@ -142,19 +135,13 @@ export async function loginWithEmailAndPassword(
   }
 
   if (hostUrl == SKILL_HOST) {
-    await safeWaitForURL(
-      page,
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 80000 }
-    );
+    await safeWaitForURL(page, (url) => url.href.includes('/home') || url.href.includes('/start'), {
+      timeout: 80000,
+    });
   }
 }
 
-export async function loginWithMicrosoftIdp(
-  page: Page,
-  username: string,
-  password: string
-) {
+export async function loginWithMicrosoftIdp(page: Page, username: string, password: string) {
   // Wait for SSO provider page to load (simulate login if needed)
   // This part may need to be customized for your client SSO
   await safeWaitForURL(page, /.*\/oauth2\/v2.0\/authorize.*/, {
@@ -178,10 +165,7 @@ export async function loginWithMicrosoftIdp(
   confirmStaySignIn.click();
 }
 
-export async function canChatWithEmbedMentor(
-  page: Page,
-  openChatButton: Locator
-) {
+export async function canChatWithEmbedMentor(page: Page, openChatButton: Locator) {
   await openChatButton.click();
   await page.waitForTimeout(20000);
   const widget = page.locator('#ibl-chat-widget-container');
@@ -201,9 +185,7 @@ export async function canChatWithEmbedMentor(
 
   const text = 'Whats the context of this page';
 
-  const textArea = mentorIframe.locator(
-    'textarea[placeholder]:not([placeholder=""])'
-  );
+  const textArea = mentorIframe.locator('textarea[placeholder]:not([placeholder=""])');
   await expect(textArea).toBeVisible();
   await expect(textArea).toHaveAttribute('placeholder', /.+/);
   const sendButton = mentorIframe.getByRole('button', {

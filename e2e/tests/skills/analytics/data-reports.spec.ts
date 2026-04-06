@@ -21,7 +21,7 @@ import {
   shouldCombineRecommendationReports,
 } from '../../shared';
 
-test.skip()
+test.skip();
 
 const pageURL = SKILL_HOST;
 
@@ -57,9 +57,7 @@ test.describe('Data Reports Feature', () => {
   });
 
   test.describe('Data Reports Page Navigation', () => {
-    test('should navigate to Data Reports tab from Analytics', async ({
-      page,
-    }) => {
+    test('should navigate to Data Reports tab from Analytics', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
       await expect(analyticsButton).toBeVisible();
 
@@ -69,9 +67,7 @@ test.describe('Data Reports Feature', () => {
       await navigateToDataReports(page);
     });
 
-    test('should display all report cards with download buttons', async ({
-      page,
-    }) => {
+    test('should display all report cards with download buttons', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -96,9 +92,7 @@ test.describe('Data Reports Feature', () => {
       await shouldOpenCSVEditorDialog(page);
     });
 
-    test('should display CSV data in editable table format', async ({
-      page,
-    }) => {
+    test('should display CSV data in editable table format', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -120,9 +114,7 @@ test.describe('Data Reports Feature', () => {
       await shouldAllowEditingCellValuesInCSVEditor(page);
     });
 
-    test('should add new row when clicking Add Row button', async ({
-      page,
-    }) => {
+    test('should add new row when clicking Add Row button', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -147,9 +139,7 @@ test.describe('Data Reports Feature', () => {
       await shouldSaveEditedCSVAndTriggerDownload(page);
     });
 
-    test('should close CSV editor without saving when clicking Cancel', async ({
-      page,
-    }) => {
+    test('should close CSV editor without saving when clicking Cancel', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -160,9 +150,7 @@ test.describe('Data Reports Feature', () => {
       await shouldCloseCSVEditorWithoutSavingWhenClickingCancel(page);
     });
 
-    test('should close CSV editor when clicking Close button', async ({
-      page,
-    }) => {
+    test('should close CSV editor when clicking Close button', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -175,9 +163,7 @@ test.describe('Data Reports Feature', () => {
   });
 
   test.describe('CSV Editor Accessibility', () => {
-    test('CSV editor should have proper ARIA labels and roles', async ({
-      page,
-    }) => {
+    test('CSV editor should have proper ARIA labels and roles', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -190,9 +176,7 @@ test.describe('Data Reports Feature', () => {
   });
 
   test.describe('User Metadata Report', () => {
-    test('should open CSV editor for User Metadata Report', async ({
-      page,
-    }) => {
+    test('should open CSV editor for User Metadata Report', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -205,9 +189,7 @@ test.describe('Data Reports Feature', () => {
   });
 
   test.describe('Chat History Report', () => {
-    test('should directly download Chat History report without CSV editor', async ({
-      page,
-    }) => {
+    test('should directly download Chat History report without CSV editor', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -220,9 +202,7 @@ test.describe('Data Reports Feature', () => {
   });
 
   test.describe.skip('Report Download Loading States', () => {
-    test('should disable other download buttons while generating report', async ({
-      page,
-    }) => {
+    test('should disable other download buttons while generating report', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -248,9 +228,7 @@ test.describe('Data Reports Feature', () => {
       await shouldHaveCombinedReportDataTestIds(page);
     });
 
-    test('should show combining dialog when clicking recommendation report', async ({
-      page,
-    }) => {
+    test('should show combining dialog when clicking recommendation report', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
@@ -272,9 +250,7 @@ test.describe('Data Reports Feature', () => {
       await shouldCancelCombiningReports(page);
     });
 
-    test('should combine multiple reports into single CSV editor', async ({
-      page,
-    }) => {
+    test('should combine multiple reports into single CSV editor', async ({ page }) => {
       const analyticsButton = page.getByRole('link', { name: 'AI Analytics' });
 
       await expect(analyticsButton).toBeVisible();
