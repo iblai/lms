@@ -3,7 +3,7 @@
 import { useDispatch } from 'react-redux';
 // @ts-ignore
 import { initializeDataLayer } from '@iblai/iblai-js/data-layer';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { config } from '@/lib/config';
 import {
   handleTenantSwitch,
@@ -54,19 +54,18 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   const dispatch = useDispatch();
 
+  const middleware = useMemo(() => {
+    const map = new Map();
+
+    map.set(new RegExp('^/sso-login'), async () => false);
+
+    // allow user to go to version page without auth
+    map.set(new RegExp('^\/version'), async () => false);
+
+    return map;
+  }, []);
+
   if (!ready) return null;
-
-  const middleware = new Map();
-  /* 
-  middleware.set(new RegExp("^(?!\/sso-login).*"), () => {
-    return true;
-  }); */
-
-  middleware.set(new RegExp('^/sso-login'), async () => {
-    return false;
-  });
-  // allow user to go to version page without auth
-  middleware.set(new RegExp('^\/version'), async () => false);
 
   function onLoadPlatformpermissions(rbacPermissions: Record<string, unknown> | undefined) {
     dispatch(updateRbacPermissions(rbacPermissions ?? {}));

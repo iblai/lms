@@ -25,7 +25,7 @@
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
     "@iblai/iblai-api": "4.166.0-ai",
-    "@iblai/iblai-js": "1.3.4",
+    "@iblai/iblai-js": "1.3.5",
     "@iblai/iblai-web-mentor": "2.0.1",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.13",
@@ -122,6 +122,20 @@
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4"
+    "vitest": "3.2.4",
+    "lint-staged": "16.4.0",
+    "@commitlint/cli": "20.5.0",
+    "@commitlint/config-conventional": "20.5.0"
+  },
+  "lint-staged": {
+    "*.ts?(x)": [
+      "pnpm prettier --write"
+    ],
+    "*.js?(x)": [
+      "pnpm prettier --write"
+    ],
+    "*.css": [
+      "pnpm prettier --write"
+    ]
   }
 }
