@@ -6,11 +6,8 @@ test.describe('Journey 13: Recommended Courses', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 60_000 }
-    );
+    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('CP-1: recommended page loads with cards or empty state', async ({ page }) => {
@@ -19,8 +16,11 @@ test.describe('Journey 13: Recommended Courses', () => {
       timeout: 60_000,
     });
 
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]').first();
-    const emptyState = page.getByText(/no recommendation/i)
+    const courseCard = page
+      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
+      .first();
+    const emptyState = page
+      .getByText(/no recommendation/i)
       .or(page.getByText(/no courses/i))
       .or(page.getByText(/empty/i))
       .or(page.getByText(/nothing to show/i));
@@ -37,7 +37,9 @@ test.describe('Journey 13: Recommended Courses', () => {
       timeout: 60_000,
     });
 
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]').first();
+    const courseCard = page
+      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
+      .first();
     const hasCards = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
 
     if (!hasCards) {
@@ -46,12 +48,16 @@ test.describe('Journey 13: Recommended Courses', () => {
     }
 
     // Verify card has a title
-    const cardTitle = courseCard.getByRole('heading').first()
+    const cardTitle = courseCard
+      .getByRole('heading')
+      .first()
       .or(courseCard.locator('[class*="title"], [class*="name"]').first());
     await expect(cardTitle).toBeVisible({ timeout: 10_000 });
 
     // Verify card has a description or summary text
-    const cardDescription = courseCard.locator('[class*="description"], [class*="summary"], p').first();
+    const cardDescription = courseCard
+      .locator('[class*="description"], [class*="summary"], p')
+      .first();
     const hasDescription = await cardDescription.isVisible({ timeout: 5_000 }).catch(() => false);
     // Description may be truncated or absent on some cards — title is sufficient
     expect(cardTitle).toBeDefined();
@@ -63,7 +69,9 @@ test.describe('Journey 13: Recommended Courses', () => {
       timeout: 60_000,
     });
 
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]').first();
+    const courseCard = page
+      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
+      .first();
     const hasCards = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
 
     if (!hasCards) {
@@ -82,10 +90,8 @@ test.describe('Journey 13: Recommended Courses', () => {
 
     await page.waitForURL(
       (url) =>
-        url.href.includes('/course') ||
-        url.href.includes('/about') ||
-        url.href.includes('/detail'),
-      { timeout: 30_000 }
+        url.href.includes('/course') || url.href.includes('/about') || url.href.includes('/detail'),
+      { timeout: 30_000 },
     );
     expect(page.url()).toMatch(/course|about|detail/);
   });
@@ -98,9 +104,13 @@ test.describe('Journey 13: Recommended Courses', () => {
 
     // Check if the page indicates personalization (e.g. "Recommended for you", user-specific section)
     const personalizedHeading = page.getByText(/recommended for you|personalized|based on/i);
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]').first();
+    const courseCard = page
+      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
+      .first();
 
-    const hasPersonalized = await personalizedHeading.isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasPersonalized = await personalizedHeading
+      .isVisible({ timeout: 10_000 })
+      .catch(() => false);
     const hasCards = await courseCard.isVisible({ timeout: 10_000 }).catch(() => false);
 
     // The page should show either personalized content or at least load without error
@@ -115,7 +125,8 @@ test.describe('Journey 13: Recommended Courses', () => {
     });
 
     // Look for the main heading of the recommended page
-    const heading = page.getByRole('heading', { level: 1 })
+    const heading = page
+      .getByRole('heading', { level: 1 })
       .or(page.getByRole('heading', { level: 2 }).first())
       .or(page.getByText(/recommend/i).first());
 

@@ -35,16 +35,15 @@ test.describe('Journey 03: Home Dashboard', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
   });
 
-  test('Checkpoint 1: Home page displays Profile Sidebar', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: Home page displays Profile Sidebar', async ({ page }) => {
     // Wait for the home page to be ready
-    const sidebar = page.getByLabel('Profile Sidebar').or(
-      page.locator('[data-testid="profile-sidebar"]')
-    ).first();
+    const sidebar = page
+      .getByLabel('Profile Sidebar')
+      .or(page.locator('[data-testid="profile-sidebar"]'))
+      .first();
 
     const hasSidebar = await sidebar.isVisible({ timeout: 30000 }).catch(() => false);
 
@@ -65,16 +64,12 @@ test.describe('Journey 03: Home Dashboard', () => {
     await expect(page).toHaveURL(/\/home/);
   });
 
-  test('Checkpoint 2: Suggested Courses section is displayed', async ({
-    page,
-  }) => {
+  test('Checkpoint 2: Suggested Courses section is displayed', async ({ page }) => {
     const suggestedHeading = page.getByRole('heading', {
       name: /suggested courses|recommended/i,
     });
 
-    const hasSuggested = await suggestedHeading
-      .isVisible({ timeout: 30000 })
-      .catch(() => false);
+    const hasSuggested = await suggestedHeading.isVisible({ timeout: 30000 }).catch(() => false);
 
     if (hasSuggested) {
       await expect(suggestedHeading).toBeVisible();
@@ -103,9 +98,7 @@ test.describe('Journey 03: Home Dashboard', () => {
     }
   });
 
-  test('Checkpoint 4: Click My Courses card navigates to course about', async ({
-    page,
-  }) => {
+  test('Checkpoint 4: Click My Courses card navigates to course about', async ({ page }) => {
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
     await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
 
@@ -123,7 +116,7 @@ test.describe('Journey 03: Home Dashboard', () => {
 
     await courseLink.click();
     await page.waitForURL(/\/courses\//, { timeout: 120000 });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
     // Verify course about page loaded
     const courseHeading = page.getByRole('heading', { level: 1 });
@@ -131,16 +124,12 @@ test.describe('Journey 03: Home Dashboard', () => {
     logger.info('Navigated to course about page from My Courses');
   });
 
-  test('Checkpoint 5: Click suggested course navigates to course about', async ({
-    page,
-  }) => {
+  test('Checkpoint 5: Click suggested course navigates to course about', async ({ page }) => {
     const suggestedHeading = page.getByRole('heading', {
       name: /suggested courses|recommended/i,
     });
 
-    const hasSuggested = await suggestedHeading
-      .isVisible({ timeout: 30000 })
-      .catch(() => false);
+    const hasSuggested = await suggestedHeading.isVisible({ timeout: 30000 }).catch(() => false);
 
     if (!hasSuggested) {
       logger.info('No Suggested Courses section — skipping');
@@ -162,7 +151,7 @@ test.describe('Journey 03: Home Dashboard', () => {
 
     await suggestedLink.click();
     await page.waitForURL(/\/courses\//, { timeout: 120000 });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
     const courseHeading = page.getByRole('heading', { level: 1 });
     await expect(courseHeading).toBeVisible({ timeout: 30000 });
@@ -170,9 +159,10 @@ test.describe('Journey 03: Home Dashboard', () => {
   });
 
   test('Checkpoint 6: Profile Sidebar shows stats', async ({ page }) => {
-    const sidebar = page.getByLabel('Profile Sidebar').or(
-      page.locator('[data-testid="profile-sidebar"]')
-    ).first();
+    const sidebar = page
+      .getByLabel('Profile Sidebar')
+      .or(page.locator('[data-testid="profile-sidebar"]'))
+      .first();
 
     const hasSidebar = await sidebar.isVisible({ timeout: 30000 }).catch(() => false);
 
@@ -207,18 +197,14 @@ test.describe('Journey 03: Home Dashboard', () => {
     }
   });
 
-  test('Checkpoint 8: No console errors on home dashboard', async ({
-    page,
-  }) => {
+  test('Checkpoint 8: No console errors on home dashboard', async ({ page }) => {
     // Wait for the page to fully stabilize
     await page.waitForTimeout(3000);
 
     // Filter out noise — some third-party scripts may emit benign errors
     const significantErrors = consoleErrors.filter(
       (err) =>
-        !err.includes('favicon') &&
-        !err.includes('third-party') &&
-        !err.includes('net::ERR')
+        !err.includes('favicon') && !err.includes('third-party') && !err.includes('net::ERR'),
     );
 
     if (significantErrors.length > 0) {

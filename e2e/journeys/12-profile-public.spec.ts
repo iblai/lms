@@ -6,11 +6,8 @@ test.describe('Journey 12: Profile Public', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 60_000 }
-    );
+    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('CP-1: public profile page loads', async ({ page }) => {
@@ -20,7 +17,9 @@ test.describe('Journey 12: Profile Public', () => {
     });
 
     // The page should load without errors — look for any profile content
-    const profileContent = page.locator('[class*="profile"], [data-testid*="profile"]').first()
+    const profileContent = page
+      .locator('[class*="profile"], [data-testid*="profile"]')
+      .first()
       .or(page.getByRole('main'));
     await expect(profileContent).toBeVisible({ timeout: 30_000 });
   });
@@ -32,14 +31,18 @@ test.describe('Journey 12: Profile Public', () => {
     });
 
     // Look for the user's displayed name — heading, text, or element with name info
-    const userName = page.getByRole('heading').first()
+    const userName = page
+      .getByRole('heading')
+      .first()
       .or(page.locator('[class*="name"], [class*="username"], [data-testid*="name"]').first());
     await expect(userName).toBeVisible({ timeout: 30_000 });
 
     // Verify at least some visible profile information is present (e.g. avatar, bio, skills)
-    const profileInfo = page.locator(
-      '[class*="avatar"], [class*="bio"], [class*="skill"], img[alt*="avatar" i], img[alt*="profile" i]'
-    ).first();
+    const profileInfo = page
+      .locator(
+        '[class*="avatar"], [class*="bio"], [class*="skill"], img[alt*="avatar" i], img[alt*="profile" i]',
+      )
+      .first();
     const hasProfileInfo = await profileInfo.isVisible({ timeout: 10_000 }).catch(() => false);
 
     // At minimum the name should be visible

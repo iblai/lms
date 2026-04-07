@@ -22,12 +22,10 @@ test.describe('Journey 08: Profile Credentials', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
   });
 
-  test('Checkpoint 1: Credentials page with list or empty state', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: Credentials page with list or empty state', async ({ page }) => {
     await expect(page).toHaveURL(/\/profile\/credentials/);
 
     const credentialCard = page
@@ -90,7 +88,7 @@ test.describe('Journey 08: Profile Credentials', () => {
       .or(
         page
           .locator('[data-testid*="credential-modal"], [data-testid*="credential-detail"]')
-          .first()
+          .first(),
       );
 
     const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
@@ -127,7 +125,7 @@ test.describe('Journey 08: Profile Credentials', () => {
       .or(
         page
           .locator('[data-testid*="credential-modal"], [data-testid*="credential-detail"]')
-          .first()
+          .first(),
       );
 
     const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
@@ -168,9 +166,7 @@ test.describe('Journey 08: Profile Credentials', () => {
     const downloadButton = page
       .getByRole('button', { name: /download|share|export|view/i })
       .first();
-    const downloadLink = page
-      .getByRole('link', { name: /download|share|export|view/i })
-      .first();
+    const downloadLink = page.getByRole('link', { name: /download|share|export|view/i }).first();
 
     const hasDownloadBtn = await downloadButton.isVisible({ timeout: 10000 }).catch(() => false);
     const hasDownloadLink = await downloadLink.isVisible({ timeout: 5000 }).catch(() => false);

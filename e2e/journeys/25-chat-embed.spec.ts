@@ -15,7 +15,7 @@ test.describe('Journey 25: Chat Embed', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('CP-1: Open Chat Assistant button is visible', async ({ page }) => {
@@ -52,19 +52,28 @@ test.describe('Journey 25: Chat Embed', () => {
     await openChatButton.click();
 
     // The chat panel / chat container should become visible
-    const chatPanel = page.locator('[data-testid="chat-panel"]').or(
-      page.getByRole('dialog', { name: /chat/i })
-    ).or(
-      page.locator('.chat-container, .chat-panel, [class*="chat"]').first()
-    );
+    const chatPanel = page
+      .locator('[data-testid="chat-panel"]')
+      .or(page.getByRole('dialog', { name: /chat/i }))
+      .or(page.locator('.chat-container, .chat-panel, [class*="chat"]').first());
 
     // Also look for a chat input as an indicator the panel is open
-    const chatInput = page.getByRole('textbox', { name: /message|chat|ask/i }).or(
-      page.locator('textarea[placeholder*="message"], textarea[placeholder*="Message"], input[placeholder*="message"]')
-    );
+    const chatInput = page
+      .getByRole('textbox', { name: /message|chat|ask/i })
+      .or(
+        page.locator(
+          'textarea[placeholder*="message"], textarea[placeholder*="Message"], input[placeholder*="message"]',
+        ),
+      );
 
-    const panelVisible = await chatPanel.first().isVisible().catch(() => false);
-    const inputVisible = await chatInput.first().isVisible().catch(() => false);
+    const panelVisible = await chatPanel
+      .first()
+      .isVisible()
+      .catch(() => false);
+    const inputVisible = await chatInput
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     expect(panelVisible || inputVisible).toBeTruthy();
   });
@@ -86,18 +95,20 @@ test.describe('Journey 25: Chat Embed', () => {
     await page.waitForTimeout(2000);
 
     // Find the chat input
-    const chatInput = page.getByRole('textbox', { name: /message|chat|ask/i }).or(
-      page.locator('textarea[placeholder*="message"], textarea[placeholder*="Message"]').first()
-    );
+    const chatInput = page
+      .getByRole('textbox', { name: /message|chat|ask/i })
+      .or(
+        page.locator('textarea[placeholder*="message"], textarea[placeholder*="Message"]').first(),
+      );
     await expect(chatInput.first()).toBeVisible({ timeout: 15_000 });
 
     // Type a test message
     await chatInput.first().fill('Hello, can you help me?');
 
     // Find and click the send button
-    const sendButton = page.getByRole('button', { name: /send/i }).or(
-      page.locator('button.chat-submit-message-button, button[type="submit"]').first()
-    );
+    const sendButton = page
+      .getByRole('button', { name: /send/i })
+      .or(page.locator('button.chat-submit-message-button, button[type="submit"]').first());
     await expect(sendButton.first()).toBeVisible({ timeout: 10_000 });
     await sendButton.first().click();
 
@@ -122,15 +133,17 @@ test.describe('Journey 25: Chat Embed', () => {
     await page.waitForTimeout(2000);
 
     // Find the chat input and send a message
-    const chatInput = page.getByRole('textbox', { name: /message|chat|ask/i }).or(
-      page.locator('textarea[placeholder*="message"], textarea[placeholder*="Message"]').first()
-    );
+    const chatInput = page
+      .getByRole('textbox', { name: /message|chat|ask/i })
+      .or(
+        page.locator('textarea[placeholder*="message"], textarea[placeholder*="Message"]').first(),
+      );
     await expect(chatInput.first()).toBeVisible({ timeout: 15_000 });
     await chatInput.first().fill('What courses are available?');
 
-    const sendButton = page.getByRole('button', { name: /send/i }).or(
-      page.locator('button.chat-submit-message-button, button[type="submit"]').first()
-    );
+    const sendButton = page
+      .getByRole('button', { name: /send/i })
+      .or(page.locator('button.chat-submit-message-button, button[type="submit"]').first());
     await sendButton.first().click();
 
     // Wait for a response to appear — look for a new message bubble or text
@@ -138,7 +151,9 @@ test.describe('Journey 25: Chat Embed', () => {
     await page.waitForTimeout(10_000);
 
     // Check for response content — there should be more than just the user message
-    const chatMessages = page.locator('[class*="message"], [data-testid*="message"], [role="log"] > *');
+    const chatMessages = page.locator(
+      '[class*="message"], [data-testid*="message"], [role="log"] > *',
+    );
     const messageCount = await chatMessages.count();
 
     // At minimum, the user message + some loading/response indicator
@@ -162,11 +177,14 @@ test.describe('Journey 25: Chat Embed', () => {
     await page.waitForTimeout(2000);
 
     // Find and click the close button in the chat panel
-    const closeChatButton = page.getByRole('button', { name: /close|minimize/i }).or(
-      page.locator('[data-testid="close-chat"], button[aria-label*="close" i]').first()
-    );
+    const closeChatButton = page
+      .getByRole('button', { name: /close|minimize/i })
+      .or(page.locator('[data-testid="close-chat"], button[aria-label*="close" i]').first());
 
-    const closeVisible = await closeChatButton.first().isVisible().catch(() => false);
+    const closeVisible = await closeChatButton
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     if (closeVisible) {
       await closeChatButton.first().click();

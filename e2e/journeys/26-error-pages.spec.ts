@@ -10,7 +10,7 @@ test.describe('Journey 26: Error Pages', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Should display a "Page Not Found" or "404" message
     const notFoundText = page.getByText(/page not found|404|not found/i).first();
@@ -22,7 +22,7 @@ test.describe('Journey 26: Error Pages', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Should display a "Forbidden" or "403" or "Access Denied" message
     const forbiddenText = page.getByText(/forbidden|403|access denied|not authorized/i).first();
@@ -35,7 +35,7 @@ test.describe('Journey 26: Error Pages', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Should display a "Not Found" or "404" message or redirect to an error page
     const errorContent = page.getByText(/not found|404|page not found|does not exist/i).first();
@@ -53,14 +53,17 @@ test.describe('Journey 26: Error Pages', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Look for a link that navigates back to home
-    const homeLink = page.getByRole('link', { name: /home|go back|return/i }).or(
-      page.getByRole('button', { name: /home|go back|return/i })
-    );
+    const homeLink = page
+      .getByRole('link', { name: /home|go back|return/i })
+      .or(page.getByRole('button', { name: /home|go back|return/i }));
 
-    const hasHomeLink = await homeLink.first().isVisible().catch(() => false);
+    const hasHomeLink = await homeLink
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     if (hasHomeLink) {
       await homeLink.first().click();

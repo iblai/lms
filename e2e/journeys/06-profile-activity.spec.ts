@@ -23,15 +23,15 @@ test.describe('Journey 06: Profile Activity', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
   });
 
-  test('Checkpoint 1: Activity tab is selected by default', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: Activity tab is selected by default', async ({ page }) => {
     // The default profile page should show activity
     // Look for an Activity tab/link that is active
-    const activityTab = page.getByRole('link', { name: /activity/i }).first()
+    const activityTab = page
+      .getByRole('link', { name: /activity/i })
+      .first()
       .or(page.getByRole('button', { name: /activity/i }).first());
 
     const hasActivityTab = await activityTab.isVisible({ timeout: 30000 }).catch(() => false);
@@ -58,7 +58,9 @@ test.describe('Journey 06: Profile Activity', () => {
 
   test('Checkpoint 2: Activity displays chart or stats', async ({ page }) => {
     // Look for chart elements, stats, or activity-related content
-    const chartElement = page.locator('canvas, svg, [data-testid*="chart"], [data-testid*="activity"]').first();
+    const chartElement = page
+      .locator('canvas, svg, [data-testid*="chart"], [data-testid*="activity"]')
+      .first();
     const statsElement = page.getByText(/courses|skills|completed|progress|certificates/i).first();
 
     const hasChart = await chartElement.isVisible({ timeout: 15000 }).catch(() => false);
@@ -75,9 +77,10 @@ test.describe('Journey 06: Profile Activity', () => {
   });
 
   test('Checkpoint 3: Profile sidebar with user info', async ({ page }) => {
-    const sidebar = page.getByLabel('Profile Sidebar').or(
-      page.locator('[data-testid="profile-sidebar"]')
-    ).first();
+    const sidebar = page
+      .getByLabel('Profile Sidebar')
+      .or(page.locator('[data-testid="profile-sidebar"]'))
+      .first();
 
     const hasSidebar = await sidebar.isVisible({ timeout: 30000 }).catch(() => false);
 
@@ -100,9 +103,7 @@ test.describe('Journey 06: Profile Activity', () => {
     logger.info('Profile sidebar with user info is visible');
   });
 
-  test('Checkpoint 4: Profile navigation tabs are visible', async ({
-    page,
-  }) => {
+  test('Checkpoint 4: Profile navigation tabs are visible', async ({ page }) => {
     // Look for common profile navigation tabs
     const profileTabs = [
       /activity/i,
@@ -116,7 +117,9 @@ test.describe('Journey 06: Profile Activity', () => {
     let visibleTabCount = 0;
 
     for (const tabPattern of profileTabs) {
-      const tab = page.getByRole('link', { name: tabPattern }).first()
+      const tab = page
+        .getByRole('link', { name: tabPattern })
+        .first()
         .or(page.getByRole('button', { name: tabPattern }).first());
 
       const isVisible = await tab.isVisible({ timeout: 5000 }).catch(() => false);

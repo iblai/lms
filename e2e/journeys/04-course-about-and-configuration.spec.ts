@@ -13,7 +13,7 @@ async function navigateToCourseAbout(page: Page): Promise<string | null> {
     waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page);
+  await waitForPageReady(page, 120000);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -28,7 +28,7 @@ async function navigateToCourseAbout(page: Page): Promise<string | null> {
 
   await courseLink.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
-  await waitForPageReady(page);
+  await waitForPageReady(page, 120000);
 
   const heading = page.getByRole('heading', { level: 1 });
   await expect(heading).toBeVisible({ timeout: 30000 });
@@ -58,12 +58,10 @@ test.describe('Journey 04: Course About & Configuration', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
   });
 
-  test('Checkpoint 1: Course about page displays heading', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: Course about page displays heading', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -79,9 +77,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     logger.info(`Course about heading: ${text}`);
   });
 
-  test('Checkpoint 2: Course about shows description and enrollment details', async ({
-    page,
-  }) => {
+  test('Checkpoint 2: Course about shows description and enrollment details', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -117,23 +113,15 @@ test.describe('Journey 04: Course About & Configuration', () => {
     });
     const enrollButton = page.getByRole('button', { name: /enroll/i });
 
-    const hasAccess = await accessCourseButton
-      .isVisible({ timeout: 15000 })
-      .catch(() => false);
-    const hasEnroll = await enrollButton
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const hasAccess = await accessCourseButton.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasEnroll = await enrollButton.isVisible({ timeout: 5000 }).catch(() => false);
 
     // At least one of these should be visible
     expect(hasAccess || hasEnroll).toBeTruthy();
-    logger.info(
-      hasAccess ? 'Access Course button visible' : 'Enroll button visible'
-    );
+    logger.info(hasAccess ? 'Access Course button visible' : 'Enroll button visible');
   });
 
-  test('Checkpoint 4: Enrollment button visible for non-enrolled course', async ({
-    page,
-  }) => {
+  test('Checkpoint 4: Enrollment button visible for non-enrolled course', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -158,9 +146,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
   });
 
-  test('Checkpoint 5: Configuration tab visible for admin users', async ({
-    page,
-  }) => {
+  test('Checkpoint 5: Configuration tab visible for admin users', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -184,9 +170,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     logger.info('Configuration tab opened for admin user');
   });
 
-  test('Checkpoint 6: Credentials section in Configuration', async ({
-    page,
-  }) => {
+  test('Checkpoint 6: Credentials section in Configuration', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -223,9 +207,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     logger.info('Credentials section with Add button and list toggle is visible');
   });
 
-  test('Checkpoint 7: Credential creation modal opens and closes', async ({
-    page,
-  }) => {
+  test('Checkpoint 7: Credential creation modal opens and closes', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -266,9 +248,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     logger.info('Credential modal closed');
   });
 
-  test('Checkpoint 8: Advanced Settings expand/collapse', async ({
-    page,
-  }) => {
+  test('Checkpoint 8: Advanced Settings expand/collapse', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -311,9 +291,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     logger.info('Advanced Settings collapsed');
   });
 
-  test('Checkpoint 9: Advanced Settings search filters results', async ({
-    page,
-  }) => {
+  test('Checkpoint 9: Advanced Settings search filters results', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {
@@ -371,9 +349,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
   });
 
-  test('Checkpoint 10: Save Changes button appears on modification', async ({
-    page,
-  }) => {
+  test('Checkpoint 10: Save Changes button appears on modification', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 
     if (!courseName) {

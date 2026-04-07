@@ -49,13 +49,12 @@ test.describe('Journey 27: UI Render Console Errors', () => {
       timeout: 120_000,
     });
 
-    // Wait for the app to fully render
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    // Wait for the app to fully render (Next.js App Router uses body directly, no #root)
+    await page.waitForLoadState('domcontentloaded');
 
-    // Verify root has children (app rendered)
+    // Verify body has children (app rendered)
     const hasChildren = await page.evaluate(() => {
-      const root = document.getElementById('root');
-      return root && root.hasChildNodes();
+      return document.body && document.body.hasChildNodes();
     });
     expect(hasChildren).toBeTruthy();
 
@@ -82,11 +81,10 @@ test.describe('Journey 27: UI Render Console Errors', () => {
       timeout: 120_000,
     });
 
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const hasChildren = await page.evaluate(() => {
-      const root = document.getElementById('root');
-      return root && root.hasChildNodes();
+      return document.body && document.body.hasChildNodes();
     });
     expect(hasChildren).toBeTruthy();
 
@@ -112,11 +110,10 @@ test.describe('Journey 27: UI Render Console Errors', () => {
       timeout: 120_000,
     });
 
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const hasChildren = await page.evaluate(() => {
-      const root = document.getElementById('root');
-      return root && root.hasChildNodes();
+      return document.body && document.body.hasChildNodes();
     });
     expect(hasChildren).toBeTruthy();
 

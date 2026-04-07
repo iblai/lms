@@ -22,16 +22,16 @@ test.describe('Journey 07: Profile Skills', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
   });
 
-  test('Checkpoint 1: Skills page with list or empty state', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: Skills page with list or empty state', async ({ page }) => {
     await expect(page).toHaveURL(/\/profile\/skills/);
 
     // Wait for content to load — either skill cards or an empty state
-    const skillCard = page.locator('[data-testid*="skill-card"], [data-testid*="skill-item"]').first();
+    const skillCard = page
+      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
+      .first();
     const emptyState = page.getByText(/no skills|empty|you don't have any skills/i).first();
     const skillsHeading = page.getByRole('heading', { name: /skills/i }).first();
 
@@ -50,10 +50,10 @@ test.describe('Journey 07: Profile Skills', () => {
     expect(hasCards || hasEmpty || hasHeading).toBeTruthy();
   });
 
-  test('Checkpoint 2: Skill cards show name and proficiency', async ({
-    page,
-  }) => {
-    const skillCard = page.locator('[data-testid*="skill-card"], [data-testid*="skill-item"]').first();
+  test('Checkpoint 2: Skill cards show name and proficiency', async ({ page }) => {
+    const skillCard = page
+      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
+      .first();
     const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
 
     if (!hasCards) {
@@ -68,7 +68,9 @@ test.describe('Journey 07: Profile Skills', () => {
     logger.info(`First skill card content: ${cardText?.substring(0, 100)}`);
 
     // Look for proficiency indicators (progress bars, percentages, levels)
-    const proficiency = skillCard.locator('[role="progressbar"], [data-testid*="proficiency"], [data-testid*="level"]').first();
+    const proficiency = skillCard
+      .locator('[role="progressbar"], [data-testid*="proficiency"], [data-testid*="level"]')
+      .first();
     const profText = skillCard.getByText(/beginner|intermediate|advanced|expert|%/i).first();
 
     const hasProfIndicator = await proficiency.isVisible({ timeout: 5000 }).catch(() => false);
@@ -82,7 +84,9 @@ test.describe('Journey 07: Profile Skills', () => {
   });
 
   test('Checkpoint 3: Click skill opens detail modal', async ({ page }) => {
-    const skillCard = page.locator('[data-testid*="skill-card"], [data-testid*="skill-item"]').first();
+    const skillCard = page
+      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
+      .first();
     const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
 
     if (!hasCards) {
@@ -94,7 +98,9 @@ test.describe('Journey 07: Profile Skills', () => {
     await skillCard.click();
 
     // Wait for a modal/dialog/detail view to appear
-    const modal = page.getByRole('dialog').first()
+    const modal = page
+      .getByRole('dialog')
+      .first()
       .or(page.locator('[data-testid*="skill-modal"], [data-testid*="skill-detail"]').first());
 
     const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
@@ -114,7 +120,9 @@ test.describe('Journey 07: Profile Skills', () => {
   });
 
   test('Checkpoint 4: Skill modal closes properly', async ({ page }) => {
-    const skillCard = page.locator('[data-testid*="skill-card"], [data-testid*="skill-item"]').first();
+    const skillCard = page
+      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
+      .first();
     const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
 
     if (!hasCards) {
@@ -124,7 +132,9 @@ test.describe('Journey 07: Profile Skills', () => {
 
     await skillCard.click();
 
-    const modal = page.getByRole('dialog').first()
+    const modal = page
+      .getByRole('dialog')
+      .first()
       .or(page.locator('[data-testid*="skill-modal"], [data-testid*="skill-detail"]').first());
 
     const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
@@ -152,7 +162,9 @@ test.describe('Journey 07: Profile Skills', () => {
   });
 
   test('Checkpoint 5: Add Skill button', async ({ page }) => {
-    const addSkillButton = page.getByRole('button', { name: /add skill/i }).first()
+    const addSkillButton = page
+      .getByRole('button', { name: /add skill/i })
+      .first()
       .or(page.getByTestId('add-skill-button'));
 
     const hasAddButton = await addSkillButton.isVisible({ timeout: 15000 }).catch(() => false);

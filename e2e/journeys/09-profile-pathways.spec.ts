@@ -22,20 +22,16 @@ test.describe('Journey 09: Profile Pathways', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
   });
 
-  test('Checkpoint 1: Pathways page with list or empty state', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: Pathways page with list or empty state', async ({ page }) => {
     await expect(page).toHaveURL(/\/profile\/pathways/);
 
     const pathwayCard = page
       .locator('[data-testid*="pathway-card"], [data-testid*="pathway-item"]')
       .first();
-    const emptyState = page
-      .getByText(/no pathways|empty|you don't have any pathways/i)
-      .first();
+    const emptyState = page.getByText(/no pathways|empty|you don't have any pathways/i).first();
     const pathwaysHeading = page.getByRole('heading', { name: /pathways/i }).first();
 
     const hasCards = await pathwayCard.isVisible({ timeout: 15000 }).catch(() => false);
@@ -53,9 +49,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     expect(hasCards || hasEmpty || hasHeading).toBeTruthy();
   });
 
-  test('Checkpoint 2: Pathway cards with name and progress', async ({
-    page,
-  }) => {
+  test('Checkpoint 2: Pathway cards with name and progress', async ({ page }) => {
     const pathwayCard = page
       .locator('[data-testid*="pathway-card"], [data-testid*="pathway-item"]')
       .first();
@@ -105,11 +99,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     const modal = page
       .getByRole('dialog')
       .first()
-      .or(
-        page
-          .locator('[data-testid*="pathway-modal"], [data-testid*="pathway-detail"]')
-          .first()
-      );
+      .or(page.locator('[data-testid*="pathway-modal"], [data-testid*="pathway-detail"]').first());
 
     const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
 
@@ -142,11 +132,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     const modal = page
       .getByRole('dialog')
       .first()
-      .or(
-        page
-          .locator('[data-testid*="pathway-modal"], [data-testid*="pathway-detail"]')
-          .first()
-      );
+      .or(page.locator('[data-testid*="pathway-modal"], [data-testid*="pathway-detail"]').first());
 
     const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
 
@@ -170,9 +156,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     }
   });
 
-  test('Checkpoint 5: Create Pathway button (admin only)', async ({
-    page,
-  }) => {
+  test('Checkpoint 5: Create Pathway button (admin only)', async ({ page }) => {
     const createPathwayButton = page
       .getByRole('button', { name: /create pathway|add pathway|new pathway/i })
       .first()

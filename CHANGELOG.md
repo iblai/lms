@@ -1,3 +1,152 @@
+# Changelog
+
+## [0.10.10](https://github.com/iblai/skillsai/compare/skills-v0.10.9...skills-v0.10.10) (2026-04-02)
+
+### Chores
+
+* add prettier config and format on pre-commit ([9035d1a](https://github.com/iblai/skillsai/commit/9035d1ae69ed8ac63880e43257deaba058aff651))
+
+## [0.10.9](https://github.com/iblai/skillsai/compare/skills-v0.10.8...skills-v0.10.9) (2026-04-02)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.3.4 ([327a7b2](https://github.com/iblai/skillsai/commit/327a7b2c7898550fa6a27abb384f175cef1fcfe3))
+
+## [0.10.8](https://github.com/iblai/skillsai/compare/skills-v0.10.7...skills-v0.10.8) (2026-04-02)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.3.3 ([dc9e0d7](https://github.com/iblai/skillsai/commit/dc9e0d7ef56d488eae5b4164f39943c5edc8897a))
+
+## [0.10.7](https://github.com/iblai/skillsai/compare/v0.10.6...skills-v0.10.7) (2026-04-02)
+
+### Features
+
+* course outline > have progress checks per unit instead of current icon ([9b4c4b8](https://github.com/iblai/skillsai/commit/9b4c4b89636fd83e78aa952202fdb2e51769d761))
+* course outline > have progress checks per unit instead of current icon > tests coverage ([b8863ad](https://github.com/iblai/skillsai/commit/b8863ad37beeb3978a20111964ff3fd68dec133f))
+* course outline > have progress checks per unit instead of current icon > tests coverage ([a30e48c](https://github.com/iblai/skillsai/commit/a30e48c3587cd60e7e4e744bd75663c042b36077))
+
+### Bug Fixes
+
+* add release-it and conventional-changelog as devDependencies ([bfadb52](https://github.com/iblai/skillsai/commit/bfadb52f8dbdfa837fdc66698f2d6d01ef54f62c))
+* correct pinned versions and regenerate lockfile ([9826790](https://github.com/iblai/skillsai/commit/9826790f10e79d692b8fc72a55757a6f6ac29f70))
+* font-awesome font family updated ([ba96e62](https://github.com/iblai/skillsai/commit/ba96e6275b14c6a6d7646cd43f2faf04b07b8802))
+* iframe loading twice 30s after initial course page load ([f9f7647](https://github.com/iblai/skillsai/commit/f9f76473ee3280e4c239046d901a6b9839b9daf2))
+* iframe loading twice 30s after initial course page load > test coverage ([b788cd6](https://github.com/iblai/skillsai/commit/b788cd69593430b8dc92f6b6c56fb96d4e93a95b))
+* tests errors fixed ([56dec7b](https://github.com/iblai/skillsai/commit/56dec7b7f5d3da903ed64eebf4959d6ed69b30ea))
+* typecheck errorsfixed ([3f15e93](https://github.com/iblai/skillsai/commit/3f15e936add66df59b8f51ffc4571be563b2b49b))
+
+### Chores
+
+* add Dependabot configuration for dependency and security updates ([91ce938](https://github.com/iblai/skillsai/commit/91ce938b0a39338e9f334f783c06d6820ba3e6c9))
+* bump version to 0.10.0 ([86ba442](https://github.com/iblai/skillsai/commit/86ba442fe3011936f6ab56afe16f5fa469dfb28b))
+* bump version to 0.10.1 ([c0d58c4](https://github.com/iblai/skillsai/commit/c0d58c4b62ca13624ebd785c22f812f540604349))
+* bump version to 0.10.2 ([6ce89d4](https://github.com/iblai/skillsai/commit/6ce89d439ac0cbe97ec0b0a502df17c5fcf7f6d9))
+* bump version to 0.9.14-test.2 ([cad099e](https://github.com/iblai/skillsai/commit/cad099e3dd51e11107dc78f95ea6b8c83ceb748e))
+* release 0.10.3 ([4f19d97](https://github.com/iblai/skillsai/commit/4f19d97db32ff415c5721ba22d4e612d9ba456cf))
+* release 0.10.4 ([191d7b7](https://github.com/iblai/skillsai/commit/191d7b72deb1003f50d216cb54d119af0db44a7c))
+* release 0.10.5 ([ac34d49](https://github.com/iblai/skillsai/commit/ac34d495fea05e435ffc5b02d1bf25b5138791d4))
+* release 0.10.6 ([a092501](https://github.com/iblai/skillsai/commit/a092501e9f40cbcd24f65ef510a210924df1f67a))
+* switch Dependabot to grouped updates to reduce PR noise ([e1aaa6a](https://github.com/iblai/skillsai/commit/e1aaa6a2c06ebc70fbb65669ec7a2a7f88ba132e))
+
+### CI
+
+* pin all dependency versions, add auto-release workflow, enforce pinned versions ([90cb6b2](https://github.com/iblai/skillsai/commit/90cb6b260b20dacacb17ebeb5c914badb719ad17))
+
+## 0.9.14-test.1 (2026-03-23)
+
+### Features
+
+* analytics course program update ([2a23934](https://github.com/iblai/skillsai/commit/2a23934edc925edaf773065e55cc03b18dbecd92))
+* **ci:** add build tracking link to job summary ([8efe6c0](https://github.com/iblai/skillsai/commit/8efe6c0a984ff0ea5d677541674d832fc5630ae4))
+* **ci:** add Dockerfile and entrypoint for Playwright test containers ([20578ea](https://github.com/iblai/skillsai/commit/20578eaff08ce93d00289a47e74f0266cedb1edf))
+* **ci:** add PR gate for branch protection with commit status API ([4979d58](https://github.com/iblai/skillsai/commit/4979d5862e645156ae71c69cbcab84e99a321148))
+* **ci:** add SPA PR validation workflow ([1d08686](https://github.com/iblai/skillsai/commit/1d0868663ef40f68d83fff0982ce533847f56b33))
+* course content page UI display optimized ([fdbc3f6](https://github.com/iblai/skillsai/commit/fdbc3f6bd0cef376dad5a83572cc1a3d56ed7c83))
+* course content page UI display optimized > test coverage ([401adc0](https://github.com/iblai/skillsai/commit/401adc0e4e236c38168497bd1b9127a58bdbfbad))
+* data report test temporarily skipped ([f7749d2](https://github.com/iblai/skillsai/commit/f7749d2835ee35aaaf58c09f8e44404cefa9ebcc))
+* data report test temporarily skipped ([219dc8c](https://github.com/iblai/skillsai/commit/219dc8ce5f0be508ae41890af565444b22e99509))
+* delete profile component from sdk integrated ([d423604](https://github.com/iblai/skillsai/commit/d423604ace69f6f2613779e685906d3dd55d0740))
+* delete profile component from sdk integrated > test coverage ([ea70458](https://github.com/iblai/skillsai/commit/ea70458c5575ad270a0146d52b0bdd1021bca620))
+* iblai-js version bump & pnpm lock update ([40e6574](https://github.com/iblai/skillsai/commit/40e657478a3c6de05775bbe4eec1bdf0a4140047))
+* included NEXT_PUBLIC_SUPPORT_EMAIL env variable for default support email ([67d8e88](https://github.com/iblai/skillsai/commit/67d8e88dc94a6f5b330c0e7346145790abbf1bf6))
+* mfe & lms css updates ([b833d4e](https://github.com/iblai/skillsai/commit/b833d4ef0089fc9cc486859568638376f2482071))
+* playwright version update ([af5204f](https://github.com/iblai/skillsai/commit/af5204f2675461e0b5e35af4c686b6f530745414))
+* **playwright:** add e2e test suite with @iblai/iblai-js/playwright SDK ([122299e](https://github.com/iblai/skillsai/commit/122299e97c034a4f619a574278b27cec3e7d3acb))
+* prepush and check test coverage script added ([a7848b2](https://github.com/iblai/skillsai/commit/a7848b27b939f9f5de7ee088ec7b110ab6f1647a))
+* prepush and check test coverage script added ([c2aca2a](https://github.com/iblai/skillsai/commit/c2aca2a3ccd2a5c0d67e15f37bd5d0d48b3e1d8f))
+* prepush and check test coverage script added ([2a7f629](https://github.com/iblai/skillsai/commit/2a7f6293158b145b0778cc908f2ea0da6f94a00d))
+* progress tab update through mfe.css ([9c5ae7f](https://github.com/iblai/skillsai/commit/9c5ae7f25ffe29cf74ba5737b90334f9614455ff))
+* reports page using AnalyticsReportDownload implemented ([dde535e](https://github.com/iblai/skillsai/commit/dde535ea3bf8b33dd9ed80dba6ba21ffb03b5f45))
+* suppressing cannot find module despite being exported from iblai-js ([c038025](https://github.com/iblai/skillsai/commit/c03802582132cdecd53ba2a0959e3f8f0d894de2))
+* suppressing cannot find module despite being exported from iblai-js ([5bbdcf1](https://github.com/iblai/skillsai/commit/5bbdcf1becdaa50ada728fa252ae5883aa904d05))
+* suppressing cannot find module despite being exported from iblai-js & typecheck issues fixed ([87b683b](https://github.com/iblai/skillsai/commit/87b683ba746f6e5b99c52908f7e995bab5f59b0e))
+* test coverage added ([5e90099](https://github.com/iblai/skillsai/commit/5e90099db04347e393ef0e9dfa2d7ea81ed52c14))
+* test coverage added ([587f956](https://github.com/iblai/skillsai/commit/587f9564d24430e43a481017cb14c8e9441f84e5))
+* test coverage added ([1e1cd24](https://github.com/iblai/skillsai/commit/1e1cd2426966b879ca45ede96010078d4d0661ed))
+* typechecks issues fixed added ([063268b](https://github.com/iblai/skillsai/commit/063268b8306a72f7365f306ab51b6288f479402a))
+* unify service URLs under NEXT_PUBLIC_API_BASE_URL ([d635524](https://github.com/iblai/skillsai/commit/d635524000a7d1d7efa1e52c692f8c365a652b00))
+
+### Bug Fixes
+
+* add packageManager field for pnpm/action-setup@v4 ([872bdf1](https://github.com/iblai/skillsai/commit/872bdf1e048639285dbb2376e3063a00a2cf171c))
+* add secrets: inherit to domain lock workflow calls ([a4ff717](https://github.com/iblai/skillsai/commit/a4ff717e48557aaeb150e2bf71861f08181fdb60))
+* **ci:** move permissions from workflow level to summary job only ([21ea694](https://github.com/iblai/skillsai/commit/21ea694fedd2399d87115df21d759ca32115cfd8))
+* **ci:** remove job-level permissions causing startup failure ([d34fc49](https://github.com/iblai/skillsai/commit/d34fc498ce78e3ad861cf0e2a6ebf840fdafe03a))
+* **ci:** require run-tests label for all PRs to merge ([03743a1](https://github.com/iblai/skillsai/commit/03743a16f418dfe034bbaafb663d5dfa831bb2a4))
+* **ci:** skip PR validation for release branches ([066c46e](https://github.com/iblai/skillsai/commit/066c46ead5f626df3ab59e3627564e4a8e18f5b6))
+* conflicting css RE to sdk on skills resolved ([dbdaead](https://github.com/iblai/skillsai/commit/dbdaead5e5cea6d45db6b7b88d841068247797d0))
+* course pagination should only open on course tab ([e259d47](https://github.com/iblai/skillsai/commit/e259d477e8e68fafe5f3b461e79b44879d8a31a0))
+* course payment flow payload updated ([9ef0610](https://github.com/iblai/skillsai/commit/9ef06103401bf0c1ac5e6a7866af9af56b2d1a80))
+* course payment flow payload updated > tests coverage ([4ac378b](https://github.com/iblai/skillsai/commit/4ac378b9a52c0d99b58a206586fa5ca9fa65e5c3))
+* courses accessed from wrong tenant fixed ([2f76b69](https://github.com/iblai/skillsai/commit/2f76b696d359e558583e29c03e909482f7588f2b))
+* courses accessed from wrong tenant fixed ([b58ddf4](https://github.com/iblai/skillsai/commit/b58ddf4ef643215f5d6cb93491b26205ec560f69))
+* courses accessed from wrong tenant fixed > tests coverage ([384cb3b](https://github.com/iblai/skillsai/commit/384cb3b17c76c6a37aed774918e6e4afc9ae05e4))
+* courses accessed from wrong tenant fixed > tests coverage ([c6105df](https://github.com/iblai/skillsai/commit/c6105df467b98ecf7def07c154644adf667482cb))
+* credential creation issue fixed ([cf49f83](https://github.com/iblai/skillsai/commit/cf49f83777345f8fb07c2babd113b0b5990e3ae3))
+* **e2e:** add testDir to playwright config so auth setup runs ([16d07da](https://github.com/iblai/skillsai/commit/16d07da8b05cd86450e4f32d15786080dfce1bcb))
+* **e2e:** update Playwright Docker image to v1.58.2 ([f3b436f](https://github.com/iblai/skillsai/commit/f3b436f2db54e3f38ac79a76468768274e4de06f))
+* error page included on skills ([f72554f](https://github.com/iblai/skillsai/commit/f72554f602b5c14ad4cab415a3eabd1d80107f71))
+* exclude e2e directory from unit test coverage ([9e5fc71](https://github.com/iblai/skillsai/commit/9e5fc712d980bb126fcaef17a220770b9bcaa26e))
+* lms css updated ([92c1b0b](https://github.com/iblai/skillsai/commit/92c1b0b55aafea2c24fc576d5fa3255ec4e6ca68))
+* mfe, lms css for course content updated ([17277a8](https://github.com/iblai/skillsai/commit/17277a811f365fb807e82d1484cc0d462daef71a))
+* pass git-token to deploy and health check reusable workflows ([7e149f0](https://github.com/iblai/skillsai/commit/7e149f004a391a7f204738967b6b29c0be0fb874))
+* sdk css imported into spa ([31fd88d](https://github.com/iblai/skillsai/commit/31fd88d3943b1a80acbefbcedab6771909b412a7))
+* update Dockerfile for standalone repo structure, add ops trigger ([e35d6fe](https://github.com/iblai/skillsai/commit/e35d6fe29f5db14bf3cc776f640a397a314f5329))
+* usermetadata endpoint skipped when username not available ([7b5a653](https://github.com/iblai/skillsai/commit/7b5a653bc8367171c7471167f2e155133e7fc511))
+* users avatar bug mixing gravatar and user initial ([14de960](https://github.com/iblai/skillsai/commit/14de960aaa36992ac96120063a852487a25918a9))
+* users avatar bug mixing gravatar and user initial > tests coverage ([4db10fa](https://github.com/iblai/skillsai/commit/4db10fafa06edd46b25b0c11e3886a1fe9273e9c))
+
+### Refactors
+
+* call reusable workflow directly instead of repository_dispatch ([6bbf498](https://github.com/iblai/skillsai/commit/6bbf498d4dbe5b37bfac5fe5cfb3512e4f7862d7))
+
+### Chores
+
+* bump @iblai/iblai-js to 1.0.21 ([b41ffde](https://github.com/iblai/skillsai/commit/b41ffdeaff6343ecd7edacce53786cebc716254b))
+* bump to test tag 0.9.14-test.1 ([7dc0736](https://github.com/iblai/skillsai/commit/7dc0736e630314a7a5735294212a73adea3f17f9))
+* release 0.9.10 ([a2ea16a](https://github.com/iblai/skillsai/commit/a2ea16acc6f718d519b38f7f19c5b67fc78f0e32))
+* release 0.9.5 ([063bd80](https://github.com/iblai/skillsai/commit/063bd80aa28d76f9388c015072f5b2a547c0c998))
+* release 0.9.6 ([54c0955](https://github.com/iblai/skillsai/commit/54c0955a481253dd47add0a1d0c4e7b697cda157))
+* release 0.9.7 ([ea5c626](https://github.com/iblai/skillsai/commit/ea5c626638b389c8572344bc54f79642a9d59ac7))
+* release 0.9.9 ([592d759](https://github.com/iblai/skillsai/commit/592d75927243f25b402f4e7e5c9f0d891f7a9393))
+* release v0.9.11 ([4133cb1](https://github.com/iblai/skillsai/commit/4133cb105732c4616a369fa65ede01a707ab08ea))
+* release v0.9.11 ([b62dae4](https://github.com/iblai/skillsai/commit/b62dae4a3defe09980da5ba1e71c17b313a0207d))
+* release v0.9.12 ([d9b52bd](https://github.com/iblai/skillsai/commit/d9b52bded04719f9a92049ab822fe7ddb2a7ab65))
+* release v0.9.13 ([09ff104](https://github.com/iblai/skillsai/commit/09ff10468cd1d3d2391a5fdd434e68fcfc15ef8f))
+* release v0.9.14 ([147b197](https://github.com/iblai/skillsai/commit/147b1974a076d7e1dad8d8eb20a0b14d2db72bdf))
+* release v0.9.8 ([f2bec77](https://github.com/iblai/skillsai/commit/f2bec77299a2eb34059474724b3963722fa113dc))
+* rename ibl-web-ops references to iblai-web-ops ([d7bfab7](https://github.com/iblai/skillsai/commit/d7bfab7800311fcfc1b56e662580366c37483f4e))
+* update PR validation to use e2e/ test directory ([310836e](https://github.com/iblai/skillsai/commit/310836eb0b5936eaff1ba6d5b56dadad7c5d1aa8))
+
+## [0.10.6]
+
+- iblai-js bump version to 1.1.9
+
+## [0.10.5]
+
+- iblai-js bump version to 1.1.6
+
 ## [0.10.4]
 
 - fix: iframe loading twice 30s after initial course page load

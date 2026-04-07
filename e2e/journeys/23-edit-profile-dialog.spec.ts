@@ -10,7 +10,7 @@ test.describe('Journey 23: Edit Profile Dialog', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   async function openProfileDialog(page: import('@playwright/test').Page) {
@@ -45,27 +45,27 @@ test.describe('Journey 23: Edit Profile Dialog', () => {
     await basicTab.click();
 
     // Full Name field
-    const fullNameInput = profileDialog.getByLabel(/full name/i).or(
-      profileDialog.getByRole('textbox', { name: /full name/i })
-    );
+    const fullNameInput = profileDialog
+      .getByLabel(/full name/i)
+      .or(profileDialog.getByRole('textbox', { name: /full name/i }));
     await expect(fullNameInput).toBeVisible({ timeout: 10_000 });
 
     // Email field (may be disabled/readonly)
-    const emailInput = profileDialog.getByLabel(/email/i).or(
-      profileDialog.getByRole('textbox', { name: /email/i })
-    );
+    const emailInput = profileDialog
+      .getByLabel(/email/i)
+      .or(profileDialog.getByRole('textbox', { name: /email/i }));
     await expect(emailInput).toBeVisible({ timeout: 10_000 });
 
     // Title field
-    const titleInput = profileDialog.getByLabel(/title/i).or(
-      profileDialog.getByRole('textbox', { name: /title/i })
-    );
+    const titleInput = profileDialog
+      .getByLabel(/title/i)
+      .or(profileDialog.getByRole('textbox', { name: /title/i }));
     await expect(titleInput).toBeVisible({ timeout: 10_000 });
 
     // About / Bio field
-    const aboutInput = profileDialog.getByLabel(/about/i).or(
-      profileDialog.getByRole('textbox', { name: /about|bio/i })
-    );
+    const aboutInput = profileDialog
+      .getByLabel(/about/i)
+      .or(profileDialog.getByRole('textbox', { name: /about|bio/i }));
     await expect(aboutInput).toBeVisible({ timeout: 10_000 });
   });
 
@@ -112,16 +112,16 @@ test.describe('Journey 23: Edit Profile Dialog', () => {
     await addEducationBtn.click();
 
     // A sub-dialog or form section for adding education should appear
-    const educationForm = page.getByRole('dialog', { name: /education/i }).or(
-      profileDialog.getByLabel(/school|institution|university/i)
-    );
+    const educationForm = page
+      .getByRole('dialog', { name: /education/i })
+      .or(profileDialog.getByLabel(/school|institution|university/i));
     const isFormVisible = await educationForm.isVisible().catch(() => false);
 
     // If no separate dialog, check inline form fields appeared
     if (!isFormVisible) {
-      const schoolField = profileDialog.getByLabel(/school|institution/i).or(
-        profileDialog.getByRole('textbox', { name: /school|institution/i })
-      );
+      const schoolField = profileDialog
+        .getByLabel(/school|institution/i)
+        .or(profileDialog.getByRole('textbox', { name: /school|institution/i }));
       await expect(schoolField).toBeVisible({ timeout: 10_000 });
     }
   });
@@ -140,17 +140,17 @@ test.describe('Journey 23: Edit Profile Dialog', () => {
     await addEducationBtn.click();
 
     // Find the "I currently study here" checkbox
-    const currentlyStudyCheckbox = page.getByRole('checkbox', { name: /currently study/i }).or(
-      page.getByLabel(/currently study/i)
-    );
+    const currentlyStudyCheckbox = page
+      .getByRole('checkbox', { name: /currently study/i })
+      .or(page.getByLabel(/currently study/i));
 
     try {
       await expect(currentlyStudyCheckbox).toBeVisible({ timeout: 10_000 });
 
       // Find the end date field before checking
-      const endDateField = page.getByLabel(/end date/i).or(
-        page.locator('input[name*="end"]').last()
-      );
+      const endDateField = page
+        .getByLabel(/end date/i)
+        .or(page.locator('input[name*="end"]').last());
 
       // Click the checkbox
       const isChecked = await currentlyStudyCheckbox.isChecked();
@@ -182,12 +182,12 @@ test.describe('Journey 23: Edit Profile Dialog', () => {
     await addExperienceBtn.click();
 
     // A form section for adding experience should appear
-    const companyField = page.getByLabel(/company|organization/i).or(
-      page.getByRole('textbox', { name: /company|organization/i })
-    );
-    const titleField = page.getByLabel(/title|position|role/i).or(
-      page.getByRole('textbox', { name: /title|position|role/i })
-    );
+    const companyField = page
+      .getByLabel(/company|organization/i)
+      .or(page.getByRole('textbox', { name: /company|organization/i }));
+    const titleField = page
+      .getByLabel(/title|position|role/i)
+      .or(page.getByRole('textbox', { name: /title|position|role/i }));
 
     const hasCompany = await companyField.isVisible().catch(() => false);
     const hasTitle = await titleField.isVisible().catch(() => false);
@@ -209,17 +209,17 @@ test.describe('Journey 23: Edit Profile Dialog', () => {
     await addExperienceBtn.click();
 
     // Find the "I currently work here" checkbox
-    const currentlyWorkCheckbox = page.getByRole('checkbox', { name: /currently work/i }).or(
-      page.getByLabel(/currently work/i)
-    );
+    const currentlyWorkCheckbox = page
+      .getByRole('checkbox', { name: /currently work/i })
+      .or(page.getByLabel(/currently work/i));
 
     try {
       await expect(currentlyWorkCheckbox).toBeVisible({ timeout: 10_000 });
 
       // Find the end date field
-      const endDateField = page.getByLabel(/end date/i).or(
-        page.locator('input[name*="end"]').last()
-      );
+      const endDateField = page
+        .getByLabel(/end date/i)
+        .or(page.locator('input[name*="end"]').last());
 
       // Click the checkbox
       const isChecked = await currentlyWorkCheckbox.isChecked();

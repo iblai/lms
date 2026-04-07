@@ -13,7 +13,7 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
     waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page);
+  await waitForPageReady(page, 120000);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
@@ -28,7 +28,7 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
 
   await courseLink.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
-  await waitForPageReady(page);
+  await waitForPageReady(page, 120000);
 
   const accessCourseButton = page.getByRole('button', { name: 'Access Course' });
   const hasAccess = await accessCourseButton.isVisible({ timeout: 15000 }).catch(() => false);
@@ -37,7 +37,7 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
 
   await accessCourseButton.click();
   await page.waitForURL(/\/course-content\//, { timeout: 120000 });
-  await waitForPageReady(page);
+  await waitForPageReady(page, 120000);
 
   return true;
 }
@@ -144,8 +144,12 @@ test.describe('Journey 05: Course Content Tabs', () => {
       name: 'Grade summary',
     });
 
-    const hasYourProgress = await yourProgressHeading.isVisible({ timeout: 30000 }).catch(() => false);
-    const hasGradeSummary = await gradeSummaryHeading.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasYourProgress = await yourProgressHeading
+      .isVisible({ timeout: 30000 })
+      .catch(() => false);
+    const hasGradeSummary = await gradeSummaryHeading
+      .isVisible({ timeout: 10000 })
+      .catch(() => false);
 
     if (hasYourProgress) {
       logger.info('"Your progress" heading visible');
@@ -182,9 +186,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('"Important dates" heading visible on Dates tab');
   });
 
-  test('Checkpoint 5: Discussion tab with navigation links', async ({
-    page,
-  }) => {
+  test('Checkpoint 5: Discussion tab with navigation links', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -215,9 +217,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Discussion tab navigation links visible');
   });
 
-  test('Checkpoint 6: Discussion thread list or empty state', async ({
-    page,
-  }) => {
+  test('Checkpoint 6: Discussion thread list or empty state', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -478,9 +478,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Tab switching completed — URLs observed');
   });
 
-  test('Checkpoint 12: No error messages on course content tabs', async ({
-    page,
-  }) => {
+  test('Checkpoint 12: No error messages on course content tabs', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {

@@ -6,11 +6,8 @@ test.describe('Journey 11: Profile Courses', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 60_000 }
-    );
+    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('CP-1: courses page loads with enrolled courses or empty state', async ({ page }) => {
@@ -21,7 +18,8 @@ test.describe('Journey 11: Profile Courses', () => {
 
     // Wait for the page to settle — expect either course cards or an empty state
     const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const emptyState = page.getByText(/no courses/i)
+    const emptyState = page
+      .getByText(/no courses/i)
       .or(page.getByText(/not enrolled/i))
       .or(page.getByText(/empty/i));
 
@@ -46,12 +44,16 @@ test.describe('Journey 11: Profile Courses', () => {
     }
 
     // Verify the card has a heading or title text
-    const cardTitle = courseCard.getByRole('heading').first()
+    const cardTitle = courseCard
+      .getByRole('heading')
+      .first()
       .or(courseCard.locator('[class*="title"], [class*="name"]').first());
     await expect(cardTitle).toBeVisible({ timeout: 10_000 });
 
     // Verify progress indicator exists (progress bar, percentage, or text)
-    const progress = courseCard.locator('[class*="progress"], [role="progressbar"]').first()
+    const progress = courseCard
+      .locator('[class*="progress"], [role="progressbar"]')
+      .first()
       .or(courseCard.getByText(/%/));
     const hasProgress = await progress.isVisible({ timeout: 5_000 }).catch(() => false);
     // Progress may not be shown for all courses, so we just confirm card loaded
@@ -85,10 +87,8 @@ test.describe('Journey 11: Profile Courses', () => {
     // Should navigate to a course detail / about page
     await page.waitForURL(
       (url) =>
-        url.href.includes('/course') ||
-        url.href.includes('/about') ||
-        url.href.includes('/detail'),
-      { timeout: 30_000 }
+        url.href.includes('/course') || url.href.includes('/about') || url.href.includes('/detail'),
+      { timeout: 30_000 },
     );
     expect(page.url()).toMatch(/course|about|detail/);
   });
@@ -110,7 +110,8 @@ test.describe('Journey 11: Profile Courses', () => {
 
     // Look for pagination controls or a "load more" / "see more" button
     const loadMore = page.getByRole('button', { name: /load more|see more|show more|next/i });
-    const pagination = page.getByRole('navigation', { name: /pagination/i })
+    const pagination = page
+      .getByRole('navigation', { name: /pagination/i })
       .or(page.locator('[class*="pagination"]'));
 
     const hasLoadMore = await loadMore.isVisible({ timeout: 5_000 }).catch(() => false);
@@ -122,10 +123,14 @@ test.describe('Journey 11: Profile Courses', () => {
     }
 
     if (hasLoadMore) {
-      const beforeCount = await page.locator('[class*="course-card"], [data-testid*="course"]').count();
+      const beforeCount = await page
+        .locator('[class*="course-card"], [data-testid*="course"]')
+        .count();
       await loadMore.click();
       await page.waitForTimeout(2_000);
-      const afterCount = await page.locator('[class*="course-card"], [data-testid*="course"]').count();
+      const afterCount = await page
+        .locator('[class*="course-card"], [data-testid*="course"]')
+        .count();
       expect(afterCount).toBeGreaterThanOrEqual(beforeCount);
     }
 

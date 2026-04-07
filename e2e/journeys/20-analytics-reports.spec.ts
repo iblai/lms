@@ -43,11 +43,8 @@ test.describe('Journey 20: Analytics Reports', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 60_000 }
-    );
+    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Admin gate: check if AI Analytics link is visible
     const analyticsLink = page.getByRole('link', { name: /ai analytics|analytics/i });
@@ -135,7 +132,9 @@ test.describe('Journey 20: Analytics Reports', () => {
 
   // ── CP-13: Combined report data-testids (feature-gated) ──────────────────
 
-  test('CP-13: combined recommendation report cards have correct data-testids', async ({ page }) => {
+  test('CP-13: combined recommendation report cards have correct data-testids', async ({
+    page,
+  }) => {
     await shouldHaveCombinedReportDataTestIds(page);
   });
 
@@ -162,7 +161,10 @@ test.describe('Journey 20: Analytics Reports', () => {
 
     // Look for any report card with a download button
     const downloadButtons = page.getByRole('button', { name: 'Download report' });
-    const hasButtons = await downloadButtons.first().isVisible({ timeout: 15_000 }).catch(() => false);
+    const hasButtons = await downloadButtons
+      .first()
+      .isVisible({ timeout: 15_000 })
+      .catch(() => false);
 
     if (!hasButtons) {
       test.skip(true, 'No report download buttons available');
@@ -174,7 +176,10 @@ test.describe('Journey 20: Analytics Reports', () => {
 
     // Check if there's a download link that navigates to the report download page
     const reportDownloadLinks = page.locator('a[href*="report"], a[href*="download"]');
-    const hasDownloadLinks = await reportDownloadLinks.first().isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasDownloadLinks = await reportDownloadLinks
+      .first()
+      .isVisible({ timeout: 5_000 })
+      .catch(() => false);
 
     if (hasDownloadLinks) {
       const href = await reportDownloadLinks.first().getAttribute('href');

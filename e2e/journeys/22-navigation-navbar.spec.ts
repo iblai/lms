@@ -10,7 +10,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('CP-1: NavBar renders all expected elements', async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const homeLink = page.getByRole('link', { name: /home/i });
     await expect(homeLink).toBeVisible({ timeout: 30_000 });
@@ -130,7 +130,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Click the logo (typically the first link in the banner)
     const navbar = page.getByRole('banner');

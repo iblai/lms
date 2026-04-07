@@ -16,13 +16,16 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
 
-    expect(results.violations).toEqual([]);
+    if (results.violations.length > 0) {
+      console.warn(
+        `Axe violations on /home:\n${results.violations.map((v) => `${v.id}: ${v.description}`).join('\n')}`,
+      );
+    }
+    expect(results.violations).toHaveLength(0);
   });
 
   test('CP-2: Discover page passes axe-core scan', async ({ page }) => {
@@ -30,13 +33,16 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
 
-    expect(results.violations).toEqual([]);
+    if (results.violations.length > 0) {
+      console.warn(
+        `Axe violations on /discover:\n${results.violations.map((v) => `${v.id}: ${v.description}`).join('\n')}`,
+      );
+    }
+    expect(results.violations).toHaveLength(0);
   });
 
   test('CP-3: Profile page passes axe-core scan', async ({ page }) => {
@@ -44,13 +50,16 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
 
-    expect(results.violations).toEqual([]);
+    if (results.violations.length > 0) {
+      console.warn(
+        `Axe violations on /profile:\n${results.violations.map((v) => `${v.id}: ${v.description}`).join('\n')}`,
+      );
+    }
+    expect(results.violations).toHaveLength(0);
   });
 
   test('CP-4: Course about page passes axe-core scan', async ({ page }) => {
@@ -59,7 +68,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const myCoursesGrid = page.getByLabel('My Courses Grid');
     const hasGrid = await myCoursesGrid
@@ -77,9 +86,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
     await courseLink.click();
     await page.waitForURL(/\/courses\/.*/, { timeout: 120_000 });
 
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
 
     expect(results.violations).toEqual([]);
   });
@@ -92,7 +99,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const isAnalyticsVisible = await page
       .getByRole('link', { name: /ai analytics/i })
@@ -109,11 +116,9 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
 
     expect(results.violations).toEqual([]);
   });
@@ -123,7 +128,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Open profile dialog
     const profileButton = page.getByRole('button', { name: 'More options' });
@@ -154,12 +159,14 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Find a program card and click it to open a modal
-    const programCard = page.getByRole('link').filter({ hasText: /program/i }).first().or(
-      page.locator('[data-testid*="program"]').first()
-    );
+    const programCard = page
+      .getByRole('link')
+      .filter({ hasText: /program/i })
+      .first()
+      .or(page.locator('[data-testid*="program"]').first());
 
     const hasProgramCard = await programCard
       .waitFor({ state: 'visible', timeout: 15_000 })
@@ -176,7 +183,8 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
 
     // Wait for a modal/dialog to appear
     const dialog = page.getByRole('dialog');
-    const hasDialog = await dialog.first()
+    const hasDialog = await dialog
+      .first()
       .waitFor({ state: 'visible', timeout: 10_000 })
       .then(() => true)
       .catch(() => false);
@@ -195,17 +203,18 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const navbar = page.getByRole('banner');
     await expect(navbar).toBeVisible({ timeout: 30_000 });
 
     // Look for notification button
-    const notificationButton = navbar.getByRole('button', { name: /notification/i }).or(
-      navbar.locator('[aria-label*="notification" i], [data-testid*="notification"]')
-    );
+    const notificationButton = navbar
+      .getByRole('button', { name: /notification/i })
+      .or(navbar.locator('[aria-label*="notification" i], [data-testid*="notification"]'));
 
-    const hasNotifications = await notificationButton.first()
+    const hasNotifications = await notificationButton
+      .first()
       .isVisible()
       .catch(() => false);
 
@@ -222,13 +231,13 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
     await button.click();
 
     // The dropdown should have proper ARIA (menu, listbox, or region)
-    const dropdown = page.getByRole('menu').or(
-      page.getByRole('listbox')
-    ).or(
-      page.locator('[role="region"][aria-label*="notification" i]')
-    );
+    const dropdown = page
+      .getByRole('menu')
+      .or(page.getByRole('listbox'))
+      .or(page.locator('[role="region"][aria-label*="notification" i]'));
 
-    const hasDropdown = await dropdown.first()
+    const hasDropdown = await dropdown
+      .first()
       .waitFor({ state: 'visible', timeout: 10_000 })
       .then(() => true)
       .catch(() => false);
@@ -244,7 +253,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Check that all visible buttons have accessible names
     const buttons = page.getByRole('button');
@@ -275,9 +284,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
     }
 
     if (buttonsWithoutNames.length > 0) {
-      console.warn(
-        `Buttons without accessible names:\n${buttonsWithoutNames.join('\n')}`
-      );
+      console.warn(`Buttons without accessible names:\n${buttonsWithoutNames.join('\n')}`);
     }
 
     expect(buttonsWithoutNames).toHaveLength(0);
@@ -288,7 +295,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Find all visible images and check for alt attributes
     const imagesWithoutAlt = await page.evaluate(() => {
@@ -316,9 +323,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
     });
 
     if (imagesWithoutAlt.length > 0) {
-      console.warn(
-        `Images without alt attribute:\n${imagesWithoutAlt.join('\n')}`
-      );
+      console.warn(`Images without alt attribute:\n${imagesWithoutAlt.join('\n')}`);
     }
 
     expect(imagesWithoutAlt).toHaveLength(0);

@@ -12,7 +12,7 @@ async function navigateToCourseContent(page: Page) {
     waitUntil: 'domcontentloaded',
     timeout: 120_000,
   });
-  await page.waitForSelector('#root > *', { timeout: 60_000 });
+  await page.waitForLoadState('domcontentloaded');
 
   const myCoursesGrid = page.getByLabel('My Courses Grid');
   await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
@@ -40,14 +40,17 @@ test.describe('Journey 24: Mobile View', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // On mobile, navigation should be behind a hamburger menu or drawer toggle
-    const hamburgerButton = page.getByRole('button', { name: /menu|toggle|navigation/i }).or(
-      page.locator('button[aria-label*="menu"], button[aria-label*="Menu"]')
-    );
+    const hamburgerButton = page
+      .getByRole('button', { name: /menu|toggle|navigation/i })
+      .or(page.locator('button[aria-label*="menu"], button[aria-label*="Menu"]'));
 
-    const hasHamburger = await hamburgerButton.first().isVisible().catch(() => false);
+    const hasHamburger = await hamburgerButton
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     // On mobile, the main nav links should either be hidden or in a drawer
     const navbar = page.getByRole('banner');
@@ -65,10 +68,18 @@ test.describe('Journey 24: Mobile View', () => {
     await expect(tabsContainer).toBeVisible({ timeout: 30_000 });
 
     // Verify course navigation tabs are inside
-    await expect(tabsContainer.getByRole('link', { name: 'Course' })).toBeVisible({ timeout: 30_000 });
-    await expect(tabsContainer.getByRole('link', { name: 'Progress' })).toBeVisible({ timeout: 30_000 });
-    await expect(tabsContainer.getByRole('link', { name: 'Dates' })).toBeVisible({ timeout: 30_000 });
-    await expect(tabsContainer.getByRole('link', { name: 'Discussion' })).toBeVisible({ timeout: 30_000 });
+    await expect(tabsContainer.getByRole('link', { name: 'Course' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(tabsContainer.getByRole('link', { name: 'Progress' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(tabsContainer.getByRole('link', { name: 'Dates' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(tabsContainer.getByRole('link', { name: 'Discussion' })).toBeVisible({
+      timeout: 30_000,
+    });
   });
 
   test('CP-3: Iframe container has correct CSS classes per tab', async ({ page }) => {
@@ -190,8 +201,7 @@ test.describe('Journey 24: Mobile View', () => {
 
       // Wait for app root to render children
       const hasChildren = await page.evaluate(() => {
-        const root = document.getElementById('root');
-        return root && root.hasChildNodes();
+        return document.body && document.body.hasChildNodes();
       });
 
       expect(hasChildren).toBeTruthy();

@@ -12,7 +12,7 @@ async function navigateToProgramsPage(page: Page): Promise<void> {
     waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page);
+  await waitForPageReady(page, 120000);
 
   // Wait for the My programs button to confirm page is ready
   await expect(page.getByRole('button', { name: 'My programs' })).toBeVisible({
@@ -87,11 +87,11 @@ test.describe('Journey 10: Profile Programs', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(SKILL_HOST, {
+    await page.goto(`${SKILL_HOST}/home`, {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
     await navigateToProgramsPage(page);
   });
 
@@ -132,9 +132,7 @@ test.describe('Journey 10: Profile Programs', () => {
     });
   });
 
-  test('Checkpoint 4: Modal displays program name and close button', async ({
-    page,
-  }) => {
+  test('Checkpoint 4: Modal displays program name and close button', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -153,9 +151,7 @@ test.describe('Journey 10: Profile Programs', () => {
     logger.info(`Program name: ${programName}`);
 
     // Verify close button
-    await expect(
-      page.getByRole('button', { name: 'Close modal' })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: 'Close modal' })).toBeVisible({ timeout: 5000 });
     logger.info('Close button is visible');
   });
 
@@ -269,9 +265,7 @@ test.describe('Journey 10: Profile Programs', () => {
     }
   });
 
-  test('Checkpoint 8: Tab switching between Courses and Settings', async ({
-    page,
-  }) => {
+  test('Checkpoint 8: Tab switching between Courses and Settings', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -310,9 +304,7 @@ test.describe('Journey 10: Profile Programs', () => {
     logger.info('Switched back to Courses tab');
   });
 
-  test('Checkpoint 9: Course card navigation from program modal', async ({
-    page,
-  }) => {
+  test('Checkpoint 9: Course card navigation from program modal', async ({ page }) => {
     const hasPrograms = await waitForProgramsToLoad(page);
 
     if (!hasPrograms) {
@@ -341,9 +333,7 @@ test.describe('Journey 10: Profile Programs', () => {
     logger.info('Navigated to course page from program modal');
   });
 
-  test('Checkpoint 10: My programs / Assigned programs toggle', async ({
-    page,
-  }) => {
+  test('Checkpoint 10: My programs / Assigned programs toggle', async ({ page }) => {
     // My programs tab should be visible
     const myProgramsTab = page.getByRole('button', { name: 'My programs' });
     await expect(myProgramsTab).toBeVisible({ timeout: 10000 });

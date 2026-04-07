@@ -15,7 +15,7 @@ test.describe('Journey 28: Tenant Management & Invitations', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   /**
@@ -36,9 +36,7 @@ test.describe('Journey 28: Tenant Management & Invitations', () => {
     await tenantBtn.click();
 
     // Wait for the User Profile / Account dialog
-    const tenantDialog = page
-      .getByRole('dialog')
-      .filter({ hasText: 'organization' });
+    const tenantDialog = page.getByRole('dialog').filter({ hasText: 'organization' });
     await expect(tenantDialog).toBeVisible({ timeout: 15_000 });
 
     return tenantDialog;
@@ -47,9 +45,7 @@ test.describe('Journey 28: Tenant Management & Invitations', () => {
   /**
    * Helper: Navigate to Advanced tab within the account dialog.
    */
-  async function navigateToAdvancedTab(
-    tenantDialog: import('@playwright/test').Locator
-  ) {
+  async function navigateToAdvancedTab(tenantDialog: import('@playwright/test').Locator) {
     const advancedBtn = tenantDialog.getByRole('button', { name: 'Advanced' });
     await expect(advancedBtn).toBeVisible({ timeout: 5_000 });
     await advancedBtn.click();
@@ -103,9 +99,9 @@ test.describe('Journey 28: Tenant Management & Invitations', () => {
       await expect(inviteModal).toBeVisible({ timeout: 10_000 });
 
       // Fill email
-      const emailInput = inviteModal.locator('#email-invite').or(
-        inviteModal.getByRole('textbox', { name: /email/i })
-      );
+      const emailInput = inviteModal
+        .locator('#email-invite')
+        .or(inviteModal.getByRole('textbox', { name: /email/i }));
       await expect(emailInput).toBeVisible({ timeout: 10_000 });
 
       const uniqueEmail = `test+user+${Date.now()}@test.com`;

@@ -17,21 +17,18 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 test.describe('Journey 02: Onboarding – First-Time User', () => {
   test.setTimeout(200000);
 
-  test('Checkpoint 1: First-time user is directed to /start', async ({
-    page,
-  }) => {
+  test('Checkpoint 1: First-time user is directed to /start', async ({ page }) => {
     // Navigate to root — the app routes first-time users to /start
     await page.goto(SKILL_HOST, {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
     // Wait for either /start (first-time) or /home (returning)
-    await page.waitForURL(
-      (url) => url.href.includes('/start') || url.href.includes('/home'),
-      { timeout: 60000 }
-    );
+    await page.waitForURL((url) => url.href.includes('/start') || url.href.includes('/home'), {
+      timeout: 60000,
+    });
 
     const currentUrl = page.url();
 
@@ -45,14 +42,12 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
     logger.info('First-time user landed on /start');
   });
 
-  test('Checkpoint 2: Onboarding page displays welcome content', async ({
-    page,
-  }) => {
+  test('Checkpoint 2: Onboarding page displays welcome content', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/start`, {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
     // If the user is redirected away from /start, onboarding is not applicable
     const currentUrl = page.url();
@@ -83,7 +78,7 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
     if (!page.url().includes('/start')) {
       logger.info('Not on /start — skipping completion test');
@@ -120,28 +115,24 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
     }
 
     // After completing onboarding the user should be on /home
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 30000 }
-    );
+    await page.waitForURL((url) => url.href.includes('/home') || url.href.includes('/start'), {
+      timeout: 30000,
+    });
 
     logger.info(`Post-onboarding URL: ${page.url()}`);
   });
 
-  test('Checkpoint 4: Returning user bypasses onboarding', async ({
-    page,
-  }) => {
+  test('Checkpoint 4: Returning user bypasses onboarding', async ({ page }) => {
     // Navigate to root — a returning (already onboarded) user should land on /home
     await page.goto(SKILL_HOST, {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 60000 }
-    );
+    await page.waitForURL((url) => url.href.includes('/home') || url.href.includes('/start'), {
+      timeout: 60000,
+    });
 
     const currentUrl = page.url();
 
@@ -155,14 +146,12 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
     logger.info('Returning user correctly bypassed onboarding');
   });
 
-  test('Checkpoint 5: Onboarding page has proper heading and navigation', async ({
-    page,
-  }) => {
+  test('Checkpoint 5: Onboarding page has proper heading and navigation', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/start`, {
       waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page);
+    await waitForPageReady(page, 120000);
 
     if (!page.url().includes('/start')) {
       logger.info('Redirected away from /start — skipping heading/navigation check');

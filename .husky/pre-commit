@@ -1,1 +1,6 @@
+#!/bin/sh
+
+echo "Checking pinned dependency versions..."
+bash ./scripts/check-pinned-versions.sh
+
 pnpm dlx lint-staged --verbose

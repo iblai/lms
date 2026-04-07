@@ -11,7 +11,6 @@ test.describe('Journey 21: Search', () => {
       timeout: 120_000,
     });
     // Wait for the app to be ready
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
   });
 
   test('CP-1: Global search is accessible from NavBar', async ({ page }) => {
@@ -52,8 +51,12 @@ test.describe('Journey 21: Search', () => {
     await page.waitForTimeout(2000);
 
     // Results should appear — look for a results container or list items
-    const resultsList = page.getByRole('listbox').or(page.locator('[data-testid="search-results"]'));
-    const resultItems = page.getByRole('option').or(page.getByRole('link').filter({ hasText: /course/i }));
+    const resultsList = page
+      .getByRole('listbox')
+      .or(page.locator('[data-testid="search-results"]'));
+    const resultItems = page
+      .getByRole('option')
+      .or(page.getByRole('link').filter({ hasText: /course/i }));
 
     const hasResults = await resultsList.isVisible().catch(() => false);
     const hasItems = (await resultItems.count()) > 0;
@@ -82,7 +85,9 @@ test.describe('Journey 21: Search', () => {
     await page.waitForTimeout(2000);
 
     // Verify at least one result contains the search term
-    const results = page.locator('[data-testid="search-results"] a, [role="option"], [role="listbox"] a');
+    const results = page.locator(
+      '[data-testid="search-results"] a, [role="option"], [role="listbox"] a',
+    );
     const count = await results.count();
 
     if (count > 0) {
@@ -141,7 +146,6 @@ test.describe('Journey 21: Search', () => {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForSelector('#root > *', { timeout: 60_000 });
 
     // Look for a search input on the discover page
     const searchInput = page.getByRole('textbox', { name: /search/i }).first();

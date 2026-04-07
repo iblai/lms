@@ -6,11 +6,8 @@ test.describe('Journey 14: Course Discovery', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForURL(
-      (url) => url.href.includes('/home') || url.href.includes('/start'),
-      { timeout: 60_000 }
-    );
+    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('CP-1: discover page loads with catalog and search', async ({ page }) => {
@@ -20,10 +17,15 @@ test.describe('Journey 14: Course Discovery', () => {
     });
 
     // Catalog content or search should be visible
-    const searchInput = page.getByRole('searchbox')
+    const searchInput = page
+      .getByRole('searchbox')
       .or(page.getByPlaceholder(/search/i))
       .or(page.locator('input[type="search"]'));
-    const catalog = page.locator('[class*="catalog"], [class*="course-card"], [data-testid*="course"], [class*="card"]').first();
+    const catalog = page
+      .locator(
+        '[class*="catalog"], [class*="course-card"], [data-testid*="course"], [class*="card"]',
+      )
+      .first();
 
     const hasSearch = await searchInput.isVisible({ timeout: 30_000 }).catch(() => false);
     const hasCatalog = await catalog.isVisible({ timeout: 10_000 }).catch(() => false);
@@ -37,7 +39,8 @@ test.describe('Journey 14: Course Discovery', () => {
       timeout: 60_000,
     });
 
-    const searchInput = page.getByRole('searchbox')
+    const searchInput = page
+      .getByRole('searchbox')
       .or(page.getByPlaceholder(/search/i))
       .or(page.locator('input[type="search"]'));
     const hasSearch = await searchInput.isVisible({ timeout: 30_000 }).catch(() => false);
@@ -52,7 +55,9 @@ test.describe('Journey 14: Course Discovery', () => {
     await page.waitForTimeout(2_000);
 
     // After search, results should update — either showing matches or "no results"
-    const results = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]').first();
+    const results = page
+      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
+      .first();
     const noResults = page.getByText(/no results|no courses|nothing found/i);
 
     const hasResults = await results.isVisible({ timeout: 10_000 }).catch(() => false);
@@ -68,9 +73,9 @@ test.describe('Journey 14: Course Discovery', () => {
     });
 
     // Look for filter controls — dropdowns, checkboxes, sidebar filter, or filter buttons
-    const filterControls = page.locator(
-      '[class*="filter"], [data-testid*="filter"], [class*="facet"], [role="combobox"]'
-    ).first();
+    const filterControls = page
+      .locator('[class*="filter"], [data-testid*="filter"], [class*="facet"], [role="combobox"]')
+      .first();
     const filterButton = page.getByRole('button', { name: /filter/i });
 
     const hasFilters = await filterControls.isVisible({ timeout: 15_000 }).catch(() => false);
@@ -87,8 +92,13 @@ test.describe('Journey 14: Course Discovery', () => {
     });
 
     // Wait for catalog to load
-    const courseCards = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]');
-    const hasCards = await courseCards.first().isVisible({ timeout: 30_000 }).catch(() => false);
+    const courseCards = page.locator(
+      '[class*="course-card"], [data-testid*="course"], [class*="card"]',
+    );
+    const hasCards = await courseCards
+      .first()
+      .isVisible({ timeout: 30_000 })
+      .catch(() => false);
 
     if (!hasCards) {
       test.skip(true, 'No course cards in catalog — skipping filter test');
@@ -98,9 +108,11 @@ test.describe('Journey 14: Course Discovery', () => {
     const beforeCount = await courseCards.count();
 
     // Try to click the first available filter option
-    const filterOption = page.locator(
-      '[class*="filter"] input[type="checkbox"], [data-testid*="filter"] button, [class*="facet"] button'
-    ).first();
+    const filterOption = page
+      .locator(
+        '[class*="filter"] input[type="checkbox"], [data-testid*="filter"] button, [class*="facet"] button',
+      )
+      .first();
     const hasFilterOption = await filterOption.isVisible({ timeout: 10_000 }).catch(() => false);
 
     if (!hasFilterOption) {
@@ -127,7 +139,8 @@ test.describe('Journey 14: Course Discovery', () => {
       timeout: 60_000,
     });
 
-    const searchInput = page.getByRole('searchbox')
+    const searchInput = page
+      .getByRole('searchbox')
       .or(page.getByPlaceholder(/search/i))
       .or(page.locator('input[type="search"]'));
     const hasSearch = await searchInput.isVisible({ timeout: 30_000 }).catch(() => false);
@@ -148,10 +161,15 @@ test.describe('Journey 14: Course Discovery', () => {
     await page.waitForTimeout(2_000);
 
     // Catalog should be restored
-    const courseCards = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]');
+    const courseCards = page.locator(
+      '[class*="course-card"], [data-testid*="course"], [class*="card"]',
+    );
     const emptyState = page.getByText(/no results|no courses/i);
 
-    const hasCards = await courseCards.first().isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasCards = await courseCards
+      .first()
+      .isVisible({ timeout: 10_000 })
+      .catch(() => false);
     const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
 
     // After clearing, either cards return or the catalog was always empty
@@ -164,7 +182,9 @@ test.describe('Journey 14: Course Discovery', () => {
       timeout: 60_000,
     });
 
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]').first();
+    const courseCard = page
+      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
+      .first();
     const hasCards = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
 
     if (!hasCards) {
@@ -183,10 +203,8 @@ test.describe('Journey 14: Course Discovery', () => {
 
     await page.waitForURL(
       (url) =>
-        url.href.includes('/course') ||
-        url.href.includes('/about') ||
-        url.href.includes('/detail'),
-      { timeout: 30_000 }
+        url.href.includes('/course') || url.href.includes('/about') || url.href.includes('/detail'),
+      { timeout: 30_000 },
     );
     expect(page.url()).toMatch(/course|about|detail/);
   });
@@ -201,7 +219,8 @@ test.describe('Journey 14: Course Discovery', () => {
     });
 
     // On mobile, filters are typically behind a drawer/button
-    const filterToggle = page.getByRole('button', { name: /filter/i })
+    const filterToggle = page
+      .getByRole('button', { name: /filter/i })
       .or(page.locator('[class*="filter-toggle"], [data-testid*="filter-toggle"]'));
     const hasToggle = await filterToggle.isVisible({ timeout: 15_000 }).catch(() => false);
 
@@ -216,7 +235,8 @@ test.describe('Journey 14: Course Discovery', () => {
     await filterToggle.click();
 
     // Verify the filter drawer/panel opens
-    const filterDrawer = page.getByRole('dialog')
+    const filterDrawer = page
+      .getByRole('dialog')
       .or(page.locator('[class*="drawer"], [class*="sheet"], [class*="filter-panel"]'));
     await expect(filterDrawer).toBeVisible({ timeout: 10_000 });
   });
@@ -227,8 +247,13 @@ test.describe('Journey 14: Course Discovery', () => {
       timeout: 60_000,
     });
 
-    const courseCards = page.locator('[class*="course-card"], [data-testid*="course"], [class*="card"]');
-    const hasCards = await courseCards.first().isVisible({ timeout: 30_000 }).catch(() => false);
+    const courseCards = page.locator(
+      '[class*="course-card"], [data-testid*="course"], [class*="card"]',
+    );
+    const hasCards = await courseCards
+      .first()
+      .isVisible({ timeout: 30_000 })
+      .catch(() => false);
 
     if (!hasCards) {
       test.skip(true, 'No courses in catalog — skipping pagination test');
@@ -236,7 +261,8 @@ test.describe('Journey 14: Course Discovery', () => {
     }
 
     const loadMore = page.getByRole('button', { name: /load more|see more|show more|next/i });
-    const pagination = page.getByRole('navigation', { name: /pagination/i })
+    const pagination = page
+      .getByRole('navigation', { name: /pagination/i })
       .or(page.locator('[class*="pagination"]'));
 
     const hasLoadMore = await loadMore.isVisible({ timeout: 5_000 }).catch(() => false);
