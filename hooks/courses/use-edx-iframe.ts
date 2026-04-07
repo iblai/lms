@@ -162,6 +162,9 @@ export const useEdxIframe = () => {
         case 'bookmarks':
           url = `${config.urls.legacyLmsUrl()}/courses/${course_id}/bookmarks/`;
           break;
+        case 'gradebook':
+          url = `${config.urls.mfe()}/gradebook/${course_id}/`;
+          break;
         case 'instructor':
           baseLMSIframeURL = `${config.urls.lms()}/courses/${course_id}/instructor`;
         default:
