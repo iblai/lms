@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.10.12](https://github.com/iblai/skillsai/compare/skills-v0.10.11...skills-v0.10.12) (2026-04-07)
+
+### Bug Fixes
+
+* exclude .opencode directory from vitest test discovery ([c7507d9](https://github.com/iblai/skillsai/commit/c7507d9ffe55a8f59c399b647b88c218f1377b4b))
+* exclude .opencode directory from vitest test discovery ([8145e7e](https://github.com/iblai/skillsai/commit/8145e7e296ad24b496fdc684c7a12160297f7091))
+
+### Chores
+
+* add opencode code review hook ([c2b0472](https://github.com/iblai/skillsai/commit/c2b0472f5fdcc366a3f93f44a8b4de1d549719d5))
+* add opencode code-review command for pre-push hook ([6e6b42e](https://github.com/iblai/skillsai/commit/6e6b42eda00c19c5d9f43ce5cc06ff20980876fe))
+* update pnpm-lock.yaml ([62b6922](https://github.com/iblai/skillsai/commit/62b69227383c3b7cc8fdf839e49d40022f600f35))
+
+### CI
+
+* **e2e:** add journey coverage enforcement, lint-staged, commitlint, and opencode config ([7170fba](https://github.com/iblai/skillsai/commit/7170fba3e0f80234d96395ff9f83317d21553fd0))
+
 ## [0.10.11](https://github.com/iblai/skillsai/compare/skills-v0.10.10...skills-v0.10.11) (2026-04-06)
 
 ### Bug Fixes
