@@ -910,3 +910,485 @@ input[type='checkbox']:checked {
 body .fa {
   font-family: 'FontAwesome' !important;
 }
+
+/* ============================================================
+   SkillsAI Gradebook Theme — Amber Design System
+   Scoped: only applies when .page-gradebook exists on the page
+   ============================================================ */
+
+@scope (body:has(.page-gradebook)) {
+  /* ---- 1. Hide top header bar ---- */
+  .site-header-desktop {
+    display: none !important;
+  }
+
+  /* ---- 2. Hide Back to Dashboard + Gradebook title + course ID ---- */
+  .gradebook-header {
+    display: none !important;
+  }
+
+  /* ---- 3. Hide edX footer ---- */
+  .footer {
+    display: none !important;
+  }
+
+  /* ---- 4. Body & page base ---- */
+  :scope {
+    font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif !important;
+    background-color: #ffffff !important;
+    color: #374151 !important;
+    font-size: 14px !important;
+  }
+
+  .page-gradebook {
+    background-color: #ffffff;
+    min-height: 100vh;
+  }
+  .sidebar-contents {
+    background-color: #ffffff;
+  }
+  .gradebook-content {
+    padding: 24px !important;
+  }
+
+  /* ---- 5. Step headings ---- */
+  .step-message-1,
+  h4.step-message-1,
+  .gradebook-content h4 {
+    color: #92400e !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* ---- 6. Primary Button ---- */
+  .btn-primary {
+    background-color: #f59e0b !important;
+    border-color: #f59e0b !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease !important;
+    box-shadow: none !important;
+  }
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background-color: #b45309 !important;
+    border-color: #b45309 !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(180, 83, 9, 0.3) !important;
+  }
+  .btn-primary:active,
+  .btn-primary:not(:disabled):not(.disabled):active {
+    background-color: #92400e !important;
+    border-color: #92400e !important;
+  }
+  .btn-primary:focus::before {
+    border-color: #f59e0b !important;
+  }
+
+  /* ---- 7. Secondary / Outline Buttons ---- */
+  .btn-outline-secondary {
+    border-color: #d1d5db !important;
+    color: #374151 !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    background-color: #ffffff !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-outline-secondary:hover {
+    border-color: #f59e0b !important;
+    color: #d97706 !important;
+    background-color: #fffbeb !important;
+  }
+  .btn-outline-primary {
+    border-color: #d97706 !important;
+    color: #d97706 !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    background-color: transparent !important;
+  }
+  .btn-outline-primary:hover {
+    background-color: #d97706 !important;
+    border-color: #d97706 !important;
+    color: #ffffff !important;
+  }
+
+  /* ---- 8. Icon Buttons ---- */
+  .btn-icon-primary {
+    color: #d97706 !important;
+  }
+  .btn-icon-primary:hover {
+    background-color: #fef3c7 !important;
+    border-radius: 50% !important;
+  }
+
+  /* ---- 9. Filter Sidebar ---- */
+  .sidebar.open {
+    background-color: #fffbeb !important;
+    border-right: 2px solid #fde68a !important;
+  }
+  .filter-sidebar-header {
+    background-color: #fef3c7 !important;
+    border-bottom: 1px solid #fde68a !important;
+    padding: 10px 12px !important;
+  }
+  .filter-sidebar-header .fa-filter {
+    color: #d97706 !important;
+  }
+
+  /* ---- 10. Collapsible Cards ---- */
+  .collapsible-card {
+    border: 1px solid #fde68a !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(245, 158, 11, 0.08) !important;
+    overflow: hidden !important;
+  }
+  .collapsible-trigger {
+    background-color: #fffbeb !important;
+    border-bottom: 1px solid #fde68a !important;
+    color: #92400e !important;
+    font-weight: 600 !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+  }
+  .collapsible-trigger:hover {
+    background-color: #fef3c7 !important;
+  }
+  .collapsible-icon {
+    color: #d97706 !important;
+  }
+  .collapsible-body {
+    padding: 12px 16px !important;
+    background-color: #ffffff !important;
+  }
+
+  /* ---- 11. Form Controls & Labels ---- */
+  .form-control,
+  .pgn__form-control-decorator-group .form-control {
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    color: #374151 !important;
+    font-size: 14px !important;
+    transition: border-color 0.2s ease !important;
+  }
+  .form-control:focus {
+    border-color: #f59e0b !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+  }
+  .pgn__form-label {
+    color: #6b7280 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+  }
+  .grade-filter-action .btn-outline-secondary {
+    border-color: #f59e0b !important;
+    color: #d97706 !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 6px 10px !important;
+  }
+  .grade-filter-action .btn-outline-secondary:hover {
+    background-color: #f59e0b !important;
+    color: #ffffff !important;
+  }
+  .grade-filter-action {
+    text-align: right !important;
+  }
+  .input-percent-label {
+    color: #9ca3af !important;
+    font-size: 13px !important;
+  }
+
+  /* ---- 12. Checkbox ---- */
+  .pgn__form-checkbox-input:checked {
+    background-color: #f59e0b !important;
+    border-color: #f59e0b !important;
+  }
+  .pgn__form-checkbox-input:focus {
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+  }
+  .pgn__form-checkbox {
+    color: #374151 !important;
+    font-size: 14px !important;
+  }
+
+  /* ---- 13. Search Bar ---- */
+  .d-flex.align-items-center.w-100 {
+    border: none !important;
+    border-radius: unset;
+    overflow: hidden !important;
+  }
+  .pgn__searchfield {
+    border: unset;
+  }
+  .d-flex.align-items-center.w-100 input {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    flex: 1 !important;
+    height: 33px;
+  }
+  .d-flex.align-items-center.w-100 input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  form[role='search'] .btn,
+  form[role='search'] button[type='submit'] {
+    background-color: #f59e0b !important;
+    border-color: #f59e0b !important;
+    color: #ffffff !important;
+    border-radius: 0 6px 6px 0 !important;
+    padding: 7px 12px !important;
+  }
+  .pgn__searchfield form[role='search'] button[type='submit'] {
+    margin-left: -10px !important;
+  }
+  form[role='search'] .btn:hover,
+  form[role='search'] button[type='submit']:hover {
+    background-color: #d97706 !important;
+    border-color: #d97706 !important;
+  }
+  .search-help-text {
+    color: #9ca3af !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+  }
+
+  /* ---- 14. Score View / Showing text ---- */
+  .pgn__data-table-status,
+  .pgn__data-table-status-left {
+    color: #6b7280 !important;
+    font-size: 13px !important;
+  }
+
+  /* ---- 15. Data Table ---- */
+  .pgn__data-table-layout-wrapper {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+  }
+  .pgn__data-table-wrapper {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07) !important;
+  }
+  .pgn__data-table-container {
+    border: none !important;
+  }
+  .pgn__data-table {
+    font-size: 14px !important;
+  }
+
+  .pgn__data-table [role='columnheader'],
+  .pgn__data-table th {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px !important;
+    border-bottom: 2px solid #fde68a !important;
+    padding: 10px 16px !important;
+  }
+  .pgn__data-table-row {
+    border-bottom: 1px solid #f3f4f6 !important;
+    transition: background-color 0.15s ease !important;
+  }
+  tr.pgn__data-table-row:hover,
+  div.pgn__data-table-row:hover {
+    background-color: #fffbeb !important;
+    cursor: pointer !important;
+  }
+  .pgn__data-table.is-striped .pgn__data-table-row:nth-child(even) {
+    background-color: #fafaf9 !important;
+  }
+  .pgn__data-table.is-striped .pgn__data-table-row:nth-child(even):hover {
+    background-color: #fffbeb !important;
+  }
+  .pgn__data-table-cell-wrap,
+  .pgn__data-table [role='cell'],
+  .pgn__data-table td {
+    padding: 10px 16px !important;
+    color: #374151 !important;
+    font-size: 14px !important;
+  }
+  .pgn__data-table [role='cell'] a,
+  .pgn__data-table td a {
+    color: #d97706 !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+  }
+  .pgn__data-table [role='cell'] a:hover,
+  .pgn__data-table td a:hover {
+    color: #b45309 !important;
+    text-decoration: underline !important;
+  }
+  .student-key,
+  .text-muted {
+    color: #9ca3af !important;
+    font-size: 12px !important;
+  }
+  .fa-info-circle {
+    color: #f59e0b !important;
+  }
+
+  /* ---- 16. Pagination footer ---- */
+  .pgn__data-table-footer {
+    border-top: 1px solid #fde68a !important;
+    background-color: #fffbeb !important;
+    padding: 8px 16px !important;
+  }
+  .pgn__data-table-footer .btn,
+  .pgn__data-table-footer button {
+    border: 1px solid #fde68a !important;
+    background-color: #ffffff !important;
+    color: #d97706 !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    padding: 5px 12px !important;
+    font-weight: 500 !important;
+  }
+  .pgn__data-table-footer .btn:hover,
+  .pgn__data-table-footer button:hover {
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+  }
+  .pgn__data-table-footer .btn:disabled,
+  .pgn__data-table-footer button:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+  }
+
+  /* ---- 17. Edit Grades Modal ---- */
+  .modal-content {
+    border-radius: 10px !important;
+    border: 1px solid #fde68a !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden !important;
+  }
+  .modal-header {
+    background-color: #fef3c7 !important;
+    border-bottom: 2px solid #fde68a !important;
+    padding: 16px 20px !important;
+  }
+  .modal-title {
+    color: #92400e !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+  }
+  .modal-header .btn-icon,
+  .modal-header button[type='button'] {
+    color: #d97706 !important;
+    border-radius: 50% !important;
+  }
+  .modal-header .btn-icon:hover,
+  .modal-header button:hover {
+    background-color: #fde68a !important;
+  }
+  .modal-body {
+    padding: 20px !important;
+    background-color: #ffffff !important;
+  }
+  .grade-history-header,
+  .grade-history-assignment,
+  .grade-history-student,
+  .grade-history-original-grade,
+  .grade-history-current-grade {
+    font-size: 13px !important;
+    color: #6b7280 !important;
+    margin-bottom: 6px !important;
+  }
+  .modal-body .pgn__data-table th,
+  .modal-body table thead th {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    border-bottom: 2px solid #fde68a !important;
+    padding: 8px 12px !important;
+  }
+  .modal-body table tbody tr:hover {
+    background-color: #fffbeb !important;
+  }
+  .modal-body input[type='text'],
+  .modal-body input[type='number'] {
+    border: 1px solid #d1d5db !important;
+    border-radius: 5px !important;
+    padding: 5px 8px !important;
+    font-size: 13px !important;
+  }
+  .modal-body input[type='text']:focus,
+  .modal-body input[type='number']:focus {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15) !important;
+    outline: none !important;
+  }
+  .pgn__smart-status {
+    color: #9ca3af !important;
+    font-size: 12px !important;
+    padding: 6px 0 !important;
+  }
+  .modal-footer {
+    border-top: 1px solid #fde68a !important;
+    background-color: #fffbeb !important;
+    padding: 12px 20px !important;
+  }
+  .modal-footer .btn-primary {
+    background-color: #d97706 !important;
+    border-color: #d97706 !important;
+  }
+  .modal-footer .btn-link,
+  .modal-footer .btn-outline-secondary {
+    color: #d97706 !important;
+    border-color: #fde68a !important;
+  }
+  .modal-footer .btn-link:hover,
+  .modal-footer .btn-outline-secondary:hover {
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+  }
+
+  .site-header-mobile {
+    display: none !important;
+  }
+  .gradebook-container {
+    height: auto !important;
+  }
+  .sidebar-container.page-gradebook p:last-child {
+    display: none;
+  }
+  #edit-filters-btn span {
+    padding-right: 10px;
+  }
+  .btn.btn-outline-primary {
+    line-height: 26px;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 2px 10px !important;
+  }
+  .gradebook-content h4.step-message-1 {
+    margin-top: unset;
+  }
+  .badge-info {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+}
+@media (max-width: 768px) {
+  .gradebook-content > div:nth-of-type(2) {
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 10px;
+  }
+}
