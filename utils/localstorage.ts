@@ -147,6 +147,8 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
     // Restore the redirect path after setting tenant
     localStorage.setItem('redirect-to', currentPath);
   }
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // Navigate immediately — no delay needed since localStorage ops are synchronous.
+  // A delay here allows the AuthProvider cookie sync interval to detect the cleared
+  // tokens and race to /login, cancelling the intended /login/complete navigation.
   window.location.href = `${url}?${param}`;
 };
