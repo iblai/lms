@@ -4,6 +4,13 @@ import { getLocalStorageItem } from './localstorage';
 import { QUERY_PARAMS } from '@/constants/global';
 import { MarkdownMenuItem } from '@/types/utils';
 
+// Set to true by handleTenantSwitch to suppress concurrent auth redirects
+// during the window between localStorage.clear() and page navigation.
+let _isTenantSwitching = false;
+export const setTenantSwitching = (value: boolean) => {
+  _isTenantSwitching = value;
+};
+
 /**
  * Checks if a given string is valid JSON
  * @param {string} text - The string to check for JSON validity
@@ -191,6 +198,8 @@ export async function redirectToAuthSpa(
   logout?: boolean,
   saveRedirect = true,
 ) {
+  // Suppress auth redirects while a tenant switch navigation is already in flight
+  if (_isTenantSwitching) return;
   localStorage.clear();
 
   if (logout) {
@@ -227,7 +236,6 @@ export async function redirectToAuthSpa(
     authRedirectUrl += '&logout=1';
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 100));
   window.location.href = authRedirectUrl;
 }
 

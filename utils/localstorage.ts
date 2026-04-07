@@ -6,6 +6,7 @@ import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
+import { setTenantSwitching } from './helpers';
 
 export class LocalStorageService implements StorageService {
   private static instance: LocalStorageService;
@@ -131,6 +132,9 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
   // Clear current tenant cookie before switching
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
   clearCurrentTenantCookie();
+
+  // Suppress concurrent auth redirects for the duration of this navigation
+  setTenantSwitching(true);
 
   // Preserve the current path before clearing localStorage
   const currentPath = `${window.location.pathname}${window.location.search}`;
