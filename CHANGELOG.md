@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.14](https://github.com/iblai/skillsai/compare/skills-v0.10.13...skills-v0.10.14) (2026-04-07)
+
+### Bug Fixes
+
+* remove 100ms delay in handleTenantSwitch to prevent double navigation ([6aa4490](https://github.com/iblai/skillsai/commit/6aa4490dfd9b030ee8de85e8d0429587a47d9330))
+
 ## [0.10.13](https://github.com/iblai/skillsai/compare/skills-v0.10.12...skills-v0.10.13) (2026-04-07)
 
 ### Bug Fixes
