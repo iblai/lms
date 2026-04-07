@@ -89,7 +89,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <TenantProvider
         skip={isSsoLoginRoute || isVersionRoute}
         currentTenant={getTenant() || ''}
-        requestedTenant={getTenant() || ''}
+        requestedTenant=""
         saveCurrentTenant={saveCurrentTenant}
         saveUserTenants={saveUserTenants}
         handleTenantSwitch={handleTenantSwitch}
