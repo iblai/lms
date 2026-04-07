@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.16](https://github.com/iblai/skillsai/compare/skills-v0.10.15...skills-v0.10.16) (2026-04-07)
+
+### Bug Fixes
+
+* reset tenant switching flag after 2s in case navigation fails ([8b221fd](https://github.com/iblai/skillsai/commit/8b221fdd501d8c612425cf96cc35ff7b60a83fac))
+
 ## [0.10.15](https://github.com/iblai/skillsai/compare/skills-v0.10.14...skills-v0.10.15) (2026-04-07)
 
 ### Bug Fixes
