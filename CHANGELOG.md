@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.15](https://github.com/iblai/skillsai/compare/skills-v0.10.14...skills-v0.10.15) (2026-04-07)
+
+### Bug Fixes
+
+* suppress auth redirects during tenant switch navigation ([081eb2c](https://github.com/iblai/skillsai/commit/081eb2cf06debe395ec840a387c871e1f4b5df48))
+
 ## [0.10.14](https://github.com/iblai/skillsai/compare/skills-v0.10.13...skills-v0.10.14) (2026-04-07)
 
 ### Bug Fixes
