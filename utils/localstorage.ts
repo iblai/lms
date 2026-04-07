@@ -155,4 +155,8 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
   // A delay here allows the AuthProvider cookie sync interval to detect the cleared
   // tokens and race to /login, cancelling the intended /login/complete navigation.
   window.location.href = `${url}?${param}`;
+
+  // Safety reset: if navigation fails (e.g. blocked by browser), restore the flag
+  // after 2s so auth redirects are not permanently suppressed for this session.
+  setTimeout(() => setTenantSwitching(false), 2000);
 };
