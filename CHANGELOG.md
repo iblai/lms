@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.13](https://github.com/iblai/skillsai/compare/skills-v0.10.12...skills-v0.10.13) (2026-04-07)
+
+### Bug Fixes
+
+* set requestedTenant to empty string in TenantProvider ([80f7487](https://github.com/iblai/skillsai/commit/80f748745bcc64c2d9e6266c2601449494d9d805))
+
 ## [0.10.12](https://github.com/iblai/skillsai/compare/skills-v0.10.11...skills-v0.10.12) (2026-04-07)
 
 ### Bug Fixes
