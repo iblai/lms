@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.19](https://github.com/iblai/skillsai/compare/skills-v0.10.18...skills-v0.10.19) (2026-04-08)
+
+### Chores
+
+* add coverage bot, CLAUDE.md, CODEOWNERS, and Claude skills ([2ea73f6](https://github.com/iblai/skillsai/commit/2ea73f63fd334389c61ebf1bc85dc96cc8ec8718))
+
 ## [0.10.18](https://github.com/iblai/skillsai/compare/skills-v0.10.17...skills-v0.10.18) (2026-04-08)
 
 ### Bug Fixes
