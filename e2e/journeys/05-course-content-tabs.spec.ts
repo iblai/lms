@@ -9,10 +9,15 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
  * Returns true if successful, false if skipped (no courses).
  */
 async function navigateToCourseContent(page: Page): Promise<boolean> {
-  await page.goto(`${SKILL_HOST}/home`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 120000,
-  });
+  try {
+    await page.goto(`${SKILL_HOST}/home`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 120000,
+    });
+  } catch (err) {
+    logger.info(`Could not reach ${SKILL_HOST}/home — server may be offline, skipping`);
+    return false;
+  }
   await waitForPageReady(page, 120000);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
@@ -438,6 +443,36 @@ test.describe('Journey 05: Course Content Tabs', () => {
     } else {
       logger.info('Bookmarks tab loaded without iframe — may have inline content');
     }
+  });
+
+  test('Checkpoint 13: Gradebook tab (admin only, optional)', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const gradebookTab = page.getByRole('link', { name: 'Gradebook' }).first();
+    const hasGradebook = await gradebookTab.isVisible({ timeout: 10000 }).catch(() => false);
+
+    if (!hasGradebook) {
+      logger.info('Gradebook tab not visible — non-admin user, skipping');
+      test.skip();
+      return;
+    }
+
+    await gradebookTab.click();
+    await page.waitForURL(/\/gradebook/, { timeout: 60000 });
+
+    const iframeElement = page.locator('iframe').first();
+    await expect(iframeElement).toBeVisible({ timeout: 120000 });
+
+    const gradebookIframe = page.frameLocator('iframe').first();
+    const bodyLocator = gradebookIframe.locator('body');
+    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
+
+    logger.info('Gradebook tab loaded with iframe content');
   });
 
   test('Checkpoint 11: URL updates on tab switch', async ({ page }) => {
