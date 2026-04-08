@@ -1,5 +1,69 @@
 # Changelog
 
+## [0.10.18](https://github.com/iblai/skillsai/compare/skills-v0.10.17...skills-v0.10.18) (2026-04-08)
+
+### Bug Fixes
+
+* set _suppressAuthRedirect synchronously before first await ([42377bb](https://github.com/iblai/skillsai/commit/42377bbea898cd1e66f31293a521fa9b048d65aa))
+
+## [0.10.17](https://github.com/iblai/skillsai/compare/skills-v0.10.16...skills-v0.10.17) (2026-04-07)
+
+### Bug Fixes
+
+* suppress auth redirects during tenant switch and logout navigations ([2459400](https://github.com/iblai/skillsai/commit/2459400525c07e2760969e6eb2c55c35467d32bc))
+
+## [0.10.16](https://github.com/iblai/skillsai/compare/skills-v0.10.15...skills-v0.10.16) (2026-04-07)
+
+### Bug Fixes
+
+* reset tenant switching flag after 2s in case navigation fails ([8b221fd](https://github.com/iblai/skillsai/commit/8b221fdd501d8c612425cf96cc35ff7b60a83fac))
+
+## [0.10.15](https://github.com/iblai/skillsai/compare/skills-v0.10.14...skills-v0.10.15) (2026-04-07)
+
+### Bug Fixes
+
+* suppress auth redirects during tenant switch navigation ([081eb2c](https://github.com/iblai/skillsai/commit/081eb2cf06debe395ec840a387c871e1f4b5df48))
+
+## [0.10.14](https://github.com/iblai/skillsai/compare/skills-v0.10.13...skills-v0.10.14) (2026-04-07)
+
+### Bug Fixes
+
+* remove 100ms delay in handleTenantSwitch to prevent double navigation ([6aa4490](https://github.com/iblai/skillsai/commit/6aa4490dfd9b030ee8de85e8d0429587a47d9330))
+
+## [0.10.13](https://github.com/iblai/skillsai/compare/skills-v0.10.12...skills-v0.10.13) (2026-04-07)
+
+### Bug Fixes
+
+* set requestedTenant to empty string in TenantProvider ([80f7487](https://github.com/iblai/skillsai/commit/80f748745bcc64c2d9e6266c2601449494d9d805))
+
+## [0.10.12](https://github.com/iblai/skillsai/compare/skills-v0.10.11...skills-v0.10.12) (2026-04-07)
+
+### Bug Fixes
+
+* exclude .opencode directory from vitest test discovery ([c7507d9](https://github.com/iblai/skillsai/commit/c7507d9ffe55a8f59c399b647b88c218f1377b4b))
+* exclude .opencode directory from vitest test discovery ([8145e7e](https://github.com/iblai/skillsai/commit/8145e7e296ad24b496fdc684c7a12160297f7091))
+
+### Chores
+
+* add opencode code review hook ([c2b0472](https://github.com/iblai/skillsai/commit/c2b0472f5fdcc366a3f93f44a8b4de1d549719d5))
+* add opencode code-review command for pre-push hook ([6e6b42e](https://github.com/iblai/skillsai/commit/6e6b42eda00c19c5d9f43ce5cc06ff20980876fe))
+* update pnpm-lock.yaml ([62b6922](https://github.com/iblai/skillsai/commit/62b69227383c3b7cc8fdf839e49d40022f600f35))
+
+### CI
+
+* **e2e:** add journey coverage enforcement, lint-staged, commitlint, and opencode config ([7170fba](https://github.com/iblai/skillsai/commit/7170fba3e0f80234d96395ff9f83317d21553fd0))
+
+## [0.10.11](https://github.com/iblai/skillsai/compare/skills-v0.10.10...skills-v0.10.11) (2026-04-06)
+
+### Bug Fixes
+
+* added client error boundaries (error.tsx, global-error.tsx) that redirect exceptions to /error/500. ([79f85d1](https://github.com/iblai/skillsai/commit/79f85d10955660c719fc66cef17c544b94e1b610))
+* lint issue fixed ([8535181](https://github.com/iblai/skillsai/commit/85351811859fc0b4dfdc098c9ba075514cb16fe1))
+* tests coverage added ([f8e9b68](https://github.com/iblai/skillsai/commit/f8e9b683665d27fd4512c4c829a4d84f817b8640))
+* tests coverage added ([de65565](https://github.com/iblai/skillsai/commit/de65565fc58e3998fe57b0694db64ef97ccc0b98))
+* tests coverage added ([6d6db52](https://github.com/iblai/skillsai/commit/6d6db529ad8054ac6d21c43b755f33da2f0b91c4))
+* typecheck issues fixed ([9f0b472](https://github.com/iblai/skillsai/commit/9f0b4727f6f3da4b2b31370568b7c2e4d35e93ee))
+
 ## [0.10.10](https://github.com/iblai/skillsai/compare/skills-v0.10.9...skills-v0.10.10) (2026-04-02)
 
 ### Chores

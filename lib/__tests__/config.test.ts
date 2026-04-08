@@ -341,5 +341,49 @@ describe('config module', () => {
       const { config } = await import('../config');
       expect(config.settings.enableRBAC()).toBe(true);
     });
+
+    it('returns supportEmail with default when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_SUPPORT_EMAIL;
+
+      const { config } = await import('../config');
+      expect(config.settings.supportEmail()).toBe('support@ibl.ai');
+    });
+
+    it('returns supportEmail when configured', async () => {
+      processEnv.NEXT_PUBLIC_SUPPORT_EMAIL = 'help@example.com';
+
+      const { config } = await import('../config');
+      expect(config.settings.supportEmail()).toBe('help@example.com');
+    });
+  });
+
+  describe('config.urls (additional)', () => {
+    it('returns legacyLmsUrl with default fallback', async () => {
+      delete processEnv.NEXT_PUBLIC_LMS_URL;
+
+      const { config } = await import('../config');
+      expect(config.urls.legacyLmsUrl()).toBe('https://lms.iblai.app');
+    });
+
+    it('returns legacyLmsUrl when configured', async () => {
+      processEnv.NEXT_PUBLIC_LMS_URL = 'https://custom-lms.example.com';
+
+      const { config } = await import('../config');
+      expect(config.urls.legacyLmsUrl()).toBe('https://custom-lms.example.com');
+    });
+
+    it('returns apiBase with default fallback', async () => {
+      delete processEnv.NEXT_PUBLIC_API_BASE_URL;
+
+      const { config } = await import('../config');
+      expect(config.urls.apiBase()).toBe('https://api.iblai.app');
+    });
+
+    it('returns apiBase when configured', async () => {
+      processEnv.NEXT_PUBLIC_API_BASE_URL = 'https://custom-api.example.com';
+
+      const { config } = await import('../config');
+      expect(config.urls.apiBase()).toBe('https://custom-api.example.com');
+    });
   });
 });

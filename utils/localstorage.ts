@@ -6,6 +6,7 @@ import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
+import { setTenantSwitching } from './helpers';
 
 export class LocalStorageService implements StorageService {
   private static instance: LocalStorageService;
@@ -128,6 +129,11 @@ export function useGetAllTenants() {
 }
 
 export const handleTenantSwitch = async (tenant: string, saveRedirect = false) => {
+  // Suppress concurrent auth redirects SYNCHRONOUSLY before any await, so no
+  // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
+  // can call redirectToAuthSpa before the flag is set.
+  setTenantSwitching(true);
+
   // Clear current tenant cookie before switching
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
   clearCurrentTenantCookie();
@@ -147,6 +153,12 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
     // Restore the redirect path after setting tenant
     localStorage.setItem('redirect-to', currentPath);
   }
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // Navigate immediately — no delay needed since localStorage ops are synchronous.
+  // A delay here allows the AuthProvider cookie sync interval to detect the cleared
+  // tokens and race to /login, cancelling the intended /login/complete navigation.
   window.location.href = `${url}?${param}`;
+
+  // Safety reset: if navigation fails (e.g. blocked by browser), restore the flag
+  // after 2s so auth redirects are not permanently suppressed for this session.
+  setTimeout(() => setTenantSwitching(false), 2000);
 };

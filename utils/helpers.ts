@@ -4,6 +4,13 @@ import { getLocalStorageItem } from './localstorage';
 import { QUERY_PARAMS } from '@/constants/global';
 import { MarkdownMenuItem } from '@/types/utils';
 
+// Set to true during any intentional navigation away from the app (tenant switch,
+// logout) to suppress concurrent auth redirects that would race and cancel it.
+let _suppressAuthRedirect = false;
+export const setTenantSwitching = (value: boolean) => {
+  _suppressAuthRedirect = value;
+};
+
 /**
  * Checks if a given string is valid JSON
  * @param {string} text - The string to check for JSON validity
@@ -191,6 +198,8 @@ export async function redirectToAuthSpa(
   logout?: boolean,
   saveRedirect = true,
 ) {
+  // Suppress auth redirects while an intentional navigation is already in flight
+  if (_suppressAuthRedirect) return;
   localStorage.clear();
 
   if (logout) {
@@ -227,7 +236,6 @@ export async function redirectToAuthSpa(
     authRedirectUrl += '&logout=1';
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 100));
   window.location.href = authRedirectUrl;
 }
 
@@ -355,6 +363,7 @@ export const onAccountDeleted = () => {
 
 export const handleLogout = (redirectUrl = window.location.origin, callback?: () => void) => {
   const tenant = getTenant();
+  _suppressAuthRedirect = true;
   window.localStorage.clear();
   window.localStorage.setItem(LOCALSTORAGE_KEYS.TENANT, tenant ?? '');
 
@@ -365,6 +374,11 @@ export const handleLogout = (redirectUrl = window.location.origin, callback?: ()
     window.location.href = `${config.urls.auth()}/logout?redirect-to=${redirectUrl}${tenant ? '&tenant=' + tenant : ''}`;
     // Set logout timestamp cookie to trigger logout on other SPAs
     setCookieForAuth('ibl_logout_timestamp', Date.now().toString());
+    setTimeout(() => {
+      _suppressAuthRedirect = false;
+    }, 2000);
+  } else {
+    _suppressAuthRedirect = false;
   }
 };
 
@@ -387,17 +401,19 @@ export const parseMarkdownLinks = (markdownString: string): MarkdownMenuItem[] =
 };
 
 export const handleTenantSwitch = async (tenant: string, saveRedirect = false) => {
+  // Suppress concurrent auth redirects SYNCHRONOUSLY before any await, so no
+  // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
+  // can call redirectToAuthSpa before the flag is set.
+  _suppressAuthRedirect = true;
+
   // Clear current tenant cookie before switching
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
   clearCurrentTenantCookie();
 
   // Preserve the current path before clearing localStorage
   const currentPath = `${window.location.pathname}${window.location.search}`;
-  if (saveRedirect) {
-    localStorage.setItem('redirect-to', currentPath);
-  }
-
   localStorage.clear();
+
   const url = `${config.urls.auth()}/login/complete`;
   const param = new URLSearchParams({
     tenant,
@@ -406,10 +422,12 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
 
   localStorage.setItem('tenant', tenant);
   if (saveRedirect) {
-    // Restore the redirect path after setting tenant
     localStorage.setItem('redirect-to', currentPath);
   }
   window.location.href = `${url}?${param}`;
+  setTimeout(() => {
+    _suppressAuthRedirect = false;
+  }, 2000);
 };
 
 export const DEFAULT_OVERVIEW_PLACEHOLDER = `<section class="about">

@@ -114,6 +114,7 @@ vi.mock('../_components/configuration-tab', () => ({
 import CourseDetailsPage from '../page';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useChatState } from '@/components/chat-button';
 
 describe('CourseDetailsPage', () => {
   beforeEach(() => {
@@ -511,6 +512,224 @@ describe('CourseDetailsPage', () => {
     fireEvent.error(image);
 
     expect(image).toHaveAttribute('src', '/random-course-image.jpg');
+  });
+
+  it('shows loading spinner when state is not-started', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: null,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: false,
+      courseInfoLoadingState: 'not-started',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+  });
+
+  it('shows skeleton button when courseButtonActionLoading is true', () => {
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+    };
+
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: mockCourse,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: true,
+      courseInfoLoadingState: 'successful',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(screen.getByTestId('skeleton-btn')).toBeInTheDocument();
+  });
+
+  it('sets mentor when course has no mentor_hidden flag', () => {
+    const mockSetCourseMentor = vi.fn();
+    const mockSetMentorSidebarHidden = vi.fn();
+
+    vi.mocked(useChatState).mockReturnValue({
+      isOpen: false,
+      setIsOpen: vi.fn(),
+      courseMentor: null,
+      setCourseMentor: mockSetCourseMentor,
+      mentorSidebarHidden: false,
+      setMentorSidebarHidden: mockSetMentorSidebarHidden,
+    });
+
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+      mentor_uuid: 'mentor-123',
+      mentor_hidden: false,
+    };
+
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: mockCourse,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: false,
+      courseInfoLoadingState: 'successful',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(mockSetCourseMentor).toHaveBeenCalledWith('mentor-123');
+  });
+
+  it('hides mentor sidebar when course has mentor_hidden', () => {
+    const mockSetCourseMentor = vi.fn();
+    const mockSetMentorSidebarHidden = vi.fn();
+
+    vi.mocked(useChatState).mockReturnValue({
+      isOpen: false,
+      setIsOpen: vi.fn(),
+      courseMentor: null,
+      setCourseMentor: mockSetCourseMentor,
+      mentorSidebarHidden: false,
+      setMentorSidebarHidden: mockSetMentorSidebarHidden,
+    });
+
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+      mentor_hidden: true,
+    };
+
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: mockCourse,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: false,
+      courseInfoLoadingState: 'successful',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(mockSetMentorSidebarHidden).toHaveBeenCalledWith(true);
+  });
+
+  it('does not show empty state when loading state is successful with course', () => {
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+    };
+
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: mockCourse,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: false,
+      courseInfoLoadingState: 'successful',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
+    expect(document.querySelector('.animate-spin')).not.toBeInTheDocument();
+  });
+
+  it('does not show learning info tab when course has no learning_info', () => {
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+      learning_info: [],
+    };
+
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: mockCourse,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: false,
+      courseInfoLoadingState: 'successful',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(screen.queryByText('Learning Info')).not.toBeInTheDocument();
+  });
+
+  it('does not show instructor tab when course has no instructors', () => {
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+      instructor_info: { instructors: [] },
+    };
+
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      course: mockCourse,
+      courseOutline: null,
+      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+      courseOutlineLoading: false,
+      courseEligibilityLoading: false,
+      courseButtonActionLoading: false,
+      courseInfoLoadingState: 'successful',
+    } as any);
+
+    render(<CourseDetailsPage />);
+
+    expect(screen.queryByText('Instructors')).not.toBeInTheDocument();
   });
 
   it('hides duration when not provided', () => {

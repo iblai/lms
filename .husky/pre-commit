@@ -3,6 +3,4 @@
 echo "Checking pinned dependency versions..."
 bash ./scripts/check-pinned-versions.sh
 
-echo "Formatting code with prettier..."
-pnpm format
-git add -u
+pnpm dlx lint-staged --verbose
