@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-03-27",
+  "lastUpdated": "2026-04-08",
   "summary": {
-    "totalCheckpoints": 215,
-    "coveredCheckpoints": 215,
+    "totalCheckpoints": 216,
+    "coveredCheckpoints": 216,
     "percent": 100,
     "totalJourneys": 29
   },
@@ -71,7 +71,7 @@
       "id": "course-content-tabs",
       "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
-      "sourceFiles": ["app/course-content/[course_id]/course/page.tsx", "app/course-content/[course_id]/progress/page.tsx", "app/course-content/[course_id]/dates/page.tsx", "app/course-content/[course_id]/discussion/page.tsx", "app/course-content/[course_id]/instructor/page.tsx", "app/course-content/[course_id]/bookmarks/page.tsx"],
+      "sourceFiles": ["app/course-content/[course_id]/course/page.tsx", "app/course-content/[course_id]/progress/page.tsx", "app/course-content/[course_id]/dates/page.tsx", "app/course-content/[course_id]/discussion/page.tsx", "app/course-content/[course_id]/instructor/page.tsx", "app/course-content/[course_id]/bookmarks/page.tsx", "app/course-content/[course_id]/gradebook/page.tsx", "app/course-content/[course_id]/layout.tsx"],
       "checkpoints": [
         { "id": "tabs-01", "description": "Course content page loads with all tab links visible", "status": "covered" },
         { "id": "tabs-02", "description": "Course tab displays iframe with edX content", "status": "covered" },
@@ -84,7 +84,8 @@
         { "id": "tabs-09", "description": "Instructor tab loads iframe content", "status": "covered" },
         { "id": "tabs-10", "description": "Bookmarks tab is accessible", "status": "covered" },
         { "id": "tabs-11", "description": "URL updates correctly when switching tabs", "status": "covered" },
-        { "id": "tabs-12", "description": "No error messages on any course tab", "status": "covered" }
+        { "id": "tabs-12", "description": "No error messages on any course tab", "status": "covered" },
+        { "id": "tabs-13", "description": "Gradebook tab visible for admin and loads iframe", "status": "covered" }
       ]
     },
     {

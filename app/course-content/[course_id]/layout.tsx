@@ -197,6 +197,18 @@ export default function CourseContentLayout({
                 </Link>
                 {departmentMemberCheck?.is_platform_admin && (
                   <Link
+                    href={`/course-content/${resolvedParams.course_id}/gradebook`}
+                    className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                      activeTab === 'gradebook'
+                        ? 'border-amber-500 text-amber-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Gradebook
+                  </Link>
+                )}
+                {departmentMemberCheck?.is_platform_admin && (
+                  <Link
                     href={`/course-content/${resolvedParams.course_id}/instructor`}
                     className={`border-b-2 px-4 py-3 text-sm font-medium ${
                       activeTab === 'instructor'
