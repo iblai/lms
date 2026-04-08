@@ -129,12 +129,14 @@ export function useGetAllTenants() {
 }
 
 export const handleTenantSwitch = async (tenant: string, saveRedirect = false) => {
+  // Suppress concurrent auth redirects SYNCHRONOUSLY before any await, so no
+  // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
+  // can call redirectToAuthSpa before the flag is set.
+  setTenantSwitching(true);
+
   // Clear current tenant cookie before switching
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
   clearCurrentTenantCookie();
-
-  // Suppress concurrent auth redirects for the duration of this navigation
-  setTenantSwitching(true);
 
   // Preserve the current path before clearing localStorage
   const currentPath = `${window.location.pathname}${window.location.search}`;
