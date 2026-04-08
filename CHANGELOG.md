@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.18](https://github.com/iblai/skillsai/compare/skills-v0.10.17...skills-v0.10.18) (2026-04-08)
+
+### Bug Fixes
+
+* set _suppressAuthRedirect synchronously before first await ([42377bb](https://github.com/iblai/skillsai/commit/42377bbea898cd1e66f31293a521fa9b048d65aa))
+
 ## [0.10.17](https://github.com/iblai/skillsai/compare/skills-v0.10.16...skills-v0.10.17) (2026-04-07)
 
 ### Bug Fixes
