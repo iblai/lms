@@ -1,7 +1,7 @@
 import { GenericPagination } from '@/types/discover';
 // @ts-ignore
 import { useLazyGetPersonnalizedSearchQuery } from '@iblai/iblai-js/data-layer';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export type PersonnalizedCatalogSearchParams = {
   username: string;
@@ -44,26 +44,29 @@ export const usePersonnalizedCatalog = () => {
 
   const [pagination, setPagination] = useState<GenericPagination | null>(null);
 
-  const handleSearch = async (searchParams: PersonnalizedCatalogSearchParams) => {
-    try {
-      const response = await getPersonnalizedSearch(
-        [
-          {
-            ...searchParams,
-          },
-        ],
-        true,
-      );
-      setPagination({
-        count: response?.data?.count || 0,
-        current_page: response?.data?.current_page || 0,
-        total_pages: response?.data?.total_pages || 0,
-      });
-      return response;
-    } catch (error) {
-      return undefined;
-    }
-  };
+  const handleSearch = useCallback(
+    async (searchParams: PersonnalizedCatalogSearchParams) => {
+      try {
+        const response = await getPersonnalizedSearch(
+          [
+            {
+              ...searchParams,
+            },
+          ],
+          true,
+        );
+        setPagination({
+          count: response?.data?.count || 0,
+          current_page: response?.data?.current_page || 0,
+          total_pages: response?.data?.total_pages || 0,
+        });
+        return response;
+      } catch (error) {
+        return undefined;
+      }
+    },
+    [getPersonnalizedSearch],
+  );
 
   return {
     isLoading,

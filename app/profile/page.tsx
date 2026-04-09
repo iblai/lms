@@ -1,30 +1,75 @@
 'use client';
 
-import { ProfileTimeChart } from '@/components/profile-time-chart';
-import { ProfileInfoCards } from '@/components/profile-info-cards';
-import { SkillLeaderboardChart } from '@/components/skill-leaderboard-chart';
-import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-stats';
-import { ActivityStats } from '@/types/catalog';
-import { SkeletonActivityStatBox } from '@/components/skeleton-activity-stat-box';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { useEffect, useState } from 'react';
+import _ from 'lodash';
+import {
+  ProfileTimeChart,
+  SkillLeaderboardChart,
+  SkeletonActivityStatBox,
+  useProfileActivityStats,
+  useProfileTimeSpent,
+  useUserMetadata,
+  type ActivityStats,
+} from '@iblai/iblai-js/web-containers';
+import { ProfileInfoCards } from '@iblai/iblai-js/web-containers/next';
+import { getTenant } from '@/utils/helpers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
-import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
+import { useGetUserPerLearnerInfoQuery } from '@/services/perlearner';
+// @ts-ignore
+import { useLazyGetPerLearnerActivityQuery } from '@/services/perlearner';
 
 export default function ProfilePage() {
   const { stats } = useProfileActivityStats();
   const { metadataLoaded, isSkillsLeaderBoardEnabled } = useTenantMetadata({
     org: getTenant(),
   });
-  const username = getUserName();
-  const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery(
-    {
-      params: { username },
-    },
-    {
-      skip: !username,
-    },
-  );
+  const { userMetaData: userMetadata, userMetaDataLoading: isUserMetadataLoading } =
+    useUserMetadata();
+  const { timeSpent, timeSpentLoading } = useProfileTimeSpent();
+
+  // ProfileInfoCards wiring
+  const { data: userInfo, isLoading: isUserInfoLoading } = useGetUserPerLearnerInfoQuery({
+    org: getTenant(),
+    username: userMetadata?.username || '',
+  });
+  const [getPerLearnerActivity] = useLazyGetPerLearnerActivityQuery();
+  const [topContent, setTopContent] = useState<{
+    name?: string | null;
+    course_id?: string | null;
+    time_invested?: number | null;
+  } | null>(null);
+  const [topContentLoading, setTopContentLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setTopContentLoading(true);
+        const response = await getPerLearnerActivity({
+          org: getTenant(),
+          username: userMetadata?.username || '',
+        });
+        if (cancelled) return;
+        if (_.isEmpty(response.data)) {
+          throw new Error('Empty per-learner activity');
+        }
+        const sortedData = [...(response.data as any).data].sort(
+          (a: any, b: any) => b.time_invested - a.time_invested,
+        );
+        setTopContent(sortedData[0]);
+      } catch {
+        if (!cancelled) {
+          setTopContent({ name: '-', time_invested: 0, course_id: '-' });
+        }
+      } finally {
+        if (!cancelled) setTopContentLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [getPerLearnerActivity, userMetadata?.username]);
 
   return (
     <>
@@ -55,7 +100,7 @@ export default function ProfilePage() {
         <div className="mb-6 rounded-md border border-amber-100 bg-amber-50/30 p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-gray-700">Time Spent</h2>
           <div className="rounded-lg border border-amber-200 bg-white p-4">
-            <ProfileTimeChart />
+            <ProfileTimeChart data={timeSpent} loading={timeSpentLoading} />
           </div>
         </div>
 
@@ -63,7 +108,13 @@ export default function ProfilePage() {
         <div className="mb-6 rounded-md border border-gray-200 bg-gray-50 p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-gray-700">Profile Information</h2>
           <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <ProfileInfoCards />
+            <ProfileInfoCards
+              userInfo={(userInfo as any)?.data ?? null}
+              topContent={topContent}
+              loading={isUserInfoLoading}
+              topContentLoading={topContentLoading}
+              courseHrefTemplate="/courses/{courseId}"
+            />
           </div>
         </div>
 
@@ -71,7 +122,7 @@ export default function ProfilePage() {
         {metadataLoaded &&
           isSkillsLeaderBoardEnabled() &&
           !isUserMetadataLoading &&
-          userMetadata?.enable_skills_leaderboard_display !== false && (
+          (userMetadata as any)?.enable_skills_leaderboard_display !== false && (
             <div className="rounded-md border border-amber-100 bg-amber-50/30 p-6 shadow-sm">
               <h2 className="mb-4 text-lg font-medium text-gray-700">Skill Leaderboard</h2>
               <div className="rounded-lg border border-amber-200 bg-white p-4">

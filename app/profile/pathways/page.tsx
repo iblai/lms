@@ -1,28 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, Plus } from 'lucide-react';
-import { PathwayDetailModal } from '@/components/pathway-detail-modal';
-import { CreatePathwayModal } from '@/components/create-pathway-modal';
-import { useProfilePathways } from '@/hooks/profile/use-profile-pathways';
-import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
-import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
-import { DefaultEmptyBox } from '@/components/default-empty-box';
-import { PathwayEnrollmentPlus } from '@iblai/iblai-api';
-import { getRandomCourseImage, getTenant } from '@/utils/helpers';
+import { toast } from 'sonner';
+import {
+  DefaultEmptyBox,
+  SkeletonMultiplier,
+  SkeletonPathwayBox,
+  useProfilePathways,
+  getRandomCourseImage,
+} from '@iblai/iblai-js/web-containers';
+import {
+  PathwayDetailModal,
+  CreatePathwayModal,
+  type CreatePathwayFormData,
+  type PathwayDetailCourse,
+} from '@iblai/iblai-js/web-containers/next';
+import { PathwayCompletionResponse, PathwayEnrollmentPlus } from '@iblai/iblai-api';
+import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { config } from '@/lib/config';
+// @ts-ignore
+import {
+  useLazyGetPathwayCompletionQuery,
+  useLazyGetUserEnrolledPathwaysQuery,
+  useCreateCatalogPathwaySelfEnrollmentMutation,
+  useLazyGetPathwayListQuery,
+  useLazyGetResourceSearchQuery,
+  useCreateCatalogPathwayMutation,
+} from '@iblai/iblai-js/data-layer';
+import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
+import { slugify } from '@/utils/helpers';
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function PathwaysPage() {
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
     org: getTenant(),
   });
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const CATALOG_TAB = 'catalog';
   const ASSIGNED_TAB = 'assigned';
   const ENROLLED_TAB = 'enrolled';
-  const [activeTab, setActiveTab] = useState<'catalog' | 'assigned' | 'enrolled'>(CATALOG_TAB); // "my" or "assigned"
-  const [selectedPathway, setSelectedPathway] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'catalog' | 'assigned' | 'enrolled'>(CATALOG_TAB);
+  const [selectedPathway, setSelectedPathway] = useState<PathwayEnrollmentPlus | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const {
     filteredPathways,
@@ -35,7 +58,10 @@ export default function PathwaysPage() {
   } = useProfilePathways({
     searchQuery,
     contentType: activeTab,
+    lmsUrl: config.urls.lms(),
   });
+
+  const [randomImage] = useState(() => getRandomCourseImage());
 
   const handlePathwayTabChange = (tab: 'catalog' | 'assigned' | 'enrolled') => {
     if (activeTab === tab) return;
@@ -44,13 +70,240 @@ export default function PathwaysPage() {
     setFilteredPathways([]);
   };
 
-  const handleCreatePathway = (pathwayData: PathwayEnrollmentPlus) => {
-    // In a real app, you would send this data to your API
-    setPathways([...pathways, pathwayData]);
-    setFilteredPathways([...filteredPathways, pathwayData]);
+  // ----- PathwayDetailModal wiring -----
+  const [getPathwayList] = useLazyGetPathwayListQuery();
+  const [getPathwayCompletion] = useLazyGetPathwayCompletionQuery();
+  const [getUserEnrolledPathways, { isLoading: isEnrollmentLoading }] =
+    useLazyGetUserEnrolledPathwaysQuery();
+  const [
+    createCatalogPathwaySelfEnrollment,
+    { isError: isEnrollmentError, isSuccess: isEnrollmentSuccess },
+  ] = useCreateCatalogPathwaySelfEnrollmentMutation();
+
+  const [paths, setPaths] = useState<PathwayDetailCourse[]>([]);
+  const [pathwayDetailLoading, setPathwayDetailLoading] = useState(false);
+  const [pathwayCompletion, setPathwayCompletion] = useState<PathwayCompletionResponse | null>(
+    null,
+  );
+  const [enrollmentStatus, setEnrollmentStatus] = useState(false);
+  const [isEnrollmentSubmitting, setIsEnrollmentSubmitting] = useState(false);
+
+  // For pathways page we use user-related pathway list (matches old default)
+  useEffect(() => {
+    if (!selectedPathway) {
+      setPaths([]);
+      setPathwayCompletion(null);
+      setEnrollmentStatus(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        setPathwayDetailLoading(true);
+        const resp = await getPathwayList([
+          {
+            pathwayUuid: selectedPathway.pathway_uuid,
+            username: getUserName(),
+          },
+        ]);
+        const list = (resp?.data as any) ?? [];
+        if (Array.isArray(list) && list.length > 0) {
+          const pathwayCourses: PathwayDetailCourse[] = (list[0]?.path || []).map(
+            (course: any) => ({
+              ...course,
+              edx_data: {
+                ...course?.edx_data,
+                course_image_asset_path: course?.edx_data?.course_image_asset_path
+                  ? config.urls.lms() + course.edx_data.course_image_asset_path
+                  : getRandomCourseImage(),
+              },
+            }),
+          );
+          if (!cancelled) setPaths(pathwayCourses);
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error('Error fetching pathway details');
+          setPaths([]);
+        }
+      } finally {
+        if (!cancelled) setPathwayDetailLoading(false);
+      }
+    })();
+    (async () => {
+      try {
+        const resp = await getPathwayCompletion([
+          {
+            pathwayUuid: selectedPathway.pathway_uuid || '',
+            username: getUserName(),
+          },
+        ]);
+        if (!cancelled) setPathwayCompletion((resp.data as PathwayCompletionResponse) || null);
+      } catch {
+        if (!cancelled) setPathwayCompletion(null);
+      }
+    })();
+    (async () => {
+      try {
+        const resp = await getUserEnrolledPathways([
+          {
+            username: getUserName(),
+            pathwayUuid: selectedPathway.pathway_uuid || '',
+          },
+        ]);
+        if (!cancelled) {
+          setEnrollmentStatus(
+            Array.isArray(resp.data) &&
+              resp.data.findIndex(
+                (pre: any) => pre.active && pre?.pathway_uuid === selectedPathway.pathway_uuid,
+              ) !== -1,
+          );
+        }
+      } catch {
+        if (!cancelled) setEnrollmentStatus(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPathway, getPathwayList, getPathwayCompletion, getUserEnrolledPathways]);
+
+  const handleEnrollIntoPathway = async (pathway: PathwayEnrollmentPlus) => {
+    if (isEnrollmentSubmitting) return;
+    try {
+      setIsEnrollmentSubmitting(true);
+      await createCatalogPathwaySelfEnrollment([
+        {
+          requestBody: {
+            // @ts-ignore
+            pathway_uuid: pathway.pathway_uuid || '',
+            pathway_key: pathway.platform_key || '',
+            username: getUserName(),
+            active: true,
+          },
+        },
+      ]);
+      if (isEnrollmentError) {
+        throw new Error('Failed to enroll into pathway');
+      }
+      toast.success('Enrolled into pathway successfully');
+      setTimeout(() => setIsEnrollmentSubmitting(false), 500);
+    } catch {
+      toast.error('Failed to enroll into pathway');
+      setIsEnrollmentSubmitting(false);
+    }
   };
 
-  const [randomImage] = useState(() => getRandomCourseImage());
+  const handleCourseClick = (course: PathwayDetailCourse) => {
+    if (course?.item_type === 'course') {
+      router.push(`/courses/${course.course_id}`);
+    } else if (course?.url) {
+      window.open(course.url, '_blank');
+    }
+  };
+
+  // ----- CreatePathwayModal wiring -----
+  const [createSearchQuery, setCreateSearchQuery] = useState('');
+  const [searchedCourses, setSearchedCourses] = useState<any[]>([]);
+  const [searchedResources, setSearchedResources] = useState<any[]>([]);
+  const [getResourceSearch, { isLoading: isResourceSearchLoading }] =
+    useLazyGetResourceSearchQuery();
+  const { handleSearch: handleCatalogSearch, isLoading: isCoursesLoading } =
+    usePersonnalizedCatalog();
+  const [createCatalogPathway, { isError: isCreateCatalogPathwayError }] =
+    useCreateCatalogPathwayMutation();
+
+  const debouncedSearch = useDebouncedCallback(async (q: string) => {
+    const resourceSearch = await getResourceSearch([
+      {
+        platformKey: getTenant(),
+        ...(q.length > 2 ? { name: q } : {}),
+      },
+    ]);
+    const response = await handleCatalogSearch({
+      username: getUserName(),
+      query: q,
+      limit: 10,
+      content: ['courses'],
+      tenant: getTenant(),
+    });
+    setSearchedResources(
+      (resourceSearch?.data || []).map((resource: any) => ({
+        ...resource,
+        image: resource?.image || resource?.data?.banner_image || getRandomCourseImage(),
+      })),
+    );
+    setSearchedCourses(
+      (response?.data?.results || []).map((result: any) => ({
+        ...result,
+        data: {
+          ...result.data,
+          edx_data: {
+            ...result.data.edx_data,
+            course_image_asset_path: result.data.edx_data?.course_image_asset_path
+              ? config.urls.lms() + result.data.edx_data.course_image_asset_path
+              : getRandomCourseImage(),
+          },
+        },
+      })),
+    );
+  }, 500);
+
+  useEffect(() => {
+    if (createDialogOpen) {
+      debouncedSearch(createSearchQuery);
+    }
+  }, [createDialogOpen, createSearchQuery, debouncedSearch]);
+
+  const handleCreatePathwaySave = async (form: CreatePathwayFormData) => {
+    const newPathway = {
+      name: form.name,
+      path: [
+        ...form.selectedCourses.map((courseId) => ({
+          item_type: 'course',
+          course_id: courseId,
+        })),
+        ...form.selectedResources.map((resourceId) => ({
+          item_type: 'resource',
+          id: resourceId,
+        })),
+      ],
+      platform_key: getTenant(),
+      user_id: getUserId(),
+      username: getUserName(),
+      visible: false,
+      pathway_id: slugify(form.name),
+      data: {
+        description: form.description,
+        subject: form.subject,
+      },
+    };
+    try {
+      const response = await createCatalogPathway([
+        {
+          requestBody: newPathway,
+          userId: getUserId(),
+          username: getUserName(),
+        },
+      ]);
+      if (isCreateCatalogPathwayError) {
+        throw new Error();
+      }
+      toast.success('Pathway created successfully');
+      const created = response?.data as PathwayEnrollmentPlus | undefined;
+      if (created) {
+        setPathways([...pathways, created]);
+        setFilteredPathways([...filteredPathways, created]);
+      }
+      setCreateDialogOpen(false);
+    } catch {
+      toast.error('Failed to create pathway.');
+    }
+  };
+
+  const selectedPathwayBannerSrc = selectedPathway?.metadata?.banner_image_asset_path
+    ? config.urls.lms() + selectedPathway.metadata.banner_image_asset_path
+    : randomImage;
 
   return (
     <>
@@ -153,24 +406,20 @@ export default function PathwaysPage() {
                   <h3 className="mb-2 text-sm font-medium text-gray-800">{pathway?.name || ''}</h3>
                   {pathwayCompletions.length > 0 && pathwayCompletions[index] && (
                     <div className="space-y-1">
-                      {pathwayCompletions.length > 0 && pathwayCompletions[index] && (
-                        <>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-gray-600">Progress</span>
-                            <span className="font-medium text-gray-800">
-                              {pathwayCompletions[index].completion_percentage || 0}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-gray-200">
-                            <div
-                              className="h-1.5 rounded-full bg-amber-500"
-                              style={{
-                                width: `${pathwayCompletions[index].completion_percentage}%`,
-                              }}
-                            ></div>
-                          </div>
-                        </>
-                      )}
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="font-medium text-gray-800">
+                          {pathwayCompletions[index].completion_percentage || 0}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-gray-200">
+                        <div
+                          className="h-1.5 rounded-full bg-amber-500"
+                          style={{
+                            width: `${pathwayCompletions[index].completion_percentage}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -180,7 +429,20 @@ export default function PathwaysPage() {
       </div>
       {/* Pathway Detail Modal */}
       {selectedPathway && (
-        <PathwayDetailModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} />
+        <PathwayDetailModal
+          pathway={selectedPathway}
+          paths={paths}
+          pathwayDetailLoading={pathwayDetailLoading}
+          pathwayCompletion={pathwayCompletion}
+          enrollmentStatus={enrollmentStatus}
+          isEnrollmentSuccess={isEnrollmentSuccess}
+          isEnrollmentLoading={isEnrollmentLoading}
+          isEnrollmentSubmitting={isEnrollmentSubmitting}
+          bannerImageSrc={selectedPathwayBannerSrc}
+          onClose={() => setSelectedPathway(null)}
+          onEnroll={handleEnrollIntoPathway}
+          onCourseClick={handleCourseClick}
+        />
       )}
 
       {/* Create Pathway Dialog */}
@@ -188,8 +450,12 @@ export default function PathwaysPage() {
         <CreatePathwayModal
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          // @ts-expect-error investigate
-          onSave={handleCreatePathway}
+          onSearchChange={setCreateSearchQuery}
+          onSave={handleCreatePathwaySave}
+          searchedCourses={searchedCourses}
+          searchedResources={searchedResources}
+          isCoursesLoading={isCoursesLoading}
+          isResourceSearchLoading={isResourceSearchLoading}
         />
       )}
     </>

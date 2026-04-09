@@ -2,29 +2,162 @@
 
 import { useState, useContext, useCallback } from 'react';
 import { Facebook, Linkedin, Twitter, Edit2, Edit } from 'lucide-react';
-import { useUserMetadata } from '@/hooks/users/use-usermetadata';
-import { EducationBox } from '@/components/profile/education-box';
-import { ExperienceBox } from '@/components/profile/experience-box';
-import { SkillsBox } from '@/components/profile/skills-box';
-import { CredentialBox } from '@/components/profile/credential-box';
-import { ResumeBox } from '@/components/profile/resume-box';
-import { MediaBox } from '@/components/profile/media-box';
-import { UserAvatar } from '@/components/header/profile/user-avatar';
+import { toast } from 'sonner';
+import {
+  CredentialBox,
+  EducationBox,
+  ExperienceBox,
+  ResumeBox,
+  SkillsBox,
+  UserAvatar,
+  useProfileCredentials,
+  useProfileSkills,
+  useUserMetadata,
+} from '@iblai/iblai-js/web-containers';
+import { EducationDialog, ExperienceDialog } from '@iblai/iblai-js/web-containers';
+import {
+  MediaBox,
+  type UploadedFile as PortedUploadedFile,
+} from '@iblai/iblai-js/web-containers/next';
 import { AppContext } from '@/components/client-layout';
+import { AddInstitutionDialog } from '@/components/add-institution-dialog';
+import { AddCompanyDialog } from '@/components/add-company-dialog';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant, onAccountDeleted } from '@/utils/helpers';
+import { getTenant, getUserName, onAccountDeleted } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { UserProfileModal } from '@iblai/iblai-js/web-containers/next';
 import { useIsAdmin, useUserTenants } from '@/utils/localstorage';
 import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
+import { Education, Experience } from '@iblai/iblai-api';
+// @ts-ignore
+import {
+  useGetUserEducationQuery,
+  useGetUserExperienceQuery,
+  useGetUserResumeQuery,
+} from '@iblai/iblai-js/data-layer';
+import { useCreateUserResumeMutation } from '@/services/career';
 
 export default function PublicProfilePage() {
   const { userMetaData } = useUserMetadata();
   const { metadataLoaded, isSkillsResumeFeatureHidden } = useTenantMetadata({
     org: getTenant(),
   });
+  const enableGravatar = config.settings.enableGravatarOnProfilePic() !== 'false';
+
+  // Education
+  const {
+    data: educationData,
+    isLoading: educationLoading,
+    error: educationError,
+  } = useGetUserEducationQuery([{ org: getTenant(), username: getUserName() }]);
+  const [editEducationOpen, setEditEducationOpen] = useState(false);
+  const [selectedEducation, setSelectedEducation] = useState<Education | undefined>(undefined);
+  const [openAddInstitutionDialog, setOpenAddInstitutionDialog] = useState(false);
+
+  // Experience
+  const {
+    data: experienceData,
+    isLoading: experienceLoading,
+    error: experienceError,
+  } = useGetUserExperienceQuery([{ org: getTenant(), username: getUserName() }]);
+  const [editExperienceOpen, setEditExperienceOpen] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState<Experience | undefined>(undefined);
+  const [openAddCompanyDialog, setOpenAddCompanyDialog] = useState(false);
+
+  // Skills
+  const {
+    earnedSkills,
+    earnedSkillsLoading,
+    earnedSkillsError,
+    selfReportedSkills,
+    selfReportedSkillsLoading,
+    selfReportedSkillsError,
+    desiredSkills,
+    desiredSkillsLoading,
+    desiredSkillsError,
+  } = useProfileSkills();
+
+  // Credentials
+  const {
+    fetchedCredentials,
+    isLoading: credentialsLoading,
+    isError: credentialsError,
+  } = useProfileCredentials({ search: '' });
+
+  // Resume + Media (uses same useGetUserResumeQuery)
+  const {
+    data: resumeData,
+    isLoading: resumeLoading,
+    isError: resumeError,
+    refetch: refetchResume,
+  } = useGetUserResumeQuery([{ org: getTenant(), username: getUserName() }]);
+  const [createUserResume, { isLoading: isUploading }] = useCreateUserResumeMutation();
+
+  const resumeUrl = Array.isArray((resumeData as any)?.files)
+    ? ((resumeData as any).files.find((f: any) => f.type === 'resume')?.url as string | undefined)
+    : undefined;
+
+  const uploadedMedia: PortedUploadedFile[] = (() => {
+    const files = Array.isArray((resumeData as any)?.files) ? (resumeData as any).files : [];
+    const links = Array.isArray((resumeData as any)?.links)
+      ? (resumeData as any).links.map((link: any) => ({
+          name: link.url,
+          url: link.url,
+          type: 'link',
+        }))
+      : [];
+    return [...files, ...links];
+  })();
+
+  const handleUploadFile = async (file: File, isResume: boolean) => {
+    const formData = new FormData();
+    formData.append('user', getUserName());
+    formData.append('platform', getTenant());
+    if (isResume) {
+      formData.append('resume', file);
+    } else {
+      formData.append('additional_files', file);
+      formData.append('file_type_portfolio_sample.pdf', 'portfolio');
+    }
+    try {
+      await createUserResume({
+        username: getUserName(),
+        platform_key: getTenant(),
+        resume: formData,
+        method: 'POST',
+      });
+      refetchResume();
+      toast.success('Media uploaded successfully');
+    } catch {
+      toast.error('Error uploading media');
+    }
+  };
+
+  const handleUploadLink = async (url: string) => {
+    const formData = new FormData();
+    formData.append('user', getUserName());
+    formData.append('platform', getTenant());
+    const existingLinks: any[] = (resumeData as any)?.links || [];
+    const totalLinks = existingLinks.length;
+    existingLinks.forEach((link: any, index: number) => {
+      formData.append('link_' + (totalLinks + 1 - index), link?.url || '');
+    });
+    formData.append('link_1', url);
+    try {
+      await createUserResume({
+        username: getUserName(),
+        platform_key: getTenant(),
+        resume: formData,
+      });
+      refetchResume();
+      toast.success('Media uploaded successfully');
+    } catch {
+      toast.error('Error uploading media');
+    }
+  };
+
   const { isUserProfileOpen, setIsUserProfileOpen, userProfileTargetTab, setUserProfileTargetTab } =
     useContext(AppContext);
   const [activeTab, setActiveTab] = useState('about'); // about, education, experience, skills, credentials, resume, media
@@ -87,7 +220,11 @@ export default function PublicProfilePage() {
           {/* Profile Picture */}
           <div className="absolute bottom-0 left-6 translate-y-1/2 transform">
             <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-lg md:h-32 md:w-32">
-              <UserAvatar size={120} containerClassName="h-full w-full" />
+              <UserAvatar
+                size={120}
+                containerClassName="h-full w-full"
+                enableGravatar={enableGravatar}
+              />
             </div>
           </div>
         </div>
@@ -161,21 +298,105 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {activeTab === 'education' && <EducationBox />}
-
-          {activeTab === 'experience' && <ExperienceBox />}
-
-          {activeTab === 'skills' && <SkillsBox />}
-
-          {activeTab === 'credentials' && <CredentialBox />}
-
-          {activeTab === 'resume' && metadataLoaded && !isSkillsResumeFeatureHidden() && (
-            <ResumeBox />
+          {activeTab === 'education' && (
+            <EducationBox
+              education={(educationData as unknown as Education[]) || []}
+              isLoading={educationLoading}
+              isError={!!educationError}
+              onEditEducation={(edu) => {
+                setSelectedEducation(edu);
+                setEditEducationOpen(true);
+              }}
+            />
           )}
 
-          {activeTab === 'media' && <MediaBox />}
+          {activeTab === 'experience' && (
+            <ExperienceBox
+              experience={(experienceData as unknown as Experience[]) || []}
+              isLoading={experienceLoading}
+              isError={!!experienceError}
+              onEditExperience={(exp) => {
+                setSelectedExperience(exp);
+                setEditExperienceOpen(true);
+              }}
+            />
+          )}
+
+          {activeTab === 'skills' && (
+            <SkillsBox
+              earnedSkills={earnedSkills as any}
+              earnedSkillsLoading={earnedSkillsLoading}
+              earnedSkillsError={earnedSkillsError}
+              selfReportedSkills={selfReportedSkills as any}
+              selfReportedSkillsLoading={selfReportedSkillsLoading}
+              selfReportedSkillsError={selfReportedSkillsError}
+              desiredSkills={desiredSkills as any}
+              desiredSkillsLoading={desiredSkillsLoading}
+              desiredSkillsError={desiredSkillsError}
+            />
+          )}
+
+          {activeTab === 'credentials' && (
+            <CredentialBox
+              credentials={fetchedCredentials}
+              isLoading={credentialsLoading}
+              isError={credentialsError}
+            />
+          )}
+
+          {activeTab === 'resume' && metadataLoaded && !isSkillsResumeFeatureHidden() && (
+            <ResumeBox resumeUrl={resumeUrl} isLoading={resumeLoading} isError={resumeError} />
+          )}
+
+          {activeTab === 'media' && (
+            <MediaBox
+              uploadedMedia={uploadedMedia}
+              isLoading={resumeLoading}
+              isError={resumeError}
+              isUploading={isUploading}
+              resumeCheckboxEnabled={metadataLoaded && !isSkillsResumeFeatureHidden()}
+              onUploadFile={handleUploadFile}
+              onUploadLink={handleUploadLink}
+              onError={(message: string) => toast.error(message)}
+            />
+          )}
         </div>
       </div>
+      {editEducationOpen && (
+        <EducationDialog
+          open={editEducationOpen}
+          onOpenChange={setEditEducationOpen}
+          education={selectedEducation}
+          org={getTenant()}
+          username={getUserName()}
+          onComplete={() => setEditEducationOpen(false)}
+        />
+      )}
+      {openAddInstitutionDialog && (
+        <AddInstitutionDialog
+          open={openAddInstitutionDialog}
+          onOpenChange={setOpenAddInstitutionDialog}
+          // @ts-expect-error - investigate
+          onSave={() => setOpenAddInstitutionDialog(false)}
+        />
+      )}
+      {editExperienceOpen && (
+        <ExperienceDialog
+          open={editExperienceOpen}
+          onOpenChange={setEditExperienceOpen}
+          experience={selectedExperience}
+          org={getTenant()}
+          username={getUserName()}
+          onComplete={() => setEditExperienceOpen(false)}
+        />
+      )}
+      {openAddCompanyDialog && (
+        <AddCompanyDialog
+          open={openAddCompanyDialog}
+          onOpenChange={setOpenAddCompanyDialog}
+          onSave={() => setOpenAddCompanyDialog(false)}
+        />
+      )}
       {isUserProfileOpen && (
         <UserProfileModal
           isOpen={isUserProfileOpen}
