@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.21](https://github.com/iblai/skillsai/compare/skills-v0.10.20...skills-v0.10.21) (2026-04-09)
+
+### Bug Fixes
+
+* **ci:** skip e2e coverage bot for Dependabot PRs ([491af8a](https://github.com/iblai/skillsai/commit/491af8a5818a2633a1c4e0b5c5c8fa0702684d0c))
+
 ## [0.10.20](https://github.com/iblai/skillsai/compare/skills-v0.10.19...skills-v0.10.20) (2026-04-09)
 
 ### Bug Fixes
