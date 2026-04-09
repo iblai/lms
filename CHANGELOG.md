@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.22](https://github.com/iblai/skillsai/compare/skills-v0.10.21...skills-v0.10.22) (2026-04-09)
+
+### Bug Fixes
+
+* **ci:** instruct coverage bot to actually execute gh pr review command ([33f379c](https://github.com/iblai/skillsai/commit/33f379c0c0a90b34ba06dd1919d5f205d8a24aad))
+
 ## [0.10.21](https://github.com/iblai/skillsai/compare/skills-v0.10.20...skills-v0.10.21) (2026-04-09)
 
 ### Bug Fixes
