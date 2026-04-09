@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.20](https://github.com/iblai/skillsai/compare/skills-v0.10.19...skills-v0.10.20) (2026-04-09)
+
+### Bug Fixes
+
+* **e2e:** fix coverage bot job-level if condition ([47e756e](https://github.com/iblai/skillsai/commit/47e756eb1a94c34ce4f989a828c7015d203fbf73))
+
 ## [0.10.19](https://github.com/iblai/skillsai/compare/skills-v0.10.18...skills-v0.10.19) (2026-04-08)
 
 ### Chores
