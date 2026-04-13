@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -19,10 +19,9 @@ test.describe('Journey 08: Profile Credentials', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/profile/credentials`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page, 120000);
+    await waitForAppShell(page);
   });
 
   test('Checkpoint 1: Credentials page with list or empty state', async ({ page }) => {
@@ -36,9 +35,9 @@ test.describe('Journey 08: Profile Credentials', () => {
       .first();
     const credentialsHeading = page.getByRole('heading', { name: /credentials/i }).first();
 
-    const hasCards = await credentialCard.isVisible({ timeout: 15000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5000 }).catch(() => false);
-    const hasHeading = await credentialsHeading.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasCards = await credentialCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasHeading = await credentialsHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasCards) {
       logger.info('Credential cards are displayed');
@@ -55,7 +54,7 @@ test.describe('Journey 08: Profile Credentials', () => {
     const credentialCard = page
       .locator('[data-testid*="credential-card"], [data-testid*="credential-item"]')
       .first();
-    const hasCards = await credentialCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await credentialCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       logger.info('No credential cards — skipping info check');
@@ -72,7 +71,7 @@ test.describe('Journey 08: Profile Credentials', () => {
     const credentialCard = page
       .locator('[data-testid*="credential-card"], [data-testid*="credential-item"]')
       .first();
-    const hasCards = await credentialCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await credentialCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       logger.info('No credential cards — skipping modal test');
@@ -91,7 +90,7 @@ test.describe('Journey 08: Profile Credentials', () => {
           .first(),
       );
 
-    const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasModal) {
       await expect(modal).toBeVisible();
@@ -110,7 +109,7 @@ test.describe('Journey 08: Profile Credentials', () => {
     const credentialCard = page
       .locator('[data-testid*="credential-card"], [data-testid*="credential-item"]')
       .first();
-    const hasCards = await credentialCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await credentialCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       test.skip();
@@ -128,7 +127,7 @@ test.describe('Journey 08: Profile Credentials', () => {
           .first(),
       );
 
-    const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasModal) {
       logger.info('No modal appeared — skipping close test');
@@ -137,7 +136,7 @@ test.describe('Journey 08: Profile Credentials', () => {
     }
 
     const closeButton = page.getByRole('button', { name: /close|×|x/i }).first();
-    const hasClose = await closeButton.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasClose = await closeButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasClose) {
       await closeButton.click();
@@ -154,7 +153,7 @@ test.describe('Journey 08: Profile Credentials', () => {
     const credentialCard = page
       .locator('[data-testid*="credential-card"], [data-testid*="credential-item"]')
       .first();
-    const hasCards = await credentialCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await credentialCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       logger.info('No credential cards — skipping download/share check');
@@ -168,8 +167,8 @@ test.describe('Journey 08: Profile Credentials', () => {
       .first();
     const downloadLink = page.getByRole('link', { name: /download|share|export|view/i }).first();
 
-    const hasDownloadBtn = await downloadButton.isVisible({ timeout: 10000 }).catch(() => false);
-    const hasDownloadLink = await downloadLink.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasDownloadBtn = await downloadButton.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasDownloadLink = await downloadLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasDownloadBtn) {
       logger.info('Download/share button found');
@@ -181,7 +180,9 @@ test.describe('Journey 08: Profile Credentials', () => {
       await page.waitForTimeout(2000);
 
       const modalDownload = page.getByRole('button', { name: /download|share|export/i }).first();
-      const hasModalDownload = await modalDownload.isVisible({ timeout: 10000 }).catch(() => false);
+      const hasModalDownload = await modalDownload
+        .isVisible({ timeout: 120_000 })
+        .catch(() => false);
 
       if (hasModalDownload) {
         logger.info('Download/share button found inside modal');

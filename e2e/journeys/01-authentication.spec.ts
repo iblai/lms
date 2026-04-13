@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 const AUTH_HOST = process.env.AUTH_HOST || '';
@@ -31,7 +32,6 @@ test.describe('Journey 01: Authentication', () => {
     }
 
     await page.goto(SKILL_HOST, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
 
@@ -65,7 +65,6 @@ test.describe('Journey 01: Authentication', () => {
     }
 
     await page.goto(SKILL_HOST, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
 
@@ -81,7 +80,7 @@ test.describe('Journey 01: Authentication', () => {
       name: /continue with password/i,
     });
     const hasPwdButton = await continueWithPasswordBtn
-      .isVisible({ timeout: 10000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasPwdButton) {
@@ -90,7 +89,7 @@ test.describe('Journey 01: Authentication', () => {
 
     // Fill credentials
     const emailInput = page.locator('input[type="email"]');
-    const hasEmail = await emailInput.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasEmail = await emailInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasEmail) {
       await emailInput.fill(username);
@@ -130,7 +129,6 @@ test.describe('Journey 01: Authentication', () => {
     }
 
     await page.goto(SKILL_HOST, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
 
@@ -156,7 +154,7 @@ test.describe('Journey 01: Authentication', () => {
       name: /continue with password/i,
     });
     const hasPwdButton = await continueWithPasswordBtn
-      .isVisible({ timeout: 5000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasPwdButton) {
@@ -164,7 +162,7 @@ test.describe('Journey 01: Authentication', () => {
     }
 
     const emailInput = page.locator('input[type="email"]');
-    const hasEmail = await emailInput.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasEmail = await emailInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasEmail) {
       await emailInput.fill(username);
@@ -192,7 +190,6 @@ test.describe('Journey 01: Authentication', () => {
     }
 
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
 

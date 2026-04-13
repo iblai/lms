@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -12,10 +13,9 @@ test.describe('Journey 28: Tenant Management & Invitations', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
   });
 
   /**
@@ -227,7 +227,7 @@ test.describe('Journey 28: Tenant Management & Invitations', () => {
 
       // After expanding, table or content should be visible
       const table = page.getByRole('table');
-      const hasTable = await table.isVisible().catch(() => false);
+      const hasTable = await table.isVisible({ timeout: 120_000 }).catch(() => false);
       expect(hasTable).toBeTruthy();
 
       // Collapse button

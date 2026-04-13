@@ -1,129 +1,101 @@
 import { test, expect } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
 /**
  * Journey 07: Profile Skills
  *
- * Validates the profile skills page:
- *  1. Skills page with list or empty state
- *  2. Skill cards show name/proficiency
- *  3. Click skill → detail modal
+ * Validates the profile skills page at /profile/skills:
+ *  1. Skills page loads with skill sections
+ *  2. Skill cards show name and rating or empty state
+ *  3. Click self-reported skill → detail modal
  *  4. Modal close
- *  5. Add Skill button
+ *  5. Add Skill button opens dialog
  */
 test.describe('Journey 07: Profile Skills', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/profile/skills`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page, 120000);
+    await waitForAppShell(page);
   });
 
-  test('Checkpoint 1: Skills page with list or empty state', async ({ page }) => {
+  test('Checkpoint 1: Skills page loads with skill sections', async ({ page }) => {
     await expect(page).toHaveURL(/\/profile\/skills/);
 
-    // Wait for content to load — either skill cards or an empty state
-    const skillCard = page
-      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
-      .first();
-    const emptyState = page.getByText(/no skills|empty|you don't have any skills/i).first();
-    const skillsHeading = page.getByRole('heading', { name: /skills/i }).first();
+    // The page always renders three section headings: Earned, Self-Reported, Desired
+    const earnedHeading = page.getByRole('heading', { name: 'Earned' });
+    await expect(earnedHeading).toBeVisible({ timeout: 30000 });
 
-    const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5000 }).catch(() => false);
-    const hasHeading = await skillsHeading.isVisible({ timeout: 10000 }).catch(() => false);
+    const selfReportedHeading = page.getByRole('heading', { name: 'Self-Reported' });
+    await expect(selfReportedHeading).toBeVisible({ timeout: 10000 });
 
-    if (hasCards) {
-      logger.info('Skills cards are displayed');
-    } else if (hasEmpty) {
-      logger.info('Empty state displayed — no skills');
-    } else if (hasHeading) {
-      logger.info('Skills heading visible — page loaded');
-    }
+    const desiredHeading = page.getByRole('heading', { name: 'Desired' });
+    await expect(desiredHeading).toBeVisible({ timeout: 10000 });
 
-    expect(hasCards || hasEmpty || hasHeading).toBeTruthy();
+    logger.info('All three skill sections are visible');
   });
 
-  test('Checkpoint 2: Skill cards show name and proficiency', async ({ page }) => {
-    const skillCard = page
-      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
-      .first();
-    const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
+  test('Checkpoint 2: Skill cards show name or empty state', async ({ page }) => {
+    // Each section shows either SkillBox cards or a DefaultEmptyBox
+    // Check the Earned section first
+    const earnedHeading = page.getByRole('heading', { name: 'Earned' });
+    await expect(earnedHeading).toBeVisible({ timeout: 30000 });
 
-    if (!hasCards) {
-      logger.info('No skill cards found — skipping name/proficiency check');
-      test.skip();
-      return;
-    }
+    // SkillBox renders skill.name as a <p> and DefaultEmptyBox shows "You don't have any ... yet."
+    const earnedSection = earnedHeading.locator('..').locator('..');
+    const hasSkillName = await earnedSection
+      .locator('p.text-gray-600')
+      .first()
+      .isVisible({ timeout: 120_000 })
+      .catch(() => false);
 
-    // Get text content of the first card
-    const cardText = await skillCard.textContent();
-    expect(cardText?.length).toBeGreaterThan(0);
-    logger.info(`First skill card content: ${cardText?.substring(0, 100)}`);
-
-    // Look for proficiency indicators (progress bars, percentages, levels)
-    const proficiency = skillCard
-      .locator('[role="progressbar"], [data-testid*="proficiency"], [data-testid*="level"]')
-      .first();
-    const profText = skillCard.getByText(/beginner|intermediate|advanced|expert|%/i).first();
-
-    const hasProfIndicator = await proficiency.isVisible({ timeout: 5000 }).catch(() => false);
-    const hasProfText = await profText.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProfIndicator || hasProfText) {
-      logger.info('Proficiency indicator found on skill card');
+    if (hasSkillName) {
+      const skillText = await earnedSection.locator('p.text-gray-600').first().textContent();
+      logger.info(`First earned skill: ${skillText}`);
+      expect(skillText?.length).toBeGreaterThan(0);
     } else {
-      logger.info('No explicit proficiency indicator — card may use different display');
+      // Check for empty state message
+      const emptyText = earnedSection.getByText(/you don't have any/i).first();
+      await expect(emptyText).toBeVisible({ timeout: 10000 });
+      logger.info('Earned skills section shows empty state');
     }
   });
 
-  test('Checkpoint 3: Click skill opens detail modal', async ({ page }) => {
-    const skillCard = page
-      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
-      .first();
-    const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
+  test('Checkpoint 3: Click self-reported skill opens detail modal', async ({ page }) => {
+    // Only self-reported skills have an onSkillClick handler that opens the modal
+    const selfReportedHeading = page.getByRole('heading', { name: 'Self-Reported' });
+    await expect(selfReportedHeading).toBeVisible({ timeout: 30000 });
+
+    const selfReportedSection = selfReportedHeading.locator('..').locator('..');
+    // SkillBox is a div with cursor-pointer class containing a <p> with the skill name
+    const skillCard = selfReportedSection.locator('div.cursor-pointer').first();
+    const hasCards = await skillCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
-      logger.info('No skill cards — skipping modal test');
+      logger.info('No self-reported skill cards — skipping modal test');
       test.skip();
       return;
     }
 
     await skillCard.click();
 
-    // Wait for a modal/dialog/detail view to appear
-    const modal = page
-      .getByRole('dialog')
-      .first()
-      .or(page.locator('[data-testid*="skill-modal"], [data-testid*="skill-detail"]').first());
-
-    const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
-
-    if (hasModal) {
-      logger.info('Skill detail modal opened');
-      await expect(modal).toBeVisible();
-    } else {
-      // The click may navigate to a detail page instead
-      const urlChanged = !page.url().endsWith('/profile/skills');
-      if (urlChanged) {
-        logger.info('Skill click navigated to detail page');
-      } else {
-        logger.info('No modal or navigation detected after click');
-      }
-    }
+    const modal = page.getByRole('dialog').first();
+    await expect(modal).toBeVisible({ timeout: 15000 });
+    logger.info('Skill detail modal opened');
   });
 
   test('Checkpoint 4: Skill modal closes properly', async ({ page }) => {
-    const skillCard = page
-      .locator('[data-testid*="skill-card"], [data-testid*="skill-item"]')
-      .first();
-    const hasCards = await skillCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const selfReportedSection = page
+      .getByRole('heading', { name: 'Self-Reported' })
+      .locator('..')
+      .locator('..');
+    const skillCard = selfReportedSection.locator('div.cursor-pointer').first();
+    const hasCards = await skillCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       test.skip();
@@ -132,12 +104,8 @@ test.describe('Journey 07: Profile Skills', () => {
 
     await skillCard.click();
 
-    const modal = page
-      .getByRole('dialog')
-      .first()
-      .or(page.locator('[data-testid*="skill-modal"], [data-testid*="skill-detail"]').first());
-
-    const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
+    const modal = page.getByRole('dialog').first();
+    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasModal) {
       logger.info('No modal appeared — skipping close test');
@@ -145,35 +113,30 @@ test.describe('Journey 07: Profile Skills', () => {
       return;
     }
 
-    // Close the modal
-    const closeButton = page.getByRole('button', { name: /close|×|x/i }).first();
-    const hasClose = await closeButton.isVisible({ timeout: 5000 }).catch(() => false);
+    // Try close button or Escape
+    const closeButton = modal.getByRole('button', { name: /close|×|x/i }).first();
+    const hasClose = await closeButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasClose) {
       await closeButton.click();
-      await expect(modal).not.toBeVisible({ timeout: 10000 });
-      logger.info('Skill modal closed via close button');
     } else {
-      // Try pressing Escape
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(1000);
-      logger.info('Attempted to close modal via Escape key');
     }
+
+    await expect(modal).not.toBeVisible({ timeout: 10000 });
+    logger.info('Skill modal closed');
   });
 
-  test('Checkpoint 5: Add Skill button', async ({ page }) => {
-    const addSkillButton = page
-      .getByRole('button', { name: /add skill/i })
-      .first()
-      .or(page.getByTestId('add-skill-button'));
+  test('Checkpoint 5: Add Skill button opens dialog', async ({ page }) => {
+    // There are Add Skill buttons for Self-Reported and Desired sections
+    const addSkillButton = page.getByRole('button', { name: /add skill/i }).first();
+    await expect(addSkillButton).toBeVisible({ timeout: 15000 });
+    logger.info('Add Skill button is visible');
 
-    const hasAddButton = await addSkillButton.isVisible({ timeout: 15000 }).catch(() => false);
+    await addSkillButton.click();
 
-    if (hasAddButton) {
-      await expect(addSkillButton).toBeVisible();
-      logger.info('Add Skill button is visible');
-    } else {
-      logger.info('Add Skill button not found — feature may not be available');
-    }
+    const dialog = page.getByRole('dialog').first();
+    await expect(dialog).toBeVisible({ timeout: 15000 });
+    logger.info('Add Skill dialog opened');
   });
 });

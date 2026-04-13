@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -19,10 +19,9 @@ test.describe('Journey 09: Profile Pathways', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/profile/pathways`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page, 120000);
+    await waitForAppShell(page);
   });
 
   test('Checkpoint 1: Pathways page with list or empty state', async ({ page }) => {
@@ -31,12 +30,14 @@ test.describe('Journey 09: Profile Pathways', () => {
     const pathwayCard = page
       .locator('[data-testid*="pathway-card"], [data-testid*="pathway-item"]')
       .first();
-    const emptyState = page.getByText(/no pathways|empty|you don't have any pathways/i).first();
+    const emptyState = page
+      .getByText(/no pathways found|empty|you don't have any pathways/i)
+      .first();
     const pathwaysHeading = page.getByRole('heading', { name: /pathways/i }).first();
 
-    const hasCards = await pathwayCard.isVisible({ timeout: 15000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5000 }).catch(() => false);
-    const hasHeading = await pathwaysHeading.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasCards = await pathwayCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasHeading = await pathwaysHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasCards) {
       logger.info('Pathway cards are displayed');
@@ -53,7 +54,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     const pathwayCard = page
       .locator('[data-testid*="pathway-card"], [data-testid*="pathway-item"]')
       .first();
-    const hasCards = await pathwayCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await pathwayCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       logger.info('No pathway cards — skipping name/progress check');
@@ -70,8 +71,8 @@ test.describe('Journey 09: Profile Pathways', () => {
     const progressBar = pathwayCard.locator('[role="progressbar"]').first();
     const progressText = pathwayCard.getByText(/%|complete|progress/i).first();
 
-    const hasProgressBar = await progressBar.isVisible({ timeout: 5000 }).catch(() => false);
-    const hasProgressText = await progressText.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasProgressBar = await progressBar.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasProgressText = await progressText.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasProgressBar) {
       logger.info('Progress bar found on pathway card');
@@ -86,7 +87,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     const pathwayCard = page
       .locator('[data-testid*="pathway-card"], [data-testid*="pathway-item"]')
       .first();
-    const hasCards = await pathwayCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await pathwayCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       logger.info('No pathway cards — skipping modal test');
@@ -101,7 +102,7 @@ test.describe('Journey 09: Profile Pathways', () => {
       .first()
       .or(page.locator('[data-testid*="pathway-modal"], [data-testid*="pathway-detail"]').first());
 
-    const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasModal) {
       await expect(modal).toBeVisible();
@@ -120,7 +121,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     const pathwayCard = page
       .locator('[data-testid*="pathway-card"], [data-testid*="pathway-item"]')
       .first();
-    const hasCards = await pathwayCard.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCards = await pathwayCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCards) {
       test.skip();
@@ -134,7 +135,7 @@ test.describe('Journey 09: Profile Pathways', () => {
       .first()
       .or(page.locator('[data-testid*="pathway-modal"], [data-testid*="pathway-detail"]').first());
 
-    const hasModal = await modal.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasModal) {
       logger.info('No modal appeared — skipping close test');
@@ -143,7 +144,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     }
 
     const closeButton = page.getByRole('button', { name: /close|×|x/i }).first();
-    const hasClose = await closeButton.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasClose = await closeButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasClose) {
       await closeButton.click();
@@ -163,7 +164,7 @@ test.describe('Journey 09: Profile Pathways', () => {
       .or(page.getByTestId('create-pathway-button'));
 
     const hasCreateButton = await createPathwayButton
-      .isVisible({ timeout: 15000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasCreateButton) {

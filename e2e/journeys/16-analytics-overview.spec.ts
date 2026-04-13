@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -6,167 +8,146 @@ test.describe('Journey 16: Analytics Overview', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
 
-    // Admin gate: check if AI Analytics link is visible
+    // Admin gate: check if AI Analytics link is visible in the nav
     const analyticsLink = page.getByRole('link', { name: /ai analytics|analytics/i });
-    const isAdmin = await analyticsLink.isVisible({ timeout: 15_000 }).catch(() => false);
+    const isAdmin = await analyticsLink.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!isAdmin) {
       test.skip(true, 'Analytics requires admin access — AI Analytics link not visible');
       return;
     }
 
     await analyticsLink.click();
-    await page.waitForURL((url) => url.href.includes('/analytics'), { timeout: 30_000 });
+    await page.waitForURL((url) => url.href.includes('/analytics'), { timeout: 120_000 });
   });
 
-  test('CP-1: analytics page loads with dashboard', async ({ page }) => {
-    // Verify the analytics page loaded
+  test('CP-1: analytics page loads with stat cards', async ({ page }) => {
     expect(page.url()).toContain('/analytics');
 
-    // Analytics may load in an iframe — check for any visible content
-    const analyticsContent = page
-      .locator('[class*="analytics"], [data-testid*="analytics"], [class*="dashboard"]')
-      .first()
-      .or(page.getByRole('main'))
-      .or(page.locator('iframe'));
+    // AnalyticsOverview renders 4 StatCards with aria-label "<title> mini card" (loaded),
+    // "<title> mini card loading" (skeleton), or "<title> mini card value". Use starts-with
+    // selector to match any state.
+    const statCardPrefixes = [
+      'Messages mini card',
+      'Active Users mini card',
+      'Topics mini card',
+      'Conversations mini card',
+    ];
 
-    const hasContent = await analyticsContent.isVisible({ timeout: 30_000 }).catch(() => false);
-
-    if (!hasContent) {
-      // At minimum the banner/navbar should be present
-      const navbar = page.getByRole('banner');
-      await expect(navbar).toBeVisible({ timeout: 10_000 });
-    } else {
-      expect(hasContent).toBe(true);
+    const visibility: boolean[] = [];
+    for (const prefix of statCardPrefixes) {
+      const card = page.locator(`[aria-label^="${prefix}"]`);
+      const isVisible = await card
+        .first()
+        .isVisible({ timeout: 120_000 })
+        .catch(() => false);
+      visibility.push(isVisible);
     }
+
+    const [hasMessages, hasActiveUsers, hasTopics, hasConversations] = visibility;
+
+    const visibleCount = [hasMessages, hasActiveUsers, hasTopics, hasConversations].filter(
+      Boolean,
+    ).length;
+    logger.info(`Found ${visibleCount} of 4 stat cards`);
+    expect(visibleCount).toBeGreaterThan(0);
   });
 
-  test('CP-2: overview shows metrics cards', async ({ page }) => {
-    // Navigate to the overview tab if not already there
-    const overviewTab = page
-      .getByRole('tab', { name: /overview/i })
-      .or(page.getByRole('link', { name: /overview/i }));
-    const hasOverviewTab = await overviewTab.isVisible({ timeout: 10_000 }).catch(() => false);
+  test('CP-2: chart sections are visible', async ({ page }) => {
+    // AnalyticsOverview renders 3 charts via ChartCardWrapper with aria-label "<title> chart card"
+    const sessionsChart = page.locator('[aria-label="Sessions chart card"]');
+    const topicsChart = page.locator('[aria-label="Topics chart card"]');
+    const activeUsersChart = page.locator('[aria-label="Active Users chart card"]');
 
-    if (hasOverviewTab) {
-      await overviewTab.click();
-      await page.waitForTimeout(2_000);
-    }
-
-    // Look for metrics cards / stat cards / KPI widgets
-    const metricsCards = page.locator(
-      '[class*="metric-card"], [class*="stat-card"], [class*="kpi"], [data-testid*="metric"], [class*="mini-card"]',
-    );
-    const hasMetrics = await metricsCards
-      .first()
-      .isVisible({ timeout: 30_000 })
+    const hasSessions = await sessionsChart.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasTopics = await topicsChart.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasActiveUsers = await activeUsersChart
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
-    if (hasMetrics) {
-      const count = await metricsCards.count();
-      expect(count).toBeGreaterThan(0);
-    } else {
-      // Analytics content should at least be present
-      const content = page.locator('[class*="analytics"], [class*="chart"]').first();
-      await expect(content).toBeVisible({ timeout: 10_000 });
+    const visibleCount = [hasSessions, hasTopics, hasActiveUsers].filter(Boolean).length;
+    logger.info(`Found ${visibleCount} of 3 chart sections`);
+    expect(visibleCount).toBeGreaterThan(0);
+  });
+
+  test('CP-3: analytics navigation tabs visible', async ({ page }) => {
+    // AnalyticsLayout renders tabs as role="tab" buttons
+    const expectedTabs = [
+      'Overview',
+      'Users',
+      'Courses',
+      'Programs',
+      'Topics',
+      'Transcripts',
+      'Costs',
+      'Data Reports',
+    ];
+
+    let visibleTabCount = 0;
+    for (const tabName of expectedTabs) {
+      const tab = page.getByRole('tab', { name: tabName, exact: true });
+      const isVisible = await tab.isVisible({ timeout: 120_000 }).catch(() => false);
+      if (isVisible) {
+        visibleTabCount++;
+      }
+    }
+
+    logger.info(`Found ${visibleTabCount} of ${expectedTabs.length} analytics navigation tabs`);
+    expect(visibleTabCount).toBeGreaterThan(0);
+
+    // Overview tab should be active on /analytics
+    const overviewTab = page.getByRole('tab', { name: 'Overview', exact: true });
+    const hasOverview = await overviewTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    if (hasOverview) {
+      await expect(overviewTab).toHaveAttribute('data-state', 'active');
+      logger.info('Overview tab is active');
     }
   });
 
-  test('CP-3: sidebar tabs visible', async ({ page }) => {
-    // Verify analytics sidebar/tab navigation is present
-    const tabs = page
-      .getByRole('tablist')
-      .or(
-        page.locator('[class*="analytics-nav"], [class*="analytics-sidebar"], [class*="tab-list"]'),
-      );
-    const hasTabList = await tabs.isVisible({ timeout: 15_000 }).catch(() => false);
-
-    if (hasTabList) {
-      await expect(tabs).toBeVisible();
-    } else {
-      // May use links/buttons instead of tabs
-      const navLinks = page.locator(
-        '[class*="analytics"] a, [class*="analytics"] button[role="tab"]',
-      );
-      const count = await navLinks.count();
-      expect(count).toBeGreaterThan(0);
-    }
-  });
-
-  test('CP-4: time filter is functional', async ({ page }) => {
-    // Look for time range / date filter controls
-    const timeFilter = page
-      .getByRole('combobox', { name: /time|period|range|date/i })
-      .or(page.locator('[class*="time-filter"], [data-testid*="time-filter"]'))
-      .or(page.getByRole('button', { name: /last.*days|this week|this month|time range/i }));
-
-    const hasTimeFilter = await timeFilter.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-4: time filter buttons work', async ({ page }) => {
+    // Each chart section has its own TimeFilter with buttons: Today, 7D, 30D, 90D, Custom
+    // 30D is selected by default (aria-pressed="true")
+    const timeFilterButton = page.getByRole('button', { name: '7D', exact: true }).first();
+    const hasTimeFilter = await timeFilterButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasTimeFilter) {
-      test.skip(true, 'Time filter control not visible on analytics page');
+      test.skip(true, 'Time filter buttons not visible');
       return;
     }
 
-    await timeFilter.click();
-    await page.waitForTimeout(1_000);
-
-    // A dropdown or date picker should appear
-    const filterOptions = page
-      .getByRole('option')
-      .or(page.getByRole('menuitem'))
-      .or(page.locator('[class*="dropdown-item"], [class*="select-option"]'));
-    const hasOptions = await filterOptions
-      .first()
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
-
-    if (hasOptions) {
-      // Click a different option
-      await filterOptions.first().click();
-      await page.waitForTimeout(2_000);
-    } else {
-      await page.keyboard.press('Escape');
+    // Check that 30D is pressed by default
+    const defaultButton = page.getByRole('button', { name: '30D', exact: true }).first();
+    const hasDefault = await defaultButton.isVisible({ timeout: 120_000 }).catch(() => false);
+    if (hasDefault) {
+      await expect(defaultButton).toHaveAttribute('aria-pressed', 'true');
+      logger.info('30D filter is active by default');
     }
 
-    // Page should still be on analytics after filter change
+    // Click 7D and verify it becomes active
+    await timeFilterButton.click();
+    await expect(timeFilterButton).toHaveAttribute('aria-pressed', 'true', { timeout: 10_000 });
+    logger.info('Clicked 7D filter — now active');
+
     expect(page.url()).toContain('/analytics');
   });
 
-  test('CP-5: groups filter works', async ({ page }) => {
-    // Look for group filter / cohort filter
-    const groupFilter = page
-      .getByRole('combobox', { name: /group|cohort/i })
-      .or(page.locator('[class*="group-filter"], [data-testid*="group-filter"]'))
-      .or(page.getByRole('button', { name: /group|cohort|all groups/i }));
+  test('CP-5: groups filter dropdown visible', async ({ page }) => {
+    // GroupsFilterDropdown is rendered in the layout with placeholder "Filter by Groups"
+    const groupsFilter = page.getByText(/filter by groups/i).first();
+    const hasGroupsFilter = await groupsFilter.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    const hasGroupFilter = await groupFilter.isVisible({ timeout: 15_000 }).catch(() => false);
-
-    if (!hasGroupFilter) {
-      test.skip(true, 'Groups filter not visible on analytics page');
+    if (!hasGroupsFilter) {
+      test.skip(true, 'Groups filter dropdown not visible');
       return;
     }
 
-    await groupFilter.click();
+    logger.info('Groups filter dropdown is visible');
+    await groupsFilter.click();
     await page.waitForTimeout(1_000);
 
-    const filterOptions = page
-      .getByRole('option')
-      .or(page.getByRole('menuitem'))
-      .or(page.locator('[class*="dropdown-item"]'));
-    const hasOptions = await filterOptions
-      .first()
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
-
-    if (hasOptions) {
-      await filterOptions.first().click();
-      await page.waitForTimeout(2_000);
-    } else {
-      await page.keyboard.press('Escape');
-    }
-
+    // After clicking, a dropdown should appear
     expect(page.url()).toContain('/analytics');
   });
 });

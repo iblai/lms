@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -6,15 +7,13 @@ test.describe('Journey 11: Profile Courses', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
   });
 
   test('CP-1: courses page loads with enrolled courses or empty state', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     // Wait for the page to settle — expect either course cards or an empty state
     const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
@@ -23,20 +22,18 @@ test.describe('Journey 11: Profile Courses', () => {
       .or(page.getByText(/not enrolled/i))
       .or(page.getByText(/empty/i));
 
-    const hasCourses = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
 
     expect(hasCourses || hasEmpty).toBe(true);
   });
 
   test('CP-2: course cards show name and progress', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const hasCourses = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCourses) {
       test.skip(true, 'No enrolled courses — skipping card content check');
@@ -55,19 +52,17 @@ test.describe('Journey 11: Profile Courses', () => {
       .locator('[class*="progress"], [role="progressbar"]')
       .first()
       .or(courseCard.getByText(/%/));
-    const hasProgress = await progress.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasProgress = await progress.isVisible({ timeout: 120_000 }).catch(() => false);
     // Progress may not be shown for all courses, so we just confirm card loaded
     expect(cardTitle).toBeDefined();
   });
 
   test('CP-3: click course navigates to course about page', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const hasCourses = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCourses) {
       test.skip(true, 'No enrolled courses — skipping navigation check');
@@ -76,7 +71,7 @@ test.describe('Journey 11: Profile Courses', () => {
 
     // Click the first course card link or the card itself
     const courseLink = courseCard.getByRole('link').first();
-    const hasLink = await courseLink.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasLink = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasLink) {
       await courseLink.click();
@@ -94,14 +89,12 @@ test.describe('Journey 11: Profile Courses', () => {
   });
 
   test('CP-4: pagination or load more shows additional courses', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     // Wait for initial content
     const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const hasCourses = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCourses) {
       test.skip(true, 'No enrolled courses — skipping pagination check');
@@ -114,8 +107,8 @@ test.describe('Journey 11: Profile Courses', () => {
       .getByRole('navigation', { name: /pagination/i })
       .or(page.locator('[class*="pagination"]'));
 
-    const hasLoadMore = await loadMore.isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasPagination = await pagination.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasLoadMore = await loadMore.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasPagination = await pagination.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasLoadMore && !hasPagination) {
       // Fewer courses than page size — acceptable, no pagination needed

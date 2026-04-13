@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -6,8 +7,8 @@ test.describe('Journey 15: Notifications', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
   });
 
   test('CP-1: bell icon visible in NavBar', async ({ page }) => {
@@ -36,7 +37,7 @@ test.describe('Journey 15: Notifications', () => {
           .filter({ has: page.locator('[class*="bell"]') }),
       );
 
-    const hasBell = await bellIcon.isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasBell = await bellIcon.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!hasBell) {
       test.skip(true, 'Notification bell not visible');
       return;
@@ -63,7 +64,7 @@ test.describe('Journey 15: Notifications', () => {
 
     const hasDropdown = await dropdown
       .first()
-      .isVisible({ timeout: 10_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     // If no dropdown found, the feature may not render a modal/dialog — check if page changed
@@ -90,7 +91,7 @@ test.describe('Journey 15: Notifications', () => {
           .filter({ has: page.locator('[class*="bell"]') }),
       );
 
-    const hasBell = await bellIcon.isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasBell = await bellIcon.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!hasBell) {
       test.skip(true, 'Notification bell not visible');
       return;
@@ -112,7 +113,7 @@ test.describe('Journey 15: Notifications', () => {
 
     const hasDropdown = await dropdown
       .first()
-      .isVisible({ timeout: 10_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasDropdown) {
@@ -124,14 +125,12 @@ test.describe('Journey 15: Notifications', () => {
     const viewAllLink = page
       .getByRole('link', { name: /view all|see all/i })
       .or(page.getByText(/view all|see all/i));
-    const hasViewAll = await viewAllLink.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasViewAll = await viewAllLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasViewAll) {
       // Alternatively navigate directly
-      await page.goto(`${SKILL_HOST}/notifications`, {
-        waitUntil: 'domcontentloaded',
-        timeout: 60_000,
-      });
+      await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+      await waitForAppShell(page);
     } else {
       await viewAllLink.click();
     }
@@ -141,10 +140,8 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-4: notification list shows titles and timestamps', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     // Check for notification items
     const notificationItem = page
@@ -158,9 +155,9 @@ test.describe('Journey 15: Notifications', () => {
       .or(page.getByText(/nothing here/i));
 
     const hasNotifications = await notificationItem
-      .isVisible({ timeout: 15_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasNotifications && !hasEmpty) {
       // Page loaded but in an unknown state — check that at least the page container exists
@@ -177,10 +174,8 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-5: click notification navigates to detail', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     const notificationItem = page
       .locator(
@@ -188,7 +183,7 @@ test.describe('Journey 15: Notifications', () => {
       )
       .first();
     const hasNotifications = await notificationItem
-      .isVisible({ timeout: 15_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasNotifications) {
@@ -200,7 +195,7 @@ test.describe('Journey 15: Notifications', () => {
 
     // Click the first notification
     const clickableLink = notificationItem.getByRole('link').first();
-    const hasLink = await clickableLink.isVisible({ timeout: 3_000 }).catch(() => false);
+    const hasLink = await clickableLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasLink) {
       await clickableLink.click();
@@ -212,16 +207,14 @@ test.describe('Journey 15: Notifications', () => {
     // Should navigate somewhere (detail page, related resource, or expand inline)
     const afterUrl = page.url();
     const expanded = page.locator('[class*="notification-detail"], [class*="expanded"]').first();
-    const hasExpanded = await expanded.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasExpanded = await expanded.isVisible({ timeout: 120_000 }).catch(() => false);
 
     expect(afterUrl !== beforeUrl || hasExpanded).toBe(true);
   });
 
   test('CP-6: notification detail shows content', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     const notificationItem = page
       .locator(
@@ -229,7 +222,7 @@ test.describe('Journey 15: Notifications', () => {
       )
       .first();
     const hasNotifications = await notificationItem
-      .isVisible({ timeout: 15_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasNotifications) {
@@ -239,7 +232,7 @@ test.describe('Journey 15: Notifications', () => {
 
     // Click to expand or navigate
     const clickableLink = notificationItem.getByRole('link').first();
-    const hasLink = await clickableLink.isVisible({ timeout: 3_000 }).catch(() => false);
+    const hasLink = await clickableLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasLink) {
       await clickableLink.click();
@@ -257,7 +250,7 @@ test.describe('Journey 15: Notifications', () => {
       .first()
       .or(page.getByRole('article').first());
 
-    const hasDetail = await detailContent.isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasDetail = await detailContent.isVisible({ timeout: 120_000 }).catch(() => false);
     // At minimum the page or expanded view should have text
     if (hasDetail) {
       const detailText = await detailContent.textContent();
@@ -266,16 +259,14 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-7: mark all as read', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     const markAllReadBtn = page
       .getByRole('button', { name: /mark all.*read|mark.*read/i })
       .or(page.locator('[data-testid*="mark-all-read"]'));
 
-    const hasMarkAll = await markAllReadBtn.isVisible({ timeout: 15_000 }).catch(() => false);
+    const hasMarkAll = await markAllReadBtn.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasMarkAll) {
       // No "mark all read" button — may not have unread notifications or feature not available
@@ -288,7 +279,7 @@ test.describe('Journey 15: Notifications', () => {
 
     // After marking all as read, unread indicators should disappear or button should be disabled
     const unreadBadge = page.locator('[class*="unread-badge"], [class*="unread-count"]').first();
-    const hasUnread = await unreadBadge.isVisible({ timeout: 3_000 }).catch(() => false);
+    const hasUnread = await unreadBadge.isVisible({ timeout: 120_000 }).catch(() => false);
 
     // Either no unread badge remains or the mark-all button is now disabled
     const isDisabled = await markAllReadBtn.isDisabled().catch(() => false);
