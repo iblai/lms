@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.23](https://github.com/iblai/skillsai/compare/skills-v0.10.22...skills-v0.10.23) (2026-04-13)
+
+### Bug Fixes
+
+* **e2e:** heal analytics, profile, error page and timeout issues across all journeys ([3783c8e](https://github.com/iblai/skillsai/commit/3783c8e06fa66f1e922ddfc3b5b9fc8e0b4b236a))
+
+### Chores
+
+* bump @iblai/iblai-js to 1.3.10 ([349082f](https://github.com/iblai/skillsai/commit/349082f32239597a76c7a6e8e77f77067fb7766b))
+* bump @iblai/iblai-js to 1.3.8 and set e2e bot username ([b0f9be2](https://github.com/iblai/skillsai/commit/b0f9be2e75cee5b548005e34d88a5df61d4fcac8))
+
 ## [0.10.22](https://github.com/iblai/skillsai/compare/skills-v0.10.21...skills-v0.10.22) (2026-04-09)
 
 ### Bug Fixes
