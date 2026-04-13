@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.24](https://github.com/iblai/skillsai/compare/skills-v0.10.23...skills-v0.10.24) (2026-04-13)
+
+### Bug Fixes
+
+* **e2e:** heal journeys 09, 11, 13, 14 with proper polling and data-testid selectors ([e7ad4f2](https://github.com/iblai/skillsai/commit/e7ad4f25d339ac49643c94e0137021a12d19f786))
+
 ## [0.10.23](https://github.com/iblai/skillsai/compare/skills-v0.10.22...skills-v0.10.23) (2026-04-13)
 
 ### Bug Fixes
