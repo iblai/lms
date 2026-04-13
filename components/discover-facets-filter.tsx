@@ -31,7 +31,7 @@ export const DiscoverFacetsFilter = () => {
   if (!facetsLoading && !isError && facets.length > 0) {
     return facets.map((facet, index) => {
       return (
-        <div className="mb-4" key={index}>
+        <div className="mb-4" key={index} data-testid="facet-filter">
           <div
             className="mb-2 flex cursor-pointer items-center justify-between"
             onClick={() => handleToggleFacet(facet?.slug)}

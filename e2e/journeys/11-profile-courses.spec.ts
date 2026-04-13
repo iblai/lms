@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { logger } from '@iblai/iblai-js/playwright';
 import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
@@ -15,120 +16,92 @@ test.describe('Journey 11: Profile Courses', () => {
     await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
     await waitForAppShell(page);
 
-    // Wait for the page to settle — expect either course cards or an empty state
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const emptyState = page
-      .getByText(/no courses/i)
-      .or(page.getByText(/not enrolled/i))
-      .or(page.getByText(/empty/i));
+    // CourseBox renders as <Link href="/courses/..."> — use that plus empty state text.
+    // Use expect().toBeVisible() (polling) instead of isVisible() (instant check) so we
+    // wait for elements that don't yet exist in the DOM during the loading/skeleton phase.
+    const courseCard = page.locator('a[href*="/courses/"]').first();
+    const emptyState = page.getByText(/no courses found/i).first();
 
-    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
+    const loaded = courseCard.or(emptyState);
+    await expect(loaded).toBeVisible({ timeout: 120_000 });
 
-    expect(hasCourses || hasEmpty).toBe(true);
+    const hasCourses = await courseCard.isVisible().catch(() => false);
+    if (hasCourses) {
+      logger.info('Course cards are displayed');
+    } else {
+      logger.info('Empty state displayed — no courses');
+    }
   });
 
   test('CP-2: course cards show name and progress', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
     await waitForAppShell(page);
 
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const courseCard = page.locator('a[href*="/courses/"]').first();
+    const emptyState = page.getByText(/no courses found/i).first();
 
+    await expect(courseCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const hasCourses = await courseCard.isVisible().catch(() => false);
     if (!hasCourses) {
       test.skip(true, 'No enrolled courses — skipping card content check');
       return;
     }
 
-    // Verify the card has a heading or title text
-    const cardTitle = courseCard
-      .getByRole('heading')
-      .first()
-      .or(courseCard.locator('[class*="title"], [class*="name"]').first());
+    // CourseBox renders an h3 with the course name
+    const cardTitle = courseCard.locator('h3').first();
     await expect(cardTitle).toBeVisible({ timeout: 10_000 });
-
-    // Verify progress indicator exists (progress bar, percentage, or text)
-    const progress = courseCard
-      .locator('[class*="progress"], [role="progressbar"]')
-      .first()
-      .or(courseCard.getByText(/%/));
-    const hasProgress = await progress.isVisible({ timeout: 120_000 }).catch(() => false);
-    // Progress may not be shown for all courses, so we just confirm card loaded
-    expect(cardTitle).toBeDefined();
+    logger.info(`First course card title: ${await cardTitle.textContent()}`);
   });
 
   test('CP-3: click course navigates to course about page', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
     await waitForAppShell(page);
 
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const courseCard = page.locator('a[href*="/courses/"]').first();
+    const emptyState = page.getByText(/no courses found/i).first();
 
+    await expect(courseCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const hasCourses = await courseCard.isVisible().catch(() => false);
     if (!hasCourses) {
       test.skip(true, 'No enrolled courses — skipping navigation check');
       return;
     }
 
-    // Click the first course card link or the card itself
-    const courseLink = courseCard.getByRole('link').first();
-    const hasLink = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
+    // CourseBox is already a Link — click it directly
+    await courseCard.click();
 
-    if (hasLink) {
-      await courseLink.click();
-    } else {
-      await courseCard.click();
-    }
-
-    // Should navigate to a course detail / about page
-    await page.waitForURL(
-      (url) =>
-        url.href.includes('/course') || url.href.includes('/about') || url.href.includes('/detail'),
-      { timeout: 30_000 },
-    );
-    expect(page.url()).toMatch(/course|about|detail/);
+    await page.waitForURL((url) => url.href.includes('/courses/'), { timeout: 30_000 });
+    expect(page.url()).toContain('/courses/');
+    logger.info(`Navigated to course: ${page.url()}`);
   });
 
   test('CP-4: pagination or load more shows additional courses', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
     await waitForAppShell(page);
 
-    // Wait for initial content
-    const courseCard = page.locator('[class*="course-card"], [data-testid*="course"]').first();
-    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const courseCard = page.locator('a[href*="/courses/"]').first();
+    const emptyState = page.getByText(/no courses found/i).first();
 
+    await expect(courseCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const hasCourses = await courseCard.isVisible().catch(() => false);
     if (!hasCourses) {
       test.skip(true, 'No enrolled courses — skipping pagination check');
       return;
     }
 
-    // Look for pagination controls or a "load more" / "see more" button
-    const loadMore = page.getByRole('button', { name: /load more|see more|show more|next/i });
-    const pagination = page
-      .getByRole('navigation', { name: /pagination/i })
-      .or(page.locator('[class*="pagination"]'));
+    // ReactPaginate renders a <ul> with pagination links
+    const pagination = page.locator('ul.pagination, nav[aria-label*="pagination"]').first();
+    const hasPagination = await pagination.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    const hasLoadMore = await loadMore.isVisible({ timeout: 120_000 }).catch(() => false);
-    const hasPagination = await pagination.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!hasLoadMore && !hasPagination) {
-      // Fewer courses than page size — acceptable, no pagination needed
+    if (!hasPagination) {
+      logger.info('No pagination — fewer courses than page size');
       return;
     }
 
-    if (hasLoadMore) {
-      const beforeCount = await page
-        .locator('[class*="course-card"], [data-testid*="course"]')
-        .count();
-      await loadMore.click();
-      await page.waitForTimeout(2_000);
-      const afterCount = await page
-        .locator('[class*="course-card"], [data-testid*="course"]')
-        .count();
-      expect(afterCount).toBeGreaterThanOrEqual(beforeCount);
-    }
-
-    if (hasPagination) {
-      await expect(pagination).toBeVisible();
-    }
+    await expect(pagination).toBeVisible();
+    logger.info('Pagination controls are visible');
   });
 });
