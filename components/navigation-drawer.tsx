@@ -66,7 +66,11 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
         {/* Header */}
         <div className="flex h-20 items-center justify-between border-b px-4 md:h-24">
           <Logo variant="small" />
-          <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+            aria-label="Close navigation"
+          >
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>

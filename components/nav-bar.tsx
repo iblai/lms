@@ -154,6 +154,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                     <button
                       onClick={() => setSearchVisible(!searchVisible)}
                       className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
+                      aria-label="Open search"
                     >
                       <Search className="h-5 w-5" />
                     </button>
@@ -178,6 +179,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                       <button
                         onClick={() => setSearchVisible(!searchVisible)}
                         className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
+                        aria-label="Close search"
                       >
                         <X className="h-5 w-5" />
                       </button>

@@ -11,7 +11,7 @@ import _ from 'lodash';
 import React from 'react';
 import { DiscoverContentCard } from '@/components/discover-content-card';
 import { DiscoverContent } from '@/types/discover';
-import ReactPaginate from 'react-paginate';
+import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { DiscoverFacetsFilter } from '@/components/discover-facets-filter';
@@ -130,6 +130,7 @@ export default function DiscoverPage() {
                               <button
                                 onClick={() => handleSelectFacets(selectedFacet, selectedTerm)}
                                 className="ml-1 text-gray-400 hover:text-gray-600"
+                                aria-label={`Remove filter ${selectedFacet}: ${selectedTerm}`}
                               >
                                 <X className="h-4 w-4" />
                               </button>
@@ -163,7 +164,7 @@ export default function DiscoverPage() {
 
               {/* Pagination */}
               <div className="mt-8 mb-6 flex justify-end">
-                <ReactPaginate
+                <AccessiblePaginate
                   className="flex items-center space-x-2"
                   pageClassName="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
                   activeClassName="bg-amber-50 text-amber-600 hover:bg-amber-100"
