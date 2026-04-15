@@ -12,7 +12,7 @@ export default function AccessiblePaginate(props: ReactPaginateProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const ul = containerRef.current?.querySelector('ul[role="navigation"]');
+    const ul = containerRef.current?.querySelector('ul');
     if (ul) {
       ul.setAttribute('role', 'list');
     }
