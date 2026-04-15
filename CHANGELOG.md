@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.25](https://github.com/iblai/skillsai/compare/skills-v0.10.24...skills-v0.10.25) (2026-04-15)
+
+### Bug Fixes
+
+* **a11y:** add aria-labels to icon-only buttons and create AccessiblePaginate wrapper ([c40ac56](https://github.com/iblai/skillsai/commit/c40ac5639c209b9292a0091c33a99d78e9c04089))
+* **a11y:** use semantic section for My Courses, fix viewport scaling, improve contrast ([d282ee0](https://github.com/iblai/skillsai/commit/d282ee089a3384eae484eb65c9c8a7c962e4a070))
+
+### Tests
+
+* **a11y:** add unit tests for AccessiblePaginate and fix ul role selector ([ea88d19](https://github.com/iblai/skillsai/commit/ea88d19f56be876ba02dcd19c759de79f43ea4b0))
+
 ## [0.10.24](https://github.com/iblai/skillsai/compare/skills-v0.10.23...skills-v0.10.24) (2026-04-13)
 
 ### Bug Fixes
