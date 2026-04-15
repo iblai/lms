@@ -101,6 +101,6 @@ describe('MyCourses', () => {
 
   it('renders courses grid with correct aria-label', () => {
     render(<MyCourses />);
-    expect(screen.getByLabelText('My Courses Grid')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'My Courses' })).toBeInTheDocument();
   });
 });

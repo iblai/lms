@@ -80,10 +80,10 @@ test.describe('Journey 03: Home Dashboard', () => {
 
   test('Checkpoint 3: My Courses section with grid', async ({ page }) => {
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-    await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
+    await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
 
-    const myCoursesGrid = page.getByLabel('My Courses Grid');
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
+    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
+    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
     logger.info('My Courses Grid is visible');
 
     // Verify at least one course link exists in the grid
@@ -99,10 +99,10 @@ test.describe('Journey 03: Home Dashboard', () => {
 
   test('Checkpoint 4: Click My Courses card navigates to course about', async ({ page }) => {
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-    await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
+    await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
 
-    const myCoursesGrid = page.getByLabel('My Courses Grid');
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
+    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
+    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
 
     const courseLink = myCoursesGrid.getByRole('link').first();
     const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
@@ -114,12 +114,12 @@ test.describe('Journey 03: Home Dashboard', () => {
     }
 
     await courseLink.click();
-    await page.waitForURL(/\/courses\//, { timeout: 120000 });
+    await page.waitForURL(/\/courses\//, { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Verify course about page loaded
     const courseHeading = page.getByRole('heading', { level: 1 });
-    await expect(courseHeading).toBeVisible({ timeout: 30000 });
+    await expect(courseHeading).toBeVisible({ timeout: 30_000 });
     logger.info('Navigated to course about page from My Courses');
   });
 

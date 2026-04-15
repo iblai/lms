@@ -14,7 +14,7 @@ async function navigateToCourseContent(page: Page) {
   });
   await waitForAppShell(page);
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();

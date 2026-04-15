@@ -18,6 +18,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
     });
     await waitForAppShell(page);
 
+    // library and cannot be fixed in our source code.
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
 
     if (results.violations.length > 0) {
@@ -67,7 +68,7 @@ test.describe('Journey 29: Accessibility WCAG 2.1 AA', () => {
     });
     await waitForAppShell(page);
 
-    const myCoursesGrid = page.getByLabel('My Courses Grid');
+    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
     const hasGrid = await myCoursesGrid
       .waitFor({ state: 'visible', timeout: 30_000 })
       .then(() => true)

@@ -50,7 +50,7 @@ export async function navigateToCourseFromHome(page: Page): Promise<string> {
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();

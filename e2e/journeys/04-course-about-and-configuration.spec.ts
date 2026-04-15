@@ -17,7 +17,7 @@ async function navigateToCourseAbout(page: Page): Promise<string | null> {
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();

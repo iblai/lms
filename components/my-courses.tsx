@@ -38,8 +38,8 @@ export function MyCourses() {
         (!loading && !errorUserCourses && courses.length === 0)) && (
         <DefaultEmptyBox message="You have not enrolled in any courses yet." />
       )}
-      <div
-        aria-label="My Courses Grid"
+      <section
+        aria-label="My Courses"
         className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
       >
         {loading && <SkeletonMultiplier multiplier={8} Skeleton={CourseCardSkeleton} />}
@@ -49,7 +49,7 @@ export function MyCourses() {
           courses.map((course, index) => (
             <CourseBox key={`enrolled-course-${course.course_id}-${index}`} course={course} />
           ))}
-      </div>
+      </section>
     </div>
   );
 }
