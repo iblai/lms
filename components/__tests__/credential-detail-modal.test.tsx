@@ -120,9 +120,10 @@ describe('CredentialDetailModal', () => {
     expect(inBrowserPrint).toHaveBeenCalled();
   });
 
-  it('renders "Charles Foster, Admin" recipient name', () => {
+  it('renders the credential name as heading', () => {
     render(<CredentialDetailModal credential={defaultCredential} onClose={mockOnClose} />);
-    expect(screen.getByText('Charles Foster, Admin')).toBeInTheDocument();
+    const headings = screen.getAllByText('Test Credential');
+    expect(headings.length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders default icon when no iconImage', () => {
