@@ -184,7 +184,7 @@ export default function CourseDetailsPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="h-full w-full overflow-y-auto bg-amber-50 p-6">
+            <div className="h-[calc(100%-100px)] w-full overflow-y-auto bg-amber-50 p-6 md:h-full">
               <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="md:col-span-2">
                   {activeTab === 'about' && <AboutTab course={course} />}
