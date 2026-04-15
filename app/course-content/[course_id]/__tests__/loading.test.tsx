@@ -2,10 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-vi.mock('@/components/ui/skeleton', () => ({
-  Skeleton: ({ className }: { className?: string }) => (
-    <div data-testid="skeleton" className={className} />
-  ),
+vi.mock('@iblai/iblai-js/web-containers', () => ({
+  CourseContentLoading: () => <div data-testid="course-content-loading" />,
 }));
 
 import Loading from '../loading';
@@ -15,9 +13,8 @@ describe('Loading (course-content)', () => {
     render(<Loading />);
   });
 
-  it('renders skeleton elements', () => {
+  it('renders the shared CourseContentLoading component', () => {
     render(<Loading />);
-    const skeletons = screen.getAllByTestId('skeleton');
-    expect(skeletons.length).toBeGreaterThan(0);
+    expect(screen.getByTestId('course-content-loading')).toBeInTheDocument();
   });
 });

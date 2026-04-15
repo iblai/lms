@@ -9,6 +9,11 @@ export default defineConfig({
     setupFiles: ['./__tests__/vitest.setup.ts'],
     environment: 'jsdom',
     exclude: ['node_modules/**', 'e2e/**', '.opencode/**'],
+    server: {
+      deps: {
+        inline: [/@iblai\//],
+      },
+    },
     coverage: {
       provider: 'istanbul',
       include: [

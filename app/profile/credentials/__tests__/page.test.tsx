@@ -4,15 +4,20 @@ import '@testing-library/jest-dom';
 
 const mockFilteredCredentials: any[] = [];
 
-vi.mock('@/hooks/profile/use-profile-credentials', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   useProfileCredentials: vi.fn(() => ({
     filteredCredentials: mockFilteredCredentials,
     isLoading: false,
     isError: false,
   })),
+  CredentialMiniBoxSkeleton: () => <div data-testid="credential-skeleton" />,
+  DefaultEmptyBox: ({ message }: { message: string }) => (
+    <div data-testid="empty-box">{message}</div>
+  ),
+  SkeletonMultiplier: () => <div data-testid="skeleton-multiplier" />,
 }));
 
-vi.mock('@/components/credential-detail-modal', () => ({
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
   CredentialDetailModal: ({ credential, onClose }: any) => (
     <div data-testid="credential-modal">
       <span>{credential?.entityId}</span>
@@ -21,23 +26,6 @@ vi.mock('@/components/credential-detail-modal', () => ({
       </button>
     </div>
   ),
-}));
-
-vi.mock('@/components/skeleton-multiplier', () => ({
-  SkeletonMultiplier: () => <div data-testid="skeleton-multiplier" />,
-}));
-
-vi.mock('@/components/skeleton-credential-mini-box', () => ({
-  CredentialMiniBoxSkeleton: () => <div data-testid="credential-skeleton" />,
-}));
-
-vi.mock('@/components/default-empty-box', () => ({
-  DefaultEmptyBox: ({ message }: { message: string }) => (
-    <div data-testid="empty-box">{message}</div>
-  ),
-}));
-
-vi.mock('@/components/credential-mini-box', () => ({
   CredentialMiniBox: ({ credential, onClick }: any) => (
     <div data-testid="credential-mini-box" onClick={onClick}>
       {credential.entityId}
@@ -46,7 +34,7 @@ vi.mock('@/components/credential-mini-box', () => ({
 }));
 
 import CredentialsPage from '../page';
-import { useProfileCredentials } from '@/hooks/profile/use-profile-credentials';
+import { useProfileCredentials } from '@iblai/iblai-js/web-containers';
 
 describe('CredentialsPage', () => {
   beforeEach(() => {

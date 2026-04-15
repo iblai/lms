@@ -9,10 +9,63 @@ vi.mock('next/image', () => ({
   ),
 }));
 
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+// Mock sonner
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
+
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
-  getRandomCourseImage: vi.fn(() => '/random-course-image.jpg'),
   getTenant: vi.fn(() => 'test-tenant'),
+  getUserName: vi.fn(() => 'test-user'),
+}));
+
+// Mock useIsAdmin
+vi.mock('@/utils/localstorage', () => ({
+  useIsAdmin: vi.fn(() => false),
+}));
+
+// Stable references to avoid useEffect loops
+const stableHandleSearch = vi.fn(() => Promise.resolve({ data: { results: [] } }));
+const stableGetProgramCompletion = vi.fn(() => Promise.resolve({ data: null }));
+const stableGetUserEnrolledPrograms = vi.fn(() => Promise.resolve({ data: [] }));
+const stableCreateEnrollment = vi.fn();
+const stableUpdateMetadata = vi.fn(() => ({ unwrap: vi.fn(() => Promise.resolve()) }));
+const stableRefetch = vi.fn();
+
+// Mock personnalized catalog hook
+vi.mock('@/hooks/search/use-personnalized-catalog', () => ({
+  usePersonnalizedCatalog: vi.fn(() => ({
+    handleSearch: stableHandleSearch,
+  })),
+}));
+
+// Mock studio hooks
+vi.mock('@/services/studio', () => ({
+  useGetProgramMetadataQuery: vi.fn(() => ({
+    data: undefined,
+    isLoading: false,
+    refetch: stableRefetch,
+  })),
+  useUpdateProgramMetadataMutation: vi.fn(() => [stableUpdateMetadata, { isLoading: false }]),
+}));
+
+// Mock iblai-js/data-layer
+vi.mock('@iblai/iblai-js/data-layer', () => ({
+  useLazyGetProgramCompletionQuery: vi.fn(() => [stableGetProgramCompletion]),
+  useLazyGetUserEnrolledProgramsQuery: vi.fn(() => [
+    stableGetUserEnrolledPrograms,
+    { isLoading: false },
+  ]),
+  useCreateCatalogProgramSelfEnrollmentMutation: vi.fn(() => [
+    stableCreateEnrollment,
+    { isError: false, isSuccess: false },
+  ]),
 }));
 
 // Mock config
@@ -36,7 +89,7 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
 const mockSetFilteredPrograms = vi.fn();
 const mockSetPrograms = vi.fn();
 
-vi.mock('@/hooks/profile/use-profile-programs', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   useProfilePrograms: vi.fn(() => ({
     programs: [],
     filteredPrograms: [],
@@ -47,10 +100,15 @@ vi.mock('@/hooks/profile/use-profile-programs', () => ({
     programCompletions: [],
     programCompletionsLoading: false,
   })),
+  getRandomCourseImage: vi.fn(() => '/random-course-image.jpg'),
+  DefaultEmptyBox: ({ message }: { message: string }) => (
+    <div data-testid="empty-box">{message}</div>
+  ),
+  SkeletonMultiplier: () => <div data-testid="skeleton-multiplier">Loading...</div>,
+  SkeletonPathwayBox: () => <div data-testid="skeleton-pathway-box">Skeleton</div>,
 }));
 
-// Mock ProgramDetailModal
-vi.mock('@/components/program-detail-modal', () => ({
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
   ProgramDetailModal: ({ program, onClose }: any) => (
     <div data-testid="program-detail-modal">
       Modal for: {program?.name}
@@ -59,23 +117,8 @@ vi.mock('@/components/program-detail-modal', () => ({
   ),
 }));
 
-// Mock components
-vi.mock('@/components/default-empty-box', () => ({
-  DefaultEmptyBox: ({ message }: { message: string }) => (
-    <div data-testid="empty-box">{message}</div>
-  ),
-}));
-
-vi.mock('@/components/skeleton-multiplier', () => ({
-  SkeletonMultiplier: () => <div data-testid="skeleton-multiplier">Loading...</div>,
-}));
-
-vi.mock('@/components/skeleton-pathway-box', () => ({
-  SkeletonPathwayBox: () => <div data-testid="skeleton-pathway-box">Skeleton</div>,
-}));
-
 import ProgramsPage from '../page';
-import { useProfilePrograms } from '@/hooks/profile/use-profile-programs';
+import { useProfilePrograms } from '@iblai/iblai-js/web-containers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 describe('ProgramsPage', () => {

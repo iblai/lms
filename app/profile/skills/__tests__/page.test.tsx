@@ -19,11 +19,13 @@ vi.mock('lodash', () => ({
   },
 }));
 
-// Mock useProfileSkills
+// Mock useProfileSkills and related SDK components
 const mockHandleSkillsDeletion = vi.fn();
 const mockHandleSkillsUpdate = vi.fn();
+const mockHandleSkillsCreate = vi.fn(() => Promise.resolve(true));
+const mockHandleFetchAllSkills = vi.fn();
 
-vi.mock('@/hooks/profile/use-profile-skills', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   useProfileSkills: vi.fn(() => ({
     earnedSkills: null,
     earnedSkillsLoading: false,
@@ -41,11 +43,12 @@ vi.mock('@/hooks/profile/use-profile-skills', () => ({
     updatingSkill: false,
     deletingSkill: false,
     handleSkillsUpdate: mockHandleSkillsUpdate,
+    handleSkillsCreate: mockHandleSkillsCreate,
+    handleFetchAllSkills: mockHandleFetchAllSkills,
+    fetchedSkills: null,
+    isFetchingSkills: false,
+    isFetchingSkillsError: false,
   })),
-}));
-
-// Mock AddSkillDialog
-vi.mock('@/components/add-skill-dialog', () => ({
   AddSkillDialog: ({ open, onOpenChange, type }: any) =>
     open ? (
       <div data-testid="add-skill-dialog" data-type={type}>
@@ -55,10 +58,6 @@ vi.mock('@/components/add-skill-dialog', () => ({
         </button>
       </div>
     ) : null,
-}));
-
-// Mock SkillDetailModal
-vi.mock('@/components/skill-detail-modal', () => ({
   SkillDetailModal: ({ skill, onClose, onRatingChange, onDeleteSkill, onConfirm }: any) => (
     <div data-testid="skill-detail-modal" data-skill-name={skill?.name}>
       SkillDetailModal
@@ -76,10 +75,6 @@ vi.mock('@/components/skill-detail-modal', () => ({
       </button>
     </div>
   ),
-}));
-
-// Mock SkillBox
-vi.mock('@/components/skill-box', () => ({
   SkillBox: ({ skill, onSkillClick, showRating }: any) => (
     <div
       data-testid="skill-box"
@@ -90,24 +85,12 @@ vi.mock('@/components/skill-box', () => ({
       {skill?.name}
     </div>
   ),
-}));
-
-// Mock SkeletonSkillBox
-vi.mock('@/components/skeleton-skill-box', () => ({
   SkeletonSkillBox: () => <div data-testid="skeleton-skill-box">Loading...</div>,
-}));
-
-// Mock DefaultEmptyBox
-vi.mock('@/components/default-empty-box', () => ({
   DefaultEmptyBox: ({ message, className }: any) => (
     <div data-testid="default-empty-box" className={className}>
       {message}
     </div>
   ),
-}));
-
-// Mock SkeletonMultiplier
-vi.mock('@/components/skeleton-multiplier', () => ({
   SkeletonMultiplier: ({ multiplier }: any) => (
     <div data-testid="skeleton-multiplier" data-multiplier={multiplier}>
       Loading skeletons
@@ -115,8 +98,12 @@ vi.mock('@/components/skeleton-multiplier', () => ({
   ),
 }));
 
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
 import SkillsPage from '../page';
-import { useProfileSkills } from '@/hooks/profile/use-profile-skills';
+import { useProfileSkills } from '@iblai/iblai-js/web-containers';
 
 describe('SkillsPage', () => {
   beforeEach(() => {
@@ -138,6 +125,11 @@ describe('SkillsPage', () => {
       updatingSkill: false,
       deletingSkill: false,
       handleSkillsUpdate: mockHandleSkillsUpdate,
+      handleSkillsCreate: mockHandleSkillsCreate,
+      handleFetchAllSkills: mockHandleFetchAllSkills,
+      fetchedSkills: null,
+      isFetchingSkills: false,
+      isFetchingSkillsError: false,
     } as any);
   });
 

@@ -6,6 +6,14 @@ vi.mock('next/image', () => ({
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => ({
     metadataLoaded: true,
@@ -15,13 +23,21 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
 
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
-  getRandomCourseImage: vi.fn(() => '/random-image.jpg'),
+  getUserId: vi.fn(() => 'user-id'),
+  getUserName: vi.fn(() => 'test-user'),
+  slugify: vi.fn((s: string) => s),
+}));
+
+vi.mock('@/lib/config', () => ({
+  config: {
+    urls: { lms: vi.fn(() => 'https://lms.example.com') },
+  },
 }));
 
 const mockSetFilteredPathways = vi.fn();
 const mockSetPathways = vi.fn();
 
-vi.mock('@/hooks/profile/use-profile-pathways', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   useProfilePathways: vi.fn(() => ({
     filteredPathways: [],
     isLoading: false,
@@ -31,9 +47,15 @@ vi.mock('@/hooks/profile/use-profile-pathways', () => ({
     setFilteredPathways: mockSetFilteredPathways,
     pathwayCompletions: [],
   })),
+  getRandomCourseImage: vi.fn(() => '/random-image.jpg'),
+  DefaultEmptyBox: ({ message }: { message: string }) => (
+    <div data-testid="empty-box">{message}</div>
+  ),
+  SkeletonMultiplier: () => <div data-testid="skeleton-multiplier" />,
+  SkeletonPathwayBox: () => <div data-testid="skeleton-pathway-box" />,
 }));
 
-vi.mock('@/components/pathway-detail-modal', () => ({
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
   PathwayDetailModal: ({ pathway, onClose }: any) => (
     <div data-testid="pathway-modal">
       <span>{pathway?.name}</span>
@@ -42,9 +64,6 @@ vi.mock('@/components/pathway-detail-modal', () => ({
       </button>
     </div>
   ),
-}));
-
-vi.mock('@/components/create-pathway-modal', () => ({
   CreatePathwayModal: ({ onOpenChange, onSave }: any) => (
     <div data-testid="create-pathway-modal">
       <button data-testid="save-pathway" onClick={() => onSave({ name: 'New Pathway' })}>
@@ -57,22 +76,43 @@ vi.mock('@/components/create-pathway-modal', () => ({
   ),
 }));
 
-vi.mock('@/components/skeleton-multiplier', () => ({
-  SkeletonMultiplier: () => <div data-testid="skeleton-multiplier" />,
+// Stable references to avoid useEffect deps churn
+const stableGetPathwayList = vi.fn(() => Promise.resolve({ data: [] }));
+const stableGetPathwayCompletion = vi.fn(() => Promise.resolve({ data: null }));
+const stableGetUserEnrolledPathways = vi.fn(() => Promise.resolve({ data: [] }));
+const stableCreateEnrollment = vi.fn();
+const stableGetResourceSearch = vi.fn(() => Promise.resolve({ data: [] }));
+const stableCreatePathway = vi.fn(() => Promise.resolve({ data: null }));
+
+vi.mock('@iblai/iblai-js/data-layer', () => ({
+  useLazyGetPathwayCompletionQuery: vi.fn(() => [stableGetPathwayCompletion]),
+  useLazyGetUserEnrolledPathwaysQuery: vi.fn(() => [
+    stableGetUserEnrolledPathways,
+    { isLoading: false },
+  ]),
+  useCreateCatalogPathwaySelfEnrollmentMutation: vi.fn(() => [
+    stableCreateEnrollment,
+    { isError: false, isSuccess: false },
+  ]),
+  useLazyGetPathwayListQuery: vi.fn(() => [stableGetPathwayList]),
+  useLazyGetResourceSearchQuery: vi.fn(() => [stableGetResourceSearch, { isLoading: false }]),
+  useCreateCatalogPathwayMutation: vi.fn(() => [stableCreatePathway, { isError: false }]),
 }));
 
-vi.mock('@/components/skeleton-pathway-box', () => ({
-  SkeletonPathwayBox: () => <div data-testid="skeleton-pathway-box" />,
+const stableHandleSearch = vi.fn(() => Promise.resolve({ data: { results: [] } }));
+vi.mock('@/hooks/search/use-personnalized-catalog', () => ({
+  usePersonnalizedCatalog: vi.fn(() => ({
+    handleSearch: stableHandleSearch,
+    isLoading: false,
+  })),
 }));
 
-vi.mock('@/components/default-empty-box', () => ({
-  DefaultEmptyBox: ({ message }: { message: string }) => (
-    <div data-testid="empty-box">{message}</div>
-  ),
+vi.mock('use-debounce', () => ({
+  useDebouncedCallback: (fn: any) => fn,
 }));
 
 import PathwaysPage from '../page';
-import { useProfilePathways } from '@/hooks/profile/use-profile-pathways';
+import { useProfilePathways } from '@iblai/iblai-js/web-containers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 describe('PathwaysPage', () => {
