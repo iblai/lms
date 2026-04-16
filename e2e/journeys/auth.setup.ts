@@ -14,7 +14,7 @@ setup('authenticate', async ({ page, browserName }) => {
   );
 
   // Navigate to the skills host
-  await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+  await page.goto(SKILL_HOST, { timeout: 120_000 });
 
   // Wait for either the app to load (already logged in) or auth redirect
   const isAlreadyLoggedIn = await page

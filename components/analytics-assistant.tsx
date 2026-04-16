@@ -42,10 +42,10 @@ export function AnalyticsAssistant() {
           <h3 className="font-bold text-amber-500">ACI Analytics</h3>
         </div>
         <div className="flex items-center gap-2">
-          <button className="rounded-full p-1 text-gray-400 hover:bg-gray-100">
+          <button className="rounded-full p-1 text-gray-400 hover:bg-gray-100" aria-label="History">
             <Clock className="h-5 w-5" />
           </button>
-          <button className="rounded-full p-1 text-gray-400 hover:bg-gray-100">
+          <button className="rounded-full p-1 text-gray-400 hover:bg-gray-100" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -95,7 +95,10 @@ export function AnalyticsAssistant() {
           ></textarea>
 
           <div className="absolute right-2 bottom-2 flex items-center">
-            <button className="rounded-md bg-gray-200 p-1.5 text-gray-600 hover:bg-gray-300">
+            <button
+              className="rounded-md bg-gray-200 p-1.5 text-gray-600 hover:bg-gray-300"
+              aria-label="Send message"
+            >
               <ArrowUp className="h-4 w-4" />
             </button>
           </div>

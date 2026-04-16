@@ -11,7 +11,7 @@ import {
   getRandomCourseImage,
 } from '@iblai/iblai-js/web-containers';
 import { CourseBox } from '@iblai/iblai-js/web-containers/next';
-import ReactPaginate from 'react-paginate';
+import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getTenant } from '@/utils/helpers';
 import { config } from '@/lib/config';
@@ -119,7 +119,7 @@ export default function CoursesPage() {
       </div>
       {/* Pagination */}
       <div className="mt-8 mb-10 flex justify-end">
-        <ReactPaginate
+        <AccessiblePaginate
           className="flex items-center space-x-2"
           pageClassName="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
           activeClassName="bg-amber-50 text-amber-600 hover:bg-amber-100"

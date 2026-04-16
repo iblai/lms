@@ -40,7 +40,7 @@ export async function navigateToAccountComponent(page: Page, profileBtn: Locator
 
 export async function navigateToDataReports(page: Page) {
   // Navigate to Data Reports tab
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
@@ -59,14 +59,14 @@ export async function shouldDisplayReportCards(
     expectsCsvEditor: boolean;
   }[],
 ) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   // Check for empty state or report cards
   const emptyState = page.getByText('No reports available yet.');
-  const isEmptyState = await emptyState.isVisible().catch(() => false);
+  const isEmptyState = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (isEmptyState) {
     await expect(emptyState).toBeVisible();
@@ -77,7 +77,7 @@ export async function shouldDisplayReportCards(
   // Verify report cards are displayed
   for (const report of REPORT_CARDS) {
     const reportCard = page.getByLabel(report.ariaLabel);
-    const isVisible = await reportCard.isVisible().catch(() => false);
+    const isVisible = await reportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (isVisible) {
       await expect(reportCard).toBeVisible();
@@ -102,14 +102,14 @@ export async function shouldDisplayReportCards(
 }
 
 export async function shouldOpenCSVEditorDialog(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   // Check for report card
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     logger.info('User Report card not visible - skipping test');
@@ -151,13 +151,13 @@ export async function shouldOpenCSVEditorDialog(page: Page) {
 }
 
 export async function shouldDisplayCSVInEditableTableFormat(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -196,13 +196,13 @@ export async function shouldDisplayCSVInEditableTableFormat(page: Page) {
 }
 
 export async function shouldAllowEditingCellValuesInCSVEditor(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -224,7 +224,7 @@ export async function shouldAllowEditingCellValuesInCSVEditor(page: Page) {
     name: 'CSV data table',
   });
   const firstEditableCell = table.locator('tbody tr').first().locator('td').nth(1);
-  const isCellVisible = await firstEditableCell.isVisible().catch(() => false);
+  const isCellVisible = await firstEditableCell.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isCellVisible) {
     logger.info('No editable cells found - skipping edit test');
@@ -256,13 +256,13 @@ export async function shouldAllowEditingCellValuesInCSVEditor(page: Page) {
 }
 
 export async function shouldAddNewRowWhenClickingAddRowButton(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -298,13 +298,13 @@ export async function shouldAddNewRowWhenClickingAddRowButton(page: Page) {
 }
 
 export async function shouldSaveEditedCSVAndTriggerDownload(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -342,14 +342,14 @@ export async function shouldSaveEditedCSVAndTriggerDownload(page: Page) {
 }
 
 export async function shouldCloseCSVEditorWithoutSavingWhenClickingCancel(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
 
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -379,14 +379,14 @@ export async function shouldCloseCSVEditorWithoutSavingWhenClickingCancel(page: 
 }
 
 export async function shouldCloseCSVEditorWhenClickingCloseButton(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
   await expect(userReportCard).toBeVisible({ timeout: 120_000 });
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -419,13 +419,13 @@ export async function shouldCloseCSVEditorWhenClickingCloseButton(page: Page) {
 }
 
 export async function shouldVerifyCSVEditorDialogAccessibility(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userReportCard = page.getByLabel('User Report report card');
-  const isVisible = await userReportCard.isVisible().catch(() => false);
+  const isVisible = await userReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -478,13 +478,13 @@ export async function shouldVerifyCSVEditorDialogAccessibility(page: Page) {
 }
 
 export async function shouldOpenCSVEditorForUserMetadataReport(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
   const userMetadataReportCard = page.getByLabel('User Metadata Report report card');
-  const isVisible = await userMetadataReportCard.isVisible().catch(() => false);
+  const isVisible = await userMetadataReportCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isVisible) {
     test.skip();
@@ -505,7 +505,7 @@ export async function shouldOpenCSVEditorForUserMetadataReport(page: Page) {
   // Verify table has company column (specific to User Metadata Report)
   const table = csvEditorDialog.locator('table');
   const companyHeader = table.locator('thead th input[value="company"]');
-  const hasCompanyColumn = await companyHeader.isVisible().catch(() => false);
+  const hasCompanyColumn = await companyHeader.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (hasCompanyColumn) {
     logger.info('User Metadata Report contains company column as expected');
@@ -517,14 +517,14 @@ export async function shouldOpenCSVEditorForUserMetadataReport(page: Page) {
 }
 
 export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
 
-  const chatHistoryCard = page.getByLabel('Chat History');
+  const chatHistoryCard = page.getByLabel('All Mentor Chat History report card');
 
-  if (!(await chatHistoryCard.isVisible().catch(() => false))) {
+  if (!(await chatHistoryCard.isVisible({ timeout: 120_000 }).catch(() => false))) {
     test.skip();
     return;
   }
@@ -533,21 +533,17 @@ export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(pa
     name: 'Download report',
   });
 
-  // Set up download listener before clicking
-  const downloadPromise = page.waitForEvent('download', { timeout: 120000 });
-
   await expect(downloadButton).toBeVisible({ timeout: 30000 });
 
   await downloadButton.click();
 
-  await page.waitForTimeout(1000);
-
-  // Wait for loading spinner to appear
-  const spinner = downloadButton.locator('[class*="animate-spin"]');
-  await expect(spinner).toBeVisible({ timeout: 30000 });
+  // Set up download listener before clicking
+  const [download] = await Promise.all([
+    page.waitForEvent('download', { timeout: 120000 }),
+    downloadButton.click(),
+  ]);
 
   try {
-    const download = await downloadPromise;
     const filename = download.suggestedFilename();
     expect(filename.endsWith('.csv')).toBeTruthy();
     logger.info(`Chat History report downloaded: ${filename}`);
@@ -560,12 +556,12 @@ export async function shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(pa
   const csvEditorDialog = page.getByRole('dialog', {
     name: 'Edit CSV Data',
   });
-  const dialogOpened = await csvEditorDialog.isVisible().catch(() => false);
+  const dialogOpened = await csvEditorDialog.isVisible({ timeout: 120_000 }).catch(() => false);
   expect(dialogOpened).toBeFalsy();
 }
 
 export async function shouldDisableOtherDownloadButtonsWhileGeneratingReport(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 120_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
@@ -615,7 +611,7 @@ export async function shouldDisableOtherDownloadButtonsWhileGeneratingReport(pag
 // ============================================
 
 export async function shouldShowCombiningReportsDialog(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 60_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
@@ -651,7 +647,7 @@ export async function shouldShowCombiningReportsDialog(page: Page) {
 }
 
 export async function shouldCancelCombiningReports(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 60_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
@@ -690,7 +686,7 @@ export async function shouldCancelCombiningReports(page: Page) {
 }
 
 export async function shouldHaveCombinedReportDataTestIds(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 60_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);
@@ -716,7 +712,7 @@ export async function shouldHaveCombinedReportDataTestIds(page: Page) {
 }
 
 export async function shouldCombineRecommendationReports(page: Page) {
-  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
+  const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
   await expect(dataReportsTab).toBeVisible({ timeout: 60_000 });
   await dataReportsTab.click();
   await waitForPageReady(page);

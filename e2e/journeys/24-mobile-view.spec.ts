@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -9,12 +10,11 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
 async function navigateToCourseContent(page: Page) {
   await page.goto(`${SKILL_HOST}/home`, {
-    waitUntil: 'domcontentloaded',
     timeout: 120_000,
   });
-  await page.waitForLoadState('domcontentloaded');
+  await waitForAppShell(page);
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();
@@ -37,10 +37,9 @@ test.describe('Journey 24: Mobile View', () => {
     await page.setViewportSize({ width: 375, height: 812 });
 
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
 
     // On mobile, navigation should be behind a hamburger menu or drawer toggle
     const hamburgerButton = page
@@ -195,9 +194,9 @@ test.describe('Journey 24: Mobile View', () => {
 
     for (const { path, name } of pages) {
       await page.goto(`${SKILL_HOST}${path}`, {
-        waitUntil: 'domcontentloaded',
         timeout: 120_000,
       });
+      await waitForAppShell(page);
 
       // Wait for app root to render children
       const hasChildren = await page.evaluate(() => {

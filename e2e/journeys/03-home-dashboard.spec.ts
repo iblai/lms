@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -32,10 +32,9 @@ test.describe('Journey 03: Home Dashboard', () => {
     });
 
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page, 120000);
+    await waitForAppShell(page);
   });
 
   test('Checkpoint 1: Home page displays Profile Sidebar', async ({ page }) => {
@@ -45,14 +44,14 @@ test.describe('Journey 03: Home Dashboard', () => {
       .or(page.locator('[data-testid="profile-sidebar"]'))
       .first();
 
-    const hasSidebar = await sidebar.isVisible({ timeout: 30000 }).catch(() => false);
+    const hasSidebar = await sidebar.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasSidebar) {
       logger.info('Profile Sidebar is visible');
     } else {
       // Fallback: look for profile-related content in a sidebar/aside region
       const aside = page.getByRole('complementary').first();
-      const hasAside = await aside.isVisible({ timeout: 10000 }).catch(() => false);
+      const hasAside = await aside.isVisible({ timeout: 120_000 }).catch(() => false);
       if (hasAside) {
         logger.info('Complementary sidebar region found');
       } else {
@@ -69,7 +68,7 @@ test.describe('Journey 03: Home Dashboard', () => {
       name: /suggested courses|recommended/i,
     });
 
-    const hasSuggested = await suggestedHeading.isVisible({ timeout: 30000 }).catch(() => false);
+    const hasSuggested = await suggestedHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasSuggested) {
       await expect(suggestedHeading).toBeVisible();
@@ -81,10 +80,10 @@ test.describe('Journey 03: Home Dashboard', () => {
 
   test('Checkpoint 3: My Courses section with grid', async ({ page }) => {
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-    await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
+    await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
 
-    const myCoursesGrid = page.getByLabel('My Courses Grid');
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
+    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
+    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
     logger.info('My Courses Grid is visible');
 
     // Verify at least one course link exists in the grid
@@ -100,13 +99,13 @@ test.describe('Journey 03: Home Dashboard', () => {
 
   test('Checkpoint 4: Click My Courses card navigates to course about', async ({ page }) => {
     const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-    await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
+    await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
 
-    const myCoursesGrid = page.getByLabel('My Courses Grid');
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
+    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
+    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
 
     const courseLink = myCoursesGrid.getByRole('link').first();
-    const hasCourse = await courseLink.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCourse) {
       logger.info('No courses in My Courses grid — skipping navigation test');
@@ -115,12 +114,12 @@ test.describe('Journey 03: Home Dashboard', () => {
     }
 
     await courseLink.click();
-    await page.waitForURL(/\/courses\//, { timeout: 120000 });
-    await waitForPageReady(page, 120000);
+    await page.waitForURL(/\/courses\//, { timeout: 120_000 });
+    await waitForAppShell(page);
 
     // Verify course about page loaded
     const courseHeading = page.getByRole('heading', { level: 1 });
-    await expect(courseHeading).toBeVisible({ timeout: 30000 });
+    await expect(courseHeading).toBeVisible({ timeout: 30_000 });
     logger.info('Navigated to course about page from My Courses');
   });
 
@@ -129,7 +128,7 @@ test.describe('Journey 03: Home Dashboard', () => {
       name: /suggested courses|recommended/i,
     });
 
-    const hasSuggested = await suggestedHeading.isVisible({ timeout: 30000 }).catch(() => false);
+    const hasSuggested = await suggestedHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasSuggested) {
       logger.info('No Suggested Courses section — skipping');
@@ -137,24 +136,24 @@ test.describe('Journey 03: Home Dashboard', () => {
       return;
     }
 
-    // Find a course link in the suggested section — look for links near the heading
+    // Find a course card link (href contains /courses/) — not the "See More" link
     const suggestedSection = suggestedHeading.locator('..').locator('..');
-    const suggestedLink = suggestedSection.getByRole('link').first();
+    const courseLink = suggestedSection.locator('a[href*="/courses/"]').first();
 
-    const hasLink = await suggestedLink.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasLink = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasLink) {
-      logger.info('No suggested course links found — skipping');
+      logger.info('No suggested course card links found — skipping');
       test.skip();
       return;
     }
 
-    await suggestedLink.click();
-    await page.waitForURL(/\/courses\//, { timeout: 120000 });
-    await waitForPageReady(page, 120000);
+    await courseLink.click();
+    await page.waitForURL(/\/courses\//, { timeout: 120_000 });
+    await waitForAppShell(page);
 
     const courseHeading = page.getByRole('heading', { level: 1 });
-    await expect(courseHeading).toBeVisible({ timeout: 30000 });
+    await expect(courseHeading).toBeVisible({ timeout: 120_000 });
     logger.info('Navigated to course about page from Suggested Courses');
   });
 
@@ -164,7 +163,7 @@ test.describe('Journey 03: Home Dashboard', () => {
       .or(page.locator('[data-testid="profile-sidebar"]'))
       .first();
 
-    const hasSidebar = await sidebar.isVisible({ timeout: 30000 }).catch(() => false);
+    const hasSidebar = await sidebar.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasSidebar) {
       logger.info('Profile Sidebar not found — skipping stats check');

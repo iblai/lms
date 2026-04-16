@@ -54,6 +54,12 @@ describe('CredentialMiniBox', () => {
     expect(screen.queryByText('Test Course')).not.toBeInTheDocument();
   });
 
+  it('renders a dash when course is missing', () => {
+    const credNoCourse = { ...defaultCredential, course: undefined };
+    render(<CredentialMiniBox credential={credNoCourse} />);
+    expect(screen.getByText('-')).toBeInTheDocument();
+  });
+
   it('renders the issued date', () => {
     render(<CredentialMiniBox credential={defaultCredential} />);
     expect(screen.getByText('Earned on: Jan 1, 2024')).toBeInTheDocument();

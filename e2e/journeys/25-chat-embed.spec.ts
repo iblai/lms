@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -12,10 +13,9 @@ test.describe('Journey 25: Chat Embed', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
   });
 
   test('CP-1: Open Chat Assistant button is visible', async ({ page }) => {

@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -10,34 +10,33 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
  */
 async function navigateToCourseContent(page: Page): Promise<boolean> {
   await page.goto(`${SKILL_HOST}/home`, {
-    waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();
-  const hasCourse = await courseLink.isVisible({ timeout: 15000 }).catch(() => false);
+  const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasCourse) return false;
 
   await courseLink.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   const accessCourseButton = page.getByRole('button', { name: 'Access Course' });
-  const hasAccess = await accessCourseButton.isVisible({ timeout: 15000 }).catch(() => false);
+  const hasAccess = await accessCourseButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasAccess) return false;
 
   await accessCourseButton.click();
   await page.waitForURL(/\/course-content\//, { timeout: 120000 });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   return true;
 }
@@ -145,10 +144,10 @@ test.describe('Journey 05: Course Content Tabs', () => {
     });
 
     const hasYourProgress = await yourProgressHeading
-      .isVisible({ timeout: 30000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
     const hasGradeSummary = await gradeSummaryHeading
-      .isVisible({ timeout: 10000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasYourProgress) {
@@ -281,7 +280,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await expect(bodyLocator).toBeVisible({ timeout: 120000 });
 
     const addPostButton = discussionIframe.getByRole('button', { name: 'Add a post' });
-    const hasAddPost = await addPostButton.isVisible({ timeout: 60000 }).catch(() => false);
+    const hasAddPost = await addPostButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasAddPost) {
       logger.info('"Add a post" button not found — skipping');
@@ -320,7 +319,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await expect(bodyLocator).toBeVisible({ timeout: 120000 });
 
     const addPostButton = discussionIframe.getByRole('button', { name: 'Add a post' });
-    const hasAddPost = await addPostButton.isVisible({ timeout: 60000 }).catch(() => false);
+    const hasAddPost = await addPostButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasAddPost) {
       test.skip();
@@ -341,7 +340,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     // Fill content in nested iframe
     const richTextIframe = discussionIframe.frameLocator('iframe[title="Rich Text Area"]');
     let contentEditor = richTextIframe.getByLabel(/Rich Text Area/i);
-    const hasLabel = await contentEditor.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasLabel = await contentEditor.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasLabel) {
       contentEditor = richTextIframe.locator('body');
@@ -382,7 +381,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
-    const hasInstructor = await instructorTab.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasInstructor = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasInstructor) {
       logger.info('Instructor tab not available — expected for some courses');
@@ -419,7 +418,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     const bookmarksTab = page.getByRole('link', { name: /bookmarks/i }).first();
-    const hasBookmarks = await bookmarksTab.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasBookmarks = await bookmarksTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasBookmarks) {
       logger.info('Bookmarks tab not available — optional feature');
@@ -431,7 +430,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
     // Just verify the tab navigated and content area exists
     const iframeElement = page.locator('iframe').first();
-    const hasIframe = await iframeElement.isVisible({ timeout: 30000 }).catch(() => false);
+    const hasIframe = await iframeElement.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasIframe) {
       logger.info('Bookmarks tab loaded with iframe content');

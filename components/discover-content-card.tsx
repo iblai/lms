@@ -26,7 +26,11 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
   };
   return (
     <>
-      <div onClick={handleContentClick} className="block h-full">
+      <div
+        onClick={handleContentClick}
+        className="block h-full"
+        data-testid="discover-content-card"
+      >
         <div className="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm transition-transform duration-500 ease-in-out hover:scale-105">
           <div className="relative aspect-video w-full overflow-hidden">
             <Image

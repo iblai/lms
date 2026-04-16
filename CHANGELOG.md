@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.10.26](https://github.com/iblai/skillsai/compare/skills-v0.10.25...skills-v0.10.26) (2026-04-16)
+
+### Bug Fixes
+
+* scrolling issue on course about page fixed ([234e27b](https://github.com/iblai/skillsai/commit/234e27b8e786d2706e8187451e81b545cb8e8298))
+* scrolling issue on course about page fixed > test coverage ([6557f02](https://github.com/iblai/skillsai/commit/6557f02fe125a42b1e9f2ae73f494966434efd60))
+
+## [0.10.25](https://github.com/iblai/skillsai/compare/skills-v0.10.24...skills-v0.10.25) (2026-04-15)
+
+### Bug Fixes
+
+* **a11y:** add aria-labels to icon-only buttons and create AccessiblePaginate wrapper ([c40ac56](https://github.com/iblai/skillsai/commit/c40ac5639c209b9292a0091c33a99d78e9c04089))
+* **a11y:** use semantic section for My Courses, fix viewport scaling, improve contrast ([d282ee0](https://github.com/iblai/skillsai/commit/d282ee089a3384eae484eb65c9c8a7c962e4a070))
+
+### Tests
+
+* **a11y:** add unit tests for AccessiblePaginate and fix ul role selector ([ea88d19](https://github.com/iblai/skillsai/commit/ea88d19f56be876ba02dcd19c759de79f43ea4b0))
+
+## [0.10.24](https://github.com/iblai/skillsai/compare/skills-v0.10.23...skills-v0.10.24) (2026-04-13)
+
+### Bug Fixes
+
+* **e2e:** heal journeys 09, 11, 13, 14 with proper polling and data-testid selectors ([e7ad4f2](https://github.com/iblai/skillsai/commit/e7ad4f25d339ac49643c94e0137021a12d19f786))
+
+## [0.10.23](https://github.com/iblai/skillsai/compare/skills-v0.10.22...skills-v0.10.23) (2026-04-13)
+
+### Bug Fixes
+
+* **e2e:** heal analytics, profile, error page and timeout issues across all journeys ([3783c8e](https://github.com/iblai/skillsai/commit/3783c8e06fa66f1e922ddfc3b5b9fc8e0b4b236a))
+
+### Chores
+
+* bump @iblai/iblai-js to 1.3.10 ([349082f](https://github.com/iblai/skillsai/commit/349082f32239597a76c7a6e8e77f77067fb7766b))
+* bump @iblai/iblai-js to 1.3.8 and set e2e bot username ([b0f9be2](https://github.com/iblai/skillsai/commit/b0f9be2e75cee5b548005e34d88a5df61d4fcac8))
+
+## [0.10.22](https://github.com/iblai/skillsai/compare/skills-v0.10.21...skills-v0.10.22) (2026-04-09)
+
+### Bug Fixes
+
+* **ci:** instruct coverage bot to actually execute gh pr review command ([33f379c](https://github.com/iblai/skillsai/commit/33f379c0c0a90b34ba06dd1919d5f205d8a24aad))
+
+## [0.10.21](https://github.com/iblai/skillsai/compare/skills-v0.10.20...skills-v0.10.21) (2026-04-09)
+
+### Bug Fixes
+
+* **ci:** skip e2e coverage bot for Dependabot PRs ([491af8a](https://github.com/iblai/skillsai/commit/491af8a5818a2633a1c4e0b5c5c8fa0702684d0c))
+
+## [0.10.20](https://github.com/iblai/skillsai/compare/skills-v0.10.19...skills-v0.10.20) (2026-04-09)
+
+### Bug Fixes
+
+* **e2e:** fix coverage bot job-level if condition ([47e756e](https://github.com/iblai/skillsai/commit/47e756eb1a94c34ce4f989a828c7015d203fbf73))
+
 ## [0.10.19](https://github.com/iblai/skillsai/compare/skills-v0.10.18...skills-v0.10.19) (2026-04-08)
 
 ### Chores

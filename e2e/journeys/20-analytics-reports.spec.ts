@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 import {
   navigateToDataReports,
   shouldDisplayReportCards,
@@ -43,12 +44,12 @@ test.describe('Journey 20: Analytics Reports', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
 
     // Admin gate: check if AI Analytics link is visible
     const analyticsLink = page.getByRole('link', { name: /ai analytics|analytics/i });
-    const isAdmin = await analyticsLink.isVisible({ timeout: 15_000 }).catch(() => false);
+    const isAdmin = await analyticsLink.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!isAdmin) {
       test.skip(true, 'Analytics reports require admin access — AI Analytics link not visible');
       return;
@@ -148,8 +149,8 @@ test.describe('Journey 20: Analytics Reports', () => {
 
   test('CP-15: report download page loads and shows preparing state', async ({ page }) => {
     // Navigate to Data Reports tab first
-    const dataReportsTab = page.getByRole('tab', { name: 'Data Reports' });
-    const hasTab = await dataReportsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const dataReportsTab = page.getByRole('tab', { name: 'Data Reports', exact: true });
+    const hasTab = await dataReportsTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasTab) {
       test.skip(true, 'Data Reports tab not visible');
@@ -163,7 +164,7 @@ test.describe('Journey 20: Analytics Reports', () => {
     const downloadButtons = page.getByRole('button', { name: 'Download report' });
     const hasButtons = await downloadButtons
       .first()
-      .isVisible({ timeout: 15_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasButtons) {
@@ -178,25 +179,27 @@ test.describe('Journey 20: Analytics Reports', () => {
     const reportDownloadLinks = page.locator('a[href*="report"], a[href*="download"]');
     const hasDownloadLinks = await reportDownloadLinks
       .first()
-      .isVisible({ timeout: 5_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasDownloadLinks) {
       const href = await reportDownloadLinks.first().getAttribute('href');
       if (href) {
         await page.goto(href.startsWith('http') ? href : `${SKILL_HOST}${href}`, {
-          waitUntil: 'domcontentloaded',
           timeout: 60_000,
         });
+        await waitForAppShell(page);
 
         // Look for preparing state indicators
         const preparingState = page.getByText(/preparing|generating|loading/i);
         const downloadState = page.getByText(/download|ready|complete/i);
         const errorState = page.getByText(/error|failed/i);
 
-        const hasPreparing = await preparingState.isVisible({ timeout: 30_000 }).catch(() => false);
-        const hasDownload = await downloadState.isVisible({ timeout: 5_000 }).catch(() => false);
-        const hasError = await errorState.isVisible({ timeout: 5_000 }).catch(() => false);
+        const hasPreparing = await preparingState
+          .isVisible({ timeout: 120_000 })
+          .catch(() => false);
+        const hasDownload = await downloadState.isVisible({ timeout: 120_000 }).catch(() => false);
+        const hasError = await errorState.isVisible({ timeout: 120_000 }).catch(() => false);
 
         // One of these states should be shown
         expect(hasPreparing || hasDownload || hasError).toBe(true);

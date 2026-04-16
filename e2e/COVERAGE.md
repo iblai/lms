@@ -90,28 +90,28 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 6: Profile — Activity (6 checkpoints) — `journeys/06-profile-activity.spec.ts`
+## Journey 6: Public Profile (6 checkpoints) — `journeys/06-profile-activity.spec.ts`
 
-**Source files:** `app/profile/page.tsx`, `app/profile/layout.tsx`, `components/profile-tabs.tsx`, `components/profile-sidebar.tsx`
+**Source files:** `app/profile/public/page.tsx`, `app/profile/layout.tsx`, `components/profile-tabs.tsx`
 
-- [x] Profile page (/profile) loads with Activity tab selected by default
-- [x] Activity tab displays time-spent chart or activity statistics
-- [x] Profile sidebar shows user info (name, avatar, role)
+- [x] Public Profile tab is active on /profile/public
+- [x] About section displayed by default
+- [x] User name heading is displayed
 - [x] Profile navigation tabs (Activity, Skills, Credentials, Pathways, Programs, Courses) are visible
-- [x] Clicking each profile tab navigates to the correct sub-route
-- [x] Profile page breadcrumb or heading identifies the current user
+- [x] Tab navigation works between profile sub-routes
+- [x] Public profile has content tabs (About, Education, Experience)
 
 ---
 
 ## Journey 7: Profile — Skills (5 checkpoints) — `journeys/07-profile-skills.spec.ts`
 
-**Source files:** `app/profile/skills/page.tsx`, `components/skill-box.tsx`
+**Source files:** `app/profile/skills/page.tsx`, `components/skill-box.tsx`, `components/default-empty-box.tsx`
 
-- [x] Skills page (/profile/skills) loads and displays a list of user skills or empty state
-- [x] Each skill card shows skill name and proficiency level
-- [x] Clicking a skill card opens a skill detail modal with additional info
-- [x] Skill detail modal can be closed via the close button
-- [x] "Add Skill" button or functionality is available _(if applicable)_
+- [x] Skills page loads with Earned, Self-Reported, and Desired sections
+- [x] Skill cards show name or empty state message
+- [x] Clicking self-reported skill opens detail modal
+- [x] Skill detail modal can be closed
+- [x] Add Skill button opens dialog
 
 ---
 

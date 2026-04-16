@@ -76,7 +76,7 @@ export async function expandAdvancedCssSection(page: Page, dialog: Locator): Pro
   const collapseButton = dialog.getByRole('button', {
     name: 'Collapse Advanced CSS',
   });
-  const isExpanded = await collapseButton.isVisible().catch(() => false);
+  const isExpanded = await collapseButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!isExpanded) {
     const expandButton = dialog.getByRole('button', {

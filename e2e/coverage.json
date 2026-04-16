@@ -14,10 +14,22 @@
       "spec": "01-authentication.spec.ts",
       "sourceFiles": ["app/sso-login/page.tsx", "app/sso-login-complete/page.tsx"],
       "checkpoints": [
-        { "id": "auth-01", "description": "Unauthenticated user is redirected to SSO login", "status": "covered" },
+        {
+          "id": "auth-01",
+          "description": "Unauthenticated user is redirected to SSO login",
+          "status": "covered"
+        },
         { "id": "auth-02", "description": "User can authenticate via SSO", "status": "covered" },
-        { "id": "auth-03", "description": "After SSO completion, user is redirected to /home or /start", "status": "covered" },
-        { "id": "auth-04", "description": "Unauthenticated user accessing /home is redirected", "status": "covered" }
+        {
+          "id": "auth-03",
+          "description": "After SSO completion, user is redirected to /home or /start",
+          "status": "covered"
+        },
+        {
+          "id": "auth-04",
+          "description": "Unauthenticated user accessing /home is redirected",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -26,27 +38,84 @@
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": ["app/start/page.tsx", "app/home/page.tsx"],
       "checkpoints": [
-        { "id": "onb-01", "description": "First-time user directed to /start onboarding page", "status": "covered" },
-        { "id": "onb-02", "description": "Onboarding page displays welcome content", "status": "covered" },
-        { "id": "onb-03", "description": "User can complete onboarding and proceed to home", "status": "covered" },
-        { "id": "onb-04", "description": "Returning user bypasses onboarding", "status": "covered" },
-        { "id": "onb-05", "description": "Onboarding page has proper heading and navigation", "status": "covered" }
+        {
+          "id": "onb-01",
+          "description": "First-time user directed to /start onboarding page",
+          "status": "covered"
+        },
+        {
+          "id": "onb-02",
+          "description": "Onboarding page displays welcome content",
+          "status": "covered"
+        },
+        {
+          "id": "onb-03",
+          "description": "User can complete onboarding and proceed to home",
+          "status": "covered"
+        },
+        {
+          "id": "onb-04",
+          "description": "Returning user bypasses onboarding",
+          "status": "covered"
+        },
+        {
+          "id": "onb-05",
+          "description": "Onboarding page has proper heading and navigation",
+          "status": "covered"
+        }
       ]
     },
     {
       "id": "home-dashboard",
       "name": "Home Dashboard",
       "spec": "03-home-dashboard.spec.ts",
-      "sourceFiles": ["app/home/page.tsx", "components/profile-sidebar.tsx", "components/suggested-courses.tsx", "components/my-courses.tsx"],
+      "sourceFiles": [
+        "app/home/page.tsx",
+        "components/profile-sidebar.tsx",
+        "components/suggested-courses.tsx",
+        "components/my-courses.tsx"
+      ],
       "checkpoints": [
-        { "id": "home-01", "description": "Home page loads with Profile Sidebar visible", "status": "covered" },
-        { "id": "home-02", "description": "Suggested Courses section displays course cards or empty state", "status": "covered" },
-        { "id": "home-03", "description": "My Courses section displays enrolled course cards", "status": "covered" },
-        { "id": "home-04", "description": "Clicking My Courses card navigates to course about", "status": "covered" },
-        { "id": "home-05", "description": "Clicking suggested course navigates to course about", "status": "covered" },
-        { "id": "home-06", "description": "Profile Sidebar shows skills/credentials counts", "status": "covered" },
-        { "id": "home-07", "description": "View All links navigate to appropriate pages", "status": "covered" },
-        { "id": "home-08", "description": "Home page loads without console errors", "status": "covered" }
+        {
+          "id": "home-01",
+          "description": "Home page loads with Profile Sidebar visible",
+          "status": "covered"
+        },
+        {
+          "id": "home-02",
+          "description": "Suggested Courses section displays course cards or empty state",
+          "status": "covered"
+        },
+        {
+          "id": "home-03",
+          "description": "My Courses section displays enrolled course cards",
+          "status": "covered"
+        },
+        {
+          "id": "home-04",
+          "description": "Clicking My Courses card navigates to course about",
+          "status": "covered"
+        },
+        {
+          "id": "home-05",
+          "description": "Clicking suggested course navigates to course about",
+          "status": "covered"
+        },
+        {
+          "id": "home-06",
+          "description": "Profile Sidebar shows skills/credentials counts",
+          "status": "covered"
+        },
+        {
+          "id": "home-07",
+          "description": "View All links navigate to appropriate pages",
+          "status": "covered"
+        },
+        {
+          "id": "home-08",
+          "description": "Home page loads without console errors",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -55,63 +124,198 @@
       "spec": "04-course-about-and-configuration.spec.ts",
       "sourceFiles": ["app/courses/[course_id]/page.tsx", "components/course-access-guard.tsx"],
       "checkpoints": [
-        { "id": "course-01", "description": "Course about page loads with heading", "status": "covered" },
-        { "id": "course-02", "description": "Course description and enrollment details displayed", "status": "covered" },
-        { "id": "course-03", "description": "Access Course button visible for enrolled users", "status": "covered" },
-        { "id": "course-04", "description": "Enrollment button shown for non-enrolled users", "status": "covered" },
-        { "id": "course-05", "description": "Configuration tab visible for admin users", "status": "covered" },
-        { "id": "course-06", "description": "Configuration tab displays Credentials section", "status": "covered" },
-        { "id": "course-07", "description": "Credential creation modal opens with form fields", "status": "covered" },
-        { "id": "course-08", "description": "Advanced Settings expands/collapses with search", "status": "covered" },
-        { "id": "course-09", "description": "Advanced Settings search filters settings", "status": "covered" },
-        { "id": "course-10", "description": "Save Changes button saves settings", "status": "covered" }
+        {
+          "id": "course-01",
+          "description": "Course about page loads with heading",
+          "status": "covered"
+        },
+        {
+          "id": "course-02",
+          "description": "Course description and enrollment details displayed",
+          "status": "covered"
+        },
+        {
+          "id": "course-03",
+          "description": "Access Course button visible for enrolled users",
+          "status": "covered"
+        },
+        {
+          "id": "course-04",
+          "description": "Enrollment button shown for non-enrolled users",
+          "status": "covered"
+        },
+        {
+          "id": "course-05",
+          "description": "Configuration tab visible for admin users",
+          "status": "covered"
+        },
+        {
+          "id": "course-06",
+          "description": "Configuration tab displays Credentials section",
+          "status": "covered"
+        },
+        {
+          "id": "course-07",
+          "description": "Credential creation modal opens with form fields",
+          "status": "covered"
+        },
+        {
+          "id": "course-08",
+          "description": "Advanced Settings expands/collapses with search",
+          "status": "covered"
+        },
+        {
+          "id": "course-09",
+          "description": "Advanced Settings search filters settings",
+          "status": "covered"
+        },
+        {
+          "id": "course-10",
+          "description": "Save Changes button saves settings",
+          "status": "covered"
+        }
       ]
     },
     {
       "id": "course-content-tabs",
       "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
-      "sourceFiles": ["app/course-content/[course_id]/course/page.tsx", "app/course-content/[course_id]/progress/page.tsx", "app/course-content/[course_id]/dates/page.tsx", "app/course-content/[course_id]/discussion/page.tsx", "app/course-content/[course_id]/instructor/page.tsx", "app/course-content/[course_id]/bookmarks/page.tsx"],
+      "sourceFiles": [
+        "app/course-content/[course_id]/course/page.tsx",
+        "app/course-content/[course_id]/progress/page.tsx",
+        "app/course-content/[course_id]/dates/page.tsx",
+        "app/course-content/[course_id]/discussion/page.tsx",
+        "app/course-content/[course_id]/instructor/page.tsx",
+        "app/course-content/[course_id]/bookmarks/page.tsx"
+      ],
       "checkpoints": [
-        { "id": "tabs-01", "description": "Course content page loads with all tab links visible", "status": "covered" },
-        { "id": "tabs-02", "description": "Course tab displays iframe with edX content", "status": "covered" },
-        { "id": "tabs-03", "description": "Progress tab shows Your progress and Grade summary", "status": "covered" },
-        { "id": "tabs-04", "description": "Dates tab shows Important dates heading", "status": "covered" },
-        { "id": "tabs-05", "description": "Discussion tab shows My posts, All posts, Topics, Learners", "status": "covered" },
-        { "id": "tabs-06", "description": "Discussion tab shows thread list or empty state", "status": "covered" },
-        { "id": "tabs-07", "description": "Add a post button opens post creation form", "status": "covered" },
-        { "id": "tabs-08", "description": "New discussion post can be created", "status": "covered" },
-        { "id": "tabs-09", "description": "Instructor tab loads iframe content", "status": "covered" },
+        {
+          "id": "tabs-01",
+          "description": "Course content page loads with all tab links visible",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-02",
+          "description": "Course tab displays iframe with edX content",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-03",
+          "description": "Progress tab shows Your progress and Grade summary",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-04",
+          "description": "Dates tab shows Important dates heading",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-05",
+          "description": "Discussion tab shows My posts, All posts, Topics, Learners",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-06",
+          "description": "Discussion tab shows thread list or empty state",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-07",
+          "description": "Add a post button opens post creation form",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-08",
+          "description": "New discussion post can be created",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-09",
+          "description": "Instructor tab loads iframe content",
+          "status": "covered"
+        },
         { "id": "tabs-10", "description": "Bookmarks tab is accessible", "status": "covered" },
-        { "id": "tabs-11", "description": "URL updates correctly when switching tabs", "status": "covered" },
-        { "id": "tabs-12", "description": "No error messages on any course tab", "status": "covered" }
+        {
+          "id": "tabs-11",
+          "description": "URL updates correctly when switching tabs",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-12",
+          "description": "No error messages on any course tab",
+          "status": "covered"
+        }
       ]
     },
     {
-      "id": "profile-activity",
-      "name": "Profile — Activity",
+      "id": "profile-public-detail",
+      "name": "Public Profile",
       "spec": "06-profile-activity.spec.ts",
-      "sourceFiles": ["app/profile/page.tsx", "app/profile/layout.tsx", "components/profile-tabs.tsx", "components/profile-sidebar.tsx"],
+      "sourceFiles": [
+        "app/profile/public/page.tsx",
+        "app/profile/layout.tsx",
+        "components/profile-tabs.tsx"
+      ],
       "checkpoints": [
-        { "id": "act-01", "description": "Profile page loads with Activity tab selected", "status": "covered" },
-        { "id": "act-02", "description": "Activity tab displays chart or statistics", "status": "covered" },
-        { "id": "act-03", "description": "Profile sidebar shows user info", "status": "covered" },
-        { "id": "act-04", "description": "Profile navigation tabs are visible", "status": "covered" },
-        { "id": "act-05", "description": "Clicking each tab navigates to correct sub-route", "status": "covered" },
-        { "id": "act-06", "description": "Profile heading identifies current user", "status": "covered" }
+        {
+          "id": "pub-01",
+          "description": "Public Profile tab is active on /profile/public",
+          "status": "covered"
+        },
+        {
+          "id": "pub-02",
+          "description": "About section displayed by default",
+          "status": "covered"
+        },
+        { "id": "pub-03", "description": "User name heading is displayed", "status": "covered" },
+        {
+          "id": "pub-04",
+          "description": "Profile navigation tabs are visible",
+          "status": "covered"
+        },
+        {
+          "id": "pub-05",
+          "description": "Tab navigation works between profile sub-routes",
+          "status": "covered"
+        },
+        {
+          "id": "pub-06",
+          "description": "Public profile has content tabs (About, Education, Experience)",
+          "status": "covered"
+        }
       ]
     },
     {
       "id": "profile-skills",
       "name": "Profile — Skills",
       "spec": "07-profile-skills.spec.ts",
-      "sourceFiles": ["app/profile/skills/page.tsx", "components/skill-box.tsx"],
+      "sourceFiles": [
+        "app/profile/skills/page.tsx",
+        "components/skill-box.tsx",
+        "components/default-empty-box.tsx"
+      ],
       "checkpoints": [
-        { "id": "skill-01", "description": "Skills page loads with list or empty state", "status": "covered" },
-        { "id": "skill-02", "description": "Skill cards show name and proficiency", "status": "covered" },
-        { "id": "skill-03", "description": "Clicking skill card opens detail modal", "status": "covered" },
-        { "id": "skill-04", "description": "Skill detail modal can be closed", "status": "covered" },
-        { "id": "skill-05", "description": "Add Skill button is available", "status": "covered" }
+        {
+          "id": "skill-01",
+          "description": "Skills page loads with Earned, Self-Reported, and Desired sections",
+          "status": "covered"
+        },
+        {
+          "id": "skill-02",
+          "description": "Skill cards show name or empty state message",
+          "status": "covered"
+        },
+        {
+          "id": "skill-03",
+          "description": "Clicking self-reported skill opens detail modal",
+          "status": "covered"
+        },
+        {
+          "id": "skill-04",
+          "description": "Skill detail modal can be closed",
+          "status": "covered"
+        },
+        { "id": "skill-05", "description": "Add Skill button opens dialog", "status": "covered" }
       ]
     },
     {
@@ -120,11 +324,31 @@
       "spec": "08-profile-credentials.spec.ts",
       "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
-        { "id": "cred-01", "description": "Credentials page loads with list or empty state", "status": "covered" },
-        { "id": "cred-02", "description": "Credential cards display name and issuer", "status": "covered" },
-        { "id": "cred-03", "description": "Clicking credential opens detail modal", "status": "covered" },
-        { "id": "cred-04", "description": "Credential detail modal can be closed", "status": "covered" },
-        { "id": "cred-05", "description": "Download/share button available for credentials", "status": "covered" }
+        {
+          "id": "cred-01",
+          "description": "Credentials page loads with list or empty state",
+          "status": "covered"
+        },
+        {
+          "id": "cred-02",
+          "description": "Credential cards display name and issuer",
+          "status": "covered"
+        },
+        {
+          "id": "cred-03",
+          "description": "Clicking credential opens detail modal",
+          "status": "covered"
+        },
+        {
+          "id": "cred-04",
+          "description": "Credential detail modal can be closed",
+          "status": "covered"
+        },
+        {
+          "id": "cred-05",
+          "description": "Download/share button available for credentials",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -133,11 +357,31 @@
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": ["app/profile/pathways/page.tsx", "components/pathway-detail-modal.tsx"],
       "checkpoints": [
-        { "id": "path-01", "description": "Pathways page loads with list or empty state", "status": "covered" },
-        { "id": "path-02", "description": "Pathway cards show name and progress", "status": "covered" },
-        { "id": "path-03", "description": "Clicking pathway opens detail modal", "status": "covered" },
-        { "id": "path-04", "description": "Pathway detail modal can be closed", "status": "covered" },
-        { "id": "path-05", "description": "Create Pathway button visible for admin", "status": "covered" }
+        {
+          "id": "path-01",
+          "description": "Pathways page loads with list or empty state",
+          "status": "covered"
+        },
+        {
+          "id": "path-02",
+          "description": "Pathway cards show name and progress",
+          "status": "covered"
+        },
+        {
+          "id": "path-03",
+          "description": "Clicking pathway opens detail modal",
+          "status": "covered"
+        },
+        {
+          "id": "path-04",
+          "description": "Pathway detail modal can be closed",
+          "status": "covered"
+        },
+        {
+          "id": "path-05",
+          "description": "Create Pathway button visible for admin",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -146,16 +390,44 @@
       "spec": "10-profile-programs.spec.ts",
       "sourceFiles": ["app/profile/programs/page.tsx", "components/program-detail-modal.tsx"],
       "checkpoints": [
-        { "id": "prog-01", "description": "Programs page loads with My programs tab", "status": "covered" },
-        { "id": "prog-02", "description": "Program cards or empty state displayed", "status": "covered" },
-        { "id": "prog-03", "description": "Clicking program opens detail modal", "status": "covered" },
-        { "id": "prog-04", "description": "Modal displays program name and close button", "status": "covered" },
+        {
+          "id": "prog-01",
+          "description": "Programs page loads with My programs tab",
+          "status": "covered"
+        },
+        {
+          "id": "prog-02",
+          "description": "Program cards or empty state displayed",
+          "status": "covered"
+        },
+        {
+          "id": "prog-03",
+          "description": "Clicking program opens detail modal",
+          "status": "covered"
+        },
+        {
+          "id": "prog-04",
+          "description": "Modal displays program name and close button",
+          "status": "covered"
+        },
         { "id": "prog-05", "description": "Modal closes with Close button", "status": "covered" },
-        { "id": "prog-06", "description": "Admin sees Courses and Settings tabs", "status": "covered" },
+        {
+          "id": "prog-06",
+          "description": "Admin sees Courses and Settings tabs",
+          "status": "covered"
+        },
         { "id": "prog-07", "description": "Settings tab shows form sections", "status": "covered" },
         { "id": "prog-08", "description": "Tab switching updates content", "status": "covered" },
-        { "id": "prog-09", "description": "Course card click navigates to course page", "status": "covered" },
-        { "id": "prog-10", "description": "My/Assigned programs tabs can be toggled", "status": "covered" }
+        {
+          "id": "prog-09",
+          "description": "Course card click navigates to course page",
+          "status": "covered"
+        },
+        {
+          "id": "prog-10",
+          "description": "My/Assigned programs tabs can be toggled",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -164,9 +436,21 @@
       "spec": "11-profile-courses.spec.ts",
       "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
-        { "id": "pcrs-01", "description": "Courses page loads with enrolled courses or empty state", "status": "covered" },
-        { "id": "pcrs-02", "description": "Course cards show name and progress", "status": "covered" },
-        { "id": "pcrs-03", "description": "Clicking course navigates to course about", "status": "covered" },
+        {
+          "id": "pcrs-01",
+          "description": "Courses page loads with enrolled courses or empty state",
+          "status": "covered"
+        },
+        {
+          "id": "pcrs-02",
+          "description": "Course cards show name and progress",
+          "status": "covered"
+        },
+        {
+          "id": "pcrs-03",
+          "description": "Clicking course navigates to course about",
+          "status": "covered"
+        },
         { "id": "pcrs-04", "description": "Pagination/load more works", "status": "covered" }
       ]
     },
@@ -178,7 +462,11 @@
       "checkpoints": [
         { "id": "pub-01", "description": "Public profile page loads", "status": "covered" },
         { "id": "pub-02", "description": "Shows user name and visible info", "status": "covered" },
-        { "id": "pub-03", "description": "Does not expose private information", "status": "covered" }
+        {
+          "id": "pub-03",
+          "description": "Does not expose private information",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -187,9 +475,21 @@
       "spec": "13-recommended-courses.spec.ts",
       "sourceFiles": ["app/recommended/page.tsx"],
       "checkpoints": [
-        { "id": "rec-01", "description": "Recommended page loads with course cards or empty state", "status": "covered" },
-        { "id": "rec-02", "description": "Course cards show title and description", "status": "covered" },
-        { "id": "rec-03", "description": "Clicking card navigates to course about", "status": "covered" },
+        {
+          "id": "rec-01",
+          "description": "Recommended page loads with course cards or empty state",
+          "status": "covered"
+        },
+        {
+          "id": "rec-02",
+          "description": "Course cards show title and description",
+          "status": "covered"
+        },
+        {
+          "id": "rec-03",
+          "description": "Clicking card navigates to course about",
+          "status": "covered"
+        },
         { "id": "rec-04", "description": "Recommendations are personalized", "status": "covered" },
         { "id": "rec-05", "description": "Page has proper heading", "status": "covered" }
       ]
@@ -200,14 +500,34 @@
       "spec": "14-course-discovery.spec.ts",
       "sourceFiles": ["app/discover/page.tsx", "components/discover-content-card.tsx"],
       "checkpoints": [
-        { "id": "disc-01", "description": "Discover page loads with catalog and search", "status": "covered" },
+        {
+          "id": "disc-01",
+          "description": "Discover page loads with catalog and search",
+          "status": "covered"
+        },
         { "id": "disc-02", "description": "Search filters by title/keyword", "status": "covered" },
-        { "id": "disc-03", "description": "Faceted filters are visible and functional", "status": "covered" },
+        {
+          "id": "disc-03",
+          "description": "Faceted filters are visible and functional",
+          "status": "covered"
+        },
         { "id": "disc-04", "description": "Applying filter narrows results", "status": "covered" },
-        { "id": "disc-05", "description": "Clearing filters restores full catalog", "status": "covered" },
-        { "id": "disc-06", "description": "Clicking course navigates to about page", "status": "covered" },
+        {
+          "id": "disc-05",
+          "description": "Clearing filters restores full catalog",
+          "status": "covered"
+        },
+        {
+          "id": "disc-06",
+          "description": "Clicking course navigates to about page",
+          "status": "covered"
+        },
         { "id": "disc-07", "description": "Filter drawer works on mobile", "status": "covered" },
-        { "id": "disc-08", "description": "Pagination loads additional courses", "status": "covered" }
+        {
+          "id": "disc-08",
+          "description": "Pagination loads additional courses",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -216,25 +536,57 @@
       "spec": "15-notifications.spec.ts",
       "sourceFiles": ["app/notifications/page.tsx", "app/notifications/[notificationId]/page.tsx"],
       "checkpoints": [
-        { "id": "notif-01", "description": "Notification bell visible in NavBar", "status": "covered" },
+        {
+          "id": "notif-01",
+          "description": "Notification bell visible in NavBar",
+          "status": "covered"
+        },
         { "id": "notif-02", "description": "Bell click opens dropdown", "status": "covered" },
-        { "id": "notif-03", "description": "View All navigates to /notifications", "status": "covered" },
-        { "id": "notif-04", "description": "Notification list shows titles and timestamps", "status": "covered" },
-        { "id": "notif-05", "description": "Clicking notification goes to detail page", "status": "covered" },
+        {
+          "id": "notif-03",
+          "description": "View All navigates to /notifications",
+          "status": "covered"
+        },
+        {
+          "id": "notif-04",
+          "description": "Notification list shows titles and timestamps",
+          "status": "covered"
+        },
+        {
+          "id": "notif-05",
+          "description": "Clicking notification goes to detail page",
+          "status": "covered"
+        },
         { "id": "notif-06", "description": "Detail page shows full content", "status": "covered" },
-        { "id": "notif-07", "description": "Mark all as read button is functional", "status": "covered" }
+        {
+          "id": "notif-07",
+          "description": "Mark all as read button is functional",
+          "status": "covered"
+        }
       ]
     },
     {
       "id": "analytics-overview",
       "name": "Analytics Overview",
       "spec": "16-analytics-overview.spec.ts",
-      "sourceFiles": ["app/analytics/page.tsx", "app/analytics/layout.tsx", "components/analytics-sidebar.tsx"],
+      "sourceFiles": [
+        "app/analytics/page.tsx",
+        "app/analytics/layout.tsx",
+        "components/analytics-sidebar.tsx"
+      ],
       "checkpoints": [
-        { "id": "ao-01", "description": "Analytics page loads with overview dashboard", "status": "covered" },
+        {
+          "id": "ao-01",
+          "description": "Analytics page loads with overview dashboard",
+          "status": "covered"
+        },
         { "id": "ao-02", "description": "Overview shows key metrics cards", "status": "covered" },
         { "id": "ao-03", "description": "Analytics sidebar tabs are visible", "status": "covered" },
-        { "id": "ao-04", "description": "Time filter controls are functional", "status": "covered" },
+        {
+          "id": "ao-04",
+          "description": "Time filter controls are functional",
+          "status": "covered"
+        },
         { "id": "ao-05", "description": "Groups filter can filter by groups", "status": "covered" }
       ]
     },
@@ -242,12 +594,33 @@
       "id": "analytics-users",
       "name": "Analytics Users",
       "spec": "17-analytics-users.spec.ts",
-      "sourceFiles": ["app/analytics/users/page.tsx", "app/analytics/users/registered/page.tsx", "app/analytics/users/active/page.tsx", "app/analytics/users/at-risk/page.tsx"],
+      "sourceFiles": [
+        "app/analytics/users/page.tsx",
+        "app/analytics/users/registered/page.tsx",
+        "app/analytics/users/active/page.tsx",
+        "app/analytics/users/at-risk/page.tsx"
+      ],
       "checkpoints": [
-        { "id": "au-01", "description": "Users analytics page loads with metrics", "status": "covered" },
-        { "id": "au-02", "description": "Registered users sub-page is accessible", "status": "covered" },
-        { "id": "au-03", "description": "Active users sub-page shows activity data", "status": "covered" },
-        { "id": "au-04", "description": "At-risk users sub-page shows indicators", "status": "covered" },
+        {
+          "id": "au-01",
+          "description": "Users analytics page loads with metrics",
+          "status": "covered"
+        },
+        {
+          "id": "au-02",
+          "description": "Registered users sub-page is accessible",
+          "status": "covered"
+        },
+        {
+          "id": "au-03",
+          "description": "Active users sub-page shows activity data",
+          "status": "covered"
+        },
+        {
+          "id": "au-04",
+          "description": "At-risk users sub-page shows indicators",
+          "status": "covered"
+        },
         { "id": "au-05", "description": "Time filter updates user analytics", "status": "covered" }
       ]
     },
@@ -255,14 +628,43 @@
       "id": "analytics-content",
       "name": "Analytics Content — Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
-      "sourceFiles": ["app/analytics/courses/page.tsx", "app/analytics/courses/[courseId]/page.tsx", "app/analytics/programs/page.tsx", "app/analytics/programs/[programId]/page.tsx"],
+      "sourceFiles": [
+        "app/analytics/courses/page.tsx",
+        "app/analytics/courses/[courseId]/page.tsx",
+        "app/analytics/programs/page.tsx",
+        "app/analytics/programs/[programId]/page.tsx"
+      ],
       "checkpoints": [
-        { "id": "ac-01", "description": "Courses analytics loads with metrics", "status": "covered" },
-        { "id": "ac-02", "description": "Course metrics show enrollment and completion", "status": "covered" },
-        { "id": "ac-03", "description": "Clicking course navigates to detail", "status": "covered" },
-        { "id": "ac-04", "description": "Course detail shows granular analytics", "status": "covered" },
-        { "id": "ac-05", "description": "Programs analytics loads with metrics", "status": "covered" },
-        { "id": "ac-06", "description": "Clicking program navigates to detail", "status": "covered" },
+        {
+          "id": "ac-01",
+          "description": "Courses analytics loads with metrics",
+          "status": "covered"
+        },
+        {
+          "id": "ac-02",
+          "description": "Course metrics show enrollment and completion",
+          "status": "covered"
+        },
+        {
+          "id": "ac-03",
+          "description": "Clicking course navigates to detail",
+          "status": "covered"
+        },
+        {
+          "id": "ac-04",
+          "description": "Course detail shows granular analytics",
+          "status": "covered"
+        },
+        {
+          "id": "ac-05",
+          "description": "Programs analytics loads with metrics",
+          "status": "covered"
+        },
+        {
+          "id": "ac-06",
+          "description": "Clicking program navigates to detail",
+          "status": "covered"
+        },
         { "id": "ac-07", "description": "Program detail shows analytics", "status": "covered" },
         { "id": "ac-08", "description": "Time filter updates data", "status": "covered" }
       ]
@@ -271,12 +673,24 @@
       "id": "analytics-topics-transcripts-financial",
       "name": "Analytics Topics, Transcripts & Financial",
       "spec": "19-analytics-topics-transcripts-financial.spec.ts",
-      "sourceFiles": ["app/analytics/topics/page.tsx", "app/analytics/transcripts/page.tsx", "app/analytics/financial/page.tsx"],
+      "sourceFiles": [
+        "app/analytics/topics/page.tsx",
+        "app/analytics/transcripts/page.tsx",
+        "app/analytics/financial/page.tsx"
+      ],
       "checkpoints": [
-        { "id": "atf-01", "description": "Topics analytics loads with charts", "status": "covered" },
+        {
+          "id": "atf-01",
+          "description": "Topics analytics loads with charts",
+          "status": "covered"
+        },
         { "id": "atf-02", "description": "Topics shows distribution data", "status": "covered" },
         { "id": "atf-03", "description": "Transcripts loads with metrics", "status": "covered" },
-        { "id": "atf-04", "description": "Transcripts shows costs and ratings", "status": "covered" },
+        {
+          "id": "atf-04",
+          "description": "Transcripts shows costs and ratings",
+          "status": "covered"
+        },
         { "id": "atf-05", "description": "Financial loads with cost cards", "status": "covered" },
         { "id": "atf-06", "description": "Financial shows cost breakdowns", "status": "covered" }
       ]
@@ -285,10 +699,17 @@
       "id": "analytics-reports",
       "name": "Analytics Reports",
       "spec": "20-analytics-reports.spec.ts",
-      "sourceFiles": ["app/analytics/reports/page.tsx", "app/reports/[tenantKey]/[reportName]/page.tsx"],
+      "sourceFiles": [
+        "app/analytics/reports/page.tsx",
+        "app/reports/[tenantKey]/[reportName]/page.tsx"
+      ],
       "checkpoints": [
         { "id": "ar-01", "description": "Navigate to Data Reports tab", "status": "covered" },
-        { "id": "ar-02", "description": "Report cards display with download buttons", "status": "covered" },
+        {
+          "id": "ar-02",
+          "description": "Report cards display with download buttons",
+          "status": "covered"
+        },
         { "id": "ar-03", "description": "CSV editor opens for User Report", "status": "covered" },
         { "id": "ar-04", "description": "CSV data in editable table format", "status": "covered" },
         { "id": "ar-05", "description": "Cell values can be edited", "status": "covered" },
@@ -297,10 +718,22 @@
         { "id": "ar-08", "description": "Cancel closes without saving", "status": "covered" },
         { "id": "ar-09", "description": "Close button closes editor", "status": "covered" },
         { "id": "ar-10", "description": "CSV editor has ARIA labels", "status": "covered" },
-        { "id": "ar-11", "description": "User Metadata Report opens CSV editor", "status": "covered" },
+        {
+          "id": "ar-11",
+          "description": "User Metadata Report opens CSV editor",
+          "status": "covered"
+        },
         { "id": "ar-12", "description": "Chat History downloads directly", "status": "covered" },
-        { "id": "ar-13", "description": "Combined report cards have data-testids", "status": "covered" },
-        { "id": "ar-14", "description": "Combining dialog appears and can be cancelled", "status": "covered" },
+        {
+          "id": "ar-13",
+          "description": "Combined report cards have data-testids",
+          "status": "covered"
+        },
+        {
+          "id": "ar-14",
+          "description": "Combining dialog appears and can be cancelled",
+          "status": "covered"
+        },
         { "id": "ar-15", "description": "Report download page shows phases", "status": "covered" }
       ]
     },
@@ -310,7 +743,11 @@
       "spec": "21-search.spec.ts",
       "sourceFiles": ["app/discover/page.tsx", "components/nav-bar.tsx"],
       "checkpoints": [
-        { "id": "search-01", "description": "Global search accessible from NavBar", "status": "covered" },
+        {
+          "id": "search-01",
+          "description": "Global search accessible from NavBar",
+          "status": "covered"
+        },
         { "id": "search-02", "description": "Typing query shows results", "status": "covered" },
         { "id": "search-03", "description": "Results show matching courses", "status": "covered" },
         { "id": "search-04", "description": "Clearing resets results", "status": "covered" },
@@ -321,15 +758,39 @@
       "id": "navigation-navbar",
       "name": "Navigation & NavBar",
       "spec": "22-navigation-navbar.spec.ts",
-      "sourceFiles": ["components/nav-bar.tsx", "components/profile-dropdown.tsx", "components/logo.tsx"],
+      "sourceFiles": [
+        "components/nav-bar.tsx",
+        "components/profile-dropdown.tsx",
+        "components/logo.tsx"
+      ],
       "checkpoints": [
-        { "id": "nav-01", "description": "NavBar renders all expected elements", "status": "covered" },
+        {
+          "id": "nav-01",
+          "description": "NavBar renders all expected elements",
+          "status": "covered"
+        },
         { "id": "nav-02", "description": "Home link navigates to /home", "status": "covered" },
-        { "id": "nav-03", "description": "Profile link navigates to /profile", "status": "covered" },
-        { "id": "nav-04", "description": "Recommended navigates to /recommended", "status": "covered" },
+        {
+          "id": "nav-03",
+          "description": "Profile link navigates to /profile",
+          "status": "covered"
+        },
+        {
+          "id": "nav-04",
+          "description": "Recommended navigates to /recommended",
+          "status": "covered"
+        },
         { "id": "nav-05", "description": "Discover navigates to /discover", "status": "covered" },
-        { "id": "nav-06", "description": "AI Analytics navigates to /analytics", "status": "covered" },
-        { "id": "nav-07", "description": "Profile dropdown opens with options", "status": "covered" },
+        {
+          "id": "nav-06",
+          "description": "AI Analytics navigates to /analytics",
+          "status": "covered"
+        },
+        {
+          "id": "nav-07",
+          "description": "Profile dropdown opens with options",
+          "status": "covered"
+        },
         { "id": "nav-08", "description": "Logo navigates to home", "status": "covered" }
       ]
     },
@@ -342,26 +803,66 @@
         { "id": "ep-01", "description": "Edit Profile dialog opens", "status": "covered" },
         { "id": "ep-02", "description": "Basic tab shows editable fields", "status": "covered" },
         { "id": "ep-03", "description": "Social tab shows URL fields", "status": "covered" },
-        { "id": "ep-04", "description": "Education tab has Add Education button", "status": "covered" },
-        { "id": "ep-05", "description": "Currently study here disables end date", "status": "covered" },
-        { "id": "ep-06", "description": "Experience tab has Add Experience button", "status": "covered" },
-        { "id": "ep-07", "description": "Currently work here disables end date", "status": "covered" },
-        { "id": "ep-08", "description": "Save Changes saves and dialog closes", "status": "covered" }
+        {
+          "id": "ep-04",
+          "description": "Education tab has Add Education button",
+          "status": "covered"
+        },
+        {
+          "id": "ep-05",
+          "description": "Currently study here disables end date",
+          "status": "covered"
+        },
+        {
+          "id": "ep-06",
+          "description": "Experience tab has Add Experience button",
+          "status": "covered"
+        },
+        {
+          "id": "ep-07",
+          "description": "Currently work here disables end date",
+          "status": "covered"
+        },
+        {
+          "id": "ep-08",
+          "description": "Save Changes saves and dialog closes",
+          "status": "covered"
+        }
       ]
     },
     {
       "id": "mobile-view",
       "name": "Mobile View",
       "spec": "24-mobile-view.spec.ts",
-      "sourceFiles": ["components/navigation-drawer.tsx", "components/nav-bar.tsx", "app/home/page.tsx"],
+      "sourceFiles": [
+        "components/navigation-drawer.tsx",
+        "components/nav-bar.tsx",
+        "app/home/page.tsx"
+      ],
       "checkpoints": [
         { "id": "mob-01", "description": "Navigation drawer opens on mobile", "status": "covered" },
         { "id": "mob-02", "description": "Course tabs scrollable on mobile", "status": "covered" },
-        { "id": "mob-03", "description": "Iframe container has correct classes", "status": "covered" },
-        { "id": "mob-04", "description": "Non-course tabs have no padding on mobile", "status": "covered" },
-        { "id": "mob-05", "description": "Course tab retains padding on mobile", "status": "covered" },
+        {
+          "id": "mob-03",
+          "description": "Iframe container has correct classes",
+          "status": "covered"
+        },
+        {
+          "id": "mob-04",
+          "description": "Non-course tabs have no padding on mobile",
+          "status": "covered"
+        },
+        {
+          "id": "mob-05",
+          "description": "Course tab retains padding on mobile",
+          "status": "covered"
+        },
         { "id": "mob-06", "description": "Desktop tabs retain padding", "status": "covered" },
-        { "id": "mob-07", "description": "Key pages render correctly on mobile", "status": "covered" }
+        {
+          "id": "mob-07",
+          "description": "Key pages render correctly on mobile",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -370,12 +871,20 @@
       "spec": "25-chat-embed.spec.ts",
       "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
-        { "id": "chat-01", "description": "Open chat assistant button visible", "status": "covered" },
+        {
+          "id": "chat-01",
+          "description": "Open chat assistant button visible",
+          "status": "covered"
+        },
         { "id": "chat-02", "description": "Clicking opens chat panel", "status": "covered" },
         { "id": "chat-03", "description": "User can type and send message", "status": "covered" },
         { "id": "chat-04", "description": "Chat receives AI response", "status": "covered" },
         { "id": "chat-05", "description": "Chat panel can be closed", "status": "covered" },
-        { "id": "chat-06", "description": "Display Mentor AI checkbox controls visibility", "status": "covered" }
+        {
+          "id": "chat-06",
+          "description": "Display Mentor AI checkbox controls visibility",
+          "status": "covered"
+        }
       ]
     },
     {
@@ -411,27 +920,69 @@
         { "id": "tm-02", "description": "Management tab shows Invite button", "status": "covered" },
         { "id": "tm-03", "description": "Admin can send invite via email", "status": "covered" },
         { "id": "tm-04", "description": "Courses tab has searchable fields", "status": "covered" },
-        { "id": "tm-05", "description": "Programs tab has searchable selection", "status": "covered" },
-        { "id": "tm-06", "description": "Provider Configuration card visible", "status": "covered" },
-        { "id": "tm-07", "description": "External Credential Mapping card visible", "status": "covered" },
-        { "id": "tm-08", "description": "Provider Config add dialog has fields and Cancel", "status": "covered" }
+        {
+          "id": "tm-05",
+          "description": "Programs tab has searchable selection",
+          "status": "covered"
+        },
+        {
+          "id": "tm-06",
+          "description": "Provider Configuration card visible",
+          "status": "covered"
+        },
+        {
+          "id": "tm-07",
+          "description": "External Credential Mapping card visible",
+          "status": "covered"
+        },
+        {
+          "id": "tm-08",
+          "description": "Provider Config add dialog has fields and Cancel",
+          "status": "covered"
+        }
       ]
     },
     {
       "id": "accessibility-wcag",
       "name": "Accessibility — WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
-      "sourceFiles": ["app/home/page.tsx", "app/discover/page.tsx", "app/profile/page.tsx", "app/analytics/page.tsx", "components/program-detail-modal.tsx"],
+      "sourceFiles": [
+        "app/home/page.tsx",
+        "app/discover/page.tsx",
+        "app/profile/page.tsx",
+        "app/analytics/page.tsx",
+        "components/program-detail-modal.tsx"
+      ],
       "checkpoints": [
         { "id": "a11y-01", "description": "Home page passes axe-core scan", "status": "covered" },
-        { "id": "a11y-02", "description": "Discover page passes axe-core scan", "status": "covered" },
-        { "id": "a11y-03", "description": "Profile page passes axe-core scan", "status": "covered" },
-        { "id": "a11y-04", "description": "Course about page passes axe-core scan", "status": "covered" },
-        { "id": "a11y-05", "description": "Analytics page passes axe-core scan", "status": "covered" },
+        {
+          "id": "a11y-02",
+          "description": "Discover page passes axe-core scan",
+          "status": "covered"
+        },
+        {
+          "id": "a11y-03",
+          "description": "Profile page passes axe-core scan",
+          "status": "covered"
+        },
+        {
+          "id": "a11y-04",
+          "description": "Course about page passes axe-core scan",
+          "status": "covered"
+        },
+        {
+          "id": "a11y-05",
+          "description": "Analytics page passes axe-core scan",
+          "status": "covered"
+        },
         { "id": "a11y-06", "description": "Edit Profile has ARIA attributes", "status": "covered" },
         { "id": "a11y-07", "description": "Program modal has dialog role", "status": "covered" },
         { "id": "a11y-08", "description": "Notification dropdown has ARIA", "status": "covered" },
-        { "id": "a11y-09", "description": "Interactive elements have accessible names", "status": "covered" },
+        {
+          "id": "a11y-09",
+          "description": "Interactive elements have accessible names",
+          "status": "covered"
+        },
         { "id": "a11y-10", "description": "No images without alt text", "status": "covered" }
       ]
     }

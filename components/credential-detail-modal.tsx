@@ -74,7 +74,7 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
               />
             </div>
             <h2 className="text-center text-xl font-semibold text-[var(--text)]">
-              Charles Foster, Admin
+              {credential?.credentialDetails?.name}
             </h2>
             <div className="mt-2 flex items-center gap-2">
               <Award className="h-4 w-4 text-[var(--primary)]" />

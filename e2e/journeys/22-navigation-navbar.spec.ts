@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -7,10 +8,9 @@ test.describe('Journey 22: Navigation & NavBar', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
   });
 
   test('CP-1: NavBar renders all expected elements', async ({ page }) => {
@@ -29,10 +29,9 @@ test.describe('Journey 22: Navigation & NavBar', () => {
   test('CP-2: Home link navigates to /home', async ({ page }) => {
     // Navigate away first
     await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
 
     const homeLink = page.getByRole('link', { name: /home/i });
     await expect(homeLink).toBeVisible({ timeout: 30_000 });
@@ -44,7 +43,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
 
   test('CP-3: Profile link navigates to /profile', async ({ page }) => {
     const profileLink = page.getByRole('link', { name: /profile/i });
-    const isVisible = await profileLink.isVisible().catch(() => false);
+    const isVisible = await profileLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isVisible) {
       // Profile might be in a dropdown menu
@@ -66,7 +65,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
 
   test('CP-4: Recommended link navigates to /recommended', async ({ page }) => {
     const recommendedLink = page.getByRole('link', { name: /recommended/i });
-    const isVisible = await recommendedLink.isVisible().catch(() => false);
+    const isVisible = await recommendedLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isVisible) {
       test.skip();
@@ -127,10 +126,9 @@ test.describe('Journey 22: Navigation & NavBar', () => {
   test('CP-8: Logo link navigates to home', async ({ page }) => {
     // Navigate away from home first
     await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
 
     // Click the logo (typically the first link in the banner)
     const navbar = page.getByRole('banner');

@@ -1,4 +1,5 @@
 import { test, expect, ConsoleMessage } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -45,12 +46,9 @@ test.describe('Journey 27: UI Render Console Errors', () => {
     });
 
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-
-    // Wait for the app to fully render (Next.js App Router uses body directly, no #root)
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
 
     // Verify body has children (app rendered)
     const hasChildren = await page.evaluate(() => {
@@ -77,11 +75,9 @@ test.describe('Journey 27: UI Render Console Errors', () => {
     });
 
     await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
 
     const hasChildren = await page.evaluate(() => {
       return document.body && document.body.hasChildNodes();
@@ -106,11 +102,9 @@ test.describe('Journey 27: UI Render Console Errors', () => {
     });
 
     await page.goto(`${SKILL_HOST}/profile`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-
-    await page.waitForLoadState('domcontentloaded');
+    await waitForAppShell(page);
 
     const hasChildren = await page.evaluate(() => {
       return document.body && document.body.hasChildNodes();

@@ -30,7 +30,7 @@ export const CredentialMiniBox = ({
       </div>
       <div>
         <h3 className="text-sm font-medium text-gray-800">{credential.credentialDetails?.name}</h3>
-        {!minified && <p className="text-xs text-gray-600">{credential.course.name}</p>}
+        {!minified && <p className="text-xs text-gray-600">{credential.course?.name || '-'}</p>}
         <p className="mt-1 text-xs text-gray-500">
           Earned on: {credential.issuedOn ? dayjs(credential.issuedOn).format('MMM D, YYYY') : '-'}
         </p>
