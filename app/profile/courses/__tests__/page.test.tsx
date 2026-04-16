@@ -16,31 +16,23 @@ vi.mock('@/utils/helpers', () => ({
 const mockUserCourses: any[] = [];
 const mockPagination = { total_pages: 1, count: 0 };
 
-vi.mock('@/hooks/courses/use-user-courses', () => ({
+vi.mock('@iblai/iblai-js/web-containers', () => ({
   useUserCourses: vi.fn(() => ({
     userCourses: mockUserCourses,
     isLoadingUserCourses: false,
     errorUserCourses: false,
     pagination: mockPagination,
   })),
-}));
-
-vi.mock('@/components/course-box', () => ({
-  CourseBox: ({ course }: any) => <div data-testid="course-box">{course.course_id}</div>,
-}));
-
-vi.mock('@/components/skeleton-multiplier', () => ({
+  getRandomCourseImage: vi.fn(() => '/fallback.png'),
   SkeletonMultiplier: () => <div data-testid="skeleton-multiplier" />,
-}));
-
-vi.mock('@/components/course-card-skeleton', () => ({
   CourseCardSkeleton: () => <div data-testid="course-card-skeleton" />,
-}));
-
-vi.mock('@/components/default-empty-box', () => ({
   DefaultEmptyBox: ({ message }: { message: string }) => (
     <div data-testid="empty-box">{message}</div>
   ),
+}));
+
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
+  CourseBox: ({ course }: any) => <div data-testid="course-box">{course.course_id}</div>,
 }));
 
 vi.mock('react-paginate', () => ({
@@ -54,7 +46,7 @@ vi.mock('react-paginate', () => ({
 }));
 
 import CoursesPage from '../page';
-import { useUserCourses } from '@/hooks/courses/use-user-courses';
+import { useUserCourses } from '@iblai/iblai-js/web-containers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 describe('CoursesPage', () => {

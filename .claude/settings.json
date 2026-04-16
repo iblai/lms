@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm prettier:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(grep -rn \"config\" lib/config* config.*)"
+    ]
+  }
+}

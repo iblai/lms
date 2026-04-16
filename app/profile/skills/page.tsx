@@ -2,15 +2,19 @@
 
 import { useState, useRef } from 'react';
 import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { AddSkillDialog } from '@/components/add-skill-dialog';
-import { SkillDetailModal } from '@/components/skill-detail-modal';
-import { useProfileSkills } from '@/hooks/profile/use-profile-skills';
-import { SkillBox } from '@/components/skill-box';
-import { SkeletonSkillBox } from '@/components/skeleton-skill-box';
-import { DefaultEmptyBox } from '@/components/default-empty-box';
+import {
+  AddSkillDialog,
+  DefaultEmptyBox,
+  SkeletonMultiplier,
+  SkeletonSkillBox,
+  SkillBox,
+  SkillDetailModal,
+  useProfileSkills,
+  type UserSkill,
+} from '@iblai/iblai-js/web-containers';
+import { toast } from 'sonner';
 import _ from 'lodash';
-import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
-import { UserSkill } from '@/types/skills';
+import type { Skill } from '@iblai/iblai-api';
 
 export default function SkillsPage() {
   const {
@@ -30,6 +34,11 @@ export default function SkillsPage() {
     updatingSkill,
     deletingSkill,
     handleSkillsUpdate,
+    handleSkillsCreate,
+    handleFetchAllSkills,
+    fetchedSkills,
+    isFetchingSkills,
+    isFetchingSkillsError,
   } = useProfileSkills();
   const [searchQuery, setSearchQuery] = useState('');
   const [addSkillDialogOpen, setAddSkillDialogOpen] = useState(false);
@@ -355,9 +364,30 @@ export default function SkillsPage() {
         open={addSkillDialogOpen}
         onOpenChange={setAddSkillDialogOpen}
         type={skillTypeToAdd}
-        existingSkills={{
-          selfReported: selfReportedSkills,
-          desired: desiredSkills,
+        fetchedSkills={fetchedSkills as any}
+        isFetchingSkills={isFetchingSkills}
+        isFetchingSkillsError={isFetchingSkillsError}
+        updatingSkill={updatingSkill}
+        onSearch={(query) => handleFetchAllSkills(query)}
+        onAddSkill={async (skill: Skill) => {
+          const targetBucket = skillTypeToAdd === 'desired' ? desiredSkills : selfReportedSkills;
+          const existing = (targetBucket?.skills || []) as any[];
+          const existingLevels = (targetBucket?.data?.level || []) as number[];
+          const newPayload: any = {
+            skills: [...existing, { name: skill.name }],
+            data: {
+              ...(targetBucket?.data || {}),
+              level: [...existingLevels, 0],
+            },
+            type: skillTypeToAdd,
+          };
+          const ok = await handleSkillsCreate(newPayload);
+          if (ok) {
+            toast.success('Skill added successfully');
+            setAddSkillDialogOpen(false);
+          } else {
+            toast.error('Failed to add skill');
+          }
         }}
       />
       {/* Skill Detail Modal */}

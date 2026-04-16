@@ -3,15 +3,18 @@
 import { useState } from 'react';
 
 import { Search, Plus } from 'lucide-react';
-import { useUserCourses } from '@/hooks/courses/use-user-courses';
-import { CourseBox } from '@/components/course-box';
-import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
-import { CourseCardSkeleton } from '@/components/course-card-skeleton';
-import { DefaultEmptyBox } from '@/components/default-empty-box';
-import { Course } from '@/types/courses';
+import {
+  CourseCardSkeleton,
+  DefaultEmptyBox,
+  SkeletonMultiplier,
+  useUserCourses,
+  getRandomCourseImage,
+} from '@iblai/iblai-js/web-containers';
+import { CourseBox } from '@iblai/iblai-js/web-containers/next';
 import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getTenant } from '@/utils/helpers';
+import { config } from '@/lib/config';
 
 export default function CoursesPage() {
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
@@ -99,9 +102,20 @@ export default function CoursesPage() {
         )}
         {!isLoadingUserCourses &&
           !errorUserCourses &&
-          userCourses.map((course: Course, index: number) => (
-            <CourseBox key={`course-${course.course_id}-${index}`} course={course} />
-          ))}
+          userCourses.map((course, index: number) => {
+            const fallback = getRandomCourseImage();
+            const imageSrc = course.edx_data?.course_image_asset_path
+              ? config.urls.lms() + course.edx_data.course_image_asset_path
+              : fallback;
+            return (
+              <CourseBox
+                key={`course-${course.course_id}-${index}`}
+                course={course}
+                imageSrc={imageSrc}
+                fallbackImageSrc={fallback}
+              />
+            );
+          })}
       </div>
       {/* Pagination */}
       <div className="mt-8 mb-10 flex justify-end">

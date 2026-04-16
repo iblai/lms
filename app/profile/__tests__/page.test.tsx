@@ -1,21 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Mock helpers
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
 }));
 
-// Mock useProfileActivityStats
-vi.mock('@/hooks/profile/use-profile-activity-stats', () => ({
-  useProfileActivityStats: vi.fn(() => ({
-    stats: [],
+vi.mock('@iblai/iblai-js/web-containers', () => ({
+  ProfileTimeChart: () => <div data-testid="profile-time-chart">ProfileTimeChart</div>,
+  SkillLeaderboardChart: ({ userSkillPoints }: any) => (
+    <div data-testid="skill-leaderboard-chart" data-points={userSkillPoints}>
+      SkillLeaderboardChart
+    </div>
+  ),
+  SkeletonActivityStatBox: () => <div data-testid="skeleton-activity-stat-box">Loading...</div>,
+  useProfileActivityStats: vi.fn(() => ({ stats: [] })),
+  useProfileTimeSpent: vi.fn(() => ({ timeSpent: [], timeSpentLoading: false })),
+  useUserMetadata: vi.fn(() => ({
+    userMetaData: { enable_skills_leaderboard_display: true },
+    userMetaDataLoading: false,
   })),
 }));
 
-// Mock useTenantMetadata
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
+  ProfileInfoCards: () => <div data-testid="profile-info-cards">ProfileInfoCards</div>,
+}));
+
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => ({
     metadataLoaded: true,
@@ -23,47 +34,22 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
   })),
 }));
 
-// Mock useGetUserMetadataQuery
-vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useGetUserMetadataQuery: vi.fn(() => ({
-    data: { enable_skills_leaderboard_display: true },
-    isLoading: false,
-  })),
-}));
-
-// Mock ProfileTimeChart
-vi.mock('@/components/profile-time-chart', () => ({
-  ProfileTimeChart: () => <div data-testid="profile-time-chart">ProfileTimeChart</div>,
-}));
-
-// Mock ProfileInfoCards
-vi.mock('@/components/profile-info-cards', () => ({
-  ProfileInfoCards: () => <div data-testid="profile-info-cards">ProfileInfoCards</div>,
-}));
-
-// Mock SkillLeaderboardChart
-vi.mock('@/components/skill-leaderboard-chart', () => ({
-  SkillLeaderboardChart: ({ userSkillPoints }: any) => (
-    <div data-testid="skill-leaderboard-chart" data-points={userSkillPoints}>
-      SkillLeaderboardChart
-    </div>
-  ),
-}));
-
-// Mock SkeletonActivityStatBox
-vi.mock('@/components/skeleton-activity-stat-box', () => ({
-  SkeletonActivityStatBox: () => <div data-testid="skeleton-activity-stat-box">Loading...</div>,
+const mockGetPerLearnerActivity = vi.fn(() => Promise.resolve({ data: {} }));
+vi.mock('@/services/perlearner', () => ({
+  useGetUserPerLearnerInfoQuery: vi.fn(() => ({ data: null, isLoading: false })),
+  useLazyGetPerLearnerActivityQuery: vi.fn(() => [mockGetPerLearnerActivity]),
 }));
 
 import ProfilePage from '../page';
-import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-stats';
+import { useProfileActivityStats, useUserMetadata } from '@iblai/iblai-js/web-containers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-// @ts-ignore
-import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
+import { useGetUserPerLearnerInfoQuery } from '@/services/perlearner';
 
 describe('ProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetPerLearnerActivity.mockReset();
+    mockGetPerLearnerActivity.mockResolvedValue({ data: {} });
     vi.mocked(useProfileActivityStats).mockReturnValue({
       stats: [],
     } as any);
@@ -71,8 +57,12 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => false),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: { enable_skills_leaderboard_display: true },
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: { enable_skills_leaderboard_display: true, username: 'test-user' },
+      userMetaDataLoading: false,
+    } as any);
+    vi.mocked(useGetUserPerLearnerInfoQuery).mockReturnValue({
+      data: null,
       isLoading: false,
     } as any);
   });
@@ -166,9 +156,9 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: undefined,
-      isLoading: true,
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: undefined,
+      userMetaDataLoading: true,
     } as any);
 
     render(<ProfilePage />);
@@ -181,9 +171,9 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: { enable_skills_leaderboard_display: false },
-      isLoading: false,
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: { enable_skills_leaderboard_display: false },
+      userMetaDataLoading: false,
     } as any);
 
     render(<ProfilePage />);
@@ -196,9 +186,9 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: { enable_skills_leaderboard_display: true },
-      isLoading: false,
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: { enable_skills_leaderboard_display: true },
+      userMetaDataLoading: false,
     } as any);
 
     render(<ProfilePage />);
@@ -212,9 +202,9 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: { enable_skills_leaderboard_display: true },
-      isLoading: false,
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: { enable_skills_leaderboard_display: true },
+      userMetaDataLoading: false,
     } as any);
     vi.mocked(useProfileActivityStats).mockReturnValue({
       stats: [{ loading: false, label: 'Points', value: 250 }],
@@ -231,9 +221,9 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: { enable_skills_leaderboard_display: true },
-      isLoading: false,
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: { enable_skills_leaderboard_display: true },
+      userMetaDataLoading: false,
     } as any);
     vi.mocked(useProfileActivityStats).mockReturnValue({
       stats: [{ loading: false, label: 'Courses', value: 10 }],
@@ -250,14 +240,76 @@ describe('ProfilePage', () => {
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
     } as any);
-    vi.mocked(useGetUserMetadataQuery).mockReturnValue({
-      data: {},
-      isLoading: false,
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: {},
+      userMetaDataLoading: false,
     } as any);
 
     render(<ProfilePage />);
 
-    // enable_skills_leaderboard_display is undefined, not false - should show chart
     expect(screen.getByTestId('skill-leaderboard-chart')).toBeInTheDocument();
+  });
+
+  it('sorts per-learner activity by time_invested and picks the top entry', async () => {
+    mockGetPerLearnerActivity.mockResolvedValueOnce({
+      data: {
+        data: [
+          { name: 'Low', course_id: 'c-low', time_invested: 10 },
+          { name: 'High', course_id: 'c-high', time_invested: 100 },
+          { name: 'Mid', course_id: 'c-mid', time_invested: 50 },
+        ],
+      },
+    });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(mockGetPerLearnerActivity).toHaveBeenCalledWith({
+        org: 'test-tenant',
+        username: 'test-user',
+      });
+    });
+
+    expect(screen.getByTestId('profile-info-cards')).toBeInTheDocument();
+  });
+
+  it('falls back to placeholder topContent when per-learner activity is empty', async () => {
+    mockGetPerLearnerActivity.mockResolvedValueOnce({ data: {} });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(mockGetPerLearnerActivity).toHaveBeenCalled();
+    });
+
+    expect(screen.getByTestId('profile-info-cards')).toBeInTheDocument();
+  });
+
+  it('falls back to placeholder topContent when per-learner activity rejects', async () => {
+    mockGetPerLearnerActivity.mockRejectedValueOnce(new Error('boom'));
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(mockGetPerLearnerActivity).toHaveBeenCalled();
+    });
+
+    expect(screen.getByTestId('profile-info-cards')).toBeInTheDocument();
+  });
+
+  it('passes empty username to per-learner fetch when userMetadata has no username', async () => {
+    vi.mocked(useUserMetadata).mockReturnValue({
+      userMetaData: { enable_skills_leaderboard_display: true },
+      userMetaDataLoading: false,
+    } as any);
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(mockGetPerLearnerActivity).toHaveBeenCalledWith({
+        org: 'test-tenant',
+        username: '',
+      });
+    });
   });
 });

@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
-import { CredentialDetailModal } from '@/components/credential-detail-modal';
-import { useProfileCredentials } from '@/hooks/profile/use-profile-credentials';
-import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
-import { CredentialMiniBoxSkeleton } from '@/components/skeleton-credential-mini-box';
-import { DefaultEmptyBox } from '@/components/default-empty-box';
-import { CredentialMiniBox } from '@/components/credential-mini-box';
+import {
+  CredentialMiniBoxSkeleton,
+  DefaultEmptyBox,
+  SkeletonMultiplier,
+  useProfileCredentials,
+} from '@iblai/iblai-js/web-containers';
+import { CredentialDetailModal, CredentialMiniBox } from '@iblai/iblai-js/web-containers/next';
 import { Assertion } from '@iblai/iblai-api';
 
 export default function CredentialsPage() {

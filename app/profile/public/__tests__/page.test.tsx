@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-// Mock lucide-react icons
 vi.mock('lucide-react', () => ({
   Facebook: () => <span data-testid="facebook-icon">Facebook</span>,
   Linkedin: () => <span data-testid="linkedin-icon">Linkedin</span>,
@@ -12,12 +11,16 @@ vi.mock('lucide-react', () => ({
   Edit: () => <span data-testid="edit-icon">Edit</span>,
 }));
 
-// Mock helpers
-vi.mock('@/utils/helpers', () => ({
-  getTenant: vi.fn(() => 'test-tenant'),
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-// Mock config
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
+  getUserName: vi.fn(() => 'test-user'),
+  onAccountDeleted: vi.fn(),
+}));
+
 vi.mock('@/lib/config', () => ({
   config: {
     settings: {
@@ -31,8 +34,58 @@ vi.mock('@/lib/config', () => ({
   },
 }));
 
-// Mock useUserMetadata
-vi.mock('@/hooks/users/use-usermetadata', () => ({
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  useTenantMetadata: vi.fn(() => ({
+    metadataLoaded: true,
+    isSkillsResumeFeatureHidden: vi.fn(() => false),
+  })),
+}));
+
+vi.mock('@/utils/localstorage', () => ({
+  useIsAdmin: vi.fn(() => false),
+  useUserTenants: vi.fn(() => ({
+    userTenants: [],
+    saveUserTenants: vi.fn(),
+  })),
+}));
+
+vi.mock('@/lib/hooks', () => ({
+  useAppSelector: vi.fn(() => ({})),
+}));
+
+vi.mock('@/features/rbac', () => ({
+  selectRbacPermissions: vi.fn(),
+}));
+
+vi.mock('@iblai/iblai-js/web-containers', () => ({
+  CredentialBox: () => <div data-testid="credential-box">CredentialBox</div>,
+  EducationBox: () => <div data-testid="education-box">EducationBox</div>,
+  ExperienceBox: () => <div data-testid="experience-box">ExperienceBox</div>,
+  ResumeBox: () => <div data-testid="resume-box">ResumeBox</div>,
+  SkillsBox: () => <div data-testid="skills-box">SkillsBox</div>,
+  UserAvatar: ({ size, containerClassName }: any) => (
+    <div data-testid="user-avatar" data-size={size} className={containerClassName}>
+      UserAvatar
+    </div>
+  ),
+  EducationDialog: () => <div data-testid="education-dialog">EducationDialog</div>,
+  ExperienceDialog: () => <div data-testid="experience-dialog">ExperienceDialog</div>,
+  useProfileCredentials: vi.fn(() => ({
+    fetchedCredentials: [],
+    isLoading: false,
+    isError: false,
+  })),
+  useProfileSkills: vi.fn(() => ({
+    earnedSkills: [],
+    earnedSkillsLoading: false,
+    earnedSkillsError: false,
+    selfReportedSkills: [],
+    selfReportedSkillsLoading: false,
+    selfReportedSkillsError: false,
+    desiredSkills: [],
+    desiredSkillsLoading: false,
+    desiredSkillsError: false,
+  })),
   useUserMetadata: vi.fn(() => ({
     userMetaData: {
       name: 'John Doe',
@@ -43,35 +96,8 @@ vi.mock('@/hooks/users/use-usermetadata', () => ({
   })),
 }));
 
-// Mock useTenantMetadata
-vi.mock('@iblai/iblai-js/web-utils', () => ({
-  useTenantMetadata: vi.fn(() => ({
-    metadataLoaded: true,
-    isSkillsResumeFeatureHidden: vi.fn(() => false),
-  })),
-  Tenant: {},
-}));
-
-// Mock useIsAdmin, useUserTenants
-vi.mock('@/utils/localstorage', () => ({
-  useIsAdmin: vi.fn(() => false),
-  useUserTenants: vi.fn(() => ({
-    userTenants: [],
-    saveUserTenants: vi.fn(),
-  })),
-}));
-
-// Mock useAppSelector and selectRbacPermissions
-vi.mock('@/lib/hooks', () => ({
-  useAppSelector: vi.fn(() => ({})),
-}));
-
-vi.mock('@/features/rbac', () => ({
-  selectRbacPermissions: vi.fn(),
-}));
-
-// Mock UserProfileModal
 vi.mock('@iblai/iblai-js/web-containers/next', () => ({
+  MediaBox: () => <div data-testid="media-box">MediaBox</div>,
   UserProfileModal: ({ isOpen, onClose, targetTab }: any) =>
     isOpen ? (
       <div data-testid="user-profile-modal" data-target-tab={targetTab}>
@@ -83,41 +109,32 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
     ) : null,
 }));
 
-// Mock UserAvatar
-vi.mock('@/components/header/profile/user-avatar', () => ({
-  UserAvatar: ({ size, containerClassName }: any) => (
-    <div data-testid="user-avatar" data-size={size} className={containerClassName}>
-      UserAvatar
-    </div>
-  ),
+// Stable references to keep hook return values referentially stable across renders
+const stableCreateUserResume = vi.fn();
+
+vi.mock('@iblai/iblai-js/data-layer', () => ({
+  useGetUserEducationQuery: vi.fn(() => ({ data: [], isLoading: false, error: null })),
+  useGetUserExperienceQuery: vi.fn(() => ({ data: [], isLoading: false, error: null })),
+  useGetUserResumeQuery: vi.fn(() => ({
+    data: { files: [], links: [] },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  })),
 }));
 
-// Mock profile components
-vi.mock('@/components/profile/education-box', () => ({
-  EducationBox: () => <div data-testid="education-box">EducationBox</div>,
+vi.mock('@/services/career', () => ({
+  useCreateUserResumeMutation: vi.fn(() => [stableCreateUserResume, { isLoading: false }]),
 }));
 
-vi.mock('@/components/profile/experience-box', () => ({
-  ExperienceBox: () => <div data-testid="experience-box">ExperienceBox</div>,
+vi.mock('@/components/add-institution-dialog', () => ({
+  AddInstitutionDialog: () => <div data-testid="add-institution-dialog" />,
 }));
 
-vi.mock('@/components/profile/skills-box', () => ({
-  SkillsBox: () => <div data-testid="skills-box">SkillsBox</div>,
+vi.mock('@/components/add-company-dialog', () => ({
+  AddCompanyDialog: () => <div data-testid="add-company-dialog" />,
 }));
 
-vi.mock('@/components/profile/credential-box', () => ({
-  CredentialBox: () => <div data-testid="credential-box">CredentialBox</div>,
-}));
-
-vi.mock('@/components/profile/resume-box', () => ({
-  ResumeBox: () => <div data-testid="resume-box">ResumeBox</div>,
-}));
-
-vi.mock('@/components/profile/media-box', () => ({
-  MediaBox: () => <div data-testid="media-box">MediaBox</div>,
-}));
-
-// Mock AppContext from client-layout
 const mockSetIsUserProfileOpen = vi.fn();
 const mockSetUserProfileTargetTab = vi.fn();
 
@@ -132,11 +149,10 @@ vi.mock('@/components/client-layout', () => ({
 
 import PublicProfilePage from '../page';
 import { AppContext } from '@/components/client-layout';
-import { useUserMetadata } from '@/hooks/users/use-usermetadata';
+import { useUserMetadata } from '@iblai/iblai-js/web-containers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useUserTenants } from '@/utils/localstorage';
 
-// Helper component that provides context
 function renderWithContext(isUserProfileOpen = false, userProfileTargetTab = 'basic') {
   return render(
     <AppContext.Provider
@@ -365,7 +381,6 @@ describe('PublicProfilePage', () => {
     } as any);
 
     renderWithContext();
-    // Bio should not show
     expect(screen.queryByText('Software Engineer')).not.toBeInTheDocument();
   });
 
@@ -378,7 +393,6 @@ describe('PublicProfilePage', () => {
 
     renderWithContext(true, 'basic');
 
-    // The UserProfileModal is rendered - we just verify the mock was set up correctly
     expect(screen.getByTestId('user-profile-modal')).toBeInTheDocument();
   });
 });

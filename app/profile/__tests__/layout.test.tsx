@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-vi.mock('@/components/profile-tabs', () => ({
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
   ProfileTabs: () => <div data-testid="profile-tabs" />,
 }));
 

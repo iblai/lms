@@ -1,14 +1,16 @@
 'use client';
 
-import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { useContext, useEffect } from 'react';
+// @ts-ignore
+import { CourseContentTabPage } from '@iblai/iblai-js/web-containers/next';
+import { config } from '@/lib/config';
 
 export default function BookmarksTab() {
-  const { setActiveTab } = useContext(EdxIframeContext);
-  useEffect(() => {
-    setActiveTab('bookmarks');
-  }, []);
-
-  return <EdxIframe />;
+  return (
+    <CourseContentTabPage
+      tab="bookmarks"
+      lmsUrl={config.urls.lms()}
+      mfeUrl={config.urls.mfe()}
+      legacyLmsUrl={config.urls.legacyLmsUrl()}
+    />
+  );
 }

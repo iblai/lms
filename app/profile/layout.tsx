@@ -1,5 +1,5 @@
 'use client';
-import { ProfileTabs } from '@/components/profile-tabs';
+import { ProfileTabs } from '@iblai/iblai-js/web-containers/next';
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   return (

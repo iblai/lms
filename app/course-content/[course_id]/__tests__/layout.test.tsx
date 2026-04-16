@@ -1,156 +1,68 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-// Mock next/link
-vi.mock('next/link', () => ({
-  default: ({ href, children, className }: any) => (
-    <a href={href} className={className}>
-      {children}
-    </a>
-  ),
-}));
-
-// Mock next/navigation
+const mockRouterPush = vi.fn();
 vi.mock('next/navigation', () => ({
-  useSearchParams: vi.fn(() => new URLSearchParams()),
+  useRouter: () => ({ push: mockRouterPush }),
 }));
 
-// Mock lodash
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val: any) =>
-        !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
-    ),
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
+
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
+}));
+
+vi.mock('@/lib/config', () => ({
+  config: {
+    urls: { dm: () => 'https://dm.test' },
+    settings: { courseEligibilityEnabled: () => false },
   },
 }));
 
-// Mock lucide-react icons
-vi.mock('lucide-react', () => ({
-  ChevronRight: () => <span data-testid="chevron-right">&gt;</span>,
-  ListTree: () => <span data-testid="list-tree">ListTree</span>,
+const mockSetCourseMentor = vi.fn();
+vi.mock('@/components/chat-button', () => ({
+  useChatState: vi.fn(() => ({ setCourseMentor: mockSetCourseMentor })),
 }));
 
-// Mock helpers
-vi.mock('@/utils/helpers', () => ({
-  getTenant: vi.fn(() => 'test-tenant'),
-  getUserId: vi.fn(() => 'test-user-id'),
-}));
-
-// Mock useGetDepartmentMemberCheckQuery
-vi.mock('@/services/core', () => ({
+vi.mock('@iblai/iblai-js/data-layer', () => ({
   useGetDepartmentMemberCheckQuery: vi.fn(() => ({
     data: { is_platform_admin: false },
   })),
 }));
 
-// Mock useChatState
-const mockSetCourseMentor = vi.fn();
-vi.mock('@/components/chat-button', () => ({
-  useChatState: vi.fn(() => ({
-    setCourseMentor: mockSetCourseMentor,
-  })),
+const capturedProps: { value?: any } = {};
+vi.mock('@iblai/iblai-js/web-containers/next', () => ({
+  CourseContentLayout: (props: any) => {
+    capturedProps.value = props;
+    return (
+      <div data-testid="shared-course-content-layout" data-course-id={props.courseId}>
+        {props.children}
+      </div>
+    );
+  },
 }));
 
-// Mock useCourseDetail
-const mockHandleFetchCourseInfo = vi.fn();
-const mockHandleFetchCourseSyllabus = vi.fn();
-const mockHandleOpenLesson = vi.fn();
-const mockHandleFetchCourseProgress = vi.fn();
-const mockHandleFetchCourseCompletion = vi.fn();
-
-vi.mock('@/hooks/courses/use-course-detail', () => ({
-  useCourseDetail: vi.fn(() => ({
-    handleFetchCourseInfo: mockHandleFetchCourseInfo,
-    handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-    handleOpenLesson: mockHandleOpenLesson,
-    handleFetchCourseProgress: mockHandleFetchCourseProgress,
-    handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-    course: null,
-    courseInfoLoadingState: 'successful',
-    courseOutline: null,
-    courseOutlineLoading: false,
-    courseCompletion: null,
-    courseGradingPolicyActive: false,
-  })),
-}));
-
-// Mock useEdxIframe
-vi.mock('@/hooks/courses/use-edx-iframe', () => ({
-  useEdxIframe: vi.fn(() => ({
-    getUnitToIframe: vi.fn(() => null),
-    getParentsInfosFromSublessonId: vi.fn(() => null),
-  })),
-}));
-
-// Mock EdxIframeContext
-vi.mock('@/hooks/courses/edx-iframe-context', () => ({
-  EdxIframeContext: React.createContext({}),
-}));
-
-// Mock CourseOutlineContext
-vi.mock('@/contexts/course-outline-context', () => ({
-  CourseOutlineContext: React.createContext({}),
-}));
-
-// Mock CourseOutline
-vi.mock('@/components/course-outline', () => ({
-  CourseOutline: () => <div data-testid="course-outline">CourseOutline</div>,
-}));
-
-// Mock CourseOutlineDrawer
-vi.mock('@/components/course-outline-drawer', () => ({
-  CourseOutlineDrawer: () => <div data-testid="course-outline-drawer">CourseOutlineDrawer</div>,
-}));
-
-// Mock CourseAccessGuard — renders children unconditionally so layout tests are isolated
-vi.mock('@/components/course-access-guard', () => ({
-  CourseAccessGuard: ({ children }: any) => <>{children}</>,
-}));
-
-// Mock ExamInfo from data-layer
-vi.mock('@iblai/iblai-js/data-layer', () => ({
-  ExamInfo: {},
-}));
-
-// Mock React.use
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof React>('react');
   return {
     ...actual,
-    use: vi.fn((promise: any) => {
-      if (promise && typeof promise === 'object' && 'course_id' in promise) {
-        return promise;
-      }
-      return { course_id: 'course-v1:test+course+2024' };
-    }),
+    use: vi.fn((value: any) => value),
   };
 });
 
 import CourseContentLayout from '../layout';
-import { useCourseDetail } from '@/hooks/courses/use-course-detail';
-import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useGetDepartmentMemberCheckQuery } from '@iblai/iblai-js/data-layer';
 
 describe('CourseContentLayout', () => {
-  const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
+  const params = { course_id: 'course-v1%3Atest%2Bcourse%2B2024' } as any;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useCourseDetail).mockReturnValue({
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      handleFetchCourseProgress: mockHandleFetchCourseProgress,
-      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-      course: null,
-      courseInfoLoadingState: 'successful',
-      courseOutline: null,
-      courseOutlineLoading: false,
-      courseCompletion: null,
-      courseGradingPolicyActive: false,
-    } as any);
+    capturedProps.value = undefined;
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
@@ -158,229 +70,129 @@ describe('CourseContentLayout', () => {
 
   it('renders without crashing', () => {
     const { container } = render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
     expect(container).toBeTruthy();
   });
 
-  it('renders CourseOutlineDrawer', () => {
+  it('renders the shared SDK layout', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByTestId('course-outline-drawer')).toBeInTheDocument();
+    expect(screen.getByTestId('shared-course-content-layout')).toBeInTheDocument();
   });
 
-  it('renders CourseOutline in sidebar', () => {
+  it('renders children within the shared layout', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
-        <div>children</div>
-      </CourseContentLayout>,
-    );
-    expect(screen.getByTestId('course-outline')).toBeInTheDocument();
-  });
-
-  it('renders course navigation tabs (Course, Progress, Dates, Discussion)', () => {
-    render(
-      <CourseContentLayout params={defaultParams}>
-        <div>children</div>
-      </CourseContentLayout>,
-    );
-    expect(screen.getByText('Course')).toBeInTheDocument();
-    expect(screen.getByText('Progress')).toBeInTheDocument();
-    expect(screen.getByText('Dates')).toBeInTheDocument();
-    expect(screen.getByText('Discussion')).toBeInTheDocument();
-  });
-
-  it('hides Instructor tab when user is not platform admin', () => {
-    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-      data: { is_platform_admin: false },
-    } as any);
-
-    render(
-      <CourseContentLayout params={defaultParams}>
-        <div>children</div>
-      </CourseContentLayout>,
-    );
-    expect(screen.queryByText('Instructor')).not.toBeInTheDocument();
-  });
-
-  it('shows Instructor tab when user is platform admin', () => {
-    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-      data: { is_platform_admin: true },
-    } as any);
-
-    render(
-      <CourseContentLayout params={defaultParams}>
-        <div>children</div>
-      </CourseContentLayout>,
-    );
-    expect(screen.getByText('Instructor')).toBeInTheDocument();
-  });
-
-  it('renders children within layout', () => {
-    render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div data-testid="page-content">Page Content</div>
       </CourseContentLayout>,
     );
     expect(screen.getByTestId('page-content')).toBeInTheDocument();
   });
 
-  it('shows course display_name when course is loaded', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      handleFetchCourseProgress: mockHandleFetchCourseProgress,
-      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-      course: { display_name: 'My Test Course', mentor_hidden: false, mentor_uuid: 'uuid-123' },
-      courseOutline: null,
-      courseOutlineLoading: false,
-      courseCompletion: null,
-      courseGradingPolicyActive: false,
+  it('decodes the course_id from params', () => {
+    render(
+      <CourseContentLayout params={params}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(capturedProps.value?.courseId).toBe('course-v1:test+course+2024');
+  });
+
+  it('passes current tenant to shared layout', () => {
+    render(
+      <CourseContentLayout params={params}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(capturedProps.value?.currentTenant).toBe('test-tenant');
+  });
+
+  it('passes isPlatformAdmin=false when user is not a platform admin', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false },
     } as any);
-
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-
-    expect(screen.getAllByText('My Test Course').length).toBeGreaterThan(0);
+    expect(capturedProps.value?.isPlatformAdmin).toBe(false);
   });
 
-  it('shows completion percentage in progress bar', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      handleFetchCourseProgress: mockHandleFetchCourseProgress,
-      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-      course: null,
-      courseOutline: null,
-      courseOutlineLoading: false,
-      courseCompletion: { completion_percentage: 75, grading_percentage: 80 },
-      courseGradingPolicyActive: false,
+  it('passes isPlatformAdmin=true when user is a platform admin', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: true },
     } as any);
-
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-
-    expect(screen.getByText('75%')).toBeInTheDocument();
+    expect(capturedProps.value?.isPlatformAdmin).toBe(true);
   });
 
-  it('shows grading percentage when courseGradingPolicyActive is true', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      handleFetchCourseProgress: mockHandleFetchCourseProgress,
-      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-      course: null,
-      courseOutline: null,
-      courseOutlineLoading: false,
-      courseCompletion: { completion_percentage: 50, grading_percentage: 90 },
-      courseGradingPolicyActive: true,
-    } as any);
-
+  it('maps forum tab href to discussion', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-
-    expect(screen.getByText('Grade:')).toBeInTheDocument();
-    expect(screen.getByText('90%')).toBeInTheDocument();
+    const href = capturedProps.value?.tabHrefTemplate({ courseId: 'c1', tab: 'forum' });
+    expect(href).toBe('/course-content/c1/discussion');
   });
 
-  it('hides Grade section when courseGradingPolicyActive is false', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      handleFetchCourseProgress: mockHandleFetchCourseProgress,
-      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-      course: null,
-      courseOutline: null,
-      courseOutlineLoading: false,
-      courseCompletion: { completion_percentage: 50, grading_percentage: 90 },
-      courseGradingPolicyActive: false,
-    } as any);
-
+  it('keeps non-forum tabs as-is in href template', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-
-    expect(screen.queryByText('Grade:')).not.toBeInTheDocument();
+    const href = capturedProps.value?.tabHrefTemplate({ courseId: 'c1', tab: 'progress' });
+    expect(href).toBe('/course-content/c1/progress');
   });
 
-  it('renders open course outline button', () => {
+  it('pushes to /error/403 on unauthorized', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-
-    const outlineButton = screen.getByLabelText('Open course outline');
-    expect(outlineButton).toBeInTheDocument();
+    capturedProps.value?.onUnauthorized();
+    expect(mockRouterPush).toHaveBeenCalledWith('/error/403');
   });
 
-  it('clicking open course outline button opens drawer', () => {
+  it('pushes to /error/404 on not found', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-
-    const outlineButton = screen.getByLabelText('Open course outline');
-    fireEvent.click(outlineButton);
-    // Verifies no error thrown (the state is internal)
-    expect(outlineButton).toBeInTheDocument();
+    capturedProps.value?.onNotFound();
+    expect(mockRouterPush).toHaveBeenCalledWith('/error/404');
   });
 
-  it('calls handleFetchCourseInfo on mount', () => {
+  it('uses router.push for internal navigation', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(mockHandleFetchCourseInfo).toHaveBeenCalled();
+    capturedProps.value?.onNavigate('/some/path');
+    expect(mockRouterPush).toHaveBeenCalledWith('/some/path');
   });
 
-  it('calls handleFetchCourseProgress on mount', () => {
+  it('hooks onCourseMentorChange to setCourseMentor from chat state', () => {
     render(
-      <CourseContentLayout params={defaultParams}>
+      <CourseContentLayout params={params}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(mockHandleFetchCourseProgress).toHaveBeenCalled();
-  });
-
-  it('calls handleFetchCourseCompletion on mount', () => {
-    render(
-      <CourseContentLayout params={defaultParams}>
-        <div>children</div>
-      </CourseContentLayout>,
-    );
-    expect(mockHandleFetchCourseCompletion).toHaveBeenCalled();
-  });
-
-  it('shows 0% when courseCompletion is null', () => {
-    render(
-      <CourseContentLayout params={defaultParams}>
-        <div>children</div>
-      </CourseContentLayout>,
-    );
-
-    expect(screen.getByText('0%')).toBeInTheDocument();
+    expect(capturedProps.value?.onCourseMentorChange).toBe(mockSetCourseMentor);
   });
 });
