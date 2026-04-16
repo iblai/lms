@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.26](https://github.com/iblai/skillsai/compare/skills-v0.10.25...skills-v0.10.26) (2026-04-16)
+
+### Bug Fixes
+
+* scrolling issue on course about page fixed ([234e27b](https://github.com/iblai/skillsai/commit/234e27b8e786d2706e8187451e81b545cb8e8298))
+* scrolling issue on course about page fixed > test coverage ([6557f02](https://github.com/iblai/skillsai/commit/6557f02fe125a42b1e9f2ae73f494966434efd60))
+
 ## [0.10.25](https://github.com/iblai/skillsai/compare/skills-v0.10.24...skills-v0.10.25) (2026-04-15)
 
 ### Bug Fixes
