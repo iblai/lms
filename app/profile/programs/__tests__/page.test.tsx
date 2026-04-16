@@ -35,12 +35,12 @@ vi.mock('@/utils/localstorage', () => ({
 import { toast } from 'sonner';
 
 // Stable references to avoid useEffect loops
-const stableHandleSearch = vi.fn(() => Promise.resolve({ data: { results: [] } }));
-const stableGetProgramCompletion = vi.fn(() => Promise.resolve({ data: null }));
-const stableGetUserEnrolledPrograms = vi.fn(() => Promise.resolve({ data: [] }));
-const stableCreateEnrollment = vi.fn();
-const stableUpdateMetadata = vi.fn(() => ({ unwrap: vi.fn(() => Promise.resolve()) }));
-const stableRefetch = vi.fn();
+const stableHandleSearch: any = vi.fn(() => Promise.resolve({ data: { results: [] } }));
+const stableGetProgramCompletion: any = vi.fn(() => Promise.resolve({ data: null }));
+const stableGetUserEnrolledPrograms: any = vi.fn(() => Promise.resolve({ data: [] }));
+const stableCreateEnrollment: any = vi.fn();
+const stableUpdateMetadata: any = vi.fn(() => ({ unwrap: vi.fn(() => Promise.resolve()) }));
+const stableRefetch: any = vi.fn();
 
 // Mock personnalized catalog hook
 vi.mock('@/hooks/search/use-personnalized-catalog', () => ({
