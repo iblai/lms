@@ -2,9 +2,9 @@
   "version": 2,
   "lastUpdated": "2026-03-27",
   "summary": {
-    "totalCheckpoints": 215,
+    "totalCheckpoints": 217,
     "coveredCheckpoints": 215,
-    "percent": 100,
+    "percent": 99,
     "totalJourneys": 29
   },
   "journeys": [
@@ -182,6 +182,7 @@
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
+        "app/course-content/[course_id]/agent/page.tsx",
         "app/course-content/[course_id]/progress/page.tsx",
         "app/course-content/[course_id]/dates/page.tsx",
         "app/course-content/[course_id]/discussion/page.tsx",
@@ -244,6 +245,16 @@
           "id": "tabs-12",
           "description": "No error messages on any course tab",
           "status": "covered"
+        },
+        {
+          "id": "tabs-13",
+          "description": "Agent tab visibility follows course.agent_content_mode (hidden when false, visible otherwise); Course tab visibility follows course.course_content_mode (visible only when true)",
+          "status": "uncovered"
+        },
+        {
+          "id": "tabs-14",
+          "description": "Agent tab page opens mentor chat full-width, hides edX iframe, and redirects to /error/403 when the course has agent_content_mode=false",
+          "status": "uncovered"
         }
       ]
     },

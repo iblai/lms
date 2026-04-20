@@ -15,6 +15,7 @@ vi.mock('next/link', () => ({
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
+  usePathname: vi.fn(() => '/course-content/course-v1:test+course+2024/course'),
 }));
 
 // Mock lodash
@@ -183,16 +184,88 @@ describe('CourseContentLayout', () => {
     expect(screen.getByTestId('course-outline')).toBeInTheDocument();
   });
 
-  it('renders course navigation tabs (Course, Progress, Dates, Discussion)', () => {
+  it('renders course navigation tabs (Agent, Course, Progress, Dates, Discussion)', () => {
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
     expect(screen.getByText('Course')).toBeInTheDocument();
     expect(screen.getByText('Progress')).toBeInTheDocument();
     expect(screen.getByText('Dates')).toBeInTheDocument();
     expect(screen.getByText('Discussion')).toBeInTheDocument();
+  });
+
+  it('hides Agent tab when course.agent_content_mode is false', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: false, course_content_mode: true },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
+  });
+
+  it('hides Course tab when course.course_content_mode is not true', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: true, course_content_mode: null },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(screen.queryByText('Course')).not.toBeInTheDocument();
+  });
+
+  it('shows Agent tab when course.agent_content_mode is null', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: null, course_content_mode: true },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
   });
 
   it('hides Instructor tab when user is not platform admin', () => {

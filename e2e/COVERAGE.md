@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-03-27 | 215 checkpoints | 29 journeys | 100% covered
+> Last updated: 2026-04-17 | 217 checkpoints | 29 journeys | 99% covered
 
 ## How This Works
 
@@ -71,9 +71,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (12 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (14 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -87,6 +87,8 @@ When adding a new page or modifying an existing user flow:
 - [x] Bookmarks tab is accessible from the course content navigation _(if available)_
 - [x] URL updates correctly when switching between tabs
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
+- [ ] Agent tab visibility follows `course.agent_content_mode` (hidden when false, visible otherwise); Course tab visibility follows `course.course_content_mode` (visible only when true)
+- [ ] Agent tab page opens mentor chat full-width, hides edX iframe, and redirects to /error/403 when the course has `agent_content_mode=false`
 
 ---
 

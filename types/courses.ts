@@ -86,6 +86,8 @@ export interface CourseEdxData {
   display_name?: string;
   mentor_hidden?: boolean;
   mentor_uuid?: string;
+  agent_content_mode?: boolean | null;
+  course_content_mode?: boolean | null;
 }
 
 export interface Course {
