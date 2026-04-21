@@ -138,24 +138,41 @@ describe('useCourseDetail', () => {
   });
 
   describe('handleAccessCourse', () => {
-    it('calls router.push when not in iframe', () => {
+    it('routes to /agent by default when course data is unavailable', () => {
       (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(false);
       const { result } = renderHook(() => useCourseDetail('course-123'));
       act(() => {
         result.current.handleAccessCourse();
       });
-      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course');
+      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/agent');
     });
 
-    it('calls window.open when in iframe', () => {
+    it('opens /agent in new tab when in iframe and agent is default', () => {
       (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(true);
       const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
       const { result } = renderHook(() => useCourseDetail('course-123'));
       act(() => {
         result.current.handleAccessCourse();
       });
-      expect(openSpy).toHaveBeenCalledWith('/course-content/course-123/course', '_blank');
+      expect(openSpy).toHaveBeenCalledWith('/course-content/course-123/agent', '_blank');
       openSpy.mockRestore();
+    });
+
+    it('routes to /course when agent_content_mode is false', async () => {
+      (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      mockHandleFetchCourseMetaData.mockResolvedValue({
+        display_name: 'Test',
+        agent_content_mode: false,
+        course_content_mode: true,
+      });
+      const { result } = renderHook(() => useCourseDetail('course-123'));
+      await act(async () => {
+        await result.current.handleFetchCourseInfo();
+      });
+      act(() => {
+        result.current.handleAccessCourse();
+      });
+      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course');
     });
   });
 

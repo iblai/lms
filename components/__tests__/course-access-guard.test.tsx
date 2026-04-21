@@ -159,4 +159,108 @@ describe('CourseAccessGuard', () => {
       expect(document.querySelector('.animate-spin')).toBeInTheDocument();
     });
   });
+
+  describe('tab access', () => {
+    it('redirects to /error/403 on agent tab when agent_content_mode is false', () => {
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant', agent_content_mode: false } as any}
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(screen.queryByText('content')).not.toBeInTheDocument();
+    });
+
+    it('does not redirect on agent tab when agent_content_mode is true', () => {
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant', agent_content_mode: true } as any}
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('does not redirect on agent tab when agent_content_mode is null', () => {
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant', agent_content_mode: null } as any}
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('redirects to /error/403 on course tab when course_content_mode is not true', () => {
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant', course_content_mode: false } as any}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/error/403');
+    });
+
+    it('redirects to /error/403 on course tab when course_content_mode is null', () => {
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant', course_content_mode: null } as any}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/error/403');
+    });
+
+    it('does not redirect on course tab when course_content_mode is true', () => {
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'test-tenant', course_content_mode: true } as any}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('does not redirect on other tabs regardless of content mode flags', () => {
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: false,
+              course_content_mode: false,
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="progress"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+  });
 });

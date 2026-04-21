@@ -202,14 +202,10 @@ test.describe('Journey 15: Notifications', () => {
     } else {
       await notificationItem.click();
     }
-
-    await page.waitForTimeout(2_000);
-    // Should navigate somewhere (detail page, related resource, or expand inline)
-    const afterUrl = page.url();
-    const expanded = page.locator('[class*="notification-detail"], [class*="expanded"]').first();
-    const hasExpanded = await expanded.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    expect(afterUrl !== beforeUrl || hasExpanded).toBe(true);
+    //wait for at least notification timestamp be visible on the page
+    await expect(page.getByTestId('notification-details-timestamp')).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('CP-6: notification detail shows content', async ({ page }) => {

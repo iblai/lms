@@ -111,8 +111,18 @@ test.describe('Journey 04: Course About & Configuration', () => {
     });
     const enrollButton = page.getByRole('button', { name: /enroll/i });
 
-    const hasAccess = await accessCourseButton.isVisible({ timeout: 120_000 }).catch(() => false);
-    const hasEnroll = await enrollButton.isVisible({ timeout: 120_000 }).catch(() => false);
+    //wait for enrollbutton or accesscoursebutton not to be disabled using promise
+
+    const isEnrollButtonDisabled = await enrollButton
+      .isDisabled({ timeout: 10000 })
+      .catch(() => false);
+    const isAccessCourseButtonDisabled = await accessCourseButton
+      .isDisabled({ timeout: 10000 })
+      .catch(() => false);
+    expect(isEnrollButtonDisabled || isAccessCourseButtonDisabled).toBeFalsy();
+
+    const hasAccess = await accessCourseButton.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasEnroll = await enrollButton.isVisible({ timeout: 10000 }).catch(() => false);
 
     // At least one of these should be visible
     expect(hasAccess || hasEnroll).toBeTruthy();

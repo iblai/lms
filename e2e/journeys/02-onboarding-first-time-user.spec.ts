@@ -60,6 +60,8 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
       timeout: 120000,
     });
 
+    await page.waitForLoadState('networkidle');
+
     // If the user is redirected away from /start, onboarding is not applicable
     const currentUrl = page.url();
     if (!currentUrl.includes('/start')) {
