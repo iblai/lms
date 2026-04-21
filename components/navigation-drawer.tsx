@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  X,
-  Home,
-  User,
-  BookOpen,
-  Search,
-  BarChart3,
-  Building,
-  LayoutDashboard,
-} from 'lucide-react';
+import { X, Home, User, BookOpen, Search, BarChart3, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from './logo';
