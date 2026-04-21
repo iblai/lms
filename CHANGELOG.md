@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/iblai/skillsai/compare/skills-v0.10.26...skills-v0.11.0) (2026-04-21)
+
+### Features
+
+* agent and course tab mode implemented for the innercourseware mode ([e7c41ef](https://github.com/iblai/skillsai/commit/e7c41ef6fe187b2230b3bcd50562a02b68e4df3d))
+* agent and course tab mode implemented for the innercourseware mode > test coverage ([0562a34](https://github.com/iblai/skillsai/commit/0562a3448fbe2e2372b37738e6b7042568c62ffe))
+* aria-current accessibility patch updated ([e1357ff](https://github.com/iblai/skillsai/commit/e1357ff8887a8085449e925594707ff4f4ac0f18))
+
+### Bug Fixes
+
+* failing playwright tests fixed ([2f78ae6](https://github.com/iblai/skillsai/commit/2f78ae6c1b32d2335d020f6e7da248662baf296a))
+
 ## [0.10.26](https://github.com/iblai/skillsai/compare/skills-v0.10.25...skills-v0.10.26) (2026-04-16)
 
 ### Bug Fixes
