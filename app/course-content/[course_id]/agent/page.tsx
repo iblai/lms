@@ -22,6 +22,7 @@ export default function AgentTab() {
     <div
       className="flex h-full w-full flex-col p-6"
       style={{
+        //with this height, the agent chat will be full height of the screen minus the navbar and the course outline and no weird overflow happening
         height: `calc(100vh - 100px - 62px - ${activeTab === 'agent' ? 60 : 0}px)`,
       }}
     >

@@ -199,6 +199,7 @@ export default function CourseContentLayout({
                     {agentTabVisible && (
                       <Link
                         href={`/course-content/${resolvedParams.course_id}/agent`}
+                        aria-current={activeTab === 'agent' ? 'page' : undefined}
                         className={`border-b-2 px-4 py-3 text-sm font-medium ${
                           activeTab === 'agent'
                             ? 'border-amber-500 text-amber-600'
@@ -213,6 +214,7 @@ export default function CourseContentLayout({
                         href={`/course-content/${resolvedParams.course_id}/course${
                           currentCourseInfo?.id ? `?unit_id=${currentCourseInfo?.id}` : ''
                         }`}
+                        aria-current={activeTab === 'course' ? 'page' : undefined}
                         className={`border-b-2 px-4 py-3 text-sm font-medium ${
                           activeTab === 'course'
                             ? 'border-amber-500 text-amber-600'
@@ -224,6 +226,7 @@ export default function CourseContentLayout({
                     )}
                     <Link
                       href={`/course-content/${resolvedParams.course_id}/progress`}
+                      aria-current={activeTab === 'progress' ? 'page' : undefined}
                       className={`border-b-2 px-4 py-3 text-sm font-medium ${
                         activeTab === 'progress'
                           ? 'border-amber-500 text-amber-600'
@@ -234,6 +237,7 @@ export default function CourseContentLayout({
                     </Link>
                     <Link
                       href={`/course-content/${resolvedParams.course_id}/dates`}
+                      aria-current={activeTab === 'dates' ? 'page' : undefined}
                       className={`border-b-2 px-4 py-3 text-sm font-medium ${
                         activeTab === 'dates'
                           ? 'border-amber-500 text-amber-600'
@@ -244,6 +248,7 @@ export default function CourseContentLayout({
                     </Link>
                     <Link
                       href={`/course-content/${resolvedParams.course_id}/discussion`}
+                      aria-current={activeTab === 'forum' ? 'page' : undefined}
                       className={`border-b-2 px-4 py-3 text-sm font-medium ${
                         activeTab === 'forum'
                           ? 'border-amber-500 text-amber-600'
@@ -255,6 +260,7 @@ export default function CourseContentLayout({
                     {departmentMemberCheck?.is_platform_admin && (
                       <Link
                         href={`/course-content/${resolvedParams.course_id}/instructor`}
+                        aria-current={activeTab === 'instructor' ? 'page' : undefined}
                         className={`border-b-2 px-4 py-3 text-sm font-medium ${
                           activeTab === 'instructor'
                             ? 'border-amber-500 text-amber-600'
