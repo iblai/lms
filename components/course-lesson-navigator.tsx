@@ -41,7 +41,7 @@ export const CourseLessonNavigator = ({ className }: { className?: string }) => 
           aria-label="Previous lesson"
         >
           <ChevronRight className="h-3.5 w-3.5 rotate-180 transform md:mr-1" />
-          <span className="hidden md:inline">Previous unit</span>
+          <span className="hidden md:inline">Previous Unit</span>
         </button>
       )}
       {!navigator.isNextHidden() && (
@@ -50,7 +50,7 @@ export const CourseLessonNavigator = ({ className }: { className?: string }) => 
           className="flex items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-1.5 py-1.5 text-xs font-medium text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)] md:pr-1 md:pl-2"
           aria-label="Next lesson"
         >
-          <span className="hidden md:inline">Keep learning</span>
+          <span className="hidden md:inline">Keep Learning</span>
           <ChevronRight className="h-3.5 w-3.5 md:ml-1" />
         </button>
       )}

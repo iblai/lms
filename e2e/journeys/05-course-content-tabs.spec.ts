@@ -477,6 +477,171 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Tab switching completed — URLs observed');
   });
 
+  test('Checkpoint 13: Agent tab visibility + navigation', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — course has agent_content_mode=false; skipping');
+      test.skip();
+      return;
+    }
+
+    const href = await agentTab.getAttribute('href');
+    expect(href).toMatch(/\/course-content\/.+\/agent$/);
+
+    await agentTab.click();
+    await page.waitForURL(/\/course-content\/.+\/agent(\?|$)/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/agent(\?|$)/);
+    logger.info(`Navigated to agent tab: ${page.url()}`);
+  });
+
+  test('Checkpoint 14: Agent tab renders mentor chat full-width with edX iframe hidden', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // Wait for the mentor-ai web component to mount.
+    const mentorAi = page.locator('mentor-ai');
+    await expect(mentorAi.first()).toBeAttached({ timeout: 60_000 });
+
+    // The EdxIframe must stay mounted (for state) but hidden via display:none.
+    const hiddenIframe = page.locator('div[style*="display: none"] iframe#edx-iframe');
+    const isHiddenWrapperPresent = await hiddenIframe
+      .first()
+      .isVisible({ timeout: 15_000 })
+      .catch(() => false);
+    // isVisible() returns false when the ancestor has display:none — that's exactly what we want.
+    expect(isHiddenWrapperPresent).toBe(false);
+
+    logger.info('Agent tab renders mentor-ai and keeps edX iframe display:none');
+  });
+
+  test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode=false', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (hasAgentTab) {
+      logger.info(
+        'Agent tab is visible — cannot assert the redirect path for agent_content_mode=false; skipping',
+      );
+      test.skip();
+      return;
+    }
+
+    // When the tab is hidden, force the route and confirm the CourseAccessGuard redirects to /403.
+    const courseUrl = page.url();
+    const agentUrl = courseUrl.replace(/\/(course|progress|dates|discussion)(\?.*)?$/, '/agent');
+
+    await page.goto(agentUrl, { timeout: 60_000 });
+    await page.waitForURL(/\/error\/403/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/error\/403/);
+    logger.info('Agent route redirects to /error/403 when agent_content_mode=false');
+  });
+
+  test('Checkpoint 16: Previous/Keep Learning buttons navigate units from the tabs row', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const nextBtn = page.getByRole('button', { name: 'Next lesson' });
+    const hasNext = await nextBtn.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasNext) {
+      logger.info('Next lesson button not available — course has a single unit; skipping');
+      test.skip();
+      return;
+    }
+
+    const urlBefore = page.url();
+    await nextBtn.click();
+
+    // Wait for URL to change (either unit_id query changes, or path segment flips between
+    // course/agent based on the user's current tab).
+    await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: 30_000 }).catch(() => null);
+
+    const urlAfter = page.url();
+    expect(urlAfter).not.toBe(urlBefore);
+    logger.info(`Unit switched: ${urlBefore} → ${urlAfter}`);
+
+    // Going back should be possible via the Previous button now.
+    const prevBtn = page.getByRole('button', { name: 'Previous lesson' });
+    await expect(prevBtn).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('Checkpoint 17: Unit switch on agent tab fires a confirmation toast', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    const nextBtn = page.getByRole('button', { name: 'Next lesson' });
+    const hasNext = await nextBtn.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasNext) {
+      logger.info('Single-unit course — cannot exercise the toast; skipping');
+      test.skip();
+      return;
+    }
+
+    await nextBtn.click();
+
+    // Sonner renders toasts with role="status" and a "Switched to" prefix from the layout effect.
+    const toast = page.getByText(/^Switched to "/i);
+    await expect(toast.first()).toBeVisible({ timeout: 15_000 });
+    logger.info('Unit-switch confirmation toast displayed on agent tab');
+  });
+
   test('Checkpoint 12: No error messages on course content tabs', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 

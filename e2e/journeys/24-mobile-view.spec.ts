@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { waitForAppShell } from '../utils/navigation';
+import { waitForPageLoad } from '@iblai/iblai-js/playwright';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -28,6 +29,16 @@ async function navigateToCourseContent(page: Page) {
   await accessCourseButton.click();
 
   await page.waitForURL(/\/course-content\/.*/, { timeout: 120_000 });
+
+  const courseTab = page.getByRole('link', { name: 'Course', exact: true });
+  const agentTab = page.getByRole('link', { name: 'Agent', exact: true });
+  const hasAgentTab = await agentTab.isVisible({ timeout: 120_000 }).catch(() => false);
+  const hasCourseTab = await courseTab.isVisible({ timeout: 120_000 }).catch(() => false);
+  if (hasAgentTab && hasCourseTab) {
+    await courseTab.click();
+    await page.waitForURL(/\/course-content\/.*/, { timeout: 120_000 });
+    await waitForPageLoad(page);
+  }
 }
 
 test.describe('Journey 24: Mobile View', () => {
@@ -59,11 +70,11 @@ test.describe('Journey 24: Mobile View', () => {
     expect(hasHamburger || (await navbar.isVisible())).toBeTruthy();
   });
 
-  test('CP-2: Course tabs container is scrollable (overflow-x-auto, w-full)', async ({ page }) => {
+  test('CP-2: Course tabs container is scrollable (overflow-x-auto, min-w-0)', async ({ page }) => {
     await navigateToCourseContent(page);
 
     // The nav tabs container should have overflow-x-auto and w-full
-    const tabsContainer = page.locator('div.flex.overflow-x-auto.w-full').first();
+    const tabsContainer = page.locator('div.flex.overflow-x-auto.min-w-0').first();
     await expect(tabsContainer).toBeVisible({ timeout: 30_000 });
 
     // Verify course navigation tabs are inside

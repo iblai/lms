@@ -377,4 +377,30 @@ describe('AppLayout', () => {
     expect(mockSetCourseMentor).not.toHaveBeenCalled();
     expect(mockSetMentorSidebarHidden).not.toHaveBeenCalled();
   });
+
+  describe('agent tab special-case', () => {
+    it('hides the sidebar ChatButton when pathname is a course-content agent route', () => {
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
+
+      render(<AppLayout>Content</AppLayout>);
+
+      expect(screen.queryByTestId('chat-button')).not.toBeInTheDocument();
+    });
+
+    it('still renders the sidebar ChatButton on other course-content tabs', () => {
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+
+      render(<AppLayout>Content</AppLayout>);
+
+      expect(screen.getByTestId('chat-button')).toBeInTheDocument();
+    });
+
+    it('does not accidentally hide the ChatButton on an /agent path outside /course-content', () => {
+      vi.mocked(usePathname).mockReturnValue('/agent');
+
+      render(<AppLayout>Content</AppLayout>);
+
+      expect(screen.getByTestId('chat-button')).toBeInTheDocument();
+    });
+  });
 });
