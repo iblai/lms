@@ -489,7 +489,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
 
     if (!hasAgentTab) {
-      logger.info('Agent tab not visible — course has agent_content_mode=false; skipping');
+      logger.info('Agent tab not visible — course has agent_content_mode !== true; skipping');
       test.skip();
       return;
     }
@@ -540,7 +540,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Agent tab renders mentor-ai and keeps edX iframe display:none');
   });
 
-  test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode=false', async ({
+  test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode !== true', async ({
     page,
   }) => {
     const ready = await navigateToCourseContent(page);
@@ -555,7 +555,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
     if (hasAgentTab) {
       logger.info(
-        'Agent tab is visible — cannot assert the redirect path for agent_content_mode=false; skipping',
+        'Agent tab is visible — cannot assert the redirect path for agent_content_mode !== true; skipping',
       );
       test.skip();
       return;
@@ -568,7 +568,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await page.goto(agentUrl, { timeout: 60_000 });
     await page.waitForURL(/\/error\/403/, { timeout: 30_000 });
     await expect(page).toHaveURL(/\/error\/403/);
-    logger.info('Agent route redirects to /error/403 when agent_content_mode=false');
+    logger.info('Agent route redirects to /error/403 when agent_content_mode !== true');
   });
 
   test('Checkpoint 16: Previous/Keep Learning buttons navigate units from the tabs row', async ({

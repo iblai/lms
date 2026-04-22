@@ -87,9 +87,9 @@ When adding a new page or modifying an existing user flow:
 - [x] Bookmarks tab is accessible from the course content navigation _(if available)_
 - [x] URL updates correctly when switching between tabs
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
-- [x] Agent tab is visible when `course.agent_content_mode !== false` and its link points at `/course-content/<id>/agent`
+- [x] Agent tab is visible when `course.agent_content_mode === true` and its link points at `/course-content/<id>/agent`
 - [x] `/agent` route mounts the `<mentor-ai>` chat full-width and keeps the edX iframe attached with `display:none`
-- [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode === false`
+- [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode !== true`
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
 

@@ -251,7 +251,7 @@
         },
         {
           "id": "tabs-13",
-          "description": "Agent tab link visible when agent_content_mode !== false, pointing at /course-content/<id>/agent",
+          "description": "Agent tab link visible when agent_content_mode === true, pointing at /course-content/<id>/agent",
           "status": "covered"
         },
         {
@@ -261,7 +261,7 @@
         },
         {
           "id": "tabs-15",
-          "description": "CourseAccessGuard redirects to /error/403 when visiting /agent with agent_content_mode=false",
+          "description": "CourseAccessGuard redirects to /error/403 when visiting /agent with agent_content_mode !== true",
           "status": "covered"
         },
         {

@@ -131,8 +131,9 @@ export default function CourseContentLayout({
     handleOpenLesson(lessonId, false, currentTab === 'agent' ? 'agent' : 'course');
   };
 
-  const agentTabVisible = !course || course.agent_content_mode !== false;
-  const courseTabVisible = !course || course.course_content_mode === true;
+  const agentTabVisible = !course || course.agent_content_mode === true;
+  const courseTabVisible =
+    !course || course.course_content_mode !== false || course.agent_content_mode === false;
 
   return (
     <CourseAccessGuard
