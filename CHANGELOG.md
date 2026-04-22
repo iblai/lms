@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.2](https://github.com/iblai/skillsai/compare/skills-v0.11.1...skills-v0.11.2) (2026-04-22)
+
+### CI
+
+* add full pipeline test workflow ([37b9c5c](https://github.com/iblai/skillsai/commit/37b9c5ccf2f0c2042b62ece94a9469804c672764))
+
 ## [0.11.1](https://github.com/iblai/skillsai/compare/skills-v0.11.0...skills-v0.11.1) (2026-04-22)
 
 ### Bug Fixes
