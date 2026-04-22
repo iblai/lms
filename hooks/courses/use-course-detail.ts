@@ -76,7 +76,7 @@ export const useCourseDetail = (courseId: string) => {
   };
 
   const handleAccessCourse = () => {
-    const defaultTab = course?.agent_content_mode !== false ? 'agent' : 'course';
+    const defaultTab = course?.agent_content_mode === true ? 'agent' : 'course';
     const url = `/course-content/${courseId}/${defaultTab}`;
     if (inIframe()) {
       window.open(url, '_blank');

@@ -3,8 +3,11 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
+const mockPathname = { current: '/course-content/course-v1:test+course+2024/course' };
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
+  usePathname: () => mockPathname.current,
 }));
 
 vi.mock('@/utils/helpers', () => ({
@@ -161,7 +164,8 @@ describe('CourseAccessGuard', () => {
   });
 
   describe('tab access', () => {
-    it('redirects to /error/403 on agent tab when agent_content_mode is false', () => {
+    it('silently redirects agent tab to course tab when agent_content_mode is false but course is accessible', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
       render(
         <CourseAccessGuard
           course={{ platform_key: 'test-tenant', agent_content_mode: false } as any}
@@ -171,11 +175,13 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockReplace).toHaveBeenCalledWith('/course-content/course-v1:test+course+2024/course');
+      expect(mockPush).not.toHaveBeenCalled();
       expect(screen.queryByText('content')).not.toBeInTheDocument();
     });
 
     it('does not redirect on agent tab when agent_content_mode is true', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
       render(
         <CourseAccessGuard
           course={{ platform_key: 'test-tenant', agent_content_mode: true } as any}
@@ -186,10 +192,12 @@ describe('CourseAccessGuard', () => {
         </CourseAccessGuard>,
       );
       expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
       expect(screen.getByText('content')).toBeInTheDocument();
     });
 
-    it('does not redirect on agent tab when agent_content_mode is null', () => {
+    it('silently redirects agent tab to course tab when agent_content_mode is null', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
       render(
         <CourseAccessGuard
           course={{ platform_key: 'test-tenant', agent_content_mode: null } as any}
@@ -199,11 +207,55 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
+      expect(mockReplace).toHaveBeenCalledWith('/course-content/course-v1:test+course+2024/course');
       expect(mockPush).not.toHaveBeenCalled();
-      expect(screen.getByText('content')).toBeInTheDocument();
     });
 
-    it('redirects to /error/403 on course tab when course_content_mode is not true', () => {
+    it('redirects to /error/403 on agent tab when both tabs are inaccessible', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: null,
+              course_content_mode: false,
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('silently redirects course tab to agent tab when course_content_mode is false but agent is accessible', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              course_content_mode: false,
+              agent_content_mode: true,
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="course"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockReplace).toHaveBeenCalledWith('/course-content/course-v1:test+course+2024/agent');
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.queryByText('content')).not.toBeInTheDocument();
+    });
+
+    it('redirects to /error/403 on course tab when both tabs are inaccessible', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
       render(
         <CourseAccessGuard
           course={{ platform_key: 'test-tenant', course_content_mode: false } as any}
@@ -214,9 +266,11 @@ describe('CourseAccessGuard', () => {
         </CourseAccessGuard>,
       );
       expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockReplace).not.toHaveBeenCalled();
     });
 
-    it('redirects to /error/403 on course tab when course_content_mode is null', () => {
+    it('does not redirect on course tab when course_content_mode is null', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
       render(
         <CourseAccessGuard
           course={{ platform_key: 'test-tenant', course_content_mode: null } as any}
@@ -226,10 +280,13 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
     });
 
     it('does not redirect on course tab when course_content_mode is true', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
       render(
         <CourseAccessGuard
           course={{ platform_key: 'test-tenant', course_content_mode: true } as any}
@@ -240,10 +297,34 @@ describe('CourseAccessGuard', () => {
         </CourseAccessGuard>,
       );
       expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('does not redirect on course tab when both course_content_mode and agent_content_mode are false', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              course_content_mode: false,
+              agent_content_mode: false,
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="course"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
       expect(screen.getByText('content')).toBeInTheDocument();
     });
 
     it('does not redirect on other tabs regardless of content mode flags', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/progress';
       render(
         <CourseAccessGuard
           course={
@@ -260,6 +341,7 @@ describe('CourseAccessGuard', () => {
         </CourseAccessGuard>,
       );
       expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
       expect(screen.getByText('content')).toBeInTheDocument();
     });
   });
