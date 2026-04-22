@@ -25,7 +25,7 @@
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
     "@iblai/iblai-api": "4.166.0-ai",
-    "@iblai/iblai-js": "1.4.0",
+    "@iblai/iblai-js": "1.4.11",
     "@iblai/iblai-web-mentor": "2.0.1",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.13",
