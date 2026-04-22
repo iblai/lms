@@ -111,7 +111,10 @@ export default function CourseContentLayout({
       return;
     }
     if (previousUnitIdRef.current && previousUnitIdRef.current !== unitId) {
-      toast.success(`Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`);
+      const message = `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`;
+      toast.success(message);
+      console.log('[UNIT SWITCHED ORIGINATED]: ', { message });
+      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
     }
     previousUnitIdRef.current = unitId;
   }, [currentCourseInfo?.id, currentTab]);

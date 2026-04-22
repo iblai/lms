@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import _ from 'lodash';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ export function CourseAgentChat() {
   const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({ org: getTenant() });
   const [getMentors, { isLoading, isFetching }] = useLazyGetMentorsQuery();
   const [mentorInUse, setMentorInUse] = useState<string | null>(null);
+  const mentorElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const resolveMentor = async () => {
@@ -57,6 +58,22 @@ export function CourseAgentChat() {
     resolveMentor();
   }, [metadataLoaded, courseMentor]);
 
+  useEffect(() => {
+    const handleUnitSwitched = (event: Event) => {
+      console.log('[UNIT SWITCHED]: ', { event });
+      const message = (event as CustomEvent<{ message?: string }>).detail?.message;
+      console.log('[UNIT SWITCHED MESSAGE]: ', { message });
+      if (!message) return;
+      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
+        'iframe',
+      ) as HTMLIFrameElement | null;
+      console.log('[UNIT SWITCHED IFRAME]: ', { iframe });
+      iframe?.contentWindow?.postMessage({ type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message }, '*');
+    };
+    window.addEventListener('mentor:unit-switched', handleUnitSwitched);
+    return () => window.removeEventListener('mentor:unit-switched', handleUnitSwitched);
+  }, []);
+
   if (isLoading || isFetching || !metadataLoaded) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-white">
@@ -72,6 +89,7 @@ export function CourseAgentChat() {
   return (
     <div className="h-full w-full">
       {React.createElement('mentor-ai', {
+        ref: mentorElementRef,
         mentorUrl: config.urls.mentor(),
         authUrl: config.urls.auth(),
         lmsUrl: config.urls.lms(),
