@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.1](https://github.com/iblai/skillsai/compare/skills-v0.11.0...skills-v0.11.1) (2026-04-22)
+
+### Bug Fixes
+
+* agent and course content mode logic swapped ([673b0d2](https://github.com/iblai/skillsai/commit/673b0d265b15dd9e407a410a8bbd0ce369e0e206))
+
 ## [0.11.0](https://github.com/iblai/skillsai/compare/skills-v0.10.26...skills-v0.11.0) (2026-04-21)
 
 ### Features
