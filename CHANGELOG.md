@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.0](https://github.com/iblai/skillsai/compare/skills-v0.12.0...skills-v0.13.0) (2026-04-23)
+
+### Bug Fixes
+
+* **e2e:** use absolute paths for storageState in playwright config ([137a03d](https://github.com/iblai/skillsai/commit/137a03d919a6e22b2abd7d2c0d74dfb34ddaf2fa))
+
 ## [0.12.0](https://github.com/iblai/skillsai/compare/skills-v0.11.2...skills-v0.12.0) (2026-04-23)
 
 ### Features
