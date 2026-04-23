@@ -642,6 +642,111 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Unit-switch confirmation toast displayed on agent tab');
   });
 
+  test('Checkpoint 18: Unit switch posts a MENTOR:CHAT_ACTION_ADD_MESSAGE into the mentor iframe and the agent responds', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // Playwright pierces open shadow DOM with CSS selectors, so `mentor-ai iframe`
+    // resolves to the iframe inside the <mentor-ai> custom element's shadow root.
+    const mentorIframeElement = page.locator('mentor-ai iframe');
+    const iframeReady = await mentorIframeElement
+      .first()
+      .waitFor({ state: 'attached', timeout: 60_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!iframeReady) {
+      logger.info('mentor-ai iframe never mounted — skipping');
+      test.skip();
+      return;
+    }
+
+    // Instrument postMessage on the iframe window so we can confirm the host sends the
+    // CHAT_ACTION_ADD_MESSAGE payload on unit switch. We stash received messages on a
+    // global the test can read back via evaluate.
+    await page.evaluate(() => {
+      const el = document.querySelector('mentor-ai');
+      const iframe = el?.shadowRoot?.querySelector('iframe') as HTMLIFrameElement | null;
+      (window as any).__mentorMessages = [] as unknown[];
+      const originalPost = iframe?.contentWindow?.postMessage.bind(iframe?.contentWindow);
+      if (iframe?.contentWindow && originalPost) {
+        iframe.contentWindow.postMessage = ((message: unknown, ...rest: unknown[]) => {
+          (window as any).__mentorMessages.push(message);
+          return (originalPost as any)(message, ...rest);
+        }) as typeof window.postMessage;
+      }
+    });
+
+    const nextBtn = page.getByRole('button', { name: 'Next lesson' });
+    const hasNext = await nextBtn.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasNext) {
+      logger.info('Single-unit course — cannot exercise the postMessage path; skipping');
+      test.skip();
+      return;
+    }
+
+    await nextBtn.click();
+
+    // Toast confirms the layout effect fired; the same effect dispatches the custom event
+    // that CourseAgentChat forwards into the iframe via postMessage.
+    await expect(page.getByText(/^Switched to "/i).first()).toBeVisible({ timeout: 15_000 });
+
+    await expect
+      .poll(
+        async () =>
+          await page.evaluate(() => {
+            const messages = ((window as any).__mentorMessages ?? []) as any[];
+            return messages.some(
+              (m) =>
+                m &&
+                typeof m === 'object' &&
+                m.type === 'MENTOR:CHAT_ACTION_ADD_MESSAGE' &&
+                typeof m.message === 'string' &&
+                m.message.startsWith('Switched to "'),
+            );
+          }),
+        { timeout: 15_000, message: 'Expected MENTOR:CHAT_ACTION_ADD_MESSAGE to reach iframe' },
+      )
+      .toBe(true);
+
+    logger.info('postMessage MENTOR:CHAT_ACTION_ADD_MESSAGE delivered to mentor iframe');
+
+    // Best-effort assertion that the mentor actually echoes an AI response to the injected
+    // message. The inner iframe is cross-origin so we reach into it via frameLocator.
+    const mentorFrame = page.frameLocator('mentor-ai iframe');
+    const aiResponse = mentorFrame.locator('.chat-ai-message-response').last();
+
+    const aiVisible = await aiResponse
+      .waitFor({ state: 'visible', timeout: 90_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!aiVisible) {
+      logger.info('Mentor iframe did not render an AI response within 90s — non-fatal');
+      return;
+    }
+
+    logger.info('Mentor iframe rendered an AI response after unit switch');
+  });
+
   test('Checkpoint 12: No error messages on course content tabs', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 

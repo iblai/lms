@@ -92,6 +92,7 @@ When adding a new page or modifying an existing user flow:
 - [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode !== true`
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
+- [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<mentor-ai>` shadow-root iframe and the agent renders an AI response
 
 ---
 

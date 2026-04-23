@@ -60,14 +60,11 @@ export function CourseAgentChat() {
 
   useEffect(() => {
     const handleUnitSwitched = (event: Event) => {
-      console.log('[UNIT SWITCHED]: ', { event });
       const message = (event as CustomEvent<{ message?: string }>).detail?.message;
-      console.log('[UNIT SWITCHED MESSAGE]: ', { message });
       if (!message) return;
       const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
         'iframe',
       ) as HTMLIFrameElement | null;
-      console.log('[UNIT SWITCHED IFRAME]: ', { iframe });
       iframe?.contentWindow?.postMessage({ type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message }, '*');
     };
     window.addEventListener('mentor:unit-switched', handleUnitSwitched);

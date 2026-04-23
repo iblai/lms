@@ -113,7 +113,6 @@ export default function CourseContentLayout({
     if (previousUnitIdRef.current && previousUnitIdRef.current !== unitId) {
       const message = `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`;
       toast.success(message);
-      console.log('[UNIT SWITCHED ORIGINATED]: ', { message });
       window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
     }
     previousUnitIdRef.current = unitId;
