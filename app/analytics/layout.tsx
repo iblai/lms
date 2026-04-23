@@ -28,9 +28,13 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
   useEffect(() => {
     const tenantKey = getTenant();
     if (tenantKey) {
-      fetchGroups({ platformKey: tenantKey });
+      const onDataReportPage = pathname === `${basePath}/reports`;
+      fetchGroups({
+        platformKey: tenantKey,
+        requiredAction: onDataReportPage ? 'Ibl.Analytics/Reports/read' : 'Ibl.Analytics/Core/read',
+      });
     }
-  }, [fetchGroups]);
+  }, [fetchGroups, pathname]);
 
   // Update groups state when data changes
   useEffect(() => {
