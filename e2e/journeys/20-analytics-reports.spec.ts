@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { waitForAppShell } from '../utils/navigation';
+import { navigateToDataReports } from '../utils/data-reports-helpers';
+
 import {
-  navigateToDataReports,
   shouldDisplayReportCards,
   shouldOpenCSVEditorDialog,
   shouldDisplayCSVInEditableTableFormat,
@@ -9,13 +10,10 @@ import {
   shouldAddNewRowWhenClickingAddRowButton,
   shouldSaveEditedCSVAndTriggerDownload,
   shouldCloseCSVEditorWithoutSavingWhenClickingCancel,
-  shouldCloseCSVEditorWhenClickingCloseButton,
   shouldVerifyCSVEditorDialogAccessibility,
   shouldOpenCSVEditorForUserMetadataReport,
   shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor,
-  shouldHaveCombinedReportDataTestIds,
-  shouldShowCombiningReportsDialog,
-} from '../utils/data-reports-helpers';
+} from '@iblai/iblai-js/playwright';
 import { shouldDisableOtherDownloadButtonsWhileGeneratingReport } from '@iblai/iblai-js/playwright';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
