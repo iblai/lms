@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.12.0](https://github.com/iblai/skillsai/compare/skills-v0.11.2...skills-v0.12.0) (2026-04-23)
+
+### Features
+
+* analytics reports e2e tests helpers imported from SDK playwright package ([9998f77](https://github.com/iblai/skillsai/commit/9998f779d7ba9fba58ba795a810568d5d179b0c3))
+
+### Chores
+
+* pnpm-lock updated ([0bef7df](https://github.com/iblai/skillsai/commit/0bef7df283d682486751c4f2ae879e7000e8f821))
+
+## [0.10.26-patch-1](https://github.com/iblai/skillsai/compare/skills-v0.11.2...skills-v0.12.0) (2026-04-22)
+
+### Bug Fixes
+
+* appropriate required action to analytics tab for groups dropdown ([15868d4](https://github.com/iblai/skillsai/commit/15868d4238dcb886b5d8cb789a955b806afeffe2))
+* appropriate required action to analytics tab for groups dropdown > test coverage ([6a88550](https://github.com/iblai/skillsai/commit/6a88550f04de52f5f4fc48c61e369150bbd337b1))
+
+### Chores
+
+* bump iblai-js to 1.4.11 ([feca7ad](https://github.com/iblai/skillsai/commit/feca7ad274a3052645567f6641e564062162619c))
+* bump version to 0.10.26-patch-1 ([c66d88c](https://github.com/iblai/skillsai/commit/c66d88ce65fac31ea533e929aebd4ea69970539c))
+
 ## [0.11.2](https://github.com/iblai/skillsai/compare/skills-v0.11.1...skills-v0.11.2) (2026-04-22)
 
 ### CI
