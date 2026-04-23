@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 const root = path.resolve(__dirname, '.');
+const authDir = path.join(root, 'playwright', '.auth');
 dotenv.config({ path: path.join(root, '.env.local'), override: true });
 dotenv.config({ path: path.join(root, '.env') });
 
@@ -61,7 +62,7 @@ export default defineConfig({
       name: 'skills-desktop-chrome',
       use: {
         ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user-chrome.json',
+        storageState: path.join(authDir, 'user-chrome.json'),
       },
       dependencies: ['setup-chrome'],
     },
@@ -69,7 +70,7 @@ export default defineConfig({
       name: 'skills-desktop-firefox',
       use: {
         ...devices['Desktop Firefox'],
-        storageState: 'playwright/.auth/user-firefox.json',
+        storageState: path.join(authDir, 'user-firefox.json'),
       },
       dependencies: ['setup-firefox'],
     },
@@ -77,7 +78,7 @@ export default defineConfig({
       name: 'skills-desktop-edge',
       use: {
         ...devices['Desktop Edge'],
-        storageState: 'playwright/.auth/user-edge.json',
+        storageState: path.join(authDir, 'user-edge.json'),
       },
       dependencies: ['setup-edge'],
     },
