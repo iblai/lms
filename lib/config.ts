@@ -6,6 +6,7 @@ const env = {
   NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
   NEXT_PUBLIC_MFE_URL: process.env.NEXT_PUBLIC_MFE_URL,
   NEXT_PUBLIC_SPA_ANALYTICS_URL: process.env.NEXT_PUBLIC_SPA_ANALYTICS_URL,
+  NEXT_PUBLIC_STUDIO_URL: process.env.NEXT_PUBLIC_STUDIO_URL,
   NEXT_PUBLIC_HIDE_RECOMMENDED_TAB: process.env.NEXT_PUBLIC_HIDE_RECOMMENDED_TAB,
   NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE:
     process.env.NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE,
@@ -45,6 +46,7 @@ export const config = {
     mfe: () => getEnv('NEXT_PUBLIC_MFE_URL', 'https://apps.learn.iblai.app'),
     analytics: () => getEnv('NEXT_PUBLIC_SPA_ANALYTICS_URL', 'https://analytics.iblai.app'),
     mentor: () => getEnv('NEXT_PUBLIC_MENTOR_URL', 'https://mentorai.iblai.app'),
+    studioUrl: () => getEnv('NEXT_PUBLIC_STUDIO_URL', 'https://studio.iblai.app'),
   },
   settings: {
     hideRecommendedTab: () => getEnv('NEXT_PUBLIC_HIDE_RECOMMENDED_TAB', 'false') === 'true',

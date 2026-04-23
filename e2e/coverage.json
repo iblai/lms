@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-03-27",
+  "lastUpdated": "2026-04-21",
   "summary": {
-    "totalCheckpoints": 215,
-    "coveredCheckpoints": 215,
+    "totalCheckpoints": 220,
+    "coveredCheckpoints": 220,
     "percent": 100,
     "totalJourneys": 29
   },
@@ -182,11 +182,15 @@
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
+        "app/course-content/[course_id]/agent/page.tsx",
         "app/course-content/[course_id]/progress/page.tsx",
         "app/course-content/[course_id]/dates/page.tsx",
         "app/course-content/[course_id]/discussion/page.tsx",
         "app/course-content/[course_id]/instructor/page.tsx",
-        "app/course-content/[course_id]/bookmarks/page.tsx"
+        "app/course-content/[course_id]/bookmarks/page.tsx",
+        "components/course-lesson-navigator.tsx",
+        "components/course-agent-chat.tsx",
+        "components/course-access-guard.tsx"
       ],
       "checkpoints": [
         {
@@ -243,6 +247,31 @@
         {
           "id": "tabs-12",
           "description": "No error messages on any course tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-13",
+          "description": "Agent tab link visible when agent_content_mode === true, pointing at /course-content/<id>/agent",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-14",
+          "description": "/agent route mounts <mentor-ai> full-width and keeps the edX iframe attached with display:none",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-15",
+          "description": "CourseAccessGuard redirects to /error/403 when visiting /agent with agent_content_mode !== true",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-16",
+          "description": "Previous / Keep Learning buttons in the tabs row switch units and flip the URL's unit_id",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-17",
+          "description": "Unit switch on the /agent tab fires a 'Switched to \"...\"' confirmation toast",
           "status": "covered"
         }
       ]

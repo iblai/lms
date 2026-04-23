@@ -18,6 +18,7 @@ const IGNORED_ERRORS: Array<string | RegExp> = [
   'Layout was forced before the page was fully loaded',
   'does not have a proper "SameSite" attribute value',
   'matomo.js',
+  'features/apps', //features/apps endpoint fails on ORG and when fails means ecommerce is not enabled
   /Failed to load resource/,
   /Intercom Messenger error/,
 ];
