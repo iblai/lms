@@ -59,13 +59,11 @@ describe('AgentTab page', () => {
   it('uses full viewport height on the agent tab, shrinking when activeTab is agent', () => {
     const { container: agentContainer } = renderAgentTab('agent');
     const agentWrapper = agentContainer.firstChild as HTMLElement;
-    const agentStyle = agentWrapper.getAttribute('style') ?? '';
-    expect(agentStyle).toContain('60px');
+    expect(agentWrapper.className).toContain('h-[calc(100vh-100px-62px-42px)]');
 
     const { container: courseContainer } = renderAgentTab('course');
     const courseWrapper = courseContainer.firstChild as HTMLElement;
-    const courseStyle = courseWrapper.getAttribute('style') ?? '';
-    // When not on agent tab, the extra 60px is 0 so the calc resolves without it.
-    expect(courseStyle).toContain('0px');
+    // When not on agent tab, the extra 42px is omitted from the calc.
+    expect(courseWrapper.className).toContain('h-[calc(100vh-100px-62px)]');
   });
 });

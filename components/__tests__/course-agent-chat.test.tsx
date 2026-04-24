@@ -188,4 +188,71 @@ describe('CourseAgentChat', () => {
     });
     expect(container.querySelector('mentor-ai')).not.toBeInTheDocument();
   });
+
+  it('errors when the selected mentor has no unique_id', async () => {
+    mockGetMentors.mockResolvedValue({
+      data: { results: [{ metadata: { default: true } }] },
+    });
+    const { toast } = await import('sonner');
+    const { container } = renderWithContext();
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('No mentors found');
+    });
+    expect(container.querySelector('mentor-ai')).not.toBeInTheDocument();
+  });
+
+  it('forwards mentor:unit-switched messages to the mentor iframe via postMessage', async () => {
+    const { container } = renderWithContext();
+    const mentorEl = await waitFor(() => {
+      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      expect(el).toBeInTheDocument();
+      return el!;
+    });
+
+    const postMessage = vi.fn();
+    const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+    const shadowRoot = {
+      querySelector: vi.fn((selector: string) => (selector === 'iframe' ? iframe : null)),
+    };
+    Object.defineProperty(mentorEl, 'shadowRoot', {
+      value: shadowRoot,
+      configurable: true,
+    });
+
+    window.dispatchEvent(
+      new CustomEvent('mentor:unit-switched', { detail: { message: 'switched unit' } }),
+    );
+
+    expect(shadowRoot.querySelector).toHaveBeenCalledWith('iframe');
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message: 'switched unit' },
+      '*',
+    );
+  });
+
+  it('ignores mentor:unit-switched events with no message', async () => {
+    const { container } = renderWithContext();
+    const mentorEl = await waitFor(() => {
+      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      expect(el).toBeInTheDocument();
+      return el!;
+    });
+
+    const querySelector = vi.fn();
+    Object.defineProperty(mentorEl, 'shadowRoot', {
+      value: { querySelector },
+      configurable: true,
+    });
+
+    window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: {} }));
+
+    expect(querySelector).not.toHaveBeenCalled();
+  });
+
+  it('removes the mentor:unit-switched listener on unmount', async () => {
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+    const { unmount } = renderWithContext();
+    unmount();
+    expect(removeSpy).toHaveBeenCalledWith('mentor:unit-switched', expect.any(Function));
+  });
 });

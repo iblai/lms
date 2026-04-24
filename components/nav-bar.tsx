@@ -198,7 +198,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               <Link
                 href={config.urls.studioUrl()}
                 target="_blank"
-                className="hidden h-[38px] items-center rounded-sm border border-gray-300 px-4 py-2 text-xs font-medium whitespace-nowrap text-gray-600 hover:bg-gray-50 md:flex lg:text-sm"
+                className="ml-2 hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
               >
                 Studio
               </Link>
@@ -209,7 +209,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 hasPermission && (
                   <Link
                     href="/analytics"
-                    className="hidden h-[38px] items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs font-medium whitespace-nowrap text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)] md:flex lg:text-sm"
+                    className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
                   >
                     AI Analytics
                   </Link>

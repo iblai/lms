@@ -273,6 +273,11 @@
           "id": "tabs-17",
           "description": "Unit switch on the /agent tab fires a 'Switched to \"...\"' confirmation toast",
           "status": "covered"
+        },
+        {
+          "id": "tabs-18",
+          "description": "Unit switch on the /agent tab posts MENTOR:CHAT_ACTION_ADD_MESSAGE into the <mentor-ai> shadow-root iframe and the agent renders an AI response",
+          "status": "covered"
         }
       ]
     },
