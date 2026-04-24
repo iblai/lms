@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.14.0](https://github.com/iblai/skillsai/compare/skills-v0.13.0...skills-v0.14.0) (2026-04-24)
+
+### Bug Fixes
+
+* agent embedded mentor top and bottom spacing unified ([880feb3](https://github.com/iblai/skillsai/commit/880feb3fd26179ad42e395e3ea7a0d22c5ebc441))
+* sending message to embed mentor iframe ([b616bca](https://github.com/iblai/skillsai/commit/b616bcad944491c50617f1cd2ac68ba26fed2453))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([0626ced](https://github.com/iblai/skillsai/commit/0626cedd82535ad92584e97ebe2ff4fe710779ea))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([6a10065](https://github.com/iblai/skillsai/commit/6a10065ab8f0c91395b7896d151143c1462521b3))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([b0b5f3d](https://github.com/iblai/skillsai/commit/b0b5f3dad4ba81c0be95bd71b4d451eec3e83952))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([2bc0082](https://github.com/iblai/skillsai/commit/2bc0082c50ded24310b8a3f020b1dc6e958e2cdb))
+
 ## [0.13.0](https://github.com/iblai/skillsai/compare/skills-v0.12.0...skills-v0.13.0) (2026-04-23)
 
 ### Bug Fixes
