@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.15.0](https://github.com/iblai/skillsai/compare/skills-v0.14.0...skills-v0.15.0) (2026-04-26)
+
+### Bug Fixes
+
+* **e2e:** use project name for auth state files, race UI for settled page, fix program empty state ([136e943](https://github.com/iblai/skillsai/commit/136e9437cace2f8a6d389a1d09d63d861ba5f6d1))
+
 ## [0.14.0](https://github.com/iblai/skillsai/compare/skills-v0.13.0...skills-v0.14.0) (2026-04-24)
 
 ### Bug Fixes
