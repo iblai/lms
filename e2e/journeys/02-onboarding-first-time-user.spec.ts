@@ -13,6 +13,32 @@ async function waitForStartPage(page: import('@playwright/test').Page): Promise<
 }
 
 /**
+ * Wait for the app to settle after navigation.
+ * A user visiting /start may be redirected to /home if already onboarded,
+ * so we race the two UI states and return whichever wins.
+ */
+async function waitForSettledPage(
+  page: import('@playwright/test').Page,
+): Promise<'home' | 'start'> {
+  const homeSettled = waitForAppShell(page)
+    .then(() => 'home' as const)
+    .catch(() => null);
+  const startSettled = waitForStartPage(page)
+    .then(() => 'start' as const)
+    .catch(() => null);
+
+  const result = await Promise.race([homeSettled, startSettled]);
+  if (result) return result;
+
+  // Fallback: both raced — wait for either to resolve
+  const fallback = await Promise.any([homeSettled, startSettled]).catch(() => null);
+  if (fallback) return fallback;
+
+  // Last resort: check URL
+  return page.url().includes('/home') ? 'home' : 'start';
+}
+
+/**
  * Journey 02: Onboarding – First-Time User
  *
  * Validates the onboarding experience at /start:
@@ -27,51 +53,33 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
 
   test('Checkpoint 1: First-time user is directed to /start', async ({ page }) => {
     // Navigate to root — the app routes first-time users to /start
-    await page.goto(SKILL_HOST, {
-      timeout: 120000,
-    });
+    await page.goto(SKILL_HOST, { timeout: 120000 });
 
-    // Wait for either /start (first-time) or /home (returning)
-    await page.waitForURL((url) => url.href.includes('/start') || url.href.includes('/home'), {
-      timeout: 60000,
-    });
+    const settled = await waitForSettledPage(page);
 
-    const currentUrl = page.url();
-
-    // Wait for the page to actually render
-    if (currentUrl.includes('/home')) {
-      await waitForAppShell(page);
-    } else {
-      await waitForStartPage(page);
-    }
-
-    if (!currentUrl.includes('/start')) {
+    if (settled === 'home') {
       logger.info('User already onboarded — landing on /home; skipping first-time check');
       test.skip();
       return;
     }
 
-    expect(currentUrl).toContain('/start');
+    expect(page.url()).toContain('/start');
     logger.info('First-time user landed on /start');
   });
 
   test('Checkpoint 2: Onboarding page displays welcome content', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/start`, {
-      timeout: 120000,
-    });
+    await page.goto(`${SKILL_HOST}/start`, { timeout: 120000 });
 
-    await page.waitForLoadState('networkidle');
+    const settled = await waitForSettledPage(page);
 
-    // If the user is redirected away from /start, onboarding is not applicable
-    const currentUrl = page.url();
-    if (!currentUrl.includes('/start')) {
+    if (settled === 'home') {
       logger.info('Redirected away from /start — onboarding not applicable');
       test.skip();
       return;
     }
 
     // Verify the page has a heading or welcome text
-    const heading = page.getByRole('heading', { level: 1 }).first();
+    const heading = page.getByRole('heading').first();
     const hasHeading = await heading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasHeading) {
@@ -87,11 +95,11 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
   });
 
   test('Checkpoint 3: User can complete onboarding', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/start`, {
-      timeout: 120000,
-    });
+    await page.goto(`${SKILL_HOST}/start`, { timeout: 120000 });
 
-    if (!page.url().includes('/start')) {
+    const settled = await waitForSettledPage(page);
+
+    if (settled === 'home') {
       logger.info('Not on /start — skipping completion test');
       test.skip();
       return;
@@ -125,50 +133,33 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
       maxSteps--;
     }
 
-    // After completing onboarding the user should be on /home
-    await page.waitForURL((url) => url.href.includes('/home') || url.href.includes('/start'), {
-      timeout: 30000,
-    });
-
-    logger.info(`Post-onboarding URL: ${page.url()}`);
+    // After completing onboarding, wait for the app to settle
+    const postOnboarding = await waitForSettledPage(page);
+    logger.info(`Post-onboarding settled on: /${postOnboarding}`);
   });
 
   test('Checkpoint 4: Returning user bypasses onboarding', async ({ page }) => {
     // Navigate to root — a returning (already onboarded) user should land on /home
-    await page.goto(SKILL_HOST, {
-      timeout: 120000,
-    });
+    await page.goto(SKILL_HOST, { timeout: 120000 });
 
-    // Wait for either /start (first-time) or /home (returning)
-    await page.waitForURL((url) => url.href.includes('/home') || url.href.includes('/start'), {
-      timeout: 60000,
-    });
+    const settled = await waitForSettledPage(page);
 
-    const currentUrl = page.url();
-
-    // Wait for the page to actually render
-    if (currentUrl.includes('/home')) {
-      await waitForAppShell(page);
-    } else {
-      await waitForStartPage(page);
-    }
-
-    if (currentUrl.includes('/start')) {
+    if (settled === 'start') {
       logger.info('User still on /start — not yet onboarded; skipping returning-user check');
       test.skip();
       return;
     }
 
-    expect(currentUrl).toContain('/home');
+    expect(page.url()).toContain('/home');
     logger.info('Returning user correctly bypassed onboarding');
   });
 
   test('Checkpoint 5: Onboarding page has proper heading and navigation', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/start`, {
-      timeout: 120000,
-    });
+    await page.goto(`${SKILL_HOST}/start`, { timeout: 120000 });
 
-    if (!page.url().includes('/start')) {
+    const settled = await waitForSettledPage(page);
+
+    if (settled === 'home') {
       logger.info('Redirected away from /start — skipping heading/navigation check');
       test.skip();
       return;

@@ -100,17 +100,17 @@ test.describe('Journey 10: Profile Programs', () => {
   });
 
   test('Checkpoint 2: Program cards or empty state', async ({ page }) => {
-    await waitForProgramsToLoad(page);
+    const hasPrograms = await waitForProgramsToLoad(page);
 
     const skeleton = page.getByTestId('skeleton-multiplier').first();
     await expect(skeleton).not.toBeVisible({ timeout: 120_000 });
     logger.info('Skeleton multiplier no longer visible');
 
-    const programCard = page.getByTestId('program-card').first();
-    await expect(programCard).toBeVisible({ timeout: 120_000 });
-
-    const cardCount = await page.getByTestId('program-card').count();
-    if (cardCount === 0) {
+    if (hasPrograms) {
+      const cardCount = await page.getByTestId('program-card').count();
+      expect(cardCount).toBeGreaterThan(0);
+      logger.info(`Found ${cardCount} program card(s)`);
+    } else {
       await expect(page.getByText('No programs found.')).toBeVisible({
         timeout: 5000,
       });
