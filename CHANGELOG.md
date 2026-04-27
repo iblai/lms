@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.17.0](https://github.com/iblai/skillsai/compare/skills-v0.16.0...skills-v0.17.0) (2026-04-27)
+
+### Chores
+
+* **deps:** bump @iblai/iblai-js to 1.4.17, remove package-lock.json ([1fec7bb](https://github.com/iblai/skillsai/commit/1fec7bb8017e6486a83da4a7eb42fd8599455569))
+
 ## [0.16.0](https://github.com/iblai/skillsai/compare/skills-v0.15.0...skills-v0.16.0) (2026-04-27)
 
 ### Chores
