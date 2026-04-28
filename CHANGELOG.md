@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.18.0](https://github.com/iblai/skillsai/compare/skills-v0.17.0...skills-v0.18.0) (2026-04-28)
+
+### Bug Fixes
+
+* **e2e:** simplify CP-3 to assert h1 404 heading instead of networkidle ([dc6687c](https://github.com/iblai/skillsai/commit/dc6687c4ec32fcbe58fd7243b76b4d4cec5a9af5))
+
 ## [0.17.0](https://github.com/iblai/skillsai/compare/skills-v0.16.0...skills-v0.17.0) (2026-04-27)
 
 ### Chores
