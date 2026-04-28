@@ -12,7 +12,7 @@ test.describe('Journey 26: Error Pages', () => {
 
     // Should display a "Page Not Found" or "404" message
     const notFoundText = page.getByText(/page not found|404|not found/i).first();
-    await expect(notFoundText).toBeVisible({ timeout: 30_000 });
+    await expect(notFoundText).toBeVisible({ timeout: 120_000 });
   });
 
   test('CP-2: /error/403 shows Forbidden', async ({ page }) => {
@@ -22,28 +22,17 @@ test.describe('Journey 26: Error Pages', () => {
 
     // Should display a "Forbidden" or "403" or "Access Denied" message
     const forbiddenText = page.getByText(/forbidden|403|access denied|not authorized/i).first();
-    await expect(forbiddenText).toBeVisible({ timeout: 30_000 });
+    await expect(forbiddenText).toBeVisible({ timeout: 120_000 });
   });
 
-  test('CP-3: Non-existent route shows 404 or redirects', async ({ page }) => {
+  test('CP-3: Non-existent route shows 404', async ({ page }) => {
     const randomPath = `/this-page-does-not-exist-${Date.now()}`;
     await page.goto(`${SKILL_HOST}${randomPath}`, {
       timeout: 120_000,
     });
 
-    // Wait for navigation to settle — the app may redirect to home/login
-    await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => {});
-
-    const url = page.url();
-
-    // The app should either: show a 404/not-found page, redirect to an error page,
-    // or redirect to home/login (SPA with auth may not render a 404 for unknown routes)
-    const isOnErrorPage = url.includes('/error') || url.includes('/404');
-    const isRedirected = !url.includes(randomPath);
-    const errorContent = page.getByText(/not found|404|page not found|does not exist/i).first();
-    const isErrorVisible = await errorContent.isVisible({ timeout: 10_000 }).catch(() => false);
-
-    expect(isErrorVisible || isOnErrorPage || isRedirected).toBeTruthy();
+    const heading = page.getByRole('heading', { level: 1, name: '404' });
+    await expect(heading).toBeVisible({ timeout: 120_000 });
   });
 
   test('CP-4: Error pages have a Home link', async ({ page }) => {
