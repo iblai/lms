@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.19.0](https://github.com/iblai/skillsai/compare/skills-v0.18.0...skills-v0.19.0) (2026-04-30)
+
+### CI
+
+* add PR E2E pipeline and make legacy SPA validation dispatch-only ([2870c95](https://github.com/iblai/skillsai/commit/2870c95ba7e02497b00e9f3bd2d4feca388f17f2))
+
 ## [0.18.0](https://github.com/iblai/skillsai/compare/skills-v0.17.0...skills-v0.18.0) (2026-04-28)
 
 ### Bug Fixes
