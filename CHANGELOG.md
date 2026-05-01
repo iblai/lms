@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.20.0](https://github.com/iblai/skillsai/compare/skills-v0.19.0...skills-v0.20.0) (2026-05-01)
+
+### Chores
+
+* **security:** add pnpm supply chain protections ([b14dee3](https://github.com/iblai/skillsai/commit/b14dee3bb3f1f7d8f73e33429a3563082900f48d))
+
 ## [0.19.0](https://github.com/iblai/skillsai/compare/skills-v0.18.0...skills-v0.19.0) (2026-04-30)
 
 ### CI
