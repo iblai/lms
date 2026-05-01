@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.21.0](https://github.com/iblai/skillsai/compare/skills-v0.20.0...skills-v0.21.0) (2026-05-01)
+
+### Features
+
+* add suspense loader to overall app ([cf41790](https://github.com/iblai/skillsai/commit/cf417908437e30d9d9c53b1867ffe5bd0a7c6daa))
+* add suspense loader to overall app > playwright coverage updated ([c9c25a8](https://github.com/iblai/skillsai/commit/c9c25a8783922fbc536ea280195613345866a857))
+* add suspense loader to overall app > playwright tests updated ([a661198](https://github.com/iblai/skillsai/commit/a661198895d8e0b09110789811cd27e947e67609))
+* add suspense loader to overall app > test coverage ([2b854e8](https://github.com/iblai/skillsai/commit/2b854e887218e16c89474149da95d36266f99440))
+* add suspense loader to overall app > test coverage ([7bbf615](https://github.com/iblai/skillsai/commit/7bbf61543082659d43ff580c0447bf3c4e284aa8))
+
+### Chores
+
+* **e2e:** update coverage for suspense loader app/loading.tsx [skip ci] ([4508b3d](https://github.com/iblai/skillsai/commit/4508b3d5ae68b51491eaf3eb7d6e5273973b506d))
+
 ## [0.20.0](https://github.com/iblai/skillsai/compare/skills-v0.19.0...skills-v0.20.0) (2026-05-01)
 
 ### Chores
