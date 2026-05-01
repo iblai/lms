@@ -25,22 +25,16 @@ async function navigateToProgramsPage(page: Page): Promise<void> {
  */
 async function waitForProgramsToLoad(page: Page): Promise<boolean> {
   const programCard = page.getByTestId('program-card').first();
-  const emptyState = page.getByText('No programs found.');
 
-  const hasCards = await programCard.isVisible({ timeout: 120_000 }).catch(() => false);
-  if (hasCards) {
-    logger.info('Program cards visible');
+  try {
+    await expect(programCard)
+      .toBeVisible({ timeout: 10_000 })
+      .catch(() => false);
     return true;
-  }
-
-  const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
-  if (hasEmpty) {
-    logger.info('No programs found — empty state');
+  } catch (error) {
+    logger.info('Program cards not visible');
     return false;
   }
-
-  logger.info('Could not determine programs state');
-  return false;
 }
 
 /**
@@ -100,12 +94,11 @@ test.describe('Journey 10: Profile Programs', () => {
   });
 
   test('Checkpoint 2: Program cards or empty state', async ({ page }) => {
-    const hasPrograms = await waitForProgramsToLoad(page);
-
     const skeleton = page.getByTestId('skeleton-multiplier').first();
     await expect(skeleton).not.toBeVisible({ timeout: 120_000 });
     logger.info('Skeleton multiplier no longer visible');
 
+    const hasPrograms = await waitForProgramsToLoad(page);
     if (hasPrograms) {
       const cardCount = await page.getByTestId('program-card').count();
       expect(cardCount).toBeGreaterThan(0);

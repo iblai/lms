@@ -21,6 +21,10 @@ test.describe('Journey 16: Analytics Overview', () => {
 
     await analyticsLink.click();
     await page.waitForURL((url) => url.href.includes('/analytics'), { timeout: 120_000 });
+    // Wait for the global app loader (app/loading.tsx) to disappear before tests run.
+    await expect(page.getByRole('status', { name: 'Loading...' })).not.toBeVisible({
+      timeout: 120_000,
+    });
   });
 
   test('CP-1: analytics page loads with stat cards', async ({ page }) => {
