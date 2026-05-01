@@ -127,6 +127,11 @@
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-conventional": "20.5.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "husky"
+    ]
+  },
   "lint-staged": {
     "*.ts?(x)": [
       "pnpm prettier --write"
