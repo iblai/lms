@@ -1,9 +1,19 @@
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '../input-otp';
 
 describe('InputOTP', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
   it('renders without crashing', () => {
     const { container } = render(
       <InputOTP maxLength={6}>
