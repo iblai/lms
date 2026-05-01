@@ -30,12 +30,11 @@ async function navigateToCourseContent(page: Page) {
 
   await page.waitForURL(/\/course-content\/.*/, { timeout: 120_000 });
 
-  const courseTab = page.getByRole('link', { name: 'Course', exact: true });
-  const agentTab = page.getByRole('link', { name: 'Agent', exact: true });
-  const hasAgentTab = await agentTab.isVisible({ timeout: 120_000 }).catch(() => false);
-  const hasCourseTab = await courseTab.isVisible({ timeout: 120_000 }).catch(() => false);
-  if (hasAgentTab && hasCourseTab) {
-    await courseTab.click();
+  // The course-content tab is named "Course" or "Agent" depending on the course mode.
+  const contentTab = page.getByRole('link', { name: /^(Course|Agent)$/ }).first();
+  const hasContentTab = await contentTab.isVisible({ timeout: 120_000 }).catch(() => false);
+  if (hasContentTab) {
+    await contentTab.click();
     await page.waitForURL(/\/course-content\/.*/, { timeout: 120_000 });
     await waitForPageLoad(page);
   }
@@ -77,10 +76,12 @@ test.describe('Journey 24: Mobile View', () => {
     const tabsContainer = page.locator('div.flex.overflow-x-auto.min-w-0').first();
     await expect(tabsContainer).toBeVisible({ timeout: 30_000 });
 
-    // Verify course navigation tabs are inside
-    await expect(tabsContainer.getByRole('link', { name: 'Course' })).toBeVisible({
-      timeout: 30_000,
-    });
+    // Verify course navigation tabs are inside (the first tab is "Course" or "Agent" depending on mode)
+    await expect(tabsContainer.getByRole('link', { name: /^(Course|Agent)$/ }).first()).toBeVisible(
+      {
+        timeout: 30_000,
+      },
+    );
     await expect(tabsContainer.getByRole('link', { name: 'Progress' })).toBeVisible({
       timeout: 30_000,
     });
@@ -95,11 +96,12 @@ test.describe('Journey 24: Mobile View', () => {
   test('CP-3: Iframe container has correct CSS classes per tab', async ({ page }) => {
     await navigateToCourseContent(page);
 
-    const tabsToCheck: Array<{ linkName: string; tabClass: string }> = [
-      { linkName: 'Course', tabClass: 'active-tab-course' },
-      { linkName: 'Progress', tabClass: 'active-tab-progress' },
-      { linkName: 'Dates', tabClass: 'active-tab-dates' },
-      { linkName: 'Discussion', tabClass: 'active-tab-forum' },
+    // The first tab is "Course" or "Agent" depending on the course mode.
+    const tabsToCheck: Array<{ linkName: string | RegExp; tabClass: RegExp }> = [
+      { linkName: /^(Course|Agent)$/, tabClass: /active-tab-(course|agent)/ },
+      { linkName: 'Progress', tabClass: /active-tab-progress/ },
+      { linkName: 'Dates', tabClass: /active-tab-dates/ },
+      { linkName: 'Discussion', tabClass: /active-tab-forum/ },
     ];
 
     for (const { linkName, tabClass } of tabsToCheck) {
@@ -107,15 +109,18 @@ test.describe('Journey 24: Mobile View', () => {
       await expect(tabLink).toBeVisible({ timeout: 30_000 });
       await tabLink.click();
       await page.waitForTimeout(2000);
+      // In Agent mode the course iframe is replaced by the agent UI, so skip iframe assertions.
+      const tabText = (await tabLink.textContent()) ?? '';
+      if (!/agent/i.test(tabText)) {
+        const iframeContainer = page.locator('.course-edx-iframe-container').first();
+        await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
+        await expect(iframeContainer).toHaveClass(/course-edx-iframe-container/);
+        await expect(iframeContainer).toHaveClass(tabClass);
 
-      const iframeContainer = page.locator('.course-edx-iframe-container').first();
-      await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
-      await expect(iframeContainer).toHaveClass(/course-edx-iframe-container/);
-      await expect(iframeContainer).toHaveClass(new RegExp(tabClass));
-
-      const classList = await iframeContainer.getAttribute('class');
-      expect(classList).toContain('w-full');
-      expect(classList).not.toContain('max-w-4xl');
+        const classList = await iframeContainer.getAttribute('class');
+        expect(classList).toContain('w-full');
+        expect(classList).not.toContain('max-w-4xl');
+      }
     }
   });
 
@@ -134,17 +139,20 @@ test.describe('Journey 24: Mobile View', () => {
       await expect(tabLink).toBeVisible({ timeout: 30_000 });
       await tabLink.click();
       await page.waitForTimeout(2000);
+      // In Agent mode the course iframe is replaced by the agent UI, so skip iframe assertions.
+      const tabText = (await tabLink.textContent()) ?? '';
+      if (!/agent/i.test(tabText)) {
+        const iframeContainer = page.locator('.course-edx-iframe-container').first();
+        await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
 
-      const iframeContainer = page.locator('.course-edx-iframe-container').first();
-      await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
+        // On mobile, media query sets padding to 0 for non-course tabs
+        const padding = await iframeContainer.evaluate((el) => {
+          const style = window.getComputedStyle(el);
+          return style.padding;
+        });
 
-      // On mobile, media query sets padding to 0 for non-course tabs
-      const padding = await iframeContainer.evaluate((el) => {
-        const style = window.getComputedStyle(el);
-        return style.padding;
-      });
-
-      expect(padding).toBe('0px');
+        expect(padding).toBe('0px');
+      }
     }
   });
 
@@ -152,21 +160,26 @@ test.describe('Journey 24: Mobile View', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await navigateToCourseContent(page);
 
-    const courseTabLink = page.getByRole('link', { name: 'Course' }).first();
+    // The course-content tab is "Course" or "Agent" depending on the course mode.
+    const courseTabLink = page.getByRole('link', { name: /^(Course|Agent)$/ }).first();
     await expect(courseTabLink).toBeVisible({ timeout: 30_000 });
     await courseTabLink.click();
     await page.waitForTimeout(2000);
 
-    const iframeContainer = page.locator('.course-edx-iframe-container').first();
-    await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
+    // In Agent mode the course iframe is replaced by the agent UI, so skip iframe assertions.
+    const tabText = (await courseTabLink.textContent()) ?? '';
+    if (!/agent/i.test(tabText)) {
+      const iframeContainer = page.locator('.course-edx-iframe-container').first();
+      await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
 
-    const padding = await iframeContainer.evaluate((el) => {
-      const style = window.getComputedStyle(el);
-      return style.padding;
-    });
+      const padding = await iframeContainer.evaluate((el) => {
+        const style = window.getComputedStyle(el);
+        return style.padding;
+      });
 
-    // p-6 = 1.5rem = 24px — should not be stripped on mobile for the course tab
-    expect(padding).not.toBe('0px');
+      // p-6 = 1.5rem = 24px — should not be stripped on mobile for the course tab
+      expect(padding).not.toBe('0px');
+    }
   });
 
   test('CP-6: Desktop — all tabs retain padding', async ({ page }) => {
@@ -180,17 +193,20 @@ test.describe('Journey 24: Mobile View', () => {
       await expect(tabLink).toBeVisible({ timeout: 30_000 });
       await tabLink.click();
       await page.waitForTimeout(2000);
+      // In Agent mode the course iframe is replaced by the agent UI, so skip iframe assertions.
+      const tabText = (await tabLink.textContent()) ?? '';
+      if (!/agent/i.test(tabText)) {
+        const iframeContainer = page.locator('.course-edx-iframe-container').first();
+        await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
 
-      const iframeContainer = page.locator('.course-edx-iframe-container').first();
-      await expect(iframeContainer).toBeVisible({ timeout: 30_000 });
+        const padding = await iframeContainer.evaluate((el) => {
+          const style = window.getComputedStyle(el);
+          return style.padding;
+        });
 
-      const padding = await iframeContainer.evaluate((el) => {
-        const style = window.getComputedStyle(el);
-        return style.padding;
-      });
-
-      // Desktop: media query should NOT remove padding
-      expect(padding).not.toBe('0px');
+        // Desktop: media query should NOT remove padding
+        expect(padding).not.toBe('0px');
+      }
     }
   });
 

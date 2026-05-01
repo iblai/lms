@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-04-21 | 220 checkpoints | 29 journeys | 100% covered
+> Last updated: 2026-05-01 | 221 checkpoints | 29 journeys | 100% covered
 
 ## How This Works
 
@@ -224,15 +224,16 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 16: Analytics Overview (5 checkpoints) — `journeys/16-analytics-overview.spec.ts`
+## Journey 16: Analytics Overview (6 checkpoints) — `journeys/16-analytics-overview.spec.ts`
 
-**Source files:** `app/analytics/page.tsx`, `app/analytics/layout.tsx`, `components/analytics-sidebar.tsx`
+**Source files:** `app/analytics/page.tsx`, `app/analytics/layout.tsx`, `app/loading.tsx`, `components/analytics-sidebar.tsx`, `components/spinner.tsx`
 
 - [x] Analytics page (/analytics) loads with an Overview tab and summary dashboard _(admin only)_
 - [x] Overview displays key metrics cards (users, courses, engagement stats)
 - [x] Analytics sidebar tabs (Overview, Users, Courses, Programs, Topics, Transcripts, Financial, Data Reports) are visible
 - [x] Time filter controls are functional and update dashboard data
 - [x] Groups filter dropdown is visible and can filter analytics by user groups
+- [x] Global suspense loader (`app/loading.tsx` + `components/spinner.tsx`) hides before analytics content renders
 
 ---
 

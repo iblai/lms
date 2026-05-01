@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-04-21",
+  "lastUpdated": "2026-05-01",
   "summary": {
-    "totalCheckpoints": 220,
-    "coveredCheckpoints": 220,
+    "totalCheckpoints": 221,
+    "coveredCheckpoints": 221,
+    "totalCheckpoints": 221,
+    "coveredCheckpoints": 221,
     "percent": 100,
     "totalJourneys": 29
   },
@@ -606,7 +608,9 @@
       "sourceFiles": [
         "app/analytics/page.tsx",
         "app/analytics/layout.tsx",
-        "components/analytics-sidebar.tsx"
+        "app/loading.tsx",
+        "components/analytics-sidebar.tsx",
+        "components/spinner.tsx"
       ],
       "checkpoints": [
         {
@@ -621,7 +625,12 @@
           "description": "Time filter controls are functional",
           "status": "covered"
         },
-        { "id": "ao-05", "description": "Groups filter can filter by groups", "status": "covered" }
+        { "id": "ao-05", "description": "Groups filter can filter by groups", "status": "covered" },
+        {
+          "id": "ao-06",
+          "description": "Global suspense loader hides before analytics content renders",
+          "status": "covered"
+        }
       ]
     },
     {
