@@ -14,6 +14,10 @@ export async function waitForAppShell(page: Page, timeout = 120_000): Promise<vo
   await expect(page.locator('header').first()).toBeVisible({ timeout });
 }
 
+export async function waitForLoaderToDisappear(page: Page, timeout = 30_000): Promise<void> {
+  await expect(page.getByRole('status', { name: 'Loading...' })).not.toBeVisible({ timeout });
+}
+
 /**
  * Safe URL wait that handles Firefox NS_BINDING_ABORTED and Safari policy errors.
  */

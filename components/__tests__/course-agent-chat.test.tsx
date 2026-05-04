@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -254,5 +254,152 @@ describe('CourseAgentChat', () => {
     const { unmount } = renderWithContext();
     unmount();
     expect(removeSpy).toHaveBeenCalledWith('mentor:unit-switched', expect.any(Function));
+  });
+
+  describe('new-chat button', () => {
+    const attachShadow = (
+      mentorEl: HTMLElement,
+      spinner: HTMLElement,
+      iframe?: HTMLIFrameElement,
+    ) => {
+      Object.defineProperty(mentorEl, 'shadowRoot', {
+        value: {
+          querySelector: (selector: string) => {
+            if (selector === '#loading-spinner') return spinner;
+            if (selector === 'iframe') return iframe ?? null;
+            return null;
+          },
+        },
+        configurable: true,
+      });
+    };
+
+    it('does not render the new-chat button while the spinner is visible', async () => {
+      const { container } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      attachShadow(mentorEl, spinner);
+
+      // Let the polling fallback attach the observer.
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 150));
+      });
+
+      expect(container.querySelector('button[aria-label="New chat"]')).not.toBeInTheDocument();
+    });
+
+    it('renders the new-chat button once the spinner is hidden', async () => {
+      const { container } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      spinner.style.display = 'none';
+      attachShadow(mentorEl, spinner);
+
+      await waitFor(() => {
+        expect(container.querySelector('button[aria-label="New chat"]')).toBeInTheDocument();
+      });
+    });
+
+    it('toggles the new-chat button as the spinner display style changes', async () => {
+      const { container } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      spinner.style.display = 'none';
+      attachShadow(mentorEl, spinner);
+
+      await waitFor(() => {
+        expect(container.querySelector('button[aria-label="New chat"]')).toBeInTheDocument();
+      });
+
+      spinner.style.display = 'block';
+      await waitFor(() => {
+        expect(container.querySelector('button[aria-label="New chat"]')).not.toBeInTheDocument();
+      });
+
+      spinner.style.display = 'none';
+      await waitFor(() => {
+        expect(container.querySelector('button[aria-label="New chat"]')).toBeInTheDocument();
+      });
+    });
+
+    it('posts MENTOR:NEW_CHAT to the iframe when the button is clicked', async () => {
+      const { container } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      spinner.style.display = 'none';
+
+      const postMessage = vi.fn();
+      const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+      attachShadow(mentorEl, spinner, iframe);
+
+      const button = await waitFor(() => {
+        const b = container.querySelector(
+          'button[aria-label="New chat"]',
+        ) as HTMLButtonElement | null;
+        expect(b).toBeInTheDocument();
+        return b!;
+      });
+
+      button.click();
+
+      expect(postMessage).toHaveBeenCalledWith({ type: 'MENTOR:NEW_CHAT' }, '*');
+    });
+
+    it('disconnects the spinner observer on unmount', async () => {
+      const disconnect = vi.fn();
+      const observe = vi.fn();
+      const originalMO = window.MutationObserver;
+      // @ts-ignore — override constructor for the duration of the test
+      window.MutationObserver = vi.fn().mockImplementation(() => ({
+        observe,
+        disconnect,
+        takeRecords: () => [],
+      }));
+
+      const { container, unmount } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      spinner.style.display = 'none';
+      attachShadow(mentorEl, spinner);
+
+      await waitFor(() => {
+        expect(observe).toHaveBeenCalled();
+      });
+
+      unmount();
+      expect(disconnect).toHaveBeenCalled();
+
+      window.MutationObserver = originalMO;
+    });
   });
 });

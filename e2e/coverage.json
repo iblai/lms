@@ -280,6 +280,11 @@
           "id": "tabs-18",
           "description": "Unit switch on the /agent tab posts MENTOR:CHAT_ACTION_ADD_MESSAGE into the <mentor-ai> shadow-root iframe and the agent renders an AI response",
           "status": "covered"
+        },
+        {
+          "id": "tabs-19",
+          "description": "New-chat button on the /agent tab renders once the mentor spinner is hidden, posts MENTOR:NEW_CHAT, and surfaces the iframe's .chat-welcome-button",
+          "status": "covered"
         }
       ]
     },
