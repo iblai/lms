@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, SquarePen } from 'lucide-react';
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
@@ -18,6 +18,7 @@ export function CourseAgentChat() {
   const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({ org: getTenant() });
   const [getMentors, { isLoading, isFetching }] = useLazyGetMentorsQuery();
   const [mentorInUse, setMentorInUse] = useState<string | null>(null);
+  const [spinnerHidden, setSpinnerHidden] = useState(false);
   const mentorElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -71,6 +72,46 @@ export function CourseAgentChat() {
     return () => window.removeEventListener('mentor:unit-switched', handleUnitSwitched);
   }, []);
 
+  //TODO mutation observer to be removed once we able to have a READY postmessage from the iframe
+  useEffect(() => {
+    if (!mentorInUse) return;
+    let observer: MutationObserver | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const attach = () => {
+      const spinner = mentorElementRef.current?.shadowRoot?.querySelector(
+        '#loading-spinner',
+      ) as HTMLElement | null;
+      if (!spinner) return false;
+      const update = () => setSpinnerHidden(spinner.style.display === 'none');
+      update();
+      observer = new MutationObserver(update);
+      observer.observe(spinner, { attributes: true, attributeFilter: ['style'] });
+      return true;
+    };
+
+    if (!attach()) {
+      intervalId = setInterval(() => {
+        if (attach() && intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      }, 100);
+    }
+
+    return () => {
+      observer?.disconnect();
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [mentorInUse]);
+
+  const handleNewChat = () => {
+    const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
+      'iframe',
+    ) as HTMLIFrameElement | null;
+    iframe?.contentWindow?.postMessage({ type: 'MENTOR:NEW_CHAT' }, '*');
+  };
+
   if (isLoading || isFetching || !metadataLoaded) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-white">
@@ -84,7 +125,17 @@ export function CourseAgentChat() {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="relative h-full w-full">
+      {spinnerHidden && (
+        <button
+          type="button"
+          onClick={handleNewChat}
+          aria-label="New chat"
+          className="absolute inset-[0px_0px_0px_-25px] z-10 flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 lg:inset-[0px_0px_0px_-19px]"
+        >
+          <SquarePen className="h-4 w-4" />
+        </button>
+      )}
       {React.createElement('mentor-ai', {
         ref: mentorElementRef,
         mentorUrl: config.urls.mentor(),

@@ -11,12 +11,19 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+const { mockGetIframeURL, mockFindSequentialParent } = vi.hoisted(() => ({
+  mockGetIframeURL: vi.fn(
+    (_courseId: string, _courseInfo: unknown, callback: (url: string) => void) => {
+      callback('https://apps.learn.example.com/discussions/course-v1:test+course/posts');
+    },
+  ),
+  mockFindSequentialParent: vi.fn(() => null),
+}));
+
 vi.mock('@/hooks/courses/use-edx-iframe', () => ({
   useEdxIframe: () => ({
-    getIframeURL: vi.fn((_courseId, _tab, callback) => {
-      callback('https://apps.learn.example.com/discussions/course-v1:test+course/posts');
-    }),
-    findSequentialParent: vi.fn(() => null),
+    getIframeURL: mockGetIframeURL,
+    findSequentialParent: mockFindSequentialParent,
   }),
 }));
 
@@ -295,5 +302,48 @@ describe('EdxIframe - JWT PostMessage', () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  describe('active tab routing to getIframeURL', () => {
+    it("passes the courseOutline object when activeTab is 'course'", async () => {
+      renderEdxIframe({ ...defaultContextValue, activeTab: 'course' });
+
+      await waitFor(() => {
+        expect(mockGetIframeURL).toHaveBeenCalled();
+      });
+
+      const [courseIdArg, courseInfoArg] = mockGetIframeURL.mock.calls[0];
+      expect(courseIdArg).toBe(defaultContextValue.courseID);
+      expect(courseInfoArg).toBe(defaultContextValue.courseOutline);
+    });
+
+    it("passes the courseOutline object when activeTab is 'agent' (not the literal 'agent' string)", async () => {
+      // Regression test: previously 'agent' was passed as xblockID, producing a
+      // bogus /xblock/agent SSO redirect. The agent tab must route through the
+      // same course-unit path as the course tab.
+      renderEdxIframe({ ...defaultContextValue, activeTab: 'agent' });
+
+      await waitFor(() => {
+        expect(mockGetIframeURL).toHaveBeenCalled();
+      });
+
+      const [, courseInfoArg] = mockGetIframeURL.mock.calls[0];
+      expect(courseInfoArg).toBe(defaultContextValue.courseOutline);
+      expect(courseInfoArg).not.toBe('agent');
+    });
+
+    it.each(['forum', 'notes', 'progress', 'dates', 'bookmarks'])(
+      "passes the activeTab string when activeTab is '%s'",
+      async (tab) => {
+        renderEdxIframe({ ...defaultContextValue, activeTab: tab });
+
+        await waitFor(() => {
+          expect(mockGetIframeURL).toHaveBeenCalled();
+        });
+
+        const [, courseInfoArg] = mockGetIframeURL.mock.calls[0];
+        expect(courseInfoArg).toBe(tab);
+      },
+    );
   });
 });
