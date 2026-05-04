@@ -71,7 +71,7 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (17 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (19 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
 **Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`
 
@@ -93,6 +93,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
 - [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<mentor-ai>` shadow-root iframe and the agent renders an AI response
+- [x] New-chat button on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
 
 ---
 
