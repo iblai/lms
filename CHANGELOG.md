@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.22.0](https://github.com/iblai/skillsai/compare/skills-v0.21.0...skills-v0.22.0) (2026-05-04)
+
+### Features
+
+* new chat button triggering a new session on mentor via postmessage ([a81d7b3](https://github.com/iblai/skillsai/commit/a81d7b3d3ecba2b67e69d7ab7cf5155ac666fb6e))
+* new chat button triggering a new session on mentor via postmessage > playwright test updated ([7e67231](https://github.com/iblai/skillsai/commit/7e67231b9b9b8ca9463ba6305bc1ab6ae581c373))
+
+### Bug Fixes
+
+* page not found on agent tab mode fixed ([e3de8d4](https://github.com/iblai/skillsai/commit/e3de8d4933bfcdd4883cf9f897200e79767773e3))
+
 ## [0.21.0](https://github.com/iblai/skillsai/compare/skills-v0.20.0...skills-v0.21.0) (2026-05-01)
 
 ### Features
