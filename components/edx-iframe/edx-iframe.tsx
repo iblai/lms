@@ -40,7 +40,7 @@ export const EdxIframe = () => {
       setExamInfo(null);
       setCurrentlyInExamSubsection(false);
       setFetchingIframeData(true);
-      if (activeTab === 'course') {
+      if (activeTab === 'course' || activeTab === 'agent') {
         getIframeURL(courseID, courseOutline, async (url) => {
           try {
             const courseOutlineData = Array.isArray(courseOutline?.children)

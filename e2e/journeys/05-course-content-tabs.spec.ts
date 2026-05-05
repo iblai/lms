@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
+import { waitForAppShell, waitForLoaderToDisappear } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -20,6 +20,9 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
   const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
 
+  //wait for myCoursesGrid.getByRole('link', { name: any name }) to be visible
+  await expect(myCoursesGrid.getByRole('link', { name: /.*/ })).toBeVisible({ timeout: 15000 });
+
   const courseLink = myCoursesGrid.getByRole('link').first();
   const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
@@ -27,7 +30,13 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
 
   await courseLink.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
+  await waitForLoaderToDisappear(page);
   await waitForAppShell(page);
+
+  //wait for header Course Description to be visible
+  await expect(page.getByRole('heading', { name: 'Course Description' })).toBeVisible({
+    timeout: 30_000,
+  });
 
   const accessCourseButton = page.getByRole('button', { name: 'Access Course' });
   const hasAccess = await accessCourseButton.isVisible({ timeout: 120_000 }).catch(() => false);
@@ -745,6 +754,43 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     logger.info('Mentor iframe rendered an AI response after unit switch');
+  });
+
+  test('Checkpoint 19: New-chat button on agent tab triggers welcome screen', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The new-chat button only renders once the mentor iframe's #loading-spinner
+    // has display:none, so this verifies the spinner-observer wiring too.
+    const newChatButton = page.getByRole('button', { name: 'New chat' });
+    await expect(newChatButton).toBeVisible({ timeout: 60_000 });
+
+    await newChatButton.click();
+
+    // Clicking posts MENTOR:NEW_CHAT into the iframe; the iframe should land on
+    // the welcome screen surfaced by `.chat-welcome-button`.
+    const mentorFrame = page.frameLocator('mentor-ai iframe');
+    await expect(mentorFrame.locator('.chat-welcome-button').first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    logger.info('New-chat button posted MENTOR:NEW_CHAT and welcome screen rendered');
   });
 
   test('Checkpoint 12: No error messages on course content tabs', async ({ page }) => {
