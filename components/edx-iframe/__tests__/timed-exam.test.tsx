@@ -41,6 +41,8 @@ const buildContextValue = (overrides = {}) => ({
   setExamInfo: vi.fn(),
   refresher: null,
   setRefresher: vi.fn(),
+  agentMode: 'learning' as const,
+  setAgentMode: vi.fn(),
   ...overrides,
 });
 

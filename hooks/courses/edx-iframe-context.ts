@@ -3,6 +3,8 @@ import { CourseOutlineChildNode } from '@/types/courses';
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { createContext } from 'react';
 
+export type AgentMode = 'learning' | 'assessment';
+
 export const EdxIframeContext = createContext<{
   iframeUrl: string;
   setIframeUrl: (url: string) => void;
@@ -16,6 +18,8 @@ export const EdxIframeContext = createContext<{
   setExamInfo: (examInfo: ExamInfo | null) => void;
   refresher: Date | null;
   setRefresher: (refresher: Date) => void;
+  agentMode: AgentMode;
+  setAgentMode: (mode: AgentMode) => void;
   //setCourseOutline: (outline:CourseOutlineChildNode[]) => void;
 }>({
   iframeUrl: '',
@@ -30,5 +34,7 @@ export const EdxIframeContext = createContext<{
   setExamInfo: () => {},
   refresher: null,
   setRefresher: () => {},
+  agentMode: 'learning',
+  setAgentMode: () => {},
   //setCourseOutline: () => {},
 });

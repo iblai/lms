@@ -24,7 +24,9 @@ export const EdxIframe = () => {
     iframeUrl,
     setIframeUrl,
     refresher,
+    agentMode,
   } = useContext(EdxIframeContext);
+  const isAssessmentMode = agentMode === 'assessment';
   const { currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
 
   const searchParams = useSearchParams();
@@ -170,7 +172,13 @@ export const EdxIframe = () => {
           <Loader2 className="h-10 w-10 animate-spin" />
         </div>
       ) : (
-        <div className={cn('w-full p-6', `active-tab-${activeTab} course-edx-iframe-container`)}>
+        <div
+          className={cn(
+            'w-full',
+            isAssessmentMode ? 'p-0' : 'p-6',
+            `active-tab-${activeTab} course-edx-iframe-container`,
+          )}
+        >
           {examInfo && <TimedExam />}
           {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
             <iframe
@@ -184,7 +192,16 @@ export const EdxIframe = () => {
               title="Forum InnerWare"
               sandbox="allow-modals allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
               frameBorder={0}
-              style={{ width: '100%', height: 'calc(100vh - 100px - 62px)' }}
+              className={
+                isAssessmentMode
+                  ? 'h-[calc(100vh-258px)] w-full md:h-[calc(100vh-260px)] lg:h-[calc(100vh-250px)]'
+                  : undefined
+              }
+              style={
+                isAssessmentMode
+                  ? { width: '100%' }
+                  : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
+              }
               allowFullScreen={true}
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"
             />

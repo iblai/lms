@@ -87,6 +87,8 @@ describe('EdxIframe - JWT PostMessage', () => {
     setExamInfo: mockSetExamInfo,
     refresher: null,
     setRefresher: vi.fn(),
+    agentMode: 'learning' as const,
+    setAgentMode: vi.fn(),
   };
 
   const defaultCourseOutlineValue = {
