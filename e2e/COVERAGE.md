@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-05-01 | 221 checkpoints | 29 journeys | 100% covered
+> Last updated: 2026-05-05 | 229 checkpoints | 30 journeys | 100% covered
 
 ## How This Works
 
@@ -419,6 +419,21 @@ When adding a new page or modifying an existing user flow:
 - [x] Notification dropdown has proper ARIA attributes
 - [x] All major interactive elements have accessible names
 - [x] No images without alt text on key pages
+
+---
+
+## Journey 30: Course Access Guard — Cross-Tenant Redirect (8 checkpoints) — `journeys/30-course-access-guard-tenant-redirect.spec.ts`
+
+**Source files:** `components/course-access-guard.tsx`, `utils/helpers.ts`
+
+- [x] Renders course about page when `course.platform_key` matches the current tenant
+- [x] Renders course about page when `course.platform_key === 'main'`
+- [x] Redirects to `/error/403` when `platform_key` is foreign and not in `getTenants()`
+- [x] Redirects to `<auth>/login/complete?tenant=<key>&redirect-to=<url>` when `platform_key` matches a key in `getTenants()`
+- [x] `redirect-to` query param echoes the current full URL with query string
+- [x] Cross-tenant redirect fires consistently from the `/course-content` layout
+- [x] Foreign `platform_key` not in tenants from `/course-content` also lands on `/error/403`
+- [x] Empty metadata response surfaces `/error/404` (not the cross-tenant branch)
 
 ---
 

@@ -2,12 +2,10 @@
   "version": 2,
   "lastUpdated": "2026-05-01",
   "summary": {
-    "totalCheckpoints": 221,
-    "coveredCheckpoints": 221,
-    "totalCheckpoints": 221,
-    "coveredCheckpoints": 221,
+    "totalCheckpoints": 229,
+    "coveredCheckpoints": 229,
     "percent": 100,
-    "totalJourneys": 29
+    "totalJourneys": 30
   },
   "journeys": [
     {
@@ -1032,6 +1030,54 @@
           "status": "covered"
         },
         { "id": "a11y-10", "description": "No images without alt text", "status": "covered" }
+      ]
+    },
+    {
+      "id": "course-access-guard-tenant-redirect",
+      "name": "Course Access Guard — Cross-Tenant Redirect",
+      "spec": "30-course-access-guard-tenant-redirect.spec.ts",
+      "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
+      "checkpoints": [
+        {
+          "id": "cag-01",
+          "description": "Renders course about page when platform_key matches the current tenant",
+          "status": "covered"
+        },
+        {
+          "id": "cag-02",
+          "description": "Renders course about page when platform_key is 'main'",
+          "status": "covered"
+        },
+        {
+          "id": "cag-03",
+          "description": "Redirects to /error/403 when platform_key is foreign and not in user tenants",
+          "status": "covered"
+        },
+        {
+          "id": "cag-04",
+          "description": "Redirects to auth /login/complete when platform_key is found in user tenants",
+          "status": "covered"
+        },
+        {
+          "id": "cag-05",
+          "description": "redirect-to query param echoes the current full URL with query string",
+          "status": "covered"
+        },
+        {
+          "id": "cag-06",
+          "description": "Cross-tenant redirect fires from the /course-content layout too",
+          "status": "covered"
+        },
+        {
+          "id": "cag-07",
+          "description": "Foreign platform_key not in tenants from /course-content lands on /error/403",
+          "status": "covered"
+        },
+        {
+          "id": "cag-08",
+          "description": "Empty metadata response surfaces /error/404 (not the cross-tenant branch)",
+          "status": "covered"
+        }
       ]
     }
   ]

@@ -15,11 +15,14 @@ import { AuthProvider, TenantProvider } from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
 import { usePathname } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
+import { selectRequestedTenant } from '@/features/tenant';
+import { useAppSelector } from '@/lib/hooks';
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
+  const requestedTenant = useAppSelector(selectRequestedTenant);
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
 
@@ -89,7 +92,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <TenantProvider
         skip={isSsoLoginRoute || isVersionRoute}
         currentTenant={getTenant() || ''}
-        requestedTenant=""
+        requestedTenant={requestedTenant}
         saveCurrentTenant={saveCurrentTenant}
         saveUserTenants={saveUserTenants}
         handleTenantSwitch={handleTenantSwitch}

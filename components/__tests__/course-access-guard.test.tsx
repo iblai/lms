@@ -13,11 +13,21 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getTenants: vi.fn(() => []),
-  switchTenant: vi.fn(),
+}));
+
+const mockDispatch = vi.fn();
+vi.mock('@/lib/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
+  useAppSelector: vi.fn(),
+}));
+
+vi.mock('@/features/tenant', () => ({
+  updateRequestedTenant: (key: string) => ({ type: 'tenant/updateRequestedTenant', payload: key }),
+  selectRequestedTenant: vi.fn(),
 }));
 
 import { CourseAccessGuard } from '../course-access-guard';
-import { getTenant, getTenants, switchTenant } from '@/utils/helpers';
+import { getTenant, getTenants } from '@/utils/helpers';
 
 describe('CourseAccessGuard', () => {
   beforeEach(() => {
@@ -130,10 +140,10 @@ describe('CourseAccessGuard', () => {
         </CourseAccessGuard>,
       );
       expect(mockPush).toHaveBeenCalledWith('/error/403');
-      expect(switchTenant).not.toHaveBeenCalled();
+      expect(mockDispatch).not.toHaveBeenCalled();
     });
 
-    it('calls switchTenant with the matching tenant key when platform_key is in user tenants', () => {
+    it('dispatches updateRequestedTenant with the matching tenant key when platform_key is in user tenants', () => {
       vi.mocked(getTenants).mockReturnValue([{ key: 'tenant-a' }, { key: 'other-tenant' }] as any);
       render(
         <CourseAccessGuard
@@ -143,7 +153,10 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(switchTenant).toHaveBeenCalledWith('other-tenant');
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'tenant/updateRequestedTenant',
+        payload: 'other-tenant',
+      });
       expect(mockPush).not.toHaveBeenCalled();
     });
 

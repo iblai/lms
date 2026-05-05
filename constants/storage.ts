@@ -3,6 +3,7 @@ export const LOCALSTORAGE_KEYS = {
   TENANT: 'tenant',
   TENANTS: 'tenants',
   REDIRECT_TO: 'redirect-to',
+  REDIRECT_PATH: 'redirect-path',
   AUTH_TOKEN: 'axd_token',
   TOKEN_EXPIRY: 'axd_token_expires',
   EDX_TOKEN_KEY: 'edx_jwt_token',
