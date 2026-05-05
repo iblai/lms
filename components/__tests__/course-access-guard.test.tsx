@@ -12,15 +12,18 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
+  getTenants: vi.fn(() => []),
+  switchTenant: vi.fn(),
 }));
 
 import { CourseAccessGuard } from '../course-access-guard';
-import { getTenant } from '@/utils/helpers';
+import { getTenant, getTenants, switchTenant } from '@/utils/helpers';
 
 describe('CourseAccessGuard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getTenant).mockReturnValue('test-tenant');
+    vi.mocked(getTenants).mockReturnValue([]);
   });
 
   describe('not-started state', () => {
@@ -116,7 +119,8 @@ describe('CourseAccessGuard', () => {
   });
 
   describe('unauthorized tenant', () => {
-    it('redirects to /error/403 when platform_key differs from tenant', () => {
+    it('redirects to /error/403 when platform_key is not present in user tenants', () => {
+      vi.mocked(getTenants).mockReturnValue([{ key: 'tenant-a' }, { key: 'tenant-b' }] as any);
       render(
         <CourseAccessGuard
           course={{ platform_key: 'other-tenant' } as any}
@@ -126,6 +130,21 @@ describe('CourseAccessGuard', () => {
         </CourseAccessGuard>,
       );
       expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(switchTenant).not.toHaveBeenCalled();
+    });
+
+    it('calls switchTenant with the matching tenant key when platform_key is in user tenants', () => {
+      vi.mocked(getTenants).mockReturnValue([{ key: 'tenant-a' }, { key: 'other-tenant' }] as any);
+      render(
+        <CourseAccessGuard
+          course={{ platform_key: 'other-tenant' } as any}
+          courseInfoLoadingState="successful"
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(switchTenant).toHaveBeenCalledWith('other-tenant');
+      expect(mockPush).not.toHaveBeenCalled();
     });
 
     it('shows spinner instead of children when tenant is unauthorized', () => {

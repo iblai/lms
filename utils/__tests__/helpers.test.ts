@@ -61,6 +61,7 @@ import {
   parseMarkdownLinks,
   inBrowserPrint,
   handleTenantSwitch,
+  switchTenant,
   DEFAULT_OVERVIEW_PLACEHOLDER,
 } from '../helpers';
 import { getLocalStorageItem } from '../localstorage';
@@ -617,6 +618,39 @@ describe('helpers utility functions', () => {
       await handleTenantSwitch('new-tenant', false);
 
       expect(localStorage.getItem('redirect-to')).toBeNull();
+    });
+  });
+
+  describe('switchTenant', () => {
+    it('redirects to login/complete with the given tenant key', () => {
+      switchTenant('target-tenant');
+
+      expect(locationHref).toContain('https://auth.example.com/login/complete');
+      expect(locationHref).toContain('tenant=target-tenant');
+    });
+
+    it('defaults redirect-to to the current window.location.href', () => {
+      Object.defineProperty(window.location, 'href', {
+        get: () => 'https://skills.example.com/courses/abc?tab=agent',
+        set: (value: string) => {
+          locationHref = value;
+        },
+        configurable: true,
+      });
+
+      switchTenant('target-tenant');
+
+      expect(locationHref).toContain(
+        `redirect-to=${encodeURIComponent('https://skills.example.com/courses/abc?tab=agent')}`,
+      );
+    });
+
+    it('uses the provided redirectTo when supplied', () => {
+      switchTenant('target-tenant', 'https://elsewhere.example.com/landing');
+
+      expect(locationHref).toContain(
+        `redirect-to=${encodeURIComponent('https://elsewhere.example.com/landing')}`,
+      );
     });
   });
 

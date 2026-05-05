@@ -3,9 +3,10 @@
 import type React from 'react';
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getTenant } from '@/utils/helpers';
+import { getTenant, getTenants, switchTenant } from '@/utils/helpers';
 import type { CourseEdxData } from '@/types/courses';
 import type { CourseInfoLoadingState } from '@/hooks/courses/use-course-detail';
+import type { Tenant } from '@/types/tenants';
 
 export function CourseAccessGuard({
   course,
@@ -55,7 +56,15 @@ export function CourseAccessGuard({
       const siblingTab = shouldRedirectAgentToCourse ? 'course' : 'agent';
       const siblingPath = pathname.replace(/\/(agent|course)$/, `/${siblingTab}`);
       router.replace(siblingPath);
-    } else if (isUnauthorizedTenant || isTabDisabled) {
+    } else if (isUnauthorizedTenant) {
+      const tenants = getTenants() as Tenant[];
+      const matchingTenant = tenants.find((t) => t?.key === course?.platform_key);
+      if (matchingTenant) {
+        switchTenant(matchingTenant.key);
+      } else {
+        router.push('/error/403');
+      }
+    } else if (isTabDisabled) {
       router.push('/error/403');
     } else if (isNotFound) {
       router.push('/error/404');
