@@ -41,12 +41,22 @@ vi.mock('lodash', () => ({
 vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="chevron-right">&gt;</span>,
   ListTree: () => <span data-testid="list-tree">ListTree</span>,
+  MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
 }));
 
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserId: vi.fn(() => 'test-user-id'),
+  getUserName: vi.fn(() => 'test-user'),
+}));
+
+// Mock useGetCourseBlockDetailsQuery — block-details visibility gate
+const mockUseGetCourseBlockDetailsQuery: any = vi.fn(
+  (..._args: any[]) => ({ data: undefined }) as any,
+);
+vi.mock('@/services/course-metadata', () => ({
+  useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
 }));
 
 // Mock useGetDepartmentMemberCheckQuery
@@ -127,6 +137,26 @@ vi.mock('@/components/course-lesson-navigator', () => ({
   ),
 }));
 
+// Mock Switch / Popover so the toggle is predictably rendered in jsdom
+vi.mock('@/components/ui/switch', () => ({
+  Switch: ({ checked, onCheckedChange, 'aria-label': ariaLabel }: any) => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      data-testid="agent-mode-switch"
+      onClick={() => onCheckedChange(!checked)}
+    />
+  ),
+}));
+
+vi.mock('@/components/ui/popover', () => ({
+  Popover: ({ children }: any) => <>{children}</>,
+  PopoverTrigger: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
+  PopoverContent: ({ children }: any) => <div data-testid="agent-mode-popover">{children}</div>,
+}));
+
 // Mock ExamInfo from data-layer
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   ExamInfo: {},
@@ -171,6 +201,7 @@ describe('CourseContentLayout', () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
+    mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });
   });
 
   it('renders without crashing', () => {
@@ -656,6 +687,161 @@ describe('CourseContentLayout', () => {
       );
 
       expect(toast.success).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('learning/assessment mode toggle', () => {
+    const unit = { id: 'unit-vertical-1', display_name: 'Unit 1' };
+    const outlineWithUnit = {
+      id: 'course-root',
+      children: [
+        {
+          id: 'chapter-1',
+          children: [
+            {
+              id: 'seq-1',
+              children: [{ id: 'unit-vertical-1', display_name: 'Unit 1', children: [] }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const blockDetailsWithMentor = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+        'mentor-block': {
+          id: 'mentor-block',
+          type: 'ibl_mentor_xblock',
+          display_name: 'Mentor',
+        },
+      },
+    };
+
+    const blockDetailsWithoutMentor = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+      },
+    };
+
+    const setupAgentTab = async (blocks: any) => {
+      const { useEdxIframe } = await import('@/hooks/courses/use-edx-iframe');
+      const { usePathname } = await import('next/navigation');
+
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        course: { agent_content_mode: true, course_content_mode: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: outlineWithUnit,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+      vi.mocked(useEdxIframe).mockReturnValue({
+        getUnitToIframe: vi.fn(() => unit),
+        getParentsInfosFromSublessonId: vi.fn(() => null),
+      } as any);
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blocks });
+    };
+
+    it('hides the toggle on a non-agent tab even when the block has a mentor xblock', async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(screen.queryByTestId('agent-mode-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the toggle on the agent tab when no block has type=ibl_mentor_xblock', async () => {
+      await setupAgentTab(blockDetailsWithoutMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(screen.queryByTestId('agent-mode-switch')).not.toBeInTheDocument();
+    });
+
+    it('shows the toggle on the agent tab when at least one block has type=ibl_mentor_xblock', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // Inline (md+) and popover (mobile) variants both render the same Switch.
+      const switches = screen.getAllByTestId('agent-mode-switch');
+      expect(switches.length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Learning').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Assessment').length).toBeGreaterThan(0);
+    });
+
+    it('renders a vertical 3-dot trigger (mobile) when the toggle is visible', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const moreVerticalIcons = screen.getAllByTestId('more-vertical');
+      expect(moreVerticalIcons.length).toBeGreaterThan(0);
+    });
+
+    it('skips the block-details query when not on the agent tab', async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // The hook still gets called, but with skip:true so RTK Query won't fire the request.
+      const lastCall =
+        mockUseGetCourseBlockDetailsQuery.mock.calls[
+          mockUseGetCourseBlockDetailsQuery.mock.calls.length - 1
+        ];
+      expect(lastCall?.[1]).toEqual(expect.objectContaining({ skip: true }));
+    });
+
+    it('toggles agent mode from learning to assessment when the switch is clicked', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const switches = screen.getAllByTestId('agent-mode-switch');
+      const initialSwitch = switches[0];
+      expect(initialSwitch).toHaveAttribute('aria-checked', 'false');
+
+      fireEvent.click(initialSwitch);
+
+      // After click, every rendered switch should reflect the new checked state.
+      const updatedSwitches = screen.getAllByTestId('agent-mode-switch');
+      updatedSwitches.forEach((s) => expect(s).toHaveAttribute('aria-checked', 'true'));
     });
   });
 });

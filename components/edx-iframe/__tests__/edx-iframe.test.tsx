@@ -348,4 +348,49 @@ describe('EdxIframe - JWT PostMessage', () => {
       },
     );
   });
+
+  describe('agent mode styling', () => {
+    it('applies p-6 padding and the legacy inline iframe height in learning mode', async () => {
+      const { container } = renderEdxIframe({ ...defaultContextValue, agentMode: 'learning' });
+
+      await waitFor(() => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      });
+
+      const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
+      expect(wrapper.className).toContain('p-6');
+      expect(wrapper.className).not.toContain('p-0');
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      // jsdom normalizes calc() expressions, so assert the constituent parts.
+      expect(iframe.style.height).toContain('100vh');
+      expect(iframe.style.height).toContain('100px');
+      expect(iframe.style.height).toContain('62px');
+      expect(iframe.className).toBe('');
+    });
+
+    it('drops mobile padding and applies responsive iframe height in assessment mode', async () => {
+      const { container } = renderEdxIframe({
+        ...defaultContextValue,
+        agentMode: 'assessment',
+      } as any);
+
+      await waitFor(() => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      });
+
+      const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
+      expect(wrapper.className).toContain('p-0');
+      expect(wrapper.className).not.toContain('p-6');
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      // Inline height is dropped so the Tailwind responsive classes can take over.
+      expect(iframe.style.height).toBe('');
+      expect(iframe.className).toContain('h-[calc(100vh-258px)]');
+      expect(iframe.className).toContain('md:h-[calc(100vh-260px)]');
+      expect(iframe.className).toContain('lg:h-[calc(100vh-250px)]');
+    });
+  });
 });

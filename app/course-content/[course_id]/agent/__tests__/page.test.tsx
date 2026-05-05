@@ -21,9 +21,14 @@ import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 
 const mockSetActiveTab = vi.fn();
 
-const renderAgentTab = (activeTab: string = 'course') =>
+const renderAgentTab = (
+  activeTab: string = 'course',
+  agentMode: 'learning' | 'assessment' = 'learning',
+) =>
   render(
-    <EdxIframeContext.Provider value={{ setActiveTab: mockSetActiveTab, activeTab } as any}>
+    <EdxIframeContext.Provider
+      value={{ setActiveTab: mockSetActiveTab, activeTab, agentMode } as any}
+    >
       <AgentTab />
     </EdxIframeContext.Provider>,
   );
@@ -38,10 +43,36 @@ describe('AgentTab page', () => {
     expect(getByTestId('course-agent-chat')).toBeInTheDocument();
   });
 
-  it('keeps EdxIframe mounted but hidden via display:none', () => {
-    const { getByTestId } = renderAgentTab();
+  it('hides EdxIframe and shows CourseAgentChat in learning mode', () => {
+    const { getByTestId } = renderAgentTab('agent', 'learning');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
-    expect(iframeWrapper).toHaveStyle({ display: 'none' });
+    const chatWrapper = getByTestId('course-agent-chat').parentElement;
+    expect(iframeWrapper?.className).toContain('hidden');
+    expect(iframeWrapper?.className).not.toContain('min-h-0');
+    expect(chatWrapper?.className).toContain('min-h-0');
+    expect(chatWrapper?.className).not.toContain('hidden');
+  });
+
+  it('shows EdxIframe and hides CourseAgentChat in assessment mode', () => {
+    const { getByTestId } = renderAgentTab('agent', 'assessment');
+    const iframeWrapper = getByTestId('edx-iframe').parentElement;
+    const chatWrapper = getByTestId('course-agent-chat').parentElement;
+    expect(iframeWrapper?.className).toContain('min-h-0');
+    expect(iframeWrapper?.className).not.toContain('hidden');
+    expect(chatWrapper?.className).toContain('hidden');
+    expect(chatWrapper?.className).not.toContain('min-h-0');
+  });
+
+  it('defaults to learning mode when agentMode is undefined', () => {
+    const { getByTestId } = render(
+      <EdxIframeContext.Provider
+        value={{ setActiveTab: mockSetActiveTab, activeTab: 'agent' } as any}
+      >
+        <AgentTab />
+      </EdxIframeContext.Provider>,
+    );
+    const iframeWrapper = getByTestId('edx-iframe').parentElement;
+    expect(iframeWrapper?.className).toContain('hidden');
   });
 
   it('announces agent as the active tab on mount', () => {
