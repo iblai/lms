@@ -789,8 +789,8 @@ describe('CourseContentLayout', () => {
       // Inline (md+) and popover (mobile) variants both render the same Switch.
       const switches = screen.getAllByTestId('agent-mode-switch');
       expect(switches.length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Learning').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Assessment').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Learn').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Assess').length).toBeGreaterThan(0);
     });
 
     it('renders a vertical 3-dot trigger (mobile) when the toggle is visible', async () => {

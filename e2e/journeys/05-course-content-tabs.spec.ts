@@ -869,8 +869,8 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     // When visible, both labels and the switch must be reachable.
-    await expect(page.getByText('Learning').first()).toBeVisible();
-    await expect(page.getByText('Assessment').first()).toBeVisible();
+    await expect(page.getByText('Learn', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Assess', { exact: true }).first()).toBeVisible();
     await expect(toggle).toHaveAttribute('aria-checked', 'false');
     logger.info('Learning/Assessment toggle visible and defaults to Learning mode');
   });
