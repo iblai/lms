@@ -306,7 +306,7 @@ export default function CourseContentLayout({
                           <span
                             className={agentMode === 'learning' ? 'font-medium text-amber-600' : ''}
                           >
-                            Learning
+                            Learn
                           </span>
                           <Switch
                             checked={agentMode === 'assessment'}
@@ -321,7 +321,7 @@ export default function CourseContentLayout({
                               agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
                             }
                           >
-                            Assessment
+                            Assess
                           </span>
                         </div>
                         <Popover>
@@ -342,7 +342,7 @@ export default function CourseContentLayout({
                                   agentMode === 'learning' ? 'font-medium text-amber-600' : ''
                                 }
                               >
-                                Learning
+                                Learn
                               </span>
                               <Switch
                                 checked={agentMode === 'assessment'}
@@ -357,7 +357,7 @@ export default function CourseContentLayout({
                                   agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
                                 }
                               >
-                                Assessment
+                                Assess
                               </span>
                             </div>
                           </PopoverContent>

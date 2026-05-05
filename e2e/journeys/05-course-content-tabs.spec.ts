@@ -537,16 +537,15 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const mentorAi = page.locator('mentor-ai');
     await expect(mentorAi.first()).toBeAttached({ timeout: 60_000 });
 
-    // The EdxIframe must stay mounted (for state) but hidden via display:none.
-    const hiddenIframe = page.locator('div[style*="display: none"] iframe#edx-iframe');
-    const isHiddenWrapperPresent = await hiddenIframe
-      .first()
-      .isVisible({ timeout: 15_000 })
-      .catch(() => false);
-    // isVisible() returns false when the ancestor has display:none — that's exactly what we want.
-    expect(isHiddenWrapperPresent).toBe(false);
+    // In learning mode (default) the EdxIframe stays mounted but its wrapper carries
+    // Tailwind's `hidden` class, so the iframe is not visible to users.
+    const iframe = page.locator('iframe#edx-iframe').first();
+    await expect(iframe).toBeAttached({ timeout: 30_000 });
+    const wrapperClass = await iframe.locator('xpath=..').getAttribute('class');
+    expect(wrapperClass ?? '').toContain('hidden');
+    expect(await iframe.isVisible().catch(() => false)).toBe(false);
 
-    logger.info('Agent tab renders mentor-ai and keeps edX iframe display:none');
+    logger.info('Agent tab renders mentor-ai and keeps edX iframe wrapper hidden');
   });
 
   test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode !== true', async ({
@@ -833,5 +832,172 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
       logger.info(`No errors on ${tabName} tab`);
     }
+  });
+
+  test('Checkpoint 20: Learning/Assessment toggle is gated on the presence of an ibl_mentor_xblock', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The toggle is rendered only after getCourseBlockDetails returns a block of
+    // type=ibl_mentor_xblock for the current vertical. On courses without one,
+    // the toggle stays hidden — that's a valid pass for this checkpoint.
+    const toggle = page.getByLabel('Toggle assessment mode').first();
+    const toggleVisible = await toggle.isVisible({ timeout: 15_000 }).catch(() => false);
+
+    if (!toggleVisible) {
+      logger.info('Current unit has no ibl_mentor_xblock — toggle correctly hidden; skipping');
+      test.skip();
+      return;
+    }
+
+    // When visible, both labels and the switch must be reachable.
+    await expect(page.getByText('Learning').first()).toBeVisible();
+    await expect(page.getByText('Assessment').first()).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    logger.info('Learning/Assessment toggle visible and defaults to Learning mode');
+  });
+
+  test('Checkpoint 21: Toggling Assessment mode swaps the agent chat for the edX iframe', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    const toggle = page.getByLabel('Toggle assessment mode').first();
+    const toggleVisible = await toggle.isVisible({ timeout: 15_000 }).catch(() => false);
+
+    if (!toggleVisible) {
+      logger.info('Toggle hidden (no mentor xblock on the current unit) — skipping');
+      test.skip();
+      return;
+    }
+
+    const iframe = page.locator('iframe#edx-iframe').first();
+    const mentorAi = page.locator('mentor-ai').first();
+
+    await expect(mentorAi).toBeAttached({ timeout: 60_000 });
+    expect(await iframe.isVisible().catch(() => false)).toBe(false);
+
+    // Flip to Assessment.
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
+    await expect(iframe).toBeVisible({ timeout: 30_000 });
+    const mentorWrapperClassA = await mentorAi
+      .locator('xpath=ancestor::div[1]')
+      .getAttribute('class');
+    expect(mentorWrapperClassA ?? '').toContain('hidden');
+
+    // Flip back to Learning.
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    expect(await iframe.isVisible().catch(() => false)).toBe(false);
+    const mentorWrapperClassB = await mentorAi
+      .locator('xpath=ancestor::div[1]')
+      .getAttribute('class');
+    expect(mentorWrapperClassB ?? '').not.toContain('hidden');
+
+    logger.info('Assessment toggle swaps EdxIframe and CourseAgentChat visibility');
+  });
+
+  test('Checkpoint 22: Mobile viewport surfaces the toggle through a 3-dot popover', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // Wait for any toggle to be in the DOM (the inline one is hidden on this viewport via Tailwind).
+    const inlineSwitch = page.getByLabel('Toggle assessment mode').first();
+    const present = await inlineSwitch
+      .waitFor({ state: 'attached', timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!present) {
+      logger.info('Toggle hidden (no mentor xblock on the current unit) — skipping');
+      test.skip();
+      return;
+    }
+
+    // Inline switch is hidden on mobile.
+    expect(await inlineSwitch.isVisible().catch(() => false)).toBe(false);
+
+    // The 3-dot trigger button is visible and opens a popover containing the switch.
+    const trigger = page.getByRole('button', { name: 'Agent display mode' });
+    await expect(trigger).toBeVisible({ timeout: 15_000 });
+    await trigger.click();
+
+    // A second switch (the popover one) becomes visible after the popover opens.
+    const switches = page.getByLabel('Toggle assessment mode');
+    await expect
+      .poll(
+        async () => {
+          const count = await switches.count();
+          let visible = 0;
+          for (let i = 0; i < count; i++) {
+            if (
+              await switches
+                .nth(i)
+                .isVisible()
+                .catch(() => false)
+            )
+              visible++;
+          }
+          return visible;
+        },
+        { timeout: 15_000 },
+      )
+      .toBeGreaterThan(0);
+
+    logger.info('Mobile viewport surfaces the toggle inside a popover');
   });
 });

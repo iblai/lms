@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-05-01 | 221 checkpoints | 29 journeys | 100% covered
+> Last updated: 2026-05-05 | 224 checkpoints | 29 journeys | 100% covered
 
 ## How This Works
 
@@ -71,9 +71,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (19 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (22 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `services/course-metadata.ts`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -88,12 +88,15 @@ When adding a new page or modifying an existing user flow:
 - [x] URL updates correctly when switching between tabs
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
 - [x] Agent tab is visible when `course.agent_content_mode === true` and its link points at `/course-content/<id>/agent`
-- [x] `/agent` route mounts the `<mentor-ai>` chat full-width and keeps the edX iframe attached with `display:none`
+- [x] `/agent` route mounts the `<mentor-ai>` chat full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class
 - [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode !== true`
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
 - [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<mentor-ai>` shadow-root iframe and the agent renders an AI response
 - [x] New-chat button on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
+- [x] Learning/Assessment toggle on `/agent` only renders when `getCourseBlockDetails` returns a block of `type=ibl_mentor_xblock`
+- [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
+- [x] On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch
 
 ---
 

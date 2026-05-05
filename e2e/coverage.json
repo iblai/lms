@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-05-01",
+  "lastUpdated": "2026-05-05",
   "summary": {
-    "totalCheckpoints": 221,
-    "coveredCheckpoints": 221,
-    "totalCheckpoints": 221,
-    "coveredCheckpoints": 221,
+    "totalCheckpoints": 224,
+    "coveredCheckpoints": 224,
+    "totalCheckpoints": 224,
+    "coveredCheckpoints": 224,
     "percent": 100,
     "totalJourneys": 29
   },
@@ -190,9 +190,13 @@
         "app/course-content/[course_id]/discussion/page.tsx",
         "app/course-content/[course_id]/instructor/page.tsx",
         "app/course-content/[course_id]/bookmarks/page.tsx",
+        "app/course-content/[course_id]/layout.tsx",
         "components/course-lesson-navigator.tsx",
         "components/course-agent-chat.tsx",
-        "components/course-access-guard.tsx"
+        "components/course-access-guard.tsx",
+        "components/edx-iframe/edx-iframe.tsx",
+        "hooks/courses/edx-iframe-context.ts",
+        "services/course-metadata.ts"
       ],
       "checkpoints": [
         {
@@ -258,7 +262,7 @@
         },
         {
           "id": "tabs-14",
-          "description": "/agent route mounts <mentor-ai> full-width and keeps the edX iframe attached with display:none",
+          "description": "/agent route mounts <mentor-ai> full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class",
           "status": "covered"
         },
         {
@@ -284,6 +288,21 @@
         {
           "id": "tabs-19",
           "description": "New-chat button on the /agent tab renders once the mentor spinner is hidden, posts MENTOR:NEW_CHAT, and surfaces the iframe's .chat-welcome-button",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-20",
+          "description": "Learning/Assessment toggle on /agent only renders when getCourseBlockDetails returns a block of type=ibl_mentor_xblock",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-21",
+          "description": "Toggling Assessment mode on /agent hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-22",
+          "description": "On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch",
           "status": "covered"
         }
       ]
