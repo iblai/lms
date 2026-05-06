@@ -212,6 +212,8 @@ export async function redirectToAuthSpa(
 
   const redirectPath = redirectTo ?? `${window.location.pathname}${window.location.search}`;
 
+  console.log('################### [redirectToAuthSpa] redirectPath', redirectPath);
+
   // Never save sso-login routes as redirect paths
   if (
     !redirectPath.startsWith('/sso-login') &&

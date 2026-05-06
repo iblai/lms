@@ -128,37 +128,38 @@ export function useGetAllTenants() {
   return validationResult.data;
 }
 
-export const handleTenantSwitch = async (tenant: string, saveRedirect = false) => {
-  // Suppress concurrent auth redirects SYNCHRONOUSLY before any await, so no
-  // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
-  // can call redirectToAuthSpa before the flag is set.
-  setTenantSwitching(true);
-
-  // Clear current tenant cookie before switching
+export const handleTenantSwitch = async (
+  tenant: string,
+  saveRedirect = false,
+  redirectUrl?: string,
+) => {
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
   clearCurrentTenantCookie();
-
   // Preserve the current path before clearing localStorage
   const currentPath = `${window.location.pathname}${window.location.search}`;
+  console.log('################### [handleTenantSwitch] currentPath', currentPath);
+  // Get JWT token before clearing localStorage
+  const jwtToken = localStorage.getItem('edx_jwt_token');
   localStorage.clear();
 
   const url = `${config.urls.auth()}/login/complete`;
-  const param = new URLSearchParams({
+  const params: Record<string, string> = {
     tenant,
-    'redirect-to': window.location.origin,
-  }).toString();
+    [LOCALSTORAGE_KEYS.REDIRECT_PATH]: redirectUrl ?? window.location.origin,
+  };
+
+  // Add token if it exists
+  if (jwtToken) {
+    params.token = jwtToken;
+  }
+
+  const param = new URLSearchParams(params).toString();
 
   localStorage.setItem('tenant', tenant);
   if (saveRedirect) {
     // Restore the redirect path after setting tenant
-    localStorage.setItem('redirect-to', currentPath);
+    localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
   }
-  // Navigate immediately — no delay needed since localStorage ops are synchronous.
-  // A delay here allows the AuthProvider cookie sync interval to detect the cleared
-  // tokens and race to /login, cancelling the intended /login/complete navigation.
+  await new Promise((resolve) => setTimeout(resolve, 100));
   window.location.href = `${url}?${param}`;
-
-  // Safety reset: if navigation fails (e.g. blocked by browser), restore the flag
-  // after 2s so auth redirects are not permanently suppressed for this session.
-  setTimeout(() => setTenantSwitching(false), 2000);
 };
