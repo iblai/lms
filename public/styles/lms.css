@@ -555,3 +555,10 @@ body .login-register .login-provider.button-oa2-apple-id:hover {
 body .fa {
   font-family: 'FontAwesome' !important;
 }
+
+/* =============================================
+   ASSESSMENT FEATURE - CSS UPDATES
+   ============================================= */
+main:has([data-block-type='ibl_mentor_xblock']) > .xblock > :not(.vert-mod) {
+  display: none !important;
+}

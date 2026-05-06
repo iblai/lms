@@ -1,5 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import {
+  CourseBlockDetailsResponse,
   CourseCompletion,
   CourseEdxData,
   CourseEligibilityResponse,
@@ -61,6 +62,16 @@ export const CourseMetadataSlice = createApi({
         //includeCredentials: true,
       }),
     }),
+    getCourseBlockDetails: builder.query<
+      CourseBlockDetailsResponse,
+      { blockId: string; username: string }
+    >({
+      query: ({ blockId, username }) => ({
+        url: `/api/courses/v2/blocks/${encodeURIComponent(blockId)}?username=${encodeURIComponent(username)}&depth=all`,
+        service: SERVICES.LMS,
+        includeCredentials: true,
+      }),
+    }),
   }),
 });
 // Export hooks for usage in functional components, which are
@@ -77,4 +88,6 @@ export const {
   useLazyGetCourseProgressQuery,
   useGetCourseCompletionQuery,
   useLazyGetCourseCompletionQuery,
+  useGetCourseBlockDetailsQuery,
+  useLazyGetCourseBlockDetailsQuery,
 } = CourseMetadataSlice;

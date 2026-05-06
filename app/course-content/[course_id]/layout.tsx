@@ -3,15 +3,15 @@
 import type React from 'react';
 import { use, useEffect, useRef, useState } from 'react';
 
-import { ChevronRight, ListTree } from 'lucide-react';
+import { ChevronRight, ListTree, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { usePathname, useSearchParams } from 'next/navigation';
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { getTenant, getUserId } from '@/utils/helpers';
+import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { getTenant, getUserId, getUserName } from '@/utils/helpers';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { CourseOutline } from '@/components/course-outline';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
@@ -21,6 +21,9 @@ import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
+import { Switch } from '@/components/ui/switch';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export default function CourseContentLayout({
   children,
@@ -87,6 +90,22 @@ export default function CourseContentLayout({
   );
   const [currentUnitID, setCurrentUnitID] = useState<string | null>(null);
   const [refresher, setRefresher] = useState<Date | null>(null);
+  const [agentMode, setAgentMode] = useState<AgentMode>('learning');
+
+  const { data: courseBlockDetails } = useGetCourseBlockDetailsQuery(
+    { blockId: currentUnitID || '', username: getUserName() },
+    { skip: !currentUnitID || currentTab !== 'agent' },
+  );
+  const hasMentorXblock = Object.values(courseBlockDetails?.blocks ?? {}).some(
+    (block) => block.type === 'ibl_mentor_xblock',
+  );
+  const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
+
+  useEffect(() => {
+    if (!assessmentToggleVisible && agentMode !== 'learning') {
+      setAgentMode('learning');
+    }
+  }, [assessmentToggleVisible]);
   useEffect(() => {
     if (!_.isEmpty(courseOutline)) {
       const currentCourse = getUnitToIframe(courseOutline);
@@ -176,6 +195,8 @@ export default function CourseContentLayout({
             setExamInfo: setExamInfo,
             refresher: refresher,
             setRefresher: setRefresher,
+            agentMode: agentMode,
+            setAgentMode: setAgentMode,
             //setCourseOutline: () => {},
           }}
         >
@@ -274,7 +295,77 @@ export default function CourseContentLayout({
                       </Link>
                     )}
                   </div>
-                  <CourseLessonNavigator className="pr-4" />
+                  <div className="flex items-center gap-3 pr-4">
+                    {assessmentToggleVisible && (
+                      <>
+                        <div
+                          className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
+                          role="group"
+                          aria-label="Agent display mode"
+                        >
+                          <span
+                            className={agentMode === 'learning' ? 'font-medium text-amber-600' : ''}
+                          >
+                            Learn
+                          </span>
+                          <Switch
+                            checked={agentMode === 'assessment'}
+                            onCheckedChange={(checked) =>
+                              setAgentMode(checked ? 'assessment' : 'learning')
+                            }
+                            aria-label="Toggle assessment mode"
+                            className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                          />
+                          <span
+                            className={
+                              agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                            }
+                          >
+                            Assess
+                          </span>
+                        </div>
+                        <Popover>
+                          <PopoverTrigger
+                            className="rounded p-1 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none md:hidden"
+                            aria-label="Agent display mode"
+                          >
+                            <MoreVertical className="h-5 w-5" />
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-auto p-3">
+                            <div
+                              className="flex items-center gap-2 text-xs text-gray-600"
+                              role="group"
+                              aria-label="Agent display mode"
+                            >
+                              <span
+                                className={
+                                  agentMode === 'learning' ? 'font-medium text-amber-600' : ''
+                                }
+                              >
+                                Learn
+                              </span>
+                              <Switch
+                                checked={agentMode === 'assessment'}
+                                onCheckedChange={(checked) =>
+                                  setAgentMode(checked ? 'assessment' : 'learning')
+                                }
+                                aria-label="Toggle assessment mode"
+                                className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                              />
+                              <span
+                                className={
+                                  agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                                }
+                              >
+                                Assess
+                              </span>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </>
+                    )}
+                    <CourseLessonNavigator />
+                  </div>
                 </div>
                 <div className="flex items-center bg-gray-50 px-4 py-2">
                   <button
