@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.23.0](https://github.com/iblai/skillsai/compare/skills-v0.22.0...skills-v0.23.0) (2026-05-06)
+
+### Features
+
+* assessment feature implementation completed ([86abb6c](https://github.com/iblai/skillsai/commit/86abb6c407fa0329f988c809fcdf7ec926260561))
+* assessment feature implementation completed > test coverage ([8c2fae6](https://github.com/iblai/skillsai/commit/8c2fae660b009db75c008117d6ce555a4bdb5962))
+* assessment feature implementation completed > test coverage ([eb6bdae](https://github.com/iblai/skillsai/commit/eb6bdae11dd7f5703ce1fc681a11b1fdd2781318))
+* assessment feature implementation completed > test coverage ([a6418e4](https://github.com/iblai/skillsai/commit/a6418e4f204e4add35137fddd8d728c984a39fd2))
+* assessment feature implementation completed > test coverage ([8543ac4](https://github.com/iblai/skillsai/commit/8543ac4219047dd95f30cfc7f500ba6d7bc11e6a))
+* assessment update > on mentor_xblock, css hides all other UI except from mentor ([b87ae5d](https://github.com/iblai/skillsai/commit/b87ae5d978cf7d048e57c7f17f8939614c0e5435))
+
 ## [0.22.0](https://github.com/iblai/skillsai/compare/skills-v0.21.0...skills-v0.22.0) (2026-05-04)
 
 ### Features

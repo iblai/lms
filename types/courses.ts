@@ -185,6 +185,21 @@ export interface CourseOutlineChildNode {
   special_exam_info?: boolean;
 }
 
+export interface CourseBlockDetailsBlock {
+  id: string;
+  block_id: string;
+  lms_web_url?: string;
+  legacy_web_url?: string;
+  student_view_url?: string;
+  type: string;
+  display_name: string;
+}
+
+export interface CourseBlockDetailsResponse {
+  root: string;
+  blocks: Record<string, CourseBlockDetailsBlock>;
+}
+
 export interface CourseOutlineResponse {
   display_name: string;
   graded: boolean;
