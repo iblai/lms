@@ -15,7 +15,10 @@ interface CourseCardProps {
 export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link href={`/courses/${course.course_id}`} className="block h-full">
-      <div className="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm transition-transform duration-500 ease-in-out hover:scale-105">
+      <div
+        data-testid="course-card"
+        className="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm transition-transform duration-500 ease-in-out hover:scale-105"
+      >
         <div className="relative aspect-video w-full overflow-hidden">
           <Image
             src={course.image || '/placeholder.svg'}

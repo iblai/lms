@@ -1,11 +1,12 @@
 'use client';
 
-import { X, Home, User, BookOpen, Search, BarChart3 } from 'lucide-react';
+import { X, Home, User, BookOpen, Search, BarChart3, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from './logo';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { getTenant } from '@/utils/helpers';
+import { config } from '@/lib/config';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -48,6 +49,16 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
       },
     ]) ||
       []),
+    ...(((departmentMemberCheck?.is_platform_admin ||
+      departmentMemberCheck?.is_department_admin) && [
+      {
+        name: 'Studio',
+        href: config.urls.studioUrl(),
+        target: '_blank',
+        icon: LayoutDashboard,
+      },
+    ]) ||
+      []),
   ];
 
   return (
@@ -66,7 +77,11 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
         {/* Header */}
         <div className="flex h-20 items-center justify-between border-b px-4 md:h-24">
           <Logo variant="small" />
-          <button onClick={onClose} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+            aria-label="Close navigation"
+          >
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
@@ -83,6 +98,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
                   <Link
                     href={item.href}
                     onClick={onClose}
+                    target={item.target ?? '_self'}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
                       isActive
                         ? 'border border-amber-200 bg-amber-50 text-amber-700'

@@ -1,5 +1,199 @@
 # Changelog
 
+## [0.23.0](https://github.com/iblai/skillsai/compare/skills-v0.22.0...skills-v0.23.0) (2026-05-06)
+
+### Features
+
+* assessment feature implementation completed ([86abb6c](https://github.com/iblai/skillsai/commit/86abb6c407fa0329f988c809fcdf7ec926260561))
+* assessment feature implementation completed > test coverage ([8c2fae6](https://github.com/iblai/skillsai/commit/8c2fae660b009db75c008117d6ce555a4bdb5962))
+* assessment feature implementation completed > test coverage ([eb6bdae](https://github.com/iblai/skillsai/commit/eb6bdae11dd7f5703ce1fc681a11b1fdd2781318))
+* assessment feature implementation completed > test coverage ([a6418e4](https://github.com/iblai/skillsai/commit/a6418e4f204e4add35137fddd8d728c984a39fd2))
+* assessment feature implementation completed > test coverage ([8543ac4](https://github.com/iblai/skillsai/commit/8543ac4219047dd95f30cfc7f500ba6d7bc11e6a))
+* assessment update > on mentor_xblock, css hides all other UI except from mentor ([b87ae5d](https://github.com/iblai/skillsai/commit/b87ae5d978cf7d048e57c7f17f8939614c0e5435))
+
+## [0.22.0](https://github.com/iblai/skillsai/compare/skills-v0.21.0...skills-v0.22.0) (2026-05-04)
+
+### Features
+
+* new chat button triggering a new session on mentor via postmessage ([a81d7b3](https://github.com/iblai/skillsai/commit/a81d7b3d3ecba2b67e69d7ab7cf5155ac666fb6e))
+* new chat button triggering a new session on mentor via postmessage > playwright test updated ([7e67231](https://github.com/iblai/skillsai/commit/7e67231b9b9b8ca9463ba6305bc1ab6ae581c373))
+
+### Bug Fixes
+
+* page not found on agent tab mode fixed ([e3de8d4](https://github.com/iblai/skillsai/commit/e3de8d4933bfcdd4883cf9f897200e79767773e3))
+
+## [0.21.0](https://github.com/iblai/skillsai/compare/skills-v0.20.0...skills-v0.21.0) (2026-05-01)
+
+### Features
+
+* add suspense loader to overall app ([cf41790](https://github.com/iblai/skillsai/commit/cf417908437e30d9d9c53b1867ffe5bd0a7c6daa))
+* add suspense loader to overall app > playwright coverage updated ([c9c25a8](https://github.com/iblai/skillsai/commit/c9c25a8783922fbc536ea280195613345866a857))
+* add suspense loader to overall app > playwright tests updated ([a661198](https://github.com/iblai/skillsai/commit/a661198895d8e0b09110789811cd27e947e67609))
+* add suspense loader to overall app > test coverage ([2b854e8](https://github.com/iblai/skillsai/commit/2b854e887218e16c89474149da95d36266f99440))
+* add suspense loader to overall app > test coverage ([7bbf615](https://github.com/iblai/skillsai/commit/7bbf61543082659d43ff580c0447bf3c4e284aa8))
+
+### Chores
+
+* **e2e:** update coverage for suspense loader app/loading.tsx [skip ci] ([4508b3d](https://github.com/iblai/skillsai/commit/4508b3d5ae68b51491eaf3eb7d6e5273973b506d))
+
+## [0.20.0](https://github.com/iblai/skillsai/compare/skills-v0.19.0...skills-v0.20.0) (2026-05-01)
+
+### Chores
+
+* **security:** add pnpm supply chain protections ([b14dee3](https://github.com/iblai/skillsai/commit/b14dee3bb3f1f7d8f73e33429a3563082900f48d))
+
+## [0.19.0](https://github.com/iblai/skillsai/compare/skills-v0.18.0...skills-v0.19.0) (2026-04-30)
+
+### CI
+
+* add PR E2E pipeline and make legacy SPA validation dispatch-only ([2870c95](https://github.com/iblai/skillsai/commit/2870c95ba7e02497b00e9f3bd2d4feca388f17f2))
+
+## [0.18.0](https://github.com/iblai/skillsai/compare/skills-v0.17.0...skills-v0.18.0) (2026-04-28)
+
+### Bug Fixes
+
+* **e2e:** simplify CP-3 to assert h1 404 heading instead of networkidle ([dc6687c](https://github.com/iblai/skillsai/commit/dc6687c4ec32fcbe58fd7243b76b4d4cec5a9af5))
+
+## [0.17.0](https://github.com/iblai/skillsai/compare/skills-v0.16.0...skills-v0.17.0) (2026-04-27)
+
+### Chores
+
+* **deps:** bump @iblai/iblai-js to 1.4.17, remove package-lock.json ([1fec7bb](https://github.com/iblai/skillsai/commit/1fec7bb8017e6486a83da4a7eb42fd8599455569))
+
+## [0.16.0](https://github.com/iblai/skillsai/compare/skills-v0.15.0...skills-v0.16.0) (2026-04-27)
+
+### Chores
+
+* **deps:** bump @iblai/iblai-js from 1.4.11 to 1.4.13 ([deb8f33](https://github.com/iblai/skillsai/commit/deb8f33b6cf8ab219bf92de90cb0f9bbc1b3edaf))
+
+## [0.15.0](https://github.com/iblai/skillsai/compare/skills-v0.14.0...skills-v0.15.0) (2026-04-26)
+
+### Bug Fixes
+
+* **e2e:** use project name for auth state files, race UI for settled page, fix program empty state ([136e943](https://github.com/iblai/skillsai/commit/136e9437cace2f8a6d389a1d09d63d861ba5f6d1))
+
+## [0.14.0](https://github.com/iblai/skillsai/compare/skills-v0.13.0...skills-v0.14.0) (2026-04-24)
+
+### Bug Fixes
+
+* agent embedded mentor top and bottom spacing unified ([880feb3](https://github.com/iblai/skillsai/commit/880feb3fd26179ad42e395e3ea7a0d22c5ebc441))
+* sending message to embed mentor iframe ([b616bca](https://github.com/iblai/skillsai/commit/b616bcad944491c50617f1cd2ac68ba26fed2453))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([0626ced](https://github.com/iblai/skillsai/commit/0626cedd82535ad92584e97ebe2ff4fe710779ea))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([6a10065](https://github.com/iblai/skillsai/commit/6a10065ab8f0c91395b7896d151143c1462521b3))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([b0b5f3d](https://github.com/iblai/skillsai/commit/b0b5f3dad4ba81c0be95bd71b4d451eec3e83952))
+* switching unit on agent tab sends silent message to embedded mentor via postmessage api ([2bc0082](https://github.com/iblai/skillsai/commit/2bc0082c50ded24310b8a3f020b1dc6e958e2cdb))
+
+## [0.13.0](https://github.com/iblai/skillsai/compare/skills-v0.12.0...skills-v0.13.0) (2026-04-23)
+
+### Bug Fixes
+
+* **e2e:** use absolute paths for storageState in playwright config ([137a03d](https://github.com/iblai/skillsai/commit/137a03d919a6e22b2abd7d2c0d74dfb34ddaf2fa))
+
+## [0.12.0](https://github.com/iblai/skillsai/compare/skills-v0.11.2...skills-v0.12.0) (2026-04-23)
+
+### Features
+
+* analytics reports e2e tests helpers imported from SDK playwright package ([9998f77](https://github.com/iblai/skillsai/commit/9998f779d7ba9fba58ba795a810568d5d179b0c3))
+
+### Chores
+
+* pnpm-lock updated ([0bef7df](https://github.com/iblai/skillsai/commit/0bef7df283d682486751c4f2ae879e7000e8f821))
+
+## [0.10.26-patch-1](https://github.com/iblai/skillsai/compare/skills-v0.11.2...skills-v0.12.0) (2026-04-22)
+
+### Bug Fixes
+
+* appropriate required action to analytics tab for groups dropdown ([15868d4](https://github.com/iblai/skillsai/commit/15868d4238dcb886b5d8cb789a955b806afeffe2))
+* appropriate required action to analytics tab for groups dropdown > test coverage ([6a88550](https://github.com/iblai/skillsai/commit/6a88550f04de52f5f4fc48c61e369150bbd337b1))
+
+### Chores
+
+* bump iblai-js to 1.4.11 ([feca7ad](https://github.com/iblai/skillsai/commit/feca7ad274a3052645567f6641e564062162619c))
+* bump version to 0.10.26-patch-1 ([c66d88c](https://github.com/iblai/skillsai/commit/c66d88ce65fac31ea533e929aebd4ea69970539c))
+
+## [0.11.2](https://github.com/iblai/skillsai/compare/skills-v0.11.1...skills-v0.11.2) (2026-04-22)
+
+### CI
+
+* add full pipeline test workflow ([37b9c5c](https://github.com/iblai/skillsai/commit/37b9c5ccf2f0c2042b62ece94a9469804c672764))
+
+## [0.11.1](https://github.com/iblai/skillsai/compare/skills-v0.11.0...skills-v0.11.1) (2026-04-22)
+
+### Bug Fixes
+
+* agent and course content mode logic swapped ([673b0d2](https://github.com/iblai/skillsai/commit/673b0d265b15dd9e407a410a8bbd0ce369e0e206))
+
+## [0.11.0](https://github.com/iblai/skillsai/compare/skills-v0.10.26...skills-v0.11.0) (2026-04-21)
+
+### Features
+
+* agent and course tab mode implemented for the innercourseware mode ([e7c41ef](https://github.com/iblai/skillsai/commit/e7c41ef6fe187b2230b3bcd50562a02b68e4df3d))
+* agent and course tab mode implemented for the innercourseware mode > test coverage ([0562a34](https://github.com/iblai/skillsai/commit/0562a3448fbe2e2372b37738e6b7042568c62ffe))
+* aria-current accessibility patch updated ([e1357ff](https://github.com/iblai/skillsai/commit/e1357ff8887a8085449e925594707ff4f4ac0f18))
+
+### Bug Fixes
+
+* failing playwright tests fixed ([2f78ae6](https://github.com/iblai/skillsai/commit/2f78ae6c1b32d2335d020f6e7da248662baf296a))
+
+## [0.10.26](https://github.com/iblai/skillsai/compare/skills-v0.10.25...skills-v0.10.26) (2026-04-16)
+
+### Bug Fixes
+
+* scrolling issue on course about page fixed ([234e27b](https://github.com/iblai/skillsai/commit/234e27b8e786d2706e8187451e81b545cb8e8298))
+* scrolling issue on course about page fixed > test coverage ([6557f02](https://github.com/iblai/skillsai/commit/6557f02fe125a42b1e9f2ae73f494966434efd60))
+
+## [0.10.25](https://github.com/iblai/skillsai/compare/skills-v0.10.24...skills-v0.10.25) (2026-04-15)
+
+### Bug Fixes
+
+* **a11y:** add aria-labels to icon-only buttons and create AccessiblePaginate wrapper ([c40ac56](https://github.com/iblai/skillsai/commit/c40ac5639c209b9292a0091c33a99d78e9c04089))
+* **a11y:** use semantic section for My Courses, fix viewport scaling, improve contrast ([d282ee0](https://github.com/iblai/skillsai/commit/d282ee089a3384eae484eb65c9c8a7c962e4a070))
+
+### Tests
+
+* **a11y:** add unit tests for AccessiblePaginate and fix ul role selector ([ea88d19](https://github.com/iblai/skillsai/commit/ea88d19f56be876ba02dcd19c759de79f43ea4b0))
+
+## [0.10.24](https://github.com/iblai/skillsai/compare/skills-v0.10.23...skills-v0.10.24) (2026-04-13)
+
+### Bug Fixes
+
+* **e2e:** heal journeys 09, 11, 13, 14 with proper polling and data-testid selectors ([e7ad4f2](https://github.com/iblai/skillsai/commit/e7ad4f25d339ac49643c94e0137021a12d19f786))
+
+## [0.10.23](https://github.com/iblai/skillsai/compare/skills-v0.10.22...skills-v0.10.23) (2026-04-13)
+
+### Bug Fixes
+
+* **e2e:** heal analytics, profile, error page and timeout issues across all journeys ([3783c8e](https://github.com/iblai/skillsai/commit/3783c8e06fa66f1e922ddfc3b5b9fc8e0b4b236a))
+
+### Chores
+
+* bump @iblai/iblai-js to 1.3.10 ([349082f](https://github.com/iblai/skillsai/commit/349082f32239597a76c7a6e8e77f77067fb7766b))
+* bump @iblai/iblai-js to 1.3.8 and set e2e bot username ([b0f9be2](https://github.com/iblai/skillsai/commit/b0f9be2e75cee5b548005e34d88a5df61d4fcac8))
+
+## [0.10.22](https://github.com/iblai/skillsai/compare/skills-v0.10.21...skills-v0.10.22) (2026-04-09)
+
+### Bug Fixes
+
+* **ci:** instruct coverage bot to actually execute gh pr review command ([33f379c](https://github.com/iblai/skillsai/commit/33f379c0c0a90b34ba06dd1919d5f205d8a24aad))
+
+## [0.10.21](https://github.com/iblai/skillsai/compare/skills-v0.10.20...skills-v0.10.21) (2026-04-09)
+
+### Bug Fixes
+
+* **ci:** skip e2e coverage bot for Dependabot PRs ([491af8a](https://github.com/iblai/skillsai/commit/491af8a5818a2633a1c4e0b5c5c8fa0702684d0c))
+
+## [0.10.20](https://github.com/iblai/skillsai/compare/skills-v0.10.19...skills-v0.10.20) (2026-04-09)
+
+### Bug Fixes
+
+* **e2e:** fix coverage bot job-level if condition ([47e756e](https://github.com/iblai/skillsai/commit/47e756eb1a94c34ce4f989a828c7015d203fbf73))
+
+## [0.10.19](https://github.com/iblai/skillsai/compare/skills-v0.10.18...skills-v0.10.19) (2026-04-08)
+
+### Chores
+
+* add coverage bot, CLAUDE.md, CODEOWNERS, and Claude skills ([2ea73f6](https://github.com/iblai/skillsai/commit/2ea73f63fd334389c61ebf1bc85dc96cc8ec8718))
+
 ## [0.10.18](https://github.com/iblai/skillsai/compare/skills-v0.10.17...skills-v0.10.18) (2026-04-08)
 
 ### Bug Fixes

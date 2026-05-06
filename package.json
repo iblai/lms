@@ -1,6 +1,6 @@
 {
   "name": "ibl-web-nextjs-skills-spa",
-  "version": "0.10.18-patch-2",
+  "version": "0.23.0",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
@@ -25,7 +25,7 @@
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
     "@iblai/iblai-api": "4.166.0-ai",
-    "@iblai/iblai-js": "1.3.8",
+    "@iblai/iblai-js": "1.8.3",
     "@iblai/iblai-web-mentor": "2.0.1",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.13",
@@ -126,6 +126,11 @@
     "lint-staged": "16.4.0",
     "@commitlint/cli": "20.5.0",
     "@commitlint/config-conventional": "20.5.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "husky"
+    ]
   },
   "lint-staged": {
     "*.ts?(x)": [

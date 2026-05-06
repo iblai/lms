@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -6,28 +8,28 @@ test.describe('Journey 19: Analytics Topics/Transcripts/Financial', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
 
     // Admin gate: check if AI Analytics link is visible
     const analyticsLink = page.getByRole('link', { name: /ai analytics|analytics/i });
-    const isAdmin = await analyticsLink.isVisible({ timeout: 15_000 }).catch(() => false);
+    const isAdmin = await analyticsLink.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!isAdmin) {
       test.skip(true, 'Analytics requires admin access — AI Analytics link not visible');
       return;
     }
 
+    logger.info('Navigating to Analytics');
     await analyticsLink.click();
     await page.waitForURL((url) => url.href.includes('/analytics'), { timeout: 30_000 });
   });
 
   // ── Topics ────────────────────────────────────────────────────────────────
 
-  test('CP-1: topics analytics loads with charts', async ({ page }) => {
-    const topicsTab = page
-      .getByRole('tab', { name: /topics/i })
-      .or(page.getByRole('link', { name: /topics/i }));
-    const hasTopicsTab = await topicsTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-1: topics page loads with stat cards', async ({ page }) => {
+    logger.info('CP-1: navigating to Topics tab');
+    const topicsTab = page.getByRole('tab', { name: 'Topics', exact: true });
+    const hasTopicsTab = await topicsTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasTopicsTab) {
       test.skip(true, 'Topics analytics tab not visible');
@@ -35,21 +37,40 @@ test.describe('Journey 19: Analytics Topics/Transcripts/Financial', () => {
     }
 
     await topicsTab.click();
-    await page.waitForTimeout(2_000);
+    await expect(topicsTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
 
-    // Verify topics page loaded with charts or content
-    const content = page
-      .locator('[class*="chart"], [class*="topic"], [data-testid*="topic"], canvas, svg')
-      .first()
-      .or(page.getByRole('main'));
-    await expect(content).toBeVisible({ timeout: 30_000 });
+    logger.info('CP-1: checking Topics, Conversations, Messages stat cards');
+    // Stat cards use aria-label "${title} mini card" (loaded) or "${title} mini card loading".
+    // Use starts-with selector to match any state.
+    const statCardPrefixes = ['Topics mini card', 'Conversations mini card', 'Messages mini card'];
+    const cardVisibility: boolean[] = [];
+
+    for (const prefix of statCardPrefixes) {
+      const card = page.locator(`[aria-label^="${prefix}"]`);
+      const isVisible = await card
+        .first()
+        .isVisible({ timeout: 120_000 })
+        .catch(() => false);
+      cardVisibility.push(isVisible);
+    }
+
+    const noData = page.getByText('No data available');
+    const hasNoData = await noData.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    logger.info(
+      `CP-1: topics=${cardVisibility[0]} conversations=${cardVisibility[1]} messages=${cardVisibility[2]} noData=${hasNoData}`,
+    );
+
+    // Stat cards should be visible, or the empty state is shown
+    for (let i = 0; i < statCardPrefixes.length; i++) {
+      expect(cardVisibility[i] || hasNoData).toBe(true);
+    }
   });
 
-  test('CP-2: topics distribution data is displayed', async ({ page }) => {
-    const topicsTab = page
-      .getByRole('tab', { name: /topics/i })
-      .or(page.getByRole('link', { name: /topics/i }));
-    const hasTopicsTab = await topicsTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-2: topics charts are visible', async ({ page }) => {
+    logger.info('CP-2: navigating to Topics tab');
+    const topicsTab = page.getByRole('tab', { name: 'Topics', exact: true });
+    const hasTopicsTab = await topicsTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasTopicsTab) {
       test.skip(true, 'Topics analytics tab not visible');
@@ -57,33 +78,38 @@ test.describe('Journey 19: Analytics Topics/Transcripts/Financial', () => {
     }
 
     await topicsTab.click();
-    await page.waitForTimeout(2_000);
+    await expect(topicsTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
 
-    // Look for distribution data: charts, tables, or metrics
-    const distributionContent = page
-      .locator(
-        '[class*="distribution"], [class*="chart"], canvas, svg, [class*="topic-list"], table',
-      )
-      .first();
-    const emptyState = page.getByText(/no data|no topics|empty/i);
+    logger.info('CP-2: checking Conversations and Topics Details chart cards');
+    const conversationsChart = page.getByLabel('Conversations chart card');
+    const topicsDetailsChart = page.getByLabel('Topics Details chart card');
 
-    const hasDistribution = await distributionContent
-      .isVisible({ timeout: 15_000 })
+    const hasConversationsChart = await conversationsChart
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasTopicsDetailsChart = await topicsDetailsChart
+      .isVisible({ timeout: 120_000 })
+      .catch(() => false);
 
-    // Either data or empty state should be visible
-    expect(hasDistribution || hasEmpty).toBe(true);
+    const noData = page.getByText('No data available');
+    const hasNoData = await noData.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    logger.info(
+      `CP-2: conversationsChart=${hasConversationsChart} topicsDetailsChart=${hasTopicsDetailsChart} noData=${hasNoData}`,
+    );
+
+    // Charts should be visible, or the empty state is shown
+    expect(hasConversationsChart || hasNoData).toBe(true);
+    expect(hasTopicsDetailsChart || hasNoData).toBe(true);
   });
 
   // ── Transcripts ───────────────────────────────────────────────────────────
 
-  test('CP-3: transcripts analytics loads with metrics', async ({ page }) => {
-    const transcriptsTab = page
-      .getByRole('tab', { name: /transcripts/i })
-      .or(page.getByRole('link', { name: /transcripts/i }));
+  test('CP-3: transcripts page loads with stat cards', async ({ page }) => {
+    logger.info('CP-3: navigating to Transcripts tab');
+    const transcriptsTab = page.getByRole('tab', { name: 'Transcripts', exact: true });
     const hasTranscriptsTab = await transcriptsTab
-      .isVisible({ timeout: 15_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasTranscriptsTab) {
@@ -92,23 +118,31 @@ test.describe('Journey 19: Analytics Topics/Transcripts/Financial', () => {
     }
 
     await transcriptsTab.click();
-    await page.waitForTimeout(2_000);
+    await expect(transcriptsTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
 
-    const content = page
-      .locator(
-        '[class*="transcript"], [data-testid*="transcript"], [class*="metric"], [class*="chart"]',
-      )
-      .first()
-      .or(page.getByRole('main'));
-    await expect(content).toBeVisible({ timeout: 30_000 });
+    logger.info('CP-3: checking transcript stat cards');
+    const statCardPrefixes = [
+      'Average number of messages per conversation mini card',
+      'Average cost per conversation mini card',
+      'Average rating mini card',
+    ];
+
+    for (const prefix of statCardPrefixes) {
+      const card = page.locator(`[aria-label^="${prefix}"]`);
+      const isVisible = await card
+        .first()
+        .isVisible({ timeout: 120_000 })
+        .catch(() => false);
+      expect(isVisible, `Stat card "${prefix}" should be visible`).toBe(true);
+      logger.info(`Stat card "${prefix}" is visible`);
+    }
   });
 
-  test('CP-4: transcripts costs and ratings are displayed', async ({ page }) => {
-    const transcriptsTab = page
-      .getByRole('tab', { name: /transcripts/i })
-      .or(page.getByRole('link', { name: /transcripts/i }));
+  test('CP-4: transcripts list or empty state is visible', async ({ page }) => {
+    logger.info('CP-4: navigating to Transcripts tab');
+    const transcriptsTab = page.getByRole('tab', { name: 'Transcripts', exact: true });
     const hasTranscriptsTab = await transcriptsTab
-      .isVisible({ timeout: 15_000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasTranscriptsTab) {
@@ -117,94 +151,102 @@ test.describe('Journey 19: Analytics Topics/Transcripts/Financial', () => {
     }
 
     await transcriptsTab.click();
-    await page.waitForTimeout(2_000);
+    await expect(transcriptsTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
 
-    // Look for cost/rating metrics
-    const costMetric = page.getByText(/cost|spend|price|\$/i).first();
-    const ratingMetric = page.getByText(/rating|satisfaction|score/i).first();
-    const metricsCards = page.locator(
-      '[class*="metric"], [class*="stat"], [class*="card"], [class*="kpi"]',
-    );
+    logger.info('CP-4: checking for transcript content, pagination, or empty state');
 
-    const hasCost = await costMetric.isVisible({ timeout: 10_000 }).catch(() => false);
-    const hasRating = await ratingMetric.isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasMetrics = await metricsCards
-      .first()
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
-    const emptyState = page.getByText(/no data|no transcripts|empty/i);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
+    // After loading completes, one of these will appear:
+    // - "Page X of Y • Z total records" (has results)
+    // - "No transcripts found matching your filters." (empty with filters)
+    // - "No transcripts available." (empty without filters)
+    //
+    // Use .or() so expect().toBeVisible() polls until ANY of them appears in the DOM.
+    const loadedIndicator = page
+      .getByText(/Page \d+ of \d+/)
+      .or(page.getByText('No transcripts found matching your filters.'))
+      .or(page.getByText('No transcripts available.'));
 
-    // At least some content should be present
-    expect(hasCost || hasRating || hasMetrics || hasEmpty).toBe(true);
+    await expect(loadedIndicator.first()).toBeVisible({ timeout: 120_000 });
+    logger.info('CP-4: transcripts loaded — pagination info or empty state is visible');
   });
 
-  // ── Financial ─────────────────────────────────────────────────────────────
+  // ── Costs (Financial) ─────────────────────────────────────────────────────
 
-  test('CP-5: financial analytics loads with cost cards', async ({ page }) => {
-    const financialTab = page
-      .getByRole('tab', { name: /financial/i })
-      .or(page.getByRole('link', { name: /financial/i }));
-    const hasFinancialTab = await financialTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-5: costs page loads with stat cards', async ({ page }) => {
+    logger.info('CP-5: navigating to Costs tab');
+    const costsTab = page.getByRole('tab', { name: 'Costs', exact: true });
+    const hasCostsTab = await costsTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    if (!hasFinancialTab) {
-      test.skip(true, 'Financial analytics tab not visible');
+    if (!hasCostsTab) {
+      test.skip(true, 'Costs analytics tab not visible');
       return;
     }
 
-    await financialTab.click();
-    await page.waitForTimeout(2_000);
+    await costsTab.click();
+    await expect(costsTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
 
-    // Verify financial page loaded
-    const content = page
-      .locator(
-        '[class*="financial"], [data-testid*="financial"], [class*="cost"], [class*="metric"]',
-      )
-      .first()
-      .or(page.getByRole('main'));
-    await expect(content).toBeVisible({ timeout: 30_000 });
+    logger.info('CP-5: checking Weekly Costs, Monthly Costs, Total Costs stat cards');
+    const statCardPrefixes = [
+      'Weekly Costs mini card',
+      'Monthly Costs mini card',
+      'Total Costs mini card',
+    ];
+    const cardVisibility: boolean[] = [];
 
-    // Look for cost cards
-    const costCards = page.locator(
-      '[class*="cost-card"], [class*="metric-card"], [class*="stat-card"], [class*="card"]',
+    for (const prefix of statCardPrefixes) {
+      const card = page.locator(`[aria-label^="${prefix}"]`);
+      const isVisible = await card
+        .first()
+        .isVisible({ timeout: 120_000 })
+        .catch(() => false);
+      cardVisibility.push(isVisible);
+    }
+
+    const noData = page.getByText('No data available');
+    const hasNoData = await noData.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    logger.info(
+      `CP-5: weekly=${cardVisibility[0]} monthly=${cardVisibility[1]} total=${cardVisibility[2]} noData=${hasNoData}`,
     );
-    const hasCostCards = await costCards
-      .first()
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
 
-    if (hasCostCards) {
-      const count = await costCards.count();
-      expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < statCardPrefixes.length; i++) {
+      expect(cardVisibility[i] || hasNoData).toBe(true);
     }
   });
 
-  test('CP-6: financial cost breakdowns are displayed', async ({ page }) => {
-    const financialTab = page
-      .getByRole('tab', { name: /financial/i })
-      .or(page.getByRole('link', { name: /financial/i }));
-    const hasFinancialTab = await financialTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-6: costs charts are visible', async ({ page }) => {
+    logger.info('CP-6: navigating to Costs tab');
+    const costsTab = page.getByRole('tab', { name: 'Costs', exact: true });
+    const hasCostsTab = await costsTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    if (!hasFinancialTab) {
-      test.skip(true, 'Financial analytics tab not visible');
+    if (!hasCostsTab) {
+      test.skip(true, 'Costs analytics tab not visible');
       return;
     }
 
-    await financialTab.click();
-    await page.waitForTimeout(2_000);
+    await costsTab.click();
+    await expect(costsTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
 
-    // Look for cost breakdown data: charts, tables, or detailed metrics
-    const breakdownContent = page
-      .locator('[class*="breakdown"], [class*="chart"], canvas, svg, table, [class*="cost-detail"]')
-      .first();
-    const costText = page.getByText(/\$|cost|total|spend|budget/i).first();
-    const emptyState = page.getByText(/no data|no financial|empty/i);
+    logger.info('CP-6: checking Cost per Day, Cost by Provider, Cost by LLM chart cards');
+    const costPerDayChart = page.getByLabel('Cost per Day chart card');
+    const costByProviderChart = page.getByLabel('Cost by Provider chart card');
+    const costByLLMChart = page.getByLabel('Cost by LLM chart card');
 
-    const hasBreakdown = await breakdownContent.isVisible({ timeout: 15_000 }).catch(() => false);
-    const hasCostText = await costText.isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasCostPerDay = await costPerDayChart.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasCostByProvider = await costByProviderChart
+      .isVisible({ timeout: 120_000 })
+      .catch(() => false);
+    const hasCostByLLM = await costByLLMChart.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    // Financial page should show either breakdown data or empty state
-    expect(hasBreakdown || hasCostText || hasEmpty).toBe(true);
+    const noData = page.getByText('No data available');
+    const hasNoData = await noData.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    logger.info(
+      `CP-6: costPerDay=${hasCostPerDay} costByProvider=${hasCostByProvider} costByLLM=${hasCostByLLM} noData=${hasNoData}`,
+    );
+
+    expect(hasCostPerDay || hasNoData).toBe(true);
+    expect(hasCostByProvider || hasNoData).toBe(true);
+    expect(hasCostByLLM || hasNoData).toBe(true);
   });
 });

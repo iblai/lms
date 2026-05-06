@@ -76,7 +76,8 @@ export default function AppLayout({ children }: { children: any }) {
             metadataLoaded &&
             isMentorAIEnabled() &&
             !isUserMetadataLoading &&
-            userMetadata?.enable_sidebar_ai_mentor_display !== false && (
+            userMetadata?.enable_sidebar_ai_mentor_display !== false &&
+            !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
               <div className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}>
                 <ChatButton isMobile={isMobile} />
               </div>

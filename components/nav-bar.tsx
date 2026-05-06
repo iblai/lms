@@ -12,6 +12,7 @@ import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useMediaQuery } from 'react-responsive';
 import { WithPermissions } from '@/hoc';
+import { config } from '@/lib/config';
 
 interface NavBarProps {
   sidebarOpen: boolean;
@@ -154,6 +155,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                     <button
                       onClick={() => setSearchVisible(!searchVisible)}
                       className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
+                      aria-label="Open search"
                     >
                       <Search className="h-5 w-5" />
                     </button>
@@ -178,6 +180,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                       <button
                         onClick={() => setSearchVisible(!searchVisible)}
                         className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
+                        aria-label="Close search"
                       >
                         <X className="h-5 w-5" />
                       </button>
@@ -189,23 +192,24 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           </form>
 
           {/* AI Analytics Button */}
-          {/* {!(isTabletRange && searchVisible) &&
+          {!(isTabletRange && searchVisible) &&
             (departmentMemberCheck?.is_platform_admin ||
               departmentMemberCheck?.is_department_admin) && (
               <Link
-                href="/analytics"
-                className="rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs lg:text-sm font-medium text-[var(--button-primary-text)] whitespace-nowrap h-[38px] hidden md:flex items-center hover:opacity-[var(--button-primary-hover-opacity)]"
+                href={config.urls.studioUrl()}
+                target="_blank"
+                className="ml-2 hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
               >
-                AI Analytics
+                Studio
               </Link>
-            )} */}
+            )}
           {!(isTabletRange && searchVisible) && (
             <WithPermissions rbacResource={`/platforms/${getTenant()}/#can_view_analytics`}>
               {({ hasPermission }) =>
                 hasPermission && (
                   <Link
                     href="/analytics"
-                    className="hidden h-[38px] items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-xs font-medium whitespace-nowrap text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)] md:flex lg:text-sm"
+                    className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
                   >
                     AI Analytics
                   </Link>

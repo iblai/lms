@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -6,228 +8,180 @@ test.describe('Journey 14: Course Discovery', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
   });
 
   test('CP-1: discover page loads with catalog and search', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    // Catalog content or search should be visible
-    const searchInput = page
-      .getByRole('searchbox')
-      .or(page.getByPlaceholder(/search/i))
-      .or(page.locator('input[type="search"]'));
-    const catalog = page
-      .locator(
-        '[class*="catalog"], [class*="course-card"], [data-testid*="course"], [class*="card"]',
-      )
-      .first();
+    // DiscoverContentCard uses data-testid="discover-content-card". Empty state: "No content found."
+    const contentCard = page.locator('[data-testid="discover-content-card"]').first();
+    const emptyState = page.getByText(/no content found/i).first();
 
-    const hasSearch = await searchInput.isVisible({ timeout: 30_000 }).catch(() => false);
-    const hasCatalog = await catalog.isVisible({ timeout: 10_000 }).catch(() => false);
+    const loaded = contentCard.or(emptyState);
+    await expect(loaded).toBeVisible({ timeout: 120_000 });
 
-    expect(hasSearch || hasCatalog).toBe(true);
+    const hasCards = await contentCard.isVisible().catch(() => false);
+    logger.info(hasCards ? 'Discover catalog loaded with content cards' : 'Discover empty state');
   });
 
   test('CP-2: search filters results by keyword', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    // Discover page uses URL query param ?q= for search
+    await page.goto(`${SKILL_HOST}/discover?q=python`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    const searchInput = page
-      .getByRole('searchbox')
-      .or(page.getByPlaceholder(/search/i))
-      .or(page.locator('input[type="search"]'));
-    const hasSearch = await searchInput.isVisible({ timeout: 30_000 }).catch(() => false);
+    // After search, results should update — either showing matches or "no content found"
+    const contentCard = page.locator('[data-testid="discover-content-card"]').first();
+    const emptyState = page.getByText(/no content found/i).first();
 
-    if (!hasSearch) {
-      test.skip(true, 'Search input not available on discover page');
-      return;
-    }
+    await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
-    await searchInput.fill('python');
-    await searchInput.press('Enter');
-    await page.waitForTimeout(2_000);
-
-    // After search, results should update — either showing matches or "no results"
-    const results = page
-      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
-      .first();
-    const noResults = page.getByText(/no results|no courses|nothing found/i);
-
-    const hasResults = await results.isVisible({ timeout: 10_000 }).catch(() => false);
-    const hasNoResults = await noResults.isVisible({ timeout: 5_000 }).catch(() => false);
-
-    expect(hasResults || hasNoResults).toBe(true);
+    const hasResults = await contentCard.isVisible().catch(() => false);
+    logger.info(hasResults ? 'Search returned results' : 'Search returned no content');
   });
 
   test('CP-3: faceted filters are visible', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    // Look for filter controls — dropdowns, checkboxes, sidebar filter, or filter buttons
-    const filterControls = page
-      .locator('[class*="filter"], [data-testid*="filter"], [class*="facet"], [role="combobox"]')
-      .first();
-    const filterButton = page.getByRole('button', { name: /filter/i });
+    // Wait for content to finish loading first
+    const contentCard = page.locator('[data-testid="discover-content-card"]').first();
+    const emptyState = page.getByText(/no content found/i).first();
+    await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
-    const hasFilters = await filterControls.isVisible({ timeout: 15_000 }).catch(() => false);
-    const hasFilterBtn = await filterButton.isVisible({ timeout: 5_000 }).catch(() => false);
+    // Facet filters use data-testid="facet-filter" in the sidebar (hidden on mobile: "hidden md:block").
+    // The sidebar heading "Explore Content" is also a reliable indicator.
+    const filterControls = page.locator('[data-testid="facet-filter"]').first();
+    const sidebarHeading = page.getByText('Explore Content');
 
-    // At least some filtering mechanism should be present
-    expect(hasFilters || hasFilterBtn).toBe(true);
+    const hasFilters = await filterControls.isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasSidebar = await sidebarHeading.isVisible({ timeout: 5_000 }).catch(() => false);
+
+    // At least the sidebar or facet filters should be present on desktop
+    expect(hasFilters || hasSidebar).toBe(true);
+    logger.info(`Faceted filters visible=${hasFilters}, sidebar heading visible=${hasSidebar}`);
   });
 
   test('CP-4: applying filter narrows results', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     // Wait for catalog to load
-    const courseCards = page.locator(
-      '[class*="course-card"], [data-testid*="course"], [class*="card"]',
-    );
-    const hasCards = await courseCards
-      .first()
-      .isVisible({ timeout: 30_000 })
-      .catch(() => false);
+    const contentCard = page.locator('[data-testid="discover-content-card"]');
+    const emptyState = page.getByText(/no content found/i).first();
+    await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
 
+    const hasCards = await contentCard
+      .first()
+      .isVisible()
+      .catch(() => false);
     if (!hasCards) {
-      test.skip(true, 'No course cards in catalog — skipping filter test');
+      test.skip(true, 'No content cards in catalog — skipping filter test');
       return;
     }
 
-    const beforeCount = await courseCards.count();
+    const beforeCount = await contentCard.count();
 
-    // Try to click the first available filter option
-    const filterOption = page
-      .locator(
-        '[class*="filter"] input[type="checkbox"], [data-testid*="filter"] button, [class*="facet"] button',
-      )
+    // Facet filters have data-testid="facet-filter" with checkboxes inside
+    const filterCheckbox = page
+      .locator('[data-testid="facet-filter"] input[type="checkbox"]')
       .first();
-    const hasFilterOption = await filterOption.isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasFilter = await filterCheckbox.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    if (!hasFilterOption) {
-      // Try dropdown-based filter
-      const filterDropdown = page.locator('[class*="filter"] select, [role="combobox"]').first();
-      const hasDropdown = await filterDropdown.isVisible({ timeout: 5_000 }).catch(() => false);
-      if (!hasDropdown) {
-        test.skip(true, 'No filter options found');
-        return;
-      }
+    if (!hasFilter) {
+      test.skip(true, 'No facet filter checkboxes found');
+      return;
     }
 
-    await filterOption.click();
-    await page.waitForTimeout(2_000);
+    await filterCheckbox.click();
 
-    const afterCount = await courseCards.count();
-    // After filtering, count should change (decrease or stay same if all match)
+    // Wait for filtered results
+    await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const afterCount = await contentCard.count();
+    logger.info(`Filter applied: ${beforeCount} → ${afterCount} cards`);
     expect(afterCount).toBeGreaterThanOrEqual(0);
   });
 
   test('CP-5: clearing filter restores full catalog', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    // Discover page uses URL query param ?q= for search, not a visible search input.
+    // Navigate with a nonsense query, then clear it by navigating without the param.
+    await page.goto(`${SKILL_HOST}/discover?q=xyznonexistent`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    const searchInput = page
-      .getByRole('searchbox')
-      .or(page.getByPlaceholder(/search/i))
-      .or(page.locator('input[type="search"]'));
-    const hasSearch = await searchInput.isVisible({ timeout: 30_000 }).catch(() => false);
+    // Wait for filtered results (likely empty)
+    const contentCard = page.locator('[data-testid="discover-content-card"]').first();
+    const emptyState = page.getByText(/no content found/i).first();
+    await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
-    if (!hasSearch) {
-      test.skip(true, 'Search input not available');
-      return;
-    }
+    // Clear the search by navigating without query param
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    // Apply a search filter
-    await searchInput.fill('xyznonexistent');
-    await searchInput.press('Enter');
-    await page.waitForTimeout(2_000);
+    // Catalog should be restored — wait for content cards or empty state
+    await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
-    // Clear the search
-    await searchInput.clear();
-    await searchInput.press('Enter');
-    await page.waitForTimeout(2_000);
-
-    // Catalog should be restored
-    const courseCards = page.locator(
-      '[class*="course-card"], [data-testid*="course"], [class*="card"]',
-    );
-    const emptyState = page.getByText(/no results|no courses/i);
-
-    const hasCards = await courseCards
-      .first()
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    const hasEmpty = await emptyState.isVisible({ timeout: 5_000 }).catch(() => false);
-
-    // After clearing, either cards return or the catalog was always empty
+    const hasCards = await contentCard.isVisible().catch(() => false);
+    const hasEmpty = await emptyState.isVisible().catch(() => false);
     expect(hasCards || hasEmpty).toBe(true);
+    logger.info(hasCards ? 'Catalog restored with content cards' : 'Catalog empty state shown');
   });
 
   test('CP-6: click course navigates to about page', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    const courseCard = page
-      .locator('[class*="course-card"], [data-testid*="course"], [class*="card"]')
-      .first();
-    const hasCards = await courseCard.isVisible({ timeout: 30_000 }).catch(() => false);
+    const contentCard = page.locator('[data-testid="discover-content-card"]').first();
+    const emptyState = page.getByText(/no content found/i).first();
+    await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
+    const hasCards = await contentCard.isVisible().catch(() => false);
     if (!hasCards) {
-      test.skip(true, 'No courses in catalog — skipping click test');
+      test.skip(true, 'No content in catalog — skipping click test');
       return;
     }
 
-    const courseLink = courseCard.getByRole('link').first();
-    const hasLink = await courseLink.isVisible({ timeout: 5_000 }).catch(() => false);
+    // DiscoverContentCard onClick navigates to /courses/{id} for courses,
+    // or opens a modal for pathways/programs
+    await contentCard.click();
 
-    if (hasLink) {
-      await courseLink.click();
+    // Wait for either a navigation or a dialog to appear
+    const dialog = page.getByRole('dialog').first();
+    const navigated = await page
+      .waitForURL((url) => url.href.includes('/courses/'), { timeout: 10_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (navigated) {
+      expect(page.url()).toContain('/courses/');
+      logger.info(`Navigated to course: ${page.url()}`);
     } else {
-      await courseCard.click();
+      // Pathway/program card opens a modal instead
+      const hasDialog = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
+      expect(hasDialog).toBe(true);
+      logger.info('Content card opened a detail modal');
     }
-
-    await page.waitForURL(
-      (url) =>
-        url.href.includes('/course') || url.href.includes('/about') || url.href.includes('/detail'),
-      { timeout: 30_000 },
-    );
-    expect(page.url()).toMatch(/course|about|detail/);
   });
 
   test('CP-7: filter drawer on mobile viewport', async ({ page }) => {
     // Resize to mobile viewport
     await page.setViewportSize({ width: 375, height: 812 });
 
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
     // On mobile, filters are typically behind a drawer/button
     const filterToggle = page
       .getByRole('button', { name: /filter/i })
       .or(page.locator('[class*="filter-toggle"], [data-testid*="filter-toggle"]'));
-    const hasToggle = await filterToggle.isVisible({ timeout: 15_000 }).catch(() => false);
+    const hasToggle = await filterToggle.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasToggle) {
       // Some designs show filters inline even on mobile
       const inlineFilter = page.locator('[class*="filter"]').first();
-      const hasInline = await inlineFilter.isVisible({ timeout: 5_000 }).catch(() => false);
+      const hasInline = await inlineFilter.isVisible({ timeout: 120_000 }).catch(() => false);
       expect(hasInline || true).toBe(true); // Graceful — mobile layout may vary
       return;
     }
@@ -242,47 +196,32 @@ test.describe('Journey 14: Course Discovery', () => {
   });
 
   test('CP-8: pagination loads more courses', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
-    });
+    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await waitForAppShell(page);
 
-    const courseCards = page.locator(
-      '[class*="course-card"], [data-testid*="course"], [class*="card"]',
-    );
-    const hasCards = await courseCards
+    const contentCard = page.locator('[data-testid="discover-content-card"]');
+    const emptyState = page.getByText(/no content found/i).first();
+    await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const hasCards = await contentCard
       .first()
-      .isVisible({ timeout: 30_000 })
+      .isVisible()
       .catch(() => false);
-
     if (!hasCards) {
-      test.skip(true, 'No courses in catalog — skipping pagination test');
+      test.skip(true, 'No content in catalog — skipping pagination test');
       return;
     }
 
-    const loadMore = page.getByRole('button', { name: /load more|see more|show more|next/i });
-    const pagination = page
-      .getByRole('navigation', { name: /pagination/i })
-      .or(page.locator('[class*="pagination"]'));
+    // ReactPaginate renders pagination controls
+    const pagination = page.locator('ul.pagination, nav[aria-label*="pagination"]').first();
+    const hasPagination = await pagination.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    const hasLoadMore = await loadMore.isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasPagination = await pagination.isVisible({ timeout: 5_000 }).catch(() => false);
-
-    if (!hasLoadMore && !hasPagination) {
-      // Fewer courses than page size — no pagination needed
+    if (!hasPagination) {
+      logger.info('No pagination — fewer items than page size');
       return;
     }
 
-    if (hasLoadMore) {
-      const beforeCount = await courseCards.count();
-      await loadMore.click();
-      await page.waitForTimeout(3_000);
-      const afterCount = await courseCards.count();
-      expect(afterCount).toBeGreaterThanOrEqual(beforeCount);
-    }
-
-    if (hasPagination) {
-      await expect(pagination).toBeVisible();
-    }
+    await expect(pagination).toBeVisible();
+    logger.info('Pagination controls are visible');
   });
 });

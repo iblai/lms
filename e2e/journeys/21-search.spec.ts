@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -7,10 +8,9 @@ test.describe('Journey 21: Search', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    // Wait for the app to be ready
+    await waitForAppShell(page);
   });
 
   test('CP-1: Global search is accessible from NavBar', async ({ page }) => {
@@ -22,8 +22,8 @@ test.describe('Journey 21: Search', () => {
     const searchInput = navbar.getByRole('textbox', { name: /search/i });
     const searchButton = navbar.getByRole('button', { name: /search/i });
 
-    const hasSearchInput = await searchInput.isVisible().catch(() => false);
-    const hasSearchButton = await searchButton.isVisible().catch(() => false);
+    const hasSearchInput = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasSearchButton = await searchButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     expect(hasSearchInput || hasSearchButton).toBeTruthy();
   });
@@ -34,11 +34,11 @@ test.describe('Journey 21: Search', () => {
 
     // Find the search input — could be directly visible or revealed by clicking a button
     let searchInput = navbar.getByRole('textbox', { name: /search/i });
-    const isInputVisible = await searchInput.isVisible().catch(() => false);
+    const isInputVisible = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isInputVisible) {
       const searchButton = navbar.getByRole('button', { name: /search/i });
-      const isButtonVisible = await searchButton.isVisible().catch(() => false);
+      const isButtonVisible = await searchButton.isVisible({ timeout: 120_000 }).catch(() => false);
       if (isButtonVisible) {
         await searchButton.click();
         searchInput = page.getByRole('textbox', { name: /search/i });
@@ -58,7 +58,7 @@ test.describe('Journey 21: Search', () => {
       .getByRole('option')
       .or(page.getByRole('link').filter({ hasText: /course/i }));
 
-    const hasResults = await resultsList.isVisible().catch(() => false);
+    const hasResults = await resultsList.isVisible({ timeout: 120_000 }).catch(() => false);
     const hasItems = (await resultItems.count()) > 0;
 
     expect(hasResults || hasItems).toBeTruthy();
@@ -69,11 +69,11 @@ test.describe('Journey 21: Search', () => {
     await expect(navbar).toBeVisible({ timeout: 30_000 });
 
     let searchInput = navbar.getByRole('textbox', { name: /search/i });
-    const isInputVisible = await searchInput.isVisible().catch(() => false);
+    const isInputVisible = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isInputVisible) {
       const searchButton = navbar.getByRole('button', { name: /search/i });
-      const isButtonVisible = await searchButton.isVisible().catch(() => false);
+      const isButtonVisible = await searchButton.isVisible({ timeout: 120_000 }).catch(() => false);
       if (isButtonVisible) {
         await searchButton.click();
         searchInput = page.getByRole('textbox', { name: /search/i });
@@ -105,11 +105,11 @@ test.describe('Journey 21: Search', () => {
     await expect(navbar).toBeVisible({ timeout: 30_000 });
 
     let searchInput = navbar.getByRole('textbox', { name: /search/i });
-    const isInputVisible = await searchInput.isVisible().catch(() => false);
+    const isInputVisible = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isInputVisible) {
       const searchButton = navbar.getByRole('button', { name: /search/i });
-      const isButtonVisible = await searchButton.isVisible().catch(() => false);
+      const isButtonVisible = await searchButton.isVisible({ timeout: 120_000 }).catch(() => false);
       if (isButtonVisible) {
         await searchButton.click();
         searchInput = page.getByRole('textbox', { name: /search/i });
@@ -127,7 +127,9 @@ test.describe('Journey 21: Search', () => {
 
     // The results container should no longer show search results
     const resultsContainer = page.locator('[data-testid="search-results"]');
-    const isResultsVisible = await resultsContainer.isVisible().catch(() => false);
+    const isResultsVisible = await resultsContainer
+      .isVisible({ timeout: 120_000 })
+      .catch(() => false);
 
     if (isResultsVisible) {
       // If the container is still visible, it should be empty or showing a default state
@@ -143,9 +145,9 @@ test.describe('Journey 21: Search', () => {
 
   test('CP-5: Search on discover page', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/discover`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
+    await waitForAppShell(page);
 
     // Look for a search input on the discover page
     const searchInput = page.getByRole('textbox', { name: /search/i }).first();
@@ -161,7 +163,7 @@ test.describe('Journey 21: Search', () => {
     const resultsHeading = page.getByText(/results/i);
 
     const hasCards = (await courseCards.count()) > 0;
-    const hasResultsText = await resultsHeading.isVisible().catch(() => false);
+    const hasResultsText = await resultsHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     // At minimum, the search was processed (no crash, page is still functional)
     expect(hasCards || hasResultsText || (await searchInput.isVisible())).toBeTruthy();

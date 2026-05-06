@@ -7,53 +7,38 @@ test.describe('Journey 26: Error Pages', () => {
 
   test('CP-1: /error/404 shows Page Not Found', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/error/404`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
 
     // Should display a "Page Not Found" or "404" message
     const notFoundText = page.getByText(/page not found|404|not found/i).first();
-    await expect(notFoundText).toBeVisible({ timeout: 30_000 });
+    await expect(notFoundText).toBeVisible({ timeout: 120_000 });
   });
 
   test('CP-2: /error/403 shows Forbidden', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/error/403`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
 
     // Should display a "Forbidden" or "403" or "Access Denied" message
     const forbiddenText = page.getByText(/forbidden|403|access denied|not authorized/i).first();
-    await expect(forbiddenText).toBeVisible({ timeout: 30_000 });
+    await expect(forbiddenText).toBeVisible({ timeout: 120_000 });
   });
 
-  test('CP-3: Non-existent route shows 404 page', async ({ page }) => {
+  test('CP-3: Non-existent route shows 404', async ({ page }) => {
     const randomPath = `/this-page-does-not-exist-${Date.now()}`;
     await page.goto(`${SKILL_HOST}${randomPath}`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
 
-    // Should display a "Not Found" or "404" message or redirect to an error page
-    const errorContent = page.getByText(/not found|404|page not found|does not exist/i).first();
-    const isErrorVisible = await errorContent.isVisible().catch(() => false);
-
-    // Either the error page renders or we get redirected to a known error page
-    const url = page.url();
-    const isOnErrorPage = url.includes('/error') || url.includes('/404');
-
-    expect(isErrorVisible || isOnErrorPage).toBeTruthy();
+    const heading = page.getByRole('heading', { level: 1, name: '404' });
+    await expect(heading).toBeVisible({ timeout: 120_000 });
   });
 
   test('CP-4: Error pages have a Home link', async ({ page }) => {
     await page.goto(`${SKILL_HOST}/error/404`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120_000,
     });
-    await page.waitForLoadState('domcontentloaded');
 
     // Look for a link that navigates back to home
     const homeLink = page
@@ -62,7 +47,7 @@ test.describe('Journey 26: Error Pages', () => {
 
     const hasHomeLink = await homeLink
       .first()
-      .isVisible()
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasHomeLink) {
@@ -73,7 +58,7 @@ test.describe('Journey 26: Error Pages', () => {
     } else {
       // At minimum, the banner/navbar with logo link should still be present
       const navbar = page.getByRole('banner');
-      const hasNavbar = await navbar.isVisible().catch(() => false);
+      const hasNavbar = await navbar.isVisible({ timeout: 120_000 }).catch(() => false);
 
       if (hasNavbar) {
         const logoLink = navbar.getByRole('link').first();

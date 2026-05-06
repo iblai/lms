@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-03-27 | 215 checkpoints | 29 journeys | 100% covered
+> Last updated: 2026-05-05 | 224 checkpoints | 29 journeys | 100% covered
 
 ## How This Works
 
@@ -71,9 +71,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (12 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (22 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `services/course-metadata.ts`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -87,31 +87,41 @@ When adding a new page or modifying an existing user flow:
 - [x] Bookmarks tab is accessible from the course content navigation _(if available)_
 - [x] URL updates correctly when switching between tabs
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
+- [x] Agent tab is visible when `course.agent_content_mode === true` and its link points at `/course-content/<id>/agent`
+- [x] `/agent` route mounts the `<mentor-ai>` chat full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class
+- [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode !== true`
+- [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
+- [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
+- [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<mentor-ai>` shadow-root iframe and the agent renders an AI response
+- [x] New-chat button on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
+- [x] Learning/Assessment toggle on `/agent` only renders when `getCourseBlockDetails` returns a block of `type=ibl_mentor_xblock`
+- [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
+- [x] On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch
 
 ---
 
-## Journey 6: Profile — Activity (6 checkpoints) — `journeys/06-profile-activity.spec.ts`
+## Journey 6: Public Profile (6 checkpoints) — `journeys/06-profile-activity.spec.ts`
 
-**Source files:** `app/profile/page.tsx`, `app/profile/layout.tsx`, `components/profile-tabs.tsx`, `components/profile-sidebar.tsx`
+**Source files:** `app/profile/public/page.tsx`, `app/profile/layout.tsx`, `components/profile-tabs.tsx`
 
-- [x] Profile page (/profile) loads with Activity tab selected by default
-- [x] Activity tab displays time-spent chart or activity statistics
-- [x] Profile sidebar shows user info (name, avatar, role)
+- [x] Public Profile tab is active on /profile/public
+- [x] About section displayed by default
+- [x] User name heading is displayed
 - [x] Profile navigation tabs (Activity, Skills, Credentials, Pathways, Programs, Courses) are visible
-- [x] Clicking each profile tab navigates to the correct sub-route
-- [x] Profile page breadcrumb or heading identifies the current user
+- [x] Tab navigation works between profile sub-routes
+- [x] Public profile has content tabs (About, Education, Experience)
 
 ---
 
 ## Journey 7: Profile — Skills (5 checkpoints) — `journeys/07-profile-skills.spec.ts`
 
-**Source files:** `app/profile/skills/page.tsx`, `components/skill-box.tsx`
+**Source files:** `app/profile/skills/page.tsx`, `components/skill-box.tsx`, `components/default-empty-box.tsx`
 
-- [x] Skills page (/profile/skills) loads and displays a list of user skills or empty state
-- [x] Each skill card shows skill name and proficiency level
-- [x] Clicking a skill card opens a skill detail modal with additional info
-- [x] Skill detail modal can be closed via the close button
-- [x] "Add Skill" button or functionality is available _(if applicable)_
+- [x] Skills page loads with Earned, Self-Reported, and Desired sections
+- [x] Skill cards show name or empty state message
+- [x] Clicking self-reported skill opens detail modal
+- [x] Skill detail modal can be closed
+- [x] Add Skill button opens dialog
 
 ---
 
@@ -218,15 +228,16 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 16: Analytics Overview (5 checkpoints) — `journeys/16-analytics-overview.spec.ts`
+## Journey 16: Analytics Overview (6 checkpoints) — `journeys/16-analytics-overview.spec.ts`
 
-**Source files:** `app/analytics/page.tsx`, `app/analytics/layout.tsx`, `components/analytics-sidebar.tsx`
+**Source files:** `app/analytics/page.tsx`, `app/analytics/layout.tsx`, `app/loading.tsx`, `components/analytics-sidebar.tsx`, `components/spinner.tsx`
 
 - [x] Analytics page (/analytics) loads with an Overview tab and summary dashboard _(admin only)_
 - [x] Overview displays key metrics cards (users, courses, engagement stats)
 - [x] Analytics sidebar tabs (Overview, Users, Courses, Programs, Topics, Transcripts, Financial, Data Reports) are visible
 - [x] Time filter controls are functional and update dashboard data
 - [x] Groups filter dropdown is visible and can filter analytics by user groups
+- [x] Global suspense loader (`app/loading.tsx` + `components/spinner.tsx`) hides before analytics content renders
 
 ---
 

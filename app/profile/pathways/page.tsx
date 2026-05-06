@@ -135,6 +135,7 @@ export default function PathwaysPage() {
             filteredPathways.map((pathway, index) => (
               <div
                 key={index}
+                data-testid="pathway-card"
                 className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
                 onClick={() => setSelectedPathway(pathway)}
               >

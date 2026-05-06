@@ -7,6 +7,18 @@ import { Page, expect } from '@playwright/test';
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
 /**
+ * Wait for the app shell to be visible, confirming React has mounted.
+ * The <header> element is rendered by NavBar on every authenticated page.
+ */
+export async function waitForAppShell(page: Page, timeout = 120_000): Promise<void> {
+  await expect(page.locator('header').first()).toBeVisible({ timeout });
+}
+
+export async function waitForLoaderToDisappear(page: Page, timeout = 30_000): Promise<void> {
+  await expect(page.getByRole('status', { name: 'Loading...' })).not.toBeVisible({ timeout });
+}
+
+/**
  * Safe URL wait that handles Firefox NS_BINDING_ABORTED and Safari policy errors.
  */
 export async function safeWaitForURL(
@@ -28,11 +40,8 @@ export async function safeWaitForURL(
  * Navigate to the skills home page (authenticated).
  */
 export async function navigateToHome(page: Page): Promise<void> {
-  await page.goto(`${SKILL_HOST}/home`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 120_000,
-  });
-  await page.waitForLoadState('domcontentloaded');
+  await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+  await waitForAppShell(page);
 }
 
 /**
@@ -45,7 +54,7 @@ export async function navigateToCourseFromHome(page: Page): Promise<string> {
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();

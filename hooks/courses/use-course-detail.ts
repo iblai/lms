@@ -86,10 +86,12 @@ export const useCourseDetail = (courseId: string) => {
   };
 
   const handleAccessCourse = () => {
+    const defaultTab = course?.agent_content_mode === true ? 'agent' : 'course';
+    const url = `/course-content/${courseId}/${defaultTab}`;
     if (inIframe()) {
-      window.open(`/course-content/${courseId}/course`, '_blank');
+      window.open(url, '_blank');
     } else {
-      router.push(`/course-content/${courseId}/course`);
+      router.push(url);
     }
   };
 
@@ -292,12 +294,16 @@ export const useCourseDetail = (courseId: string) => {
     }
   };
 
-  const handleOpenLesson = (lessonId: string | null, checkEligibility = false) => {
+  const handleOpenLesson = (
+    lessonId: string | null,
+    checkEligibility = false,
+    targetTab: 'course' | 'agent' = 'course',
+  ) => {
     if (
       lessonId &&
       (checkEligibility ? courseEligibility.btn_label === ACCESS_COURSE_LABEL : true)
     ) {
-      const URL = `/course-content/${courseId}/course?unit_id=${lessonId}`;
+      const URL = `/course-content/${courseId}/${targetTab}?unit_id=${lessonId}`;
       if (inIframe()) {
         window.open(URL, '_blank');
       } else {

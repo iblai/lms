@@ -7,14 +7,14 @@ const AUTH_FLOW =
   (process.env.AUTH_FLOW as 'username_password' | 'magic_link' | 'sso' | 'direct_sso') ||
   'username_password';
 
-setup('authenticate', async ({ page, browserName }) => {
-  const storageStatePath = path.join(
-    __dirname,
-    `../playwright/.auth/user-${browserName === 'chromium' ? 'chrome' : browserName === 'webkit' ? 'safari' : browserName}.json`,
-  );
+setup('authenticate', async ({ page }, testInfo) => {
+  // Derive browser label from project name (e.g. "setup-chrome" → "chrome")
+  // This avoids browserName collisions — Edge reports as "chromium", same as Chrome.
+  const browserLabel = testInfo.project.name.replace('setup-', '');
+  const storageStatePath = path.join(__dirname, `../playwright/.auth/user-${browserLabel}.json`);
 
   // Navigate to the skills host
-  await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+  await page.goto(SKILL_HOST, { timeout: 120_000 });
 
   // Wait for either the app to load (already logged in) or auth redirect
   const isAlreadyLoggedIn = await page

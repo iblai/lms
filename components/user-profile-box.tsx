@@ -25,6 +25,7 @@ export const UserProfileBox = () => {
         <button
           onClick={() => router.push('/profile/public')}
           className="rounded-sm p-1 text-[var(--text-light)] hover:bg-[var(--sidebar-hover-bg)]"
+          aria-label="Edit profile"
         >
           <Edit className="h-5 w-5" />
         </button>

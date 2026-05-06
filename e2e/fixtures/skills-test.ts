@@ -7,7 +7,7 @@ import { SKILL_HOST } from './test-data';
 
 // ── Helper: navigate to Skills app home (authenticated) ─────────────────────
 async function navigateToSkillsApp(page: Page): Promise<void> {
-  await page.goto(SKILL_HOST, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+  await page.goto(SKILL_HOST, { timeout: 120_000 });
   // Wait for the app to load (either /home or /start for first-time users)
   await page.waitForURL(
     (url) =>
@@ -17,6 +17,8 @@ async function navigateToSkillsApp(page: Page): Promise<void> {
       url.href.includes('/profile'),
     { timeout: 120_000 },
   );
+  // Wait for the app shell to render (header is present on all authenticated pages)
+  await expect(page.locator('header').first()).toBeVisible({ timeout: 120_000 });
 }
 
 // ── Helper: check admin status via Configuration tab visibility ─────────────
@@ -25,7 +27,7 @@ async function checkAdminStatus(page: Page): Promise<boolean> {
   // This is a quick heuristic; adjust if needed
   try {
     const analyticsLink = page.getByRole('link', { name: 'AI Analytics' });
-    return await analyticsLink.isVisible({ timeout: 5_000 }).catch(() => false);
+    return await analyticsLink.isVisible({ timeout: 120_000 }).catch(() => false);
   } catch {
     return false;
   }

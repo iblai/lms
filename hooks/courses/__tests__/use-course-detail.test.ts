@@ -138,7 +138,7 @@ describe('useCourseDetail', () => {
   });
 
   describe('handleAccessCourse', () => {
-    it('calls router.push when not in iframe', () => {
+    it('routes to /course by default when course data is unavailable', () => {
       (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(false);
       const { result } = renderHook(() => useCourseDetail('course-123'));
       act(() => {
@@ -147,7 +147,7 @@ describe('useCourseDetail', () => {
       expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course');
     });
 
-    it('calls window.open when in iframe', () => {
+    it('opens /course in new tab when in iframe and course is default', () => {
       (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(true);
       const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
       const { result } = renderHook(() => useCourseDetail('course-123'));
@@ -156,6 +156,40 @@ describe('useCourseDetail', () => {
       });
       expect(openSpy).toHaveBeenCalledWith('/course-content/course-123/course', '_blank');
       openSpy.mockRestore();
+    });
+
+    it('routes to /agent when agent_content_mode is true', async () => {
+      (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      mockHandleFetchCourseMetaData.mockResolvedValue({
+        display_name: 'Test',
+        agent_content_mode: true,
+        course_content_mode: true,
+      });
+      const { result } = renderHook(() => useCourseDetail('course-123'));
+      await act(async () => {
+        await result.current.handleFetchCourseInfo();
+      });
+      act(() => {
+        result.current.handleAccessCourse();
+      });
+      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/agent');
+    });
+
+    it('routes to /course when agent_content_mode is null', async () => {
+      (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      mockHandleFetchCourseMetaData.mockResolvedValue({
+        display_name: 'Test',
+        agent_content_mode: null,
+        course_content_mode: true,
+      });
+      const { result } = renderHook(() => useCourseDetail('course-123'));
+      await act(async () => {
+        await result.current.handleFetchCourseInfo();
+      });
+      act(() => {
+        result.current.handleAccessCourse();
+      });
+      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course');
     });
   });
 

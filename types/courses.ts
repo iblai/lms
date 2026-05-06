@@ -86,6 +86,8 @@ export interface CourseEdxData {
   display_name?: string;
   mentor_hidden?: boolean;
   mentor_uuid?: string;
+  agent_content_mode?: boolean | null;
+  course_content_mode?: boolean | null;
 }
 
 export interface Course {
@@ -181,6 +183,21 @@ export interface CourseOutlineChildNode {
   num_graded_problems?: number;
   children?: CourseOutlineChildNode[];
   special_exam_info?: boolean;
+}
+
+export interface CourseBlockDetailsBlock {
+  id: string;
+  block_id: string;
+  lms_web_url?: string;
+  legacy_web_url?: string;
+  student_view_url?: string;
+  type: string;
+  display_name: string;
+}
+
+export interface CourseBlockDetailsResponse {
+  root: string;
+  blocks: Record<string, CourseBlockDetailsBlock>;
 }
 
 export interface CourseOutlineResponse {

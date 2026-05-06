@@ -3,7 +3,7 @@ import { useContext, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import _ from 'lodash';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
-import { ChevronRight, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
 import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
@@ -24,13 +24,14 @@ export const EdxIframe = () => {
     iframeUrl,
     setIframeUrl,
     refresher,
+    agentMode,
   } = useContext(EdxIframeContext);
-  const { selectLesson, currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
+  const isAssessmentMode = agentMode === 'assessment';
+  const { currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
 
   const searchParams = useSearchParams();
   const [fetchingIframeData, setFetchingIframeData] = useState(true);
   const { getIframeURL, findSequentialParent } = useEdxIframe();
-  const [iframeLoaded, setIframeLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { navigator } = useCourseNavigator(courseOutline, currentUnitID || courseID);
 
@@ -41,7 +42,7 @@ export const EdxIframe = () => {
       setExamInfo(null);
       setCurrentlyInExamSubsection(false);
       setFetchingIframeData(true);
-      if (activeTab === 'course') {
+      if (activeTab === 'course' || activeTab === 'agent') {
         getIframeURL(courseID, courseOutline, async (url) => {
           try {
             const courseOutlineData = Array.isArray(courseOutline?.children)
@@ -84,30 +85,6 @@ export const EdxIframe = () => {
       }
     }
   }, 300);
-
-  const navigateEdxURL = (unitID: string) => {
-    selectLesson(unitID);
-  };
-
-  const handlePreviousBtnClick = () => {
-    const target = navigator.moveToPrevious();
-    if (!target) {
-      return;
-    }
-    setTimeout(() => {
-      navigateEdxURL(target.id);
-    }, 100);
-  };
-
-  const handleNextBtnClick = () => {
-    const target = navigator.moveToNext();
-    if (!target) {
-      return;
-    }
-    setTimeout(() => {
-      navigateEdxURL(target.id);
-    }, 100);
-  };
 
   // Store iframeUrl in a ref so we can access it in the message handler
   const iframeUrlRef = useRef(iframeUrl);
@@ -195,7 +172,13 @@ export const EdxIframe = () => {
           <Loader2 className="h-10 w-10 animate-spin" />
         </div>
       ) : (
-        <div className={cn('w-full p-6', `active-tab-${activeTab} course-edx-iframe-container`)}>
+        <div
+          className={cn(
+            'w-full',
+            isAssessmentMode ? 'p-0' : 'p-6',
+            `active-tab-${activeTab} course-edx-iframe-container`,
+          )}
+        >
           {examInfo && <TimedExam />}
           {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
             <iframe
@@ -203,47 +186,26 @@ export const EdxIframe = () => {
               src={iframeUrl}
               onLoad={() => {
                 setFetchingIframeData(false);
-                setIframeLoaded(true);
                 refetchCourseOutline(false);
               }}
               id="edx-iframe"
               title="Forum InnerWare"
               sandbox="allow-modals allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
               frameBorder={0}
-              style={{ width: '100%', height: 'calc(100vh - 100px - 62px)' }}
+              className={
+                isAssessmentMode
+                  ? 'h-[calc(100vh-258px)] w-full md:h-[calc(100vh-260px)] lg:h-[calc(100vh-250px)]'
+                  : undefined
+              }
+              style={
+                isAssessmentMode
+                  ? { width: '100%' }
+                  : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
+              }
               allowFullScreen={true}
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"
             />
           )}
-          {iframeLoaded &&
-            activeTab === 'course' &&
-            !fetchingIframeData &&
-            (!navigator.isPreviousHidden() || !navigator.isNextHidden()) && (
-              <div
-                className={`flex ${
-                  navigator.isPreviousHidden() ? 'justify-end' : 'justify-between'
-                } mt-4 items-center`}
-              >
-                {!navigator.isPreviousHidden() && (
-                  <button
-                    onClick={handlePreviousBtnClick}
-                    className="flex items-center rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-                  >
-                    <ChevronRight className="mr-1 h-4 w-4 rotate-180 transform" />
-                    Previous Lesson
-                  </button>
-                )}
-                {!navigator.isNextHidden() && (
-                  <button
-                    onClick={handleNextBtnClick}
-                    className="flex items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)]"
-                  >
-                    Next Lesson
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            )}
         </div>
       )}
     </>

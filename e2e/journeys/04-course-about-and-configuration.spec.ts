@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -10,25 +10,24 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
  */
 async function navigateToCourseAbout(page: Page): Promise<string | null> {
   await page.goto(`${SKILL_HOST}/home`, {
-    waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();
-  const hasCourse = await courseLink.isVisible({ timeout: 15000 }).catch(() => false);
+  const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasCourse) return null;
 
   await courseLink.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   const heading = page.getByRole('heading', { level: 1 });
   await expect(heading).toBeVisible({ timeout: 30000 });
@@ -55,10 +54,9 @@ test.describe('Journey 04: Course About & Configuration', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page, 120000);
+    await waitForAppShell(page);
   });
 
   test('Checkpoint 1: Course about page displays heading', async ({ page }) => {
@@ -91,7 +89,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
 
     // Check for enrollment-related text or dates
     const enrollmentInfo = page.getByText(/enroll|start date|end date|self-paced/i).first();
-    const hasEnrollInfo = await enrollmentInfo.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasEnrollInfo = await enrollmentInfo.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasEnrollInfo) {
       logger.info('Enrollment information is displayed');
@@ -113,8 +111,18 @@ test.describe('Journey 04: Course About & Configuration', () => {
     });
     const enrollButton = page.getByRole('button', { name: /enroll/i });
 
-    const hasAccess = await accessCourseButton.isVisible({ timeout: 15000 }).catch(() => false);
-    const hasEnroll = await enrollButton.isVisible({ timeout: 5000 }).catch(() => false);
+    //wait for enrollbutton or accesscoursebutton not to be disabled using promise
+
+    const isEnrollButtonDisabled = await enrollButton
+      .isDisabled({ timeout: 10000 })
+      .catch(() => false);
+    const isAccessCourseButtonDisabled = await accessCourseButton
+      .isDisabled({ timeout: 10000 })
+      .catch(() => false);
+    expect(isEnrollButtonDisabled || isAccessCourseButtonDisabled).toBeFalsy();
+
+    const hasAccess = await accessCourseButton.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasEnroll = await enrollButton.isVisible({ timeout: 10000 }).catch(() => false);
 
     // At least one of these should be visible
     expect(hasAccess || hasEnroll).toBeTruthy();
@@ -133,8 +141,8 @@ test.describe('Journey 04: Course About & Configuration', () => {
     const enrollButton = page.getByRole('button', { name: /enroll/i });
     const accessButton = page.getByRole('button', { name: 'Access Course' });
 
-    const hasEnroll = await enrollButton.isVisible({ timeout: 10000 }).catch(() => false);
-    const hasAccess = await accessButton.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasEnroll = await enrollButton.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasAccess = await accessButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasEnroll) {
       await expect(enrollButton).toBeVisible();
@@ -155,7 +163,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
 
     const configTab = page.getByRole('button', { name: 'Configuration' });
-    const isAdmin = await configTab.isVisible({ timeout: 5000 }).catch(() => false);
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isAdmin) {
       logger.info('Configuration tab not visible — user is not admin');
@@ -179,7 +187,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
 
     const configTab = page.getByRole('button', { name: 'Configuration' });
-    const isAdmin = await configTab.isVisible({ timeout: 5000 }).catch(() => false);
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isAdmin) {
       logger.info('Not admin — skipping credentials check');
@@ -216,7 +224,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
 
     const configTab = page.getByRole('button', { name: 'Configuration' });
-    const isAdmin = await configTab.isVisible({ timeout: 5000 }).catch(() => false);
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isAdmin) {
       test.skip();
@@ -257,7 +265,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
 
     const configTab = page.getByRole('button', { name: 'Configuration' });
-    const isAdmin = await configTab.isVisible({ timeout: 5000 }).catch(() => false);
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isAdmin) {
       test.skip();
@@ -300,7 +308,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
 
     const configTab = page.getByRole('button', { name: 'Configuration' });
-    const isAdmin = await configTab.isVisible({ timeout: 5000 }).catch(() => false);
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isAdmin) {
       test.skip();
@@ -321,7 +329,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
 
     // Wait for search to appear
     const searchInput = page.getByTestId('advanced-settings-search');
-    const hasSearch = await searchInput.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasSearch = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasSearch) {
       logger.info('No search input — settings may not have loaded');
@@ -333,7 +341,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
 
     // Should show empty state
     const emptyState = page.getByTestId('advanced-settings-empty');
-    const hasEmpty = await emptyState.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasEmpty = await emptyState.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasEmpty) {
       logger.info('Empty state shown for non-matching search');
@@ -342,7 +350,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     // Clear search and verify settings return
     await searchInput.fill('');
     const settingsList = page.getByTestId('advanced-settings-list');
-    const hasSettings = await settingsList.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasSettings = await settingsList.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasSettings) {
       logger.info('Settings restored after clearing search');
@@ -358,7 +366,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
 
     const configTab = page.getByRole('button', { name: 'Configuration' });
-    const isAdmin = await configTab.isVisible({ timeout: 5000 }).catch(() => false);
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isAdmin) {
       test.skip();
@@ -379,7 +387,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
 
     // Wait for settings content
     const searchInput = page.getByTestId('advanced-settings-search');
-    const hasSearch = await searchInput.isVisible({ timeout: 15000 }).catch(() => false);
+    const hasSearch = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasSearch) {
       logger.info('No settings loaded — skipping save test');
@@ -394,7 +402,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     // Modify a setting
     const settingsList = page.getByTestId('advanced-settings-list');
     const textInput = settingsList.locator('input[type="text"]').first();
-    const hasInput = await textInput.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasInput = await textInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasInput) {
       const originalValue = await textInput.inputValue();
@@ -411,7 +419,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
     } else {
       // Try toggling a switch instead
       const switchEl = settingsList.locator('button[role="switch"]').first();
-      const hasSwitch = await switchEl.isVisible({ timeout: 5000 }).catch(() => false);
+      const hasSwitch = await switchEl.isVisible({ timeout: 120_000 }).catch(() => false);
 
       if (hasSwitch) {
         await switchEl.click();

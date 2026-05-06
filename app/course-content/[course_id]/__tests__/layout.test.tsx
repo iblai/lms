@@ -12,9 +12,19 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-// Mock next/navigation
+// Mock next/navigation — return stable references so effects don't loop
+const mockState = vi.hoisted(() => ({ searchParams: new URLSearchParams() }));
 vi.mock('next/navigation', () => ({
-  useSearchParams: vi.fn(() => new URLSearchParams()),
+  useSearchParams: vi.fn(() => mockState.searchParams),
+  usePathname: vi.fn(() => '/course-content/course-v1:test+course+2024/course'),
+}));
+
+// Mock sonner so we can assert toast usage
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 // Mock lodash
@@ -31,12 +41,22 @@ vi.mock('lodash', () => ({
 vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="chevron-right">&gt;</span>,
   ListTree: () => <span data-testid="list-tree">ListTree</span>,
+  MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
 }));
 
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserId: vi.fn(() => 'test-user-id'),
+  getUserName: vi.fn(() => 'test-user'),
+}));
+
+// Mock useGetCourseBlockDetailsQuery — block-details visibility gate
+const mockUseGetCourseBlockDetailsQuery: any = vi.fn(
+  (..._args: any[]) => ({ data: undefined }) as any,
+);
+vi.mock('@/services/course-metadata', () => ({
+  useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
 }));
 
 // Mock useGetDepartmentMemberCheckQuery
@@ -110,6 +130,33 @@ vi.mock('@/components/course-access-guard', () => ({
   CourseAccessGuard: ({ children }: any) => <>{children}</>,
 }));
 
+// Mock CourseLessonNavigator — layout tests don't need to exercise navigator internals
+vi.mock('@/components/course-lesson-navigator', () => ({
+  CourseLessonNavigator: () => (
+    <div data-testid="course-lesson-navigator">CourseLessonNavigator</div>
+  ),
+}));
+
+// Mock Switch / Popover so the toggle is predictably rendered in jsdom
+vi.mock('@/components/ui/switch', () => ({
+  Switch: ({ checked, onCheckedChange, 'aria-label': ariaLabel }: any) => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      data-testid="agent-mode-switch"
+      onClick={() => onCheckedChange(!checked)}
+    />
+  ),
+}));
+
+vi.mock('@/components/ui/popover', () => ({
+  Popover: ({ children }: any) => <>{children}</>,
+  PopoverTrigger: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
+  PopoverContent: ({ children }: any) => <div data-testid="agent-mode-popover">{children}</div>,
+}));
+
 // Mock ExamInfo from data-layer
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   ExamInfo: {},
@@ -154,6 +201,7 @@ describe('CourseContentLayout', () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
+    mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });
   });
 
   it('renders without crashing', () => {
@@ -183,16 +231,136 @@ describe('CourseContentLayout', () => {
     expect(screen.getByTestId('course-outline')).toBeInTheDocument();
   });
 
-  it('renders course navigation tabs (Course, Progress, Dates, Discussion)', () => {
+  it('renders course navigation tabs (Agent, Course, Progress, Dates, Discussion)', () => {
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(screen.getByText('Progress')).toBeInTheDocument();
+    expect(screen.getByText('Dates')).toBeInTheDocument();
+    expect(screen.getByText('Discussion')).toBeInTheDocument();
+  });
+
+  it('hides Agent tab when course.agent_content_mode is not true', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: false, course_content_mode: true },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
+  });
+
+  it('hides Course tab when course.course_content_mode is false', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: true, course_content_mode: false },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(screen.queryByText('Course')).not.toBeInTheDocument();
+  });
+
+  it('hides Agent tab when course.agent_content_mode is null', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: null, course_content_mode: true },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
+  });
+
+  it('shows Course tab when course.course_content_mode is null', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: true, course_content_mode: null },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
     expect(screen.getByText('Course')).toBeInTheDocument();
-    expect(screen.getByText('Progress')).toBeInTheDocument();
-    expect(screen.getByText('Dates')).toBeInTheDocument();
-    expect(screen.getByText('Discussion')).toBeInTheDocument();
+  });
+
+  it('shows Course tab when both course_content_mode and agent_content_mode are false', () => {
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      course: { agent_content_mode: false, course_content_mode: false },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
   });
 
   it('hides Instructor tab when user is not platform admin', () => {
@@ -382,5 +550,298 @@ describe('CourseContentLayout', () => {
     );
 
     expect(screen.getByText('0%')).toBeInTheDocument();
+  });
+
+  it('renders the Agent tab link pointing at the agent route', () => {
+    const { container } = render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    const agentLink = Array.from(container.querySelectorAll('a')).find(
+      (a) => a.textContent?.trim() === 'Agent',
+    );
+    expect(agentLink).toBeTruthy();
+    // The layout uses the raw course_id from params (React.use mock returns the
+    // already-decoded form, so the href keeps the colon/plus characters).
+    expect(agentLink?.getAttribute('href')).toMatch(/\/course-content\/.+\/agent$/);
+  });
+
+  it('renders the CourseLessonNavigator next to the tabs', () => {
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByTestId('course-lesson-navigator')).toBeInTheDocument();
+  });
+
+  describe('unit-switch toast on the agent tab', () => {
+    // Stable outline/unit references avoid render loops when the effect
+    // syncs currentCourseInfo from the mocked getUnitToIframe.
+    const unitA = { id: 'unit-A', display_name: 'Unit A' };
+    const unitB = { id: 'unit-B', display_name: 'Unit B' };
+    const outline = {
+      id: 'course-root',
+      children: [
+        {
+          id: 'chapter-1',
+          display_name: 'Ch 1',
+          children: [
+            {
+              id: 'seq-1',
+              display_name: 'Seq 1',
+              children: [
+                { id: 'unit-A', display_name: 'Unit A', children: [] },
+                { id: 'unit-B', display_name: 'Unit B', children: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const mockUnitLayout = async ({
+      pathname,
+      initialUnit,
+    }: {
+      pathname: string;
+      initialUnit: typeof unitA;
+    }) => {
+      const { useEdxIframe } = await import('@/hooks/courses/use-edx-iframe');
+      const { usePathname } = await import('next/navigation');
+
+      vi.mocked(usePathname).mockReturnValue(pathname);
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        course: { agent_content_mode: true, course_content_mode: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: outline,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      let currentUnit = initialUnit;
+      vi.mocked(useEdxIframe).mockReturnValue({
+        getUnitToIframe: vi.fn(() => currentUnit),
+        getParentsInfosFromSublessonId: vi.fn(() => null),
+      } as any);
+
+      return {
+        setUnit: (u: typeof unitA) => {
+          currentUnit = u;
+        },
+      };
+    };
+
+    it('fires a success toast when the current unit id changes while on /agent', async () => {
+      const { toast } = await import('sonner');
+      const { setUnit } = await mockUnitLayout({
+        pathname: '/course-content/course-v1:test+course+2024/agent',
+        initialUnit: unitA,
+      });
+
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      expect(toast.success).not.toHaveBeenCalled();
+
+      // Simulate a URL change by swapping the searchParams reference; that
+      // retriggers the effect that syncs currentCourseInfo from the mocked unit.
+      setUnit(unitB);
+      mockState.searchParams = new URLSearchParams('unit_id=unit-B');
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+    });
+
+    it('does NOT fire the toast when the unit changes on a non-agent tab', async () => {
+      const { toast } = await import('sonner');
+      const { setUnit } = await mockUnitLayout({
+        pathname: '/course-content/course-v1:test+course+2024/course',
+        initialUnit: unitA,
+      });
+
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      setUnit(unitB);
+      mockState.searchParams = new URLSearchParams('unit_id=unit-B');
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(toast.success).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('learning/assessment mode toggle', () => {
+    const unit = { id: 'unit-vertical-1', display_name: 'Unit 1' };
+    const outlineWithUnit = {
+      id: 'course-root',
+      children: [
+        {
+          id: 'chapter-1',
+          children: [
+            {
+              id: 'seq-1',
+              children: [{ id: 'unit-vertical-1', display_name: 'Unit 1', children: [] }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const blockDetailsWithMentor = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+        'mentor-block': {
+          id: 'mentor-block',
+          type: 'ibl_mentor_xblock',
+          display_name: 'Mentor',
+        },
+      },
+    };
+
+    const blockDetailsWithoutMentor = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+      },
+    };
+
+    const setupAgentTab = async (blocks: any) => {
+      const { useEdxIframe } = await import('@/hooks/courses/use-edx-iframe');
+      const { usePathname } = await import('next/navigation');
+
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        course: { agent_content_mode: true, course_content_mode: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: outlineWithUnit,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+      vi.mocked(useEdxIframe).mockReturnValue({
+        getUnitToIframe: vi.fn(() => unit),
+        getParentsInfosFromSublessonId: vi.fn(() => null),
+      } as any);
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blocks });
+    };
+
+    it('hides the toggle on a non-agent tab even when the block has a mentor xblock', async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(screen.queryByTestId('agent-mode-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the toggle on the agent tab when no block has type=ibl_mentor_xblock', async () => {
+      await setupAgentTab(blockDetailsWithoutMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(screen.queryByTestId('agent-mode-switch')).not.toBeInTheDocument();
+    });
+
+    it('shows the toggle on the agent tab when at least one block has type=ibl_mentor_xblock', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // Inline (md+) and popover (mobile) variants both render the same Switch.
+      const switches = screen.getAllByTestId('agent-mode-switch');
+      expect(switches.length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Learn').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Assess').length).toBeGreaterThan(0);
+    });
+
+    it('renders a vertical 3-dot trigger (mobile) when the toggle is visible', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const moreVerticalIcons = screen.getAllByTestId('more-vertical');
+      expect(moreVerticalIcons.length).toBeGreaterThan(0);
+    });
+
+    it('skips the block-details query when not on the agent tab', async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // The hook still gets called, but with skip:true so RTK Query won't fire the request.
+      const lastCall =
+        mockUseGetCourseBlockDetailsQuery.mock.calls[
+          mockUseGetCourseBlockDetailsQuery.mock.calls.length - 1
+        ];
+      expect(lastCall?.[1]).toEqual(expect.objectContaining({ skip: true }));
+    });
+
+    it('toggles agent mode from learning to assessment when the switch is clicked', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const switches = screen.getAllByTestId('agent-mode-switch');
+      const initialSwitch = switches[0];
+      expect(initialSwitch).toHaveAttribute('aria-checked', 'false');
+
+      fireEvent.click(initialSwitch);
+
+      // After click, every rendered switch should reflect the new checked state.
+      const updatedSwitches = screen.getAllByTestId('agent-mode-switch');
+      updatedSwitches.forEach((s) => expect(s).toHaveAttribute('aria-checked', 'true'));
+    });
   });
 });

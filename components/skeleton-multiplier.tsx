@@ -4,5 +4,7 @@ interface SkeletonMultiplierProps {
 }
 
 export const SkeletonMultiplier = ({ Skeleton, multiplier }: SkeletonMultiplierProps) => {
-  return Array.from({ length: multiplier }).map((_, index) => <Skeleton key={index} />);
+  return Array.from({ length: multiplier }).map((_, index) => (
+    <Skeleton data-testid="skeleton-multiplier" key={index} />
+  ));
 };

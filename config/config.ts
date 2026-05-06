@@ -83,7 +83,7 @@ export const themeConfig = {
       navbar: {
         background: '#FFFFFF',
         text: '#374151',
-        activeText: '#F59E0B',
+        activeText: '#B45309',
         activeBorder: '#F59E0B',
         hoverText: '#1F2937',
         hoverBackground: '#F3F4F6',

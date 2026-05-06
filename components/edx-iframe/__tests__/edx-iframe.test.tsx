@@ -11,12 +11,19 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+const { mockGetIframeURL, mockFindSequentialParent } = vi.hoisted(() => ({
+  mockGetIframeURL: vi.fn(
+    (_courseId: string, _courseInfo: unknown, callback: (url: string) => void) => {
+      callback('https://apps.learn.example.com/discussions/course-v1:test+course/posts');
+    },
+  ),
+  mockFindSequentialParent: vi.fn(() => null),
+}));
+
 vi.mock('@/hooks/courses/use-edx-iframe', () => ({
   useEdxIframe: () => ({
-    getIframeURL: vi.fn((_courseId, _tab, callback) => {
-      callback('https://apps.learn.example.com/discussions/course-v1:test+course/posts');
-    }),
-    findSequentialParent: vi.fn(() => null),
+    getIframeURL: mockGetIframeURL,
+    findSequentialParent: mockFindSequentialParent,
   }),
 }));
 
@@ -80,6 +87,8 @@ describe('EdxIframe - JWT PostMessage', () => {
     setExamInfo: mockSetExamInfo,
     refresher: null,
     setRefresher: vi.fn(),
+    agentMode: 'learning' as const,
+    setAgentMode: vi.fn(),
   };
 
   const defaultCourseOutlineValue = {
@@ -295,5 +304,93 @@ describe('EdxIframe - JWT PostMessage', () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  describe('active tab routing to getIframeURL', () => {
+    it("passes the courseOutline object when activeTab is 'course'", async () => {
+      renderEdxIframe({ ...defaultContextValue, activeTab: 'course' });
+
+      await waitFor(() => {
+        expect(mockGetIframeURL).toHaveBeenCalled();
+      });
+
+      const [courseIdArg, courseInfoArg] = mockGetIframeURL.mock.calls[0];
+      expect(courseIdArg).toBe(defaultContextValue.courseID);
+      expect(courseInfoArg).toBe(defaultContextValue.courseOutline);
+    });
+
+    it("passes the courseOutline object when activeTab is 'agent' (not the literal 'agent' string)", async () => {
+      // Regression test: previously 'agent' was passed as xblockID, producing a
+      // bogus /xblock/agent SSO redirect. The agent tab must route through the
+      // same course-unit path as the course tab.
+      renderEdxIframe({ ...defaultContextValue, activeTab: 'agent' });
+
+      await waitFor(() => {
+        expect(mockGetIframeURL).toHaveBeenCalled();
+      });
+
+      const [, courseInfoArg] = mockGetIframeURL.mock.calls[0];
+      expect(courseInfoArg).toBe(defaultContextValue.courseOutline);
+      expect(courseInfoArg).not.toBe('agent');
+    });
+
+    it.each(['forum', 'notes', 'progress', 'dates', 'bookmarks'])(
+      "passes the activeTab string when activeTab is '%s'",
+      async (tab) => {
+        renderEdxIframe({ ...defaultContextValue, activeTab: tab });
+
+        await waitFor(() => {
+          expect(mockGetIframeURL).toHaveBeenCalled();
+        });
+
+        const [, courseInfoArg] = mockGetIframeURL.mock.calls[0];
+        expect(courseInfoArg).toBe(tab);
+      },
+    );
+  });
+
+  describe('agent mode styling', () => {
+    it('applies p-6 padding and the legacy inline iframe height in learning mode', async () => {
+      const { container } = renderEdxIframe({ ...defaultContextValue, agentMode: 'learning' });
+
+      await waitFor(() => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      });
+
+      const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
+      expect(wrapper.className).toContain('p-6');
+      expect(wrapper.className).not.toContain('p-0');
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      // jsdom normalizes calc() expressions, so assert the constituent parts.
+      expect(iframe.style.height).toContain('100vh');
+      expect(iframe.style.height).toContain('100px');
+      expect(iframe.style.height).toContain('62px');
+      expect(iframe.className).toBe('');
+    });
+
+    it('drops mobile padding and applies responsive iframe height in assessment mode', async () => {
+      const { container } = renderEdxIframe({
+        ...defaultContextValue,
+        agentMode: 'assessment',
+      } as any);
+
+      await waitFor(() => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      });
+
+      const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
+      expect(wrapper.className).toContain('p-0');
+      expect(wrapper.className).not.toContain('p-6');
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      // Inline height is dropped so the Tailwind responsive classes can take over.
+      expect(iframe.style.height).toBe('');
+      expect(iframe.className).toContain('h-[calc(100vh-258px)]');
+      expect(iframe.className).toContain('md:h-[calc(100vh-260px)]');
+      expect(iframe.className).toContain('lg:h-[calc(100vh-250px)]');
+    });
   });
 });

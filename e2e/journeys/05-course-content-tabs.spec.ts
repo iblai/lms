@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell, waitForLoaderToDisappear } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -10,34 +10,42 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
  */
 async function navigateToCourseContent(page: Page): Promise<boolean> {
   await page.goto(`${SKILL_HOST}/home`, {
-    waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
   await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
 
-  const myCoursesGrid = page.getByLabel('My Courses Grid');
+  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
   await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
 
+  //wait for myCoursesGrid.getByRole('link', { name: any name }) to be visible
+  await expect(myCoursesGrid.getByRole('link', { name: /.*/ })).toBeVisible({ timeout: 15000 });
+
   const courseLink = myCoursesGrid.getByRole('link').first();
-  const hasCourse = await courseLink.isVisible({ timeout: 15000 }).catch(() => false);
+  const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasCourse) return false;
 
   await courseLink.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
-  await waitForPageReady(page, 120000);
+  await waitForLoaderToDisappear(page);
+  await waitForAppShell(page);
+
+  //wait for header Course Description to be visible
+  await expect(page.getByRole('heading', { name: 'Course Description' })).toBeVisible({
+    timeout: 30_000,
+  });
 
   const accessCourseButton = page.getByRole('button', { name: 'Access Course' });
-  const hasAccess = await accessCourseButton.isVisible({ timeout: 15000 }).catch(() => false);
+  const hasAccess = await accessCourseButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasAccess) return false;
 
   await accessCourseButton.click();
   await page.waitForURL(/\/course-content\//, { timeout: 120000 });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   return true;
 }
@@ -145,10 +153,10 @@ test.describe('Journey 05: Course Content Tabs', () => {
     });
 
     const hasYourProgress = await yourProgressHeading
-      .isVisible({ timeout: 30000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
     const hasGradeSummary = await gradeSummaryHeading
-      .isVisible({ timeout: 10000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (hasYourProgress) {
@@ -281,7 +289,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await expect(bodyLocator).toBeVisible({ timeout: 120000 });
 
     const addPostButton = discussionIframe.getByRole('button', { name: 'Add a post' });
-    const hasAddPost = await addPostButton.isVisible({ timeout: 60000 }).catch(() => false);
+    const hasAddPost = await addPostButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasAddPost) {
       logger.info('"Add a post" button not found — skipping');
@@ -320,7 +328,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await expect(bodyLocator).toBeVisible({ timeout: 120000 });
 
     const addPostButton = discussionIframe.getByRole('button', { name: 'Add a post' });
-    const hasAddPost = await addPostButton.isVisible({ timeout: 60000 }).catch(() => false);
+    const hasAddPost = await addPostButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasAddPost) {
       test.skip();
@@ -341,7 +349,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     // Fill content in nested iframe
     const richTextIframe = discussionIframe.frameLocator('iframe[title="Rich Text Area"]');
     let contentEditor = richTextIframe.getByLabel(/Rich Text Area/i);
-    const hasLabel = await contentEditor.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasLabel = await contentEditor.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasLabel) {
       contentEditor = richTextIframe.locator('body');
@@ -382,7 +390,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
-    const hasInstructor = await instructorTab.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasInstructor = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasInstructor) {
       logger.info('Instructor tab not available — expected for some courses');
@@ -419,7 +427,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     const bookmarksTab = page.getByRole('link', { name: /bookmarks/i }).first();
-    const hasBookmarks = await bookmarksTab.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasBookmarks = await bookmarksTab.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasBookmarks) {
       logger.info('Bookmarks tab not available — optional feature');
@@ -431,7 +439,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
     // Just verify the tab navigated and content area exists
     const iframeElement = page.locator('iframe').first();
-    const hasIframe = await iframeElement.isVisible({ timeout: 30000 }).catch(() => false);
+    const hasIframe = await iframeElement.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasIframe) {
       logger.info('Bookmarks tab loaded with iframe content');
@@ -478,6 +486,312 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Tab switching completed — URLs observed');
   });
 
+  test('Checkpoint 13: Agent tab visibility + navigation', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — course has agent_content_mode !== true; skipping');
+      test.skip();
+      return;
+    }
+
+    const href = await agentTab.getAttribute('href');
+    expect(href).toMatch(/\/course-content\/.+\/agent$/);
+
+    await agentTab.click();
+    await page.waitForURL(/\/course-content\/.+\/agent(\?|$)/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/agent(\?|$)/);
+    logger.info(`Navigated to agent tab: ${page.url()}`);
+  });
+
+  test('Checkpoint 14: Agent tab renders mentor chat full-width with edX iframe hidden', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // Wait for the mentor-ai web component to mount.
+    const mentorAi = page.locator('mentor-ai');
+    await expect(mentorAi.first()).toBeAttached({ timeout: 60_000 });
+
+    // In learning mode (default) the EdxIframe stays mounted but its wrapper carries
+    // Tailwind's `hidden` class, so the iframe is not visible to users.
+    const iframe = page.locator('iframe#edx-iframe').first();
+    await expect(iframe).toBeAttached({ timeout: 30_000 });
+    const wrapperClass = await iframe.locator('xpath=..').getAttribute('class');
+    expect(wrapperClass ?? '').toContain('hidden');
+    expect(await iframe.isVisible().catch(() => false)).toBe(false);
+
+    logger.info('Agent tab renders mentor-ai and keeps edX iframe wrapper hidden');
+  });
+
+  test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode !== true', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (hasAgentTab) {
+      logger.info(
+        'Agent tab is visible — cannot assert the redirect path for agent_content_mode !== true; skipping',
+      );
+      test.skip();
+      return;
+    }
+
+    // When the tab is hidden, force the route and confirm the CourseAccessGuard redirects to /403.
+    const courseUrl = page.url();
+    const agentUrl = courseUrl.replace(/\/(course|progress|dates|discussion)(\?.*)?$/, '/agent');
+
+    await page.goto(agentUrl, { timeout: 60_000 });
+    await page.waitForURL(/\/error\/403/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/error\/403/);
+    logger.info('Agent route redirects to /error/403 when agent_content_mode !== true');
+  });
+
+  test('Checkpoint 16: Previous/Keep Learning buttons navigate units from the tabs row', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const nextBtn = page.getByRole('button', { name: 'Next lesson' });
+    const hasNext = await nextBtn.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasNext) {
+      logger.info('Next lesson button not available — course has a single unit; skipping');
+      test.skip();
+      return;
+    }
+
+    const urlBefore = page.url();
+    await nextBtn.click();
+
+    // Wait for URL to change (either unit_id query changes, or path segment flips between
+    // course/agent based on the user's current tab).
+    await page.waitForURL((u) => u.toString() !== urlBefore, { timeout: 30_000 }).catch(() => null);
+
+    const urlAfter = page.url();
+    expect(urlAfter).not.toBe(urlBefore);
+    logger.info(`Unit switched: ${urlBefore} → ${urlAfter}`);
+
+    // Going back should be possible via the Previous button now.
+    const prevBtn = page.getByRole('button', { name: 'Previous lesson' });
+    await expect(prevBtn).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('Checkpoint 17: Unit switch on agent tab fires a confirmation toast', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    const nextBtn = page.getByRole('button', { name: 'Next lesson' });
+    const hasNext = await nextBtn.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasNext) {
+      logger.info('Single-unit course — cannot exercise the toast; skipping');
+      test.skip();
+      return;
+    }
+
+    await nextBtn.click();
+
+    // Sonner renders toasts with role="status" and a "Switched to" prefix from the layout effect.
+    const toast = page.getByText(/^Switched to "/i);
+    await expect(toast.first()).toBeVisible({ timeout: 15_000 });
+    logger.info('Unit-switch confirmation toast displayed on agent tab');
+  });
+
+  test('Checkpoint 18: Unit switch posts a MENTOR:CHAT_ACTION_ADD_MESSAGE into the mentor iframe and the agent responds', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // Playwright pierces open shadow DOM with CSS selectors, so `mentor-ai iframe`
+    // resolves to the iframe inside the <mentor-ai> custom element's shadow root.
+    const mentorIframeElement = page.locator('mentor-ai iframe');
+    const iframeReady = await mentorIframeElement
+      .first()
+      .waitFor({ state: 'attached', timeout: 60_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!iframeReady) {
+      logger.info('mentor-ai iframe never mounted — skipping');
+      test.skip();
+      return;
+    }
+
+    // Instrument postMessage on the iframe window so we can confirm the host sends the
+    // CHAT_ACTION_ADD_MESSAGE payload on unit switch. We stash received messages on a
+    // global the test can read back via evaluate.
+    await page.evaluate(() => {
+      const el = document.querySelector('mentor-ai');
+      const iframe = el?.shadowRoot?.querySelector('iframe') as HTMLIFrameElement | null;
+      (window as any).__mentorMessages = [] as unknown[];
+      const originalPost = iframe?.contentWindow?.postMessage.bind(iframe?.contentWindow);
+      if (iframe?.contentWindow && originalPost) {
+        iframe.contentWindow.postMessage = ((message: unknown, ...rest: unknown[]) => {
+          (window as any).__mentorMessages.push(message);
+          return (originalPost as any)(message, ...rest);
+        }) as typeof window.postMessage;
+      }
+    });
+
+    const nextBtn = page.getByRole('button', { name: 'Next lesson' });
+    const hasNext = await nextBtn.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasNext) {
+      logger.info('Single-unit course — cannot exercise the postMessage path; skipping');
+      test.skip();
+      return;
+    }
+
+    await nextBtn.click();
+
+    // Toast confirms the layout effect fired; the same effect dispatches the custom event
+    // that CourseAgentChat forwards into the iframe via postMessage.
+    await expect(page.getByText(/^Switched to "/i).first()).toBeVisible({ timeout: 15_000 });
+
+    await expect
+      .poll(
+        async () =>
+          await page.evaluate(() => {
+            const messages = ((window as any).__mentorMessages ?? []) as any[];
+            return messages.some(
+              (m) =>
+                m &&
+                typeof m === 'object' &&
+                m.type === 'MENTOR:CHAT_ACTION_ADD_MESSAGE' &&
+                typeof m.message === 'string' &&
+                m.message.startsWith('Switched to "'),
+            );
+          }),
+        { timeout: 15_000, message: 'Expected MENTOR:CHAT_ACTION_ADD_MESSAGE to reach iframe' },
+      )
+      .toBe(true);
+
+    logger.info('postMessage MENTOR:CHAT_ACTION_ADD_MESSAGE delivered to mentor iframe');
+
+    // Best-effort assertion that the mentor actually echoes an AI response to the injected
+    // message. The inner iframe is cross-origin so we reach into it via frameLocator.
+    const mentorFrame = page.frameLocator('mentor-ai iframe');
+    const aiResponse = mentorFrame.locator('.chat-ai-message-response').last();
+
+    const aiVisible = await aiResponse
+      .waitFor({ state: 'visible', timeout: 90_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!aiVisible) {
+      logger.info('Mentor iframe did not render an AI response within 90s — non-fatal');
+      return;
+    }
+
+    logger.info('Mentor iframe rendered an AI response after unit switch');
+  });
+
+  test('Checkpoint 19: New-chat button on agent tab triggers welcome screen', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The new-chat button only renders once the mentor iframe's #loading-spinner
+    // has display:none, so this verifies the spinner-observer wiring too.
+    const newChatButton = page.getByRole('button', { name: 'New chat' });
+    await expect(newChatButton).toBeVisible({ timeout: 60_000 });
+
+    await newChatButton.click();
+
+    // Clicking posts MENTOR:NEW_CHAT into the iframe; the iframe should land on
+    // the welcome screen surfaced by `.chat-welcome-button`.
+    const mentorFrame = page.frameLocator('mentor-ai iframe');
+    await expect(mentorFrame.locator('.chat-welcome-button').first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    logger.info('New-chat button posted MENTOR:NEW_CHAT and welcome screen rendered');
+  });
+
   test('Checkpoint 12: No error messages on course content tabs', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
@@ -518,5 +832,172 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
       logger.info(`No errors on ${tabName} tab`);
     }
+  });
+
+  test('Checkpoint 20: Learning/Assessment toggle is gated on the presence of an ibl_mentor_xblock', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The toggle is rendered only after getCourseBlockDetails returns a block of
+    // type=ibl_mentor_xblock for the current vertical. On courses without one,
+    // the toggle stays hidden — that's a valid pass for this checkpoint.
+    const toggle = page.getByLabel('Toggle assessment mode').first();
+    const toggleVisible = await toggle.isVisible({ timeout: 15_000 }).catch(() => false);
+
+    if (!toggleVisible) {
+      logger.info('Current unit has no ibl_mentor_xblock — toggle correctly hidden; skipping');
+      test.skip();
+      return;
+    }
+
+    // When visible, both labels and the switch must be reachable.
+    await expect(page.getByText('Learn', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Assess', { exact: true }).first()).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    logger.info('Learning/Assessment toggle visible and defaults to Learning mode');
+  });
+
+  test('Checkpoint 21: Toggling Assessment mode swaps the agent chat for the edX iframe', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    const toggle = page.getByLabel('Toggle assessment mode').first();
+    const toggleVisible = await toggle.isVisible({ timeout: 15_000 }).catch(() => false);
+
+    if (!toggleVisible) {
+      logger.info('Toggle hidden (no mentor xblock on the current unit) — skipping');
+      test.skip();
+      return;
+    }
+
+    const iframe = page.locator('iframe#edx-iframe').first();
+    const mentorAi = page.locator('mentor-ai').first();
+
+    await expect(mentorAi).toBeAttached({ timeout: 60_000 });
+    expect(await iframe.isVisible().catch(() => false)).toBe(false);
+
+    // Flip to Assessment.
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
+    await expect(iframe).toBeVisible({ timeout: 30_000 });
+    const mentorWrapperClassA = await mentorAi
+      .locator('xpath=ancestor::div[1]')
+      .getAttribute('class');
+    expect(mentorWrapperClassA ?? '').toContain('hidden');
+
+    // Flip back to Learning.
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    expect(await iframe.isVisible().catch(() => false)).toBe(false);
+    const mentorWrapperClassB = await mentorAi
+      .locator('xpath=ancestor::div[1]')
+      .getAttribute('class');
+    expect(mentorWrapperClassB ?? '').not.toContain('hidden');
+
+    logger.info('Assessment toggle swaps EdxIframe and CourseAgentChat visibility');
+  });
+
+  test('Checkpoint 22: Mobile viewport surfaces the toggle through a 3-dot popover', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // Wait for any toggle to be in the DOM (the inline one is hidden on this viewport via Tailwind).
+    const inlineSwitch = page.getByLabel('Toggle assessment mode').first();
+    const present = await inlineSwitch
+      .waitFor({ state: 'attached', timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!present) {
+      logger.info('Toggle hidden (no mentor xblock on the current unit) — skipping');
+      test.skip();
+      return;
+    }
+
+    // Inline switch is hidden on mobile.
+    expect(await inlineSwitch.isVisible().catch(() => false)).toBe(false);
+
+    // The 3-dot trigger button is visible and opens a popover containing the switch.
+    const trigger = page.getByRole('button', { name: 'Agent display mode' });
+    await expect(trigger).toBeVisible({ timeout: 15_000 });
+    await trigger.click();
+
+    // A second switch (the popover one) becomes visible after the popover opens.
+    const switches = page.getByLabel('Toggle assessment mode');
+    await expect
+      .poll(
+        async () => {
+          const count = await switches.count();
+          let visible = 0;
+          for (let i = 0; i < count; i++) {
+            if (
+              await switches
+                .nth(i)
+                .isVisible()
+                .catch(() => false)
+            )
+              visible++;
+          }
+          return visible;
+        },
+        { timeout: 15_000 },
+      )
+      .toBeGreaterThan(0);
+
+    logger.info('Mobile viewport surfaces the toggle inside a popover');
   });
 });

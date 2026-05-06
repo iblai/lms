@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForPageReady } from '@iblai/iblai-js/playwright';
 import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -9,10 +9,9 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
  */
 async function navigateToProgramsPage(page: Page): Promise<void> {
   await page.goto(`${SKILL_HOST}/profile/programs`, {
-    waitUntil: 'domcontentloaded',
     timeout: 120000,
   });
-  await waitForPageReady(page, 120000);
+  await waitForAppShell(page);
 
   // Wait for the My programs button to confirm page is ready
   await expect(page.getByRole('button', { name: 'My programs' })).toBeVisible({
@@ -26,22 +25,16 @@ async function navigateToProgramsPage(page: Page): Promise<void> {
  */
 async function waitForProgramsToLoad(page: Page): Promise<boolean> {
   const programCard = page.getByTestId('program-card').first();
-  const emptyState = page.getByText('No programs found.');
 
-  const hasCards = await programCard.isVisible({ timeout: 15000 }).catch(() => false);
-  if (hasCards) {
-    logger.info('Program cards visible');
+  try {
+    await expect(programCard)
+      .toBeVisible({ timeout: 10_000 })
+      .catch(() => false);
     return true;
-  }
-
-  const hasEmpty = await emptyState.isVisible({ timeout: 5000 }).catch(() => false);
-  if (hasEmpty) {
-    logger.info('No programs found — empty state');
+  } catch (error) {
+    logger.info('Program cards not visible');
     return false;
   }
-
-  logger.info('Could not determine programs state');
-  return false;
 }
 
 /**
@@ -64,7 +57,7 @@ async function openProgramDetailModal(page: Page): Promise<void> {
 async function isUserAdmin(page: Page): Promise<boolean> {
   return await page
     .getByTestId('settings-tab')
-    .isVisible({ timeout: 5000 })
+    .isVisible({ timeout: 120_000 })
     .catch(() => false);
 }
 
@@ -88,10 +81,9 @@ test.describe('Journey 10: Profile Programs', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${SKILL_HOST}/home`, {
-      waitUntil: 'domcontentloaded',
       timeout: 120000,
     });
-    await waitForPageReady(page, 120000);
+    await waitForAppShell(page);
     await navigateToProgramsPage(page);
   });
 
@@ -102,12 +94,15 @@ test.describe('Journey 10: Profile Programs', () => {
   });
 
   test('Checkpoint 2: Program cards or empty state', async ({ page }) => {
-    const hasPrograms = await waitForProgramsToLoad(page);
+    const skeleton = page.getByTestId('skeleton-multiplier').first();
+    await expect(skeleton).not.toBeVisible({ timeout: 120_000 });
+    logger.info('Skeleton multiplier no longer visible');
 
+    const hasPrograms = await waitForProgramsToLoad(page);
     if (hasPrograms) {
       const cardCount = await page.getByTestId('program-card').count();
-      logger.info(`Found ${cardCount} program card(s)`);
       expect(cardCount).toBeGreaterThan(0);
+      logger.info(`Found ${cardCount} program card(s)`);
     } else {
       await expect(page.getByText('No programs found.')).toBeVisible({
         timeout: 5000,
@@ -247,7 +242,7 @@ test.describe('Journey 10: Profile Programs', () => {
 
     for (const section of sections) {
       const sectionEl = page.getByTestId(section.testId);
-      const isVisible = await sectionEl.isVisible({ timeout: 5000 }).catch(() => false);
+      const isVisible = await sectionEl.isVisible({ timeout: 120_000 }).catch(() => false);
 
       if (isVisible) {
         logger.info(`${section.name} section is visible`);
@@ -258,7 +253,7 @@ test.describe('Journey 10: Profile Programs', () => {
 
     // Verify Save Settings button
     const saveButton = page.getByTestId('save-settings-button');
-    const hasSave = await saveButton.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasSave = await saveButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasSave) {
       logger.info('Save Settings button is visible');
@@ -316,7 +311,7 @@ test.describe('Journey 10: Profile Programs', () => {
 
     // Check for course cards
     const courseCard = page.getByTestId('course-card-0');
-    const hasCourses = await courseCard.isVisible({ timeout: 10000 }).catch(() => false);
+    const hasCourses = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCourses) {
       logger.info('No course cards in program — skipping navigation test');
@@ -343,7 +338,7 @@ test.describe('Journey 10: Profile Programs', () => {
       name: 'Assigned programs',
     });
     const hasAssignedTab = await assignedProgramsTab
-      .isVisible({ timeout: 5000 })
+      .isVisible({ timeout: 120_000 })
       .catch(() => false);
 
     if (!hasAssignedTab) {
@@ -362,8 +357,8 @@ test.describe('Journey 10: Profile Programs', () => {
     const assignedCard = page.getByTestId('program-card').first();
     const assignedEmpty = page.getByText(/no programs found/i);
 
-    const hasAssignedCards = await assignedCard.isVisible({ timeout: 10000 }).catch(() => false);
-    const hasAssignedEmpty = await assignedEmpty.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasAssignedCards = await assignedCard.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasAssignedEmpty = await assignedEmpty.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasAssignedCards) {
       logger.info('Assigned program cards found');

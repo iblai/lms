@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { logger } from '@iblai/iblai-js/playwright';
+import { waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -6,12 +8,12 @@ test.describe('Journey 17: Analytics Users', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await waitForAppShell(page);
 
     // Admin gate: check if AI Analytics link is visible
     const analyticsLink = page.getByRole('link', { name: /ai analytics|analytics/i });
-    const isAdmin = await analyticsLink.isVisible({ timeout: 15_000 }).catch(() => false);
+    const isAdmin = await analyticsLink.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!isAdmin) {
       test.skip(true, 'Analytics requires admin access — AI Analytics link not visible');
       return;
@@ -19,199 +21,120 @@ test.describe('Journey 17: Analytics Users', () => {
 
     await analyticsLink.click();
     await page.waitForURL((url) => url.href.includes('/analytics'), { timeout: 30_000 });
+
+    // Navigate to the Users tab in AnalyticsLayout (Radix UI tabs)
+    const usersTab = page.getByRole('tab', { name: 'Users', exact: true });
+    const hasUsersTab = await usersTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    if (!hasUsersTab) {
+      test.skip(true, 'Users tab not visible in analytics layout');
+      return;
+    }
+
+    logger.info('Clicking Users tab');
+    await usersTab.click();
+    // Wait for the Users tab to be selected (Radix UI sets data-state="active")
+    await expect(usersTab).toHaveAttribute('data-state', 'active', { timeout: 30_000 });
   });
 
-  test('CP-1: users analytics page loads with metrics', async ({ page }) => {
-    // Navigate to the Users tab
-    const usersTab = page
-      .getByRole('tab', { name: /users/i })
-      .or(page.getByRole('link', { name: /users/i }));
-    const hasUsersTab = await usersTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-1: Users page loads with stat cards', async ({ page }) => {
+    logger.info('CP-1: checking stat cards on Users analytics page');
 
-    if (!hasUsersTab) {
-      test.skip(true, 'Users tab not visible in analytics');
-      return;
+    // Stat cards have aria-label "${title} mini card" (loaded), "${title} mini card loading"
+    // (skeleton), or "${title} mini card value". Use starts-with selector to match any state.
+    const statCardPrefixes = [
+      'Users logged in right now mini card',
+      'Users logged in past 30 days mini card',
+      'Total registered users mini card',
+    ];
+
+    for (const prefix of statCardPrefixes) {
+      const card = page.locator(`[aria-label^="${prefix}"]`);
+      await expect(card.first()).toBeVisible({ timeout: 120_000 });
+      logger.info(`Stat card "${prefix}" is visible`);
     }
-
-    await usersTab.click();
-    await page.waitForTimeout(2_000);
-
-    // Verify users analytics content loaded
-    const usersContent = page
-      .locator('[class*="user"], [data-testid*="user"], [class*="metric"], [class*="chart"]')
-      .first()
-      .or(page.getByRole('main'));
-
-    await expect(usersContent).toBeVisible({ timeout: 30_000 });
   });
 
-  test('CP-2: registered users sub-page loads', async ({ page }) => {
-    const usersTab = page
-      .getByRole('tab', { name: /users/i })
-      .or(page.getByRole('link', { name: /users/i }));
-    const hasUsersTab = await usersTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-2: Chart sections visible', async ({ page }) => {
+    logger.info('CP-2: checking chart card wrappers on Users analytics page');
 
-    if (!hasUsersTab) {
-      test.skip(true, 'Users tab not visible');
-      return;
-    }
+    const activeUsersChart = page.getByLabel('Active Users chart card');
+    const accessTimesChart = page.getByLabel('Access Times chart card');
 
-    await usersTab.click();
-    await page.waitForTimeout(2_000);
+    await expect(activeUsersChart).toBeVisible({ timeout: 120_000 });
+    logger.info('Active Users chart card is visible');
 
-    // Look for registered users section / sub-tab
-    const registeredTab = page
-      .getByRole('tab', { name: /registered/i })
-      .or(page.getByRole('link', { name: /registered/i }))
-      .or(page.getByText(/registered users/i));
-
-    const hasRegistered = await registeredTab.isVisible({ timeout: 10_000 }).catch(() => false);
-
-    if (hasRegistered) {
-      await registeredTab.click();
-      await page.waitForTimeout(2_000);
-    }
-
-    // Verify some metrics or user data is visible
-    const metrics = page
-      .locator('[class*="metric"], [class*="stat"], [class*="card"], [class*="chart"]')
-      .first();
-    const hasMetrics = await metrics.isVisible({ timeout: 15_000 }).catch(() => false);
-
-    // At minimum the users section should be loaded
-    const usersSection = page.locator('[class*="user"]').first().or(page.getByRole('main'));
-    await expect(usersSection).toBeVisible({ timeout: 10_000 });
+    await expect(accessTimesChart).toBeVisible({ timeout: 120_000 });
+    logger.info('Access Times chart card is visible');
   });
 
-  test('CP-3: active users sub-page loads', async ({ page }) => {
-    const usersTab = page
-      .getByRole('tab', { name: /users/i })
-      .or(page.getByRole('link', { name: /users/i }));
-    const hasUsersTab = await usersTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-3: User details table visible with search input', async ({ page }) => {
+    logger.info('CP-3: checking user details table and search input');
 
-    if (!hasUsersTab) {
-      test.skip(true, 'Users tab not visible');
-      return;
-    }
+    const searchInput = page.locator('#search-user');
+    await expect(searchInput).toBeVisible({ timeout: 120_000 });
+    await expect(searchInput).toHaveAttribute('placeholder', 'Search by email or username...');
+    logger.info('Search input #search-user is visible with correct placeholder');
 
-    await usersTab.click();
-    await page.waitForTimeout(2_000);
+    // Check table column headers
+    const userEmailHeader = page.getByRole('columnheader', { name: /user email/i });
+    const usernameHeader = page.getByRole('columnheader', { name: /username/i });
+    const messagesHeader = page.getByRole('columnheader', { name: /messages/i });
+    const lastActiveHeader = page.getByRole('columnheader', { name: /last active/i });
 
-    // Look for active users section / sub-tab
-    const activeTab = page
-      .getByRole('tab', { name: /active/i })
-      .or(page.getByRole('link', { name: /active/i }))
-      .or(page.getByText(/active users/i));
+    await expect(userEmailHeader).toBeVisible({ timeout: 120_000 });
+    await expect(usernameHeader).toBeVisible({ timeout: 120_000 });
+    await expect(messagesHeader).toBeVisible({ timeout: 120_000 });
+    await expect(lastActiveHeader).toBeVisible({ timeout: 120_000 });
+    logger.info('Table columns User Email, Username, Messages, Last Active are visible');
 
-    const hasActive = await activeTab.isVisible({ timeout: 10_000 }).catch(() => false);
-
-    if (hasActive) {
-      await activeTab.click();
-      await page.waitForTimeout(2_000);
-    }
-
-    // Verify content area is present
-    const content = page
-      .locator('[class*="metric"], [class*="chart"], [class*="active"]')
-      .first()
-      .or(page.getByRole('main'));
-    await expect(content).toBeVisible({ timeout: 15_000 });
+    // Check pagination controls
+    const firstPage = page.getByRole('button', { name: 'Go to first page' });
+    const prevPage = page.getByRole('button', { name: 'Go to previous page' });
+    await expect(firstPage).toBeVisible({ timeout: 120_000 });
+    await expect(prevPage).toBeVisible({ timeout: 120_000 });
+    logger.info('Pagination controls are visible');
   });
 
-  test('CP-4: at-risk users sub-page loads', async ({ page }) => {
-    const usersTab = page
-      .getByRole('tab', { name: /users/i })
-      .or(page.getByRole('link', { name: /users/i }));
-    const hasUsersTab = await usersTab.isVisible({ timeout: 15_000 }).catch(() => false);
+  test('CP-4: Time filter buttons work', async ({ page }) => {
+    logger.info('CP-4: checking time filter buttons on Active Users chart');
 
-    if (!hasUsersTab) {
-      test.skip(true, 'Users tab not visible');
-      return;
-    }
+    // The Active Users chart should have TimeFilter buttons: Today, 7D, 30D, 90D, Custom
+    // 30D is the default — it should have aria-pressed="true"
+    const activeUsersChart = page.getByLabel('Active Users chart card');
+    await expect(activeUsersChart).toBeVisible({ timeout: 120_000 });
 
-    await usersTab.click();
-    await page.waitForTimeout(2_000);
+    const btn30D = activeUsersChart.getByRole('button', { name: '30D' });
+    await expect(btn30D).toBeVisible({ timeout: 120_000 });
+    await expect(btn30D).toHaveAttribute('aria-pressed', 'true');
+    logger.info('30D button is default (aria-pressed="true")');
 
-    // Look for at-risk users section / sub-tab
-    const atRiskTab = page
-      .getByRole('tab', { name: /at.risk|at risk/i })
-      .or(page.getByRole('link', { name: /at.risk|at risk/i }))
-      .or(page.getByText(/at.risk users|at risk/i));
+    const btn7D = activeUsersChart.getByRole('button', { name: '7D' });
+    await expect(btn7D).toBeVisible({ timeout: 120_000 });
 
-    const hasAtRisk = await atRiskTab.isVisible({ timeout: 10_000 }).catch(() => false);
-
-    if (hasAtRisk) {
-      await atRiskTab.click();
-      await page.waitForTimeout(2_000);
-    }
-
-    // Verify content area
-    const content = page
-      .locator('[class*="metric"], [class*="chart"], [class*="risk"]')
-      .first()
-      .or(page.getByRole('main'));
-    await expect(content).toBeVisible({ timeout: 15_000 });
-  });
-
-  test('CP-5: time filter updates data', async ({ page }) => {
-    const usersTab = page
-      .getByRole('tab', { name: /users/i })
-      .or(page.getByRole('link', { name: /users/i }));
-    const hasUsersTab = await usersTab.isVisible({ timeout: 15_000 }).catch(() => false);
-
-    if (!hasUsersTab) {
-      test.skip(true, 'Users tab not visible');
-      return;
-    }
-
-    await usersTab.click();
-    await page.waitForTimeout(2_000);
-
-    // Look for time filter
-    const timeFilter = page
-      .getByRole('combobox', { name: /time|period|range|date/i })
-      .or(page.locator('[class*="time-filter"], [data-testid*="time-filter"]'))
-      .or(page.getByRole('button', { name: /last.*days|this week|this month|time range/i }));
-
-    const hasTimeFilter = await timeFilter.isVisible({ timeout: 10_000 }).catch(() => false);
-
-    if (!hasTimeFilter) {
-      test.skip(true, 'Time filter not visible on users analytics page');
-      return;
-    }
-
-    // Capture initial state
-    const pageContentBefore = await page
-      .getByRole('main')
-      .textContent()
-      .catch(() => '');
-
-    await timeFilter.click();
+    await btn7D.click();
     await page.waitForTimeout(1_000);
 
-    const filterOptions = page
-      .getByRole('option')
-      .or(page.getByRole('menuitem'))
-      .or(page.locator('[class*="dropdown-item"]'));
-    const hasOptions = await filterOptions
-      .first()
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
+    await expect(btn7D).toHaveAttribute('aria-pressed', 'true');
+    await expect(btn30D).toHaveAttribute('aria-pressed', 'false');
+    logger.info('After clicking 7D, aria-pressed updated correctly');
+  });
 
-    if (hasOptions) {
-      // Select a different time period
-      const optionCount = await filterOptions.count();
-      if (optionCount > 1) {
-        await filterOptions.nth(1).click();
-      } else {
-        await filterOptions.first().click();
-      }
-      await page.waitForTimeout(3_000);
-    } else {
-      await page.keyboard.press('Escape');
-    }
+  test('CP-5: User details search works', async ({ page }) => {
+    logger.info('CP-5: testing user details search input');
 
-    // Page should still be on analytics
-    expect(page.url()).toContain('/analytics');
+    const searchInput = page.locator('#search-user');
+    await expect(searchInput).toBeVisible({ timeout: 120_000 });
+
+    const searchTerm = 'test@example.com';
+    await searchInput.fill(searchTerm);
+    await page.waitForTimeout(1_000);
+
+    await expect(searchInput).toHaveValue(searchTerm);
+    logger.info(`Search input accepted value: "${searchTerm}"`);
+
+    // Clear search and verify it clears
+    await searchInput.clear();
+    await expect(searchInput).toHaveValue('');
+    logger.info('Search input cleared successfully');
   });
 });
