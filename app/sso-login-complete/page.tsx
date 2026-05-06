@@ -1,8 +1,8 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { SsoLogin as SsoLoginComponent } from '@iblai/iblai-js/web-containers/next';
 import { LOCAL_STORAGE_KEYS } from '@iblai/iblai-js/web-utils';
+import { SsoLogin as SsoLoginComponent } from '@iblai/iblai-js/web-containers/next';
 
 function SsoLoginCompleteContent() {
   return (

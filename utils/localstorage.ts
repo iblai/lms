@@ -145,7 +145,7 @@ export const handleTenantSwitch = async (
   const url = `${config.urls.auth()}/login/complete`;
   const params: Record<string, string> = {
     tenant,
-    [LOCALSTORAGE_KEYS.REDIRECT_PATH]: redirectUrl ?? window.location.origin,
+    [LOCALSTORAGE_KEYS.REDIRECT_TO]: redirectUrl ?? window.location.origin,
   };
 
   // Add token if it exists
@@ -158,7 +158,7 @@ export const handleTenantSwitch = async (
   localStorage.setItem('tenant', tenant);
   if (saveRedirect) {
     // Restore the redirect path after setting tenant
-    localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
+    localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_TO, currentPath);
   }
   await new Promise((resolve) => setTimeout(resolve, 100));
   window.location.href = `${url}?${param}`;

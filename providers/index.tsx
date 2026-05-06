@@ -28,6 +28,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
 
+  console.log('################### [Providers] isSsoLoginRoute', isSsoLoginRoute);
+  console.log('################### [Providers] isVersionRoute', isVersionRoute);
+
   const loadDataLayer = () => {
     initializeDataLayer(
       config.urls.dm(),
@@ -63,6 +66,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const map = new Map();
 
     map.set(new RegExp('^/sso-login'), async () => false);
+
+    map.set(new RegExp('^/sso-login-complete'), async () => false);
 
     // allow user to go to version page without auth
     map.set(new RegExp('^\/version'), async () => false);
