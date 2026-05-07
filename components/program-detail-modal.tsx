@@ -17,7 +17,11 @@ import {
   useLazyGetUserEnrolledProgramsQuery,
   // @ts-ignore
   useCreateCatalogProgramSelfEnrollmentMutation,
+  // @ts-ignore
+  useLazyCheckAccessQuery,
 } from '@iblai/iblai-js/data-layer';
+import { setDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import { useDispatch } from 'react-redux';
 import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/services/studio';
 import _ from 'lodash';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
@@ -188,6 +192,7 @@ function ImageUrlInput({
 }
 
 export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps) {
+  const dispatch = useDispatch();
   const { handleSearch } = usePersonnalizedCatalog();
   const [getUserEnrolledPrograms, { isLoading: isEnrollmentLoading }] =
     useLazyGetUserEnrolledProgramsQuery();
@@ -196,6 +201,7 @@ export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps
     createCatalogProgramSelfEnrollment,
     { isError: isEnrollmentError, isSuccess: isEnrollmentSuccess },
   ] = useCreateCatalogProgramSelfEnrollmentMutation();
+  const [checkAccess] = useLazyCheckAccessQuery();
 
   // Get org from program data
   const programOrg = (program as any)?.org || (program as any)?.platform_key || getTenant();
@@ -229,6 +235,24 @@ export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps
     null,
   );
   const [isEnrollmentSubmitting, setIsEnrollmentSubmitting] = useState(false);
+  const [hasMonetizationAccess, setHasMonetizationAccess] = useState<boolean>(true);
+
+  const handleOpenMonetizationCheckoutModal = () => {
+    dispatch(setDisplayMonetizationCheckoutModal(true));
+  };
+
+  const handleCheckProgramMonetizationAccess = async () => {
+    try {
+      const result = await checkAccess({
+        item_type: 'program',
+        item_id: program.program_id || '',
+        platform_key: getTenant(),
+      });
+      setHasMonetizationAccess(!result?.isError);
+    } catch (error) {
+      console.error('Error checking access:', error);
+    }
+  };
 
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<ProgramSettingsForm>({
@@ -476,6 +500,7 @@ export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps
     handleProgramDetailFetch();
     handleFetchProgramEnrollmentStatus();
     handleFetchProgramCompletion();
+    handleCheckProgramMonetizationAccess();
   }, [program]);
 
   const baseInputClasses =
@@ -1055,12 +1080,20 @@ export function ProgramDetailModal({ program, onClose }: ProgramDetailModalProps
         >
           {!enrollmentStatus && !isEnrollmentSuccess && !isEnrollmentLoading && (
             <button
-              onClick={() => handleEnrollIntoProgram(program)}
+              onClick={() =>
+                hasMonetizationAccess
+                  ? handleEnrollIntoProgram(program)
+                  : handleOpenMonetizationCheckoutModal()
+              }
               disabled={isEnrollmentSubmitting}
               className="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600"
               data-testid="enroll-button"
             >
-              {isEnrollmentSubmitting ? 'Enrolling...' : 'Enroll Now'}
+              {!hasMonetizationAccess
+                ? 'Buy Now'
+                : isEnrollmentSubmitting
+                  ? 'Enrolling...'
+                  : 'Enroll Now'}
             </button>
           )}
           <button
