@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.24.0](https://github.com/iblai/skillsai/compare/skills-v0.23.0...skills-v0.24.0) (2026-05-07)
+
+### Bug Fixes
+
+* assessment xblock mentor display css reverted ([9391c9c](https://github.com/iblai/skillsai/commit/9391c9c02a7ab21dce23d6dc40f19f360c56f8e8))
+
 ## [0.23.0](https://github.com/iblai/skillsai/compare/skills-v0.22.0...skills-v0.23.0) (2026-05-06)
 
 ### Features
