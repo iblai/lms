@@ -24,9 +24,12 @@
   "dependencies": {
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
+    "@iblai/data-layer": "file:.yalc/@iblai/data-layer",
     "@iblai/iblai-api": "4.166.0-ai",
-    "@iblai/iblai-js": "1.8.3",
+    "@iblai/iblai-js": "file:.yalc/@iblai/iblai-js",
     "@iblai/iblai-web-mentor": "2.0.1",
+    "@iblai/web-containers": "file:.yalc/@iblai/web-containers",
+    "@iblai/web-utils": "file:.yalc/@iblai/web-utils",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.13",
     "@radix-ui/react-aspect-ratio": "1.1.1",
@@ -94,6 +97,8 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.1",
+    "@commitlint/cli": "20.5.0",
+    "@commitlint/config-conventional": "20.5.0",
     "@eslint/eslintrc": "3.3.4",
     "@playwright/test": "1.58.2",
     "@release-it/conventional-changelog": "10.0.6",
@@ -113,6 +118,7 @@
     "eslint-config-next": "15.5.12",
     "husky": "9.1.7",
     "jsdom": "26.1.0",
+    "lint-staged": "16.4.0",
     "postcss": "8.5.8",
     "postcss-loader": "8.2.1",
     "prettier": "3.8.1",
@@ -122,10 +128,7 @@
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4",
-    "lint-staged": "16.4.0",
-    "@commitlint/cli": "20.5.0",
-    "@commitlint/config-conventional": "20.5.0"
+    "vitest": "3.2.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
