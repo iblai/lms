@@ -559,7 +559,7 @@ body .fa {
 /* =============================================
    ASSESSMENT FEATURE - CSS UPDATES
    ============================================= */
-/* main:has([data-block-type='ibl_mentor_xblock']) > .xblock > :not(.vert-mod) {
+/* <span style="display: none;" data-block-mode="assessment"></span> is made available when a mentor xblock with assessment mode is activated */
+main:has([data-block-mode='assessment']) > .xblock > :not(.vert-mod) {
   display: none !important;
 }
- */
