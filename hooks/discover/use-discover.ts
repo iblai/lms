@@ -214,7 +214,7 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
               ? data?.data?.card_image
               : config.urls.lms() + data?.data?.card_image
             : '',
-          id: data?.program_key,
+          id: data?.program_id,
         };
       case 'pathway':
         return {

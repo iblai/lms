@@ -23,20 +23,11 @@ vi.mock('@/utils/helpers', () => ({
   getRandomCourseImage: vi.fn(() => '/default-course-image.jpg'),
 }));
 
-// Mock the pathway and program detail modals
+// Mock the pathway detail modal
 vi.mock('../pathway-detail-modal', () => ({
   PathwayDetailModal: ({ pathway, onClose }: any) => (
     <div data-testid="pathway-modal">
       Pathway Modal: {pathway?.title}
-      <button onClick={onClose}>Close</button>
-    </div>
-  ),
-}));
-
-vi.mock('../program-detail-modal', () => ({
-  ProgramDetailModal: ({ program, onClose }: any) => (
-    <div data-testid="program-modal">
-      Program Modal: {program?.title || program?.name}
       <button onClick={onClose}>Close</button>
     </div>
   ),
@@ -97,14 +88,13 @@ describe('DiscoverContentCard', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('opens program modal when program content is clicked', () => {
+  it('navigates to program page when program content is clicked', () => {
     const content = {
       id: 'program-123',
       title: 'Test Program',
       url: '/programs/program-123',
       image: '/test-program.jpg',
       contentType: 'program',
-      data: { description: 'Test description' },
     };
 
     render(<DiscoverContentCard content={content} />);
@@ -112,8 +102,7 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Program').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(screen.getByTestId('program-modal')).toBeInTheDocument();
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith('/programs/program-123');
   });
 
   it('displays content type badge', () => {
@@ -179,27 +168,6 @@ describe('DiscoverContentCard', () => {
     // Close modal
     fireEvent.click(screen.getByText('Close'));
     expect(screen.queryByTestId('pathway-modal')).not.toBeInTheDocument();
-  });
-
-  it('closes program modal when close is triggered', () => {
-    const content = {
-      id: 'program-123',
-      title: 'Test Program',
-      url: '/programs/program-123',
-      image: '/test-program.jpg',
-      contentType: 'program',
-    };
-
-    render(<DiscoverContentCard content={content} />);
-
-    // Open modal
-    const card = screen.getByText('Test Program').closest('div[class*="block"]');
-    fireEvent.click(card!);
-    expect(screen.getByTestId('program-modal')).toBeInTheDocument();
-
-    // Close modal
-    fireEvent.click(screen.getByText('Close'));
-    expect(screen.queryByTestId('program-modal')).not.toBeInTheDocument();
   });
 
   it('handles image error by setting fallback image', () => {
