@@ -33,7 +33,10 @@ import {
   // @ts-ignore
   useLazyGetUserEnrolledProgramsQuery,
 } from '@iblai/iblai-js/data-layer';
-import { setAdvancedDisplayMonetizationCheckoutModal, showMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import {
+  setAdvancedDisplayMonetizationCheckoutModal,
+  showMonetizationCheckoutModal,
+} from '@iblai/iblai-js/web-utils';
 
 import { DefaultEmptyBox } from '@/components/default-empty-box';
 import {
