@@ -553,7 +553,7 @@ export default function ProgramDetailPage() {
 
   const showCta = !enrollmentStatus && !isEnrollmentSuccess && !isEnrollmentLoading;
   const ctaLabel = !hasMonetizationAccess
-    ? 'Buy Now'
+    ? 'Purchase Now'
     : isEnrollmentSubmitting
       ? 'Enrolling...'
       : 'Enroll Now';

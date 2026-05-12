@@ -67,7 +67,7 @@ export default function CourseContentLayout({
 
   const checkCourseMonetizationAccess = async () => {
     await handleCheckCourseMonetizationAccess((result) => {
-      if (result.isError) {
+      if (!result.hasAccess) {
         dispatch(
           setAdvancedDisplayMonetizationCheckoutModal({
             showModal: true,
