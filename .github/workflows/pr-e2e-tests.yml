@@ -93,6 +93,7 @@ jobs:
       registry-type: 'ocir'
       ec2-host: '32.196.111.179'
       ec2-user: 'ubuntu'
+      runs-on: iblai-stg-runner
       ec2-commands: >-
         cd /ibl/app/ibl-spa/skills &&
         sed -i 's|image: .*|image: ${{ needs.build-app-image.outputs.image-uri }}|' docker-compose.yml &&
@@ -103,7 +104,7 @@ jobs:
   # SUMMARY
   # ============================================================
   summary:
-    needs: [build-playwright-image, run-tests]
+    needs: [build-playwright-image, build-app-image, run-tests]
     if: always()
     runs-on: iblai-stg-runner
     steps:
