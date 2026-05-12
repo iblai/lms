@@ -34,7 +34,9 @@ import {
   useLazyGetUserEnrolledProgramsQuery,
 } from '@iblai/iblai-js/data-layer';
 import {
+  setAccessCheckResponse,
   setAdvancedDisplayMonetizationCheckoutModal,
+  setDisplayMonetizationCheckoutModal,
   showMonetizationCheckoutModal,
 } from '@iblai/iblai-js/web-utils';
 
@@ -363,13 +365,14 @@ export default function ProgramDetailPage() {
   };
 
   const dispatchPaywall = (data: AccessCheckResponse) => {
-    dispatch(
-      setAdvancedDisplayMonetizationCheckoutModal({
-        showModal: true,
-        paywallClosable: true,
-        onClosePayload: MONETIZATION_CLOSE_PAYLOAD.redirect_402,
-      }),
-    );
+    dispatch(setDisplayMonetizationCheckoutModal(true));
+    /* dispatch(
+        setAdvancedDisplayMonetizationCheckoutModal({
+          showModal: true,
+          paywallClosable: true,
+          onClosePayload: MONETIZATION_CLOSE_PAYLOAD.redirect_402,
+        }),
+      ); */
   };
 
   const handleOpenMonetizationCheckoutModal = () => {
@@ -388,8 +391,9 @@ export default function ProgramDetailPage() {
       const data = (result?.data ?? (result as any)?.error?.data) as
         | AccessCheckResponse
         | undefined;
-      const accessGranted = data ? data.has_access : !result?.isError;
+      const accessGranted = !!data?.has_access;
       setHasMonetizationAccess(accessGranted);
+      dispatch(setAccessCheckResponse(data));
       setAccessCheckData(data ?? null);
       if (!accessGranted && data?.pricing) {
         dispatchPaywall(data);

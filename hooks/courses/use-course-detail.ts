@@ -149,7 +149,7 @@ export const useCourseDetail = (courseId: string) => {
   };
 
   const handleCheckCourseMonetizationAccess = async (
-    onComplete: (result: { isError: boolean }) => void,
+    onComplete: (result: { hasAccess: boolean }) => void,
   ) => {
     try {
       const result = await checkAccess({
@@ -157,7 +157,8 @@ export const useCourseDetail = (courseId: string) => {
         item_id: courseId,
         platform_key: getTenant(),
       });
-      onComplete(result);
+      const data = result?.data;
+      onComplete({ hasAccess: !!data?.has_access });
     } catch (error) {
       console.error('Error checking access:', error);
     }
@@ -167,7 +168,7 @@ export const useCourseDetail = (courseId: string) => {
     setCourseEligibilityLoading(true);
     // check access check endpoint
     handleCheckCourseMonetizationAccess((result) => {
-      if (result.isError) {
+      if (!result.hasAccess) {
         setCourseEligibility({
           btn_label: PURCHASE_NOW_LABEL,
           btn_action: () => handleOpenMonetizationCheckoutModal(),
