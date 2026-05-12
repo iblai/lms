@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.24.1](https://github.com/iblai/skillsai/compare/skills-v0.24.0...skills-v0.24.1) (2026-05-08)
+
+### Bug Fixes
+
+* assessment mode css update ([1dee76a](https://github.com/iblai/skillsai/commit/1dee76a5074e1f8b0b814ca7dde83765ca0b805c))
+
+## [0.24.0-patch-1](https://github.com/iblai/skillsai/compare/skills-v0.24.0...skills-v0.24.1) (2026-05-08)
+
+### Bug Fixes
+
+* assessment mode css update ([7d9483a](https://github.com/iblai/skillsai/commit/7d9483a4f548c01cf3030d234297db9e75aa1b2b))
+* assessment mode css update ([0b4712e](https://github.com/iblai/skillsai/commit/0b4712ea7fb7bfd9fd943559944cb82e1ef650d2))
+
+### Chores
+
+* bump spa version to 0.24.0-patch-1 ([ee07ef3](https://github.com/iblai/skillsai/commit/ee07ef387aa03028b7f4219f19dd2bd8ea494110))
+
+## [0.24.0](https://github.com/iblai/skillsai/compare/skills-v0.23.0...skills-v0.24.0) (2026-05-07)
+
+### Bug Fixes
+
+* assessment xblock mentor display css reverted ([9391c9c](https://github.com/iblai/skillsai/commit/9391c9c02a7ab21dce23d6dc40f19f360c56f8e8))
+
 ## [0.23.0](https://github.com/iblai/skillsai/compare/skills-v0.22.0...skills-v0.23.0) (2026-05-06)
 
 ### Features
