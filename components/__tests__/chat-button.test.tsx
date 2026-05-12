@@ -48,7 +48,7 @@ vi.mock('next/image', () => ({
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }));
 
-vi.mock('@iblai/iblai-web-mentor', () => ({}));
+vi.mock('@iblai/agent-ai', () => ({}));
 
 vi.mock('lodash', () => ({
   default: {

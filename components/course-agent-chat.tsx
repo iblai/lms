@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
 import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
-import '@iblai/iblai-web-mentor';
+import '@iblai/agent-ai';
 import { config } from '@/lib/config';
 import { getTenant, getUserName } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';

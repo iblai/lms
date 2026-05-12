@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { createContext, useContext } from 'react';
 import { getTenant, getUserName } from '@/utils/helpers';
 import { config } from '@/lib/config';
-import '@iblai/iblai-web-mentor';
+import '@iblai/agent-ai';
 import React from 'react';
 // @ts-ignore
 import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
