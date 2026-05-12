@@ -78,7 +78,7 @@ jobs:
   # RUN PLAYWRIGHT TESTS ON OCI
   # ============================================================
   run-tests:
-    needs: build-playwright-image
+    needs: [build-app-image, build-playwright-image]
     uses: iblai/iblai-web-ops/.github/workflows/reusable-oci-test-runner.yml@main
     secrets: inherit
     with:
