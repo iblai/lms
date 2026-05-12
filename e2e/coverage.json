@@ -262,7 +262,7 @@
         },
         {
           "id": "tabs-14",
-          "description": "/agent route mounts <mentor-ai> full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class",
+          "description": "/agent route mounts <agent-ai> full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class",
           "status": "covered"
         },
         {
@@ -282,7 +282,7 @@
         },
         {
           "id": "tabs-18",
-          "description": "Unit switch on the /agent tab posts MENTOR:CHAT_ACTION_ADD_MESSAGE into the <mentor-ai> shadow-root iframe and the agent renders an AI response",
+          "description": "Unit switch on the /agent tab posts MENTOR:CHAT_ACTION_ADD_MESSAGE into the <agent-ai> shadow-root iframe and the agent renders an AI response",
           "status": "covered"
         },
         {

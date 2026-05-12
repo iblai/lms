@@ -136,7 +136,7 @@ export function CourseAgentChat() {
           <SquarePen className="h-4 w-4" />
         </button>
       )}
-      {React.createElement('mentor-ai', {
+      {React.createElement('agent-ai', {
         ref: mentorElementRef,
         mentorUrl: config.urls.mentor(),
         authUrl: config.urls.auth(),

@@ -151,7 +151,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
               >
                 <ArrowRight className="h-4 w-4" />
               </button> */}
-              {React.createElement('mentor-ai', {
+              {React.createElement('agent-ai', {
                 mentorUrl: config.urls.mentor(),
                 authUrl: config.urls.auth(),
                 lmsUrl: config.urls.lms(),
@@ -219,7 +219,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
             >
               <X className="h-5 w-5" />
             </button> */}
-            {React.createElement('mentor-ai', {
+            {React.createElement('agent-ai', {
               mentorUrl: config.urls.mentor(),
               authUrl: config.urls.auth(),
               lmsUrl: config.urls.lms(),

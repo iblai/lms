@@ -109,10 +109,10 @@ describe('CourseAgentChat', () => {
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('renders the mentor-ai web component after resolving a mentor', async () => {
+  it('renders the agent-ai web component after resolving a mentor', async () => {
     const { container } = renderWithContext();
     await waitFor(() => {
-      expect(container.querySelector('mentor-ai')).toBeInTheDocument();
+      expect(container.querySelector('agent-ai')).toBeInTheDocument();
     });
   });
 

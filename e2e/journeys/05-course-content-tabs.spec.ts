@@ -533,8 +533,8 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await agentTab.click();
     await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
 
-    // Wait for the mentor-ai web component to mount.
-    const mentorAi = page.locator('mentor-ai');
+    // Wait for the agent-ai web component to mount.
+    const mentorAi = page.locator('agent-ai');
     await expect(mentorAi.first()).toBeAttached({ timeout: 60_000 });
 
     // In learning mode (default) the EdxIframe stays mounted but its wrapper carries
@@ -545,7 +545,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     expect(wrapperClass ?? '').toContain('hidden');
     expect(await iframe.isVisible().catch(() => false)).toBe(false);
 
-    logger.info('Agent tab renders mentor-ai and keeps edX iframe wrapper hidden');
+    logger.info('Agent tab renders agent-ai and keeps edX iframe wrapper hidden');
   });
 
   test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode !== true', async ({
@@ -671,9 +671,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await agentTab.click();
     await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
 
-    // Playwright pierces open shadow DOM with CSS selectors, so `mentor-ai iframe`
-    // resolves to the iframe inside the <mentor-ai> custom element's shadow root.
-    const mentorIframeElement = page.locator('mentor-ai iframe');
+    // Playwright pierces open shadow DOM with CSS selectors, so `agent-ai iframe`
+    // resolves to the iframe inside the <agent-ai> custom element's shadow root.
+    const mentorIframeElement = page.locator('agent-ai iframe');
     const iframeReady = await mentorIframeElement
       .first()
       .waitFor({ state: 'attached', timeout: 60_000 })
@@ -681,7 +681,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       .catch(() => false);
 
     if (!iframeReady) {
-      logger.info('mentor-ai iframe never mounted — skipping');
+      logger.info('agent-ai iframe never mounted — skipping');
       test.skip();
       return;
     }
@@ -690,7 +690,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     // CHAT_ACTION_ADD_MESSAGE payload on unit switch. We stash received messages on a
     // global the test can read back via evaluate.
     await page.evaluate(() => {
-      const el = document.querySelector('mentor-ai');
+      const el = document.querySelector('agent-ai');
       const iframe = el?.shadowRoot?.querySelector('iframe') as HTMLIFrameElement | null;
       (window as any).__mentorMessages = [] as unknown[];
       const originalPost = iframe?.contentWindow?.postMessage.bind(iframe?.contentWindow);
@@ -739,7 +739,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
     // Best-effort assertion that the mentor actually echoes an AI response to the injected
     // message. The inner iframe is cross-origin so we reach into it via frameLocator.
-    const mentorFrame = page.frameLocator('mentor-ai iframe');
+    const mentorFrame = page.frameLocator('agent-ai iframe');
     const aiResponse = mentorFrame.locator('.chat-ai-message-response').last();
 
     const aiVisible = await aiResponse
@@ -784,7 +784,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
 
     // Clicking posts MENTOR:NEW_CHAT into the iframe; the iframe should land on
     // the welcome screen surfaced by `.chat-welcome-button`.
-    const mentorFrame = page.frameLocator('mentor-ai iframe');
+    const mentorFrame = page.frameLocator('agent-ai iframe');
     await expect(mentorFrame.locator('.chat-welcome-button').first()).toBeVisible({
       timeout: 15_000,
     });
@@ -906,7 +906,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     const iframe = page.locator('iframe#edx-iframe').first();
-    const mentorAi = page.locator('mentor-ai').first();
+    const mentorAi = page.locator('agent-ai').first();
 
     await expect(mentorAi).toBeAttached({ timeout: 60_000 });
     expect(await iframe.isVisible().catch(() => false)).toBe(false);
