@@ -55,7 +55,6 @@ jobs:
       build-context: .
       image-name: iblai-skills-spa-pro
       registry-type: ocir
-      image-tag: pr-${{ github.event.pull_request.number }}
       event-name: pull_request
       pr-number: ${{ github.event.pull_request.number }}
 
@@ -95,7 +94,7 @@ jobs:
       ec2-host: '32.196.111.179'
       ec2-user: 'ubuntu'
       ec2-commands: >-
-        cd /ibl/app/ibl-spa/mentor &&
+        cd /ibl/app/ibl-spa/skills &&
         sed -i 's|image: .*|image: ${{ needs.build-app-image.outputs.image-uri }}|' docker-compose.yml &&
         docker compose down &&
         docker compose up -d
