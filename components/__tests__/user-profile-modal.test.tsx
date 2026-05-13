@@ -5,6 +5,7 @@ import React from 'react';
 
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
+  getTenants: vi.fn(() => []),
   getUserName: vi.fn(() => 'test-user'),
 }));
 

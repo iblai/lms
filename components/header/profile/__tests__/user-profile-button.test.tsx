@@ -27,6 +27,7 @@ let mockEnableGravatarOnProfilePic = 'true';
 vi.mock('@/utils/helpers', () => ({
   getTenant: () => 'test-tenant',
   getUserName: () => 'testuser',
+  getUserEmail: () => 'test@example.com',
   handleLogout: mockHandleLogout,
   handleTenantSwitch: mockHandleTenantSwitch,
   onAccountDeleted: mockOnAccountDeleted,
@@ -57,6 +58,7 @@ vi.mock('@/lib/config', () => ({
       platformBaseDomain: () => 'example.com',
       enableRBAC: () => false,
       enableGravatarOnProfilePic: () => mockEnableGravatarOnProfilePic,
+      mainPlatformKey: () => 'main',
     },
     urls: {
       auth: () => 'https://auth.example.com',
@@ -101,7 +103,6 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="show-account-tab">{String(props.showAccountTab)}</span>
       <span data-testid="show-help-link">{String(props.showHelpLink)}</span>
       <span data-testid="show-learner-mode-switch">{String(props.showLearnerModeSwitch)}</span>
-      <span data-testid="billing-enabled">{String(props.billingEnabled)}</span>
       <span data-testid="current-spa">{props.currentSPA}</span>
       <span data-testid="enable-gravatar-on-profile-pic">
         {String(props.enableGravatarOnProfilePic)}
@@ -167,12 +168,6 @@ describe('UserProfileButton', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('current-spa')).toHaveTextContent('skills');
-    });
-
-    it('should disable billing', () => {
-      render(<UserProfileButton />);
-
-      expect(screen.getByTestId('billing-enabled')).toHaveTextContent('false');
     });
 
     it('should not show account tab', () => {
