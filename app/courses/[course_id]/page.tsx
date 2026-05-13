@@ -178,6 +178,16 @@ export default function CourseDetailsPage() {
                         Configuration
                       </button>
                     )}
+                    {departmentMemberCheck?.is_platform_admin && (
+                      <a
+                        href={`${config.urls.studioUrl()}/course/${courseId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium whitespace-nowrap text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      >
+                        Authoring
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
