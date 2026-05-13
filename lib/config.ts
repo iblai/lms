@@ -23,6 +23,7 @@ const env = {
   NEXT_PUBLIC_PLATFORM_BASE_DOMAIN: process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN,
   NEXT_PUBLIC_ENABLE_RBAC: process.env.NEXT_PUBLIC_ENABLE_RBAC,
   NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
+  NEXT_PUBLIC_MAIN_PLATFORM_KEY: process.env.NEXT_PUBLIC_MAIN_PLATFORM_KEY,
 };
 
 const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
@@ -64,5 +65,6 @@ export const config = {
     platformBaseDomain: () => getEnv('NEXT_PUBLIC_PLATFORM_BASE_DOMAIN', ''),
     enableRBAC: () => getEnv('NEXT_PUBLIC_ENABLE_RBAC', 'false') === 'true',
     supportEmail: () => getEnv('NEXT_PUBLIC_SUPPORT_EMAIL', 'support@ibl.ai'),
+    mainPlatformKey: () => getEnv('NEXT_PUBLIC_MAIN_PLATFORM_KEY', 'main'),
   },
 };
