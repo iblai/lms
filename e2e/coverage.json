@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-05-05",
+  "lastUpdated": "2026-05-13",
   "summary": {
-    "totalCheckpoints": 224,
-    "coveredCheckpoints": 224,
-    "totalCheckpoints": 224,
-    "coveredCheckpoints": 224,
+    "totalCheckpoints": 226,
+    "coveredCheckpoints": 226,
+    "totalCheckpoints": 226,
+    "coveredCheckpoints": 226,
     "percent": 100,
     "totalJourneys": 30
   },
@@ -175,6 +175,11 @@
           "id": "course-10",
           "description": "Save Changes button saves settings",
           "status": "covered"
+        },
+        {
+          "id": "course-11",
+          "description": "Authoring tab (admin only) links to <studio-url>/course/<course-id> and opens in a new tab",
+          "status": "covered"
         }
       ]
     },
@@ -303,6 +308,11 @@
         {
           "id": "tabs-22",
           "description": "On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-23",
+          "description": "Authoring tab (admin only) links to <studio-url>/course/<course-id> and opens in a new tab",
           "status": "covered"
         }
       ]
