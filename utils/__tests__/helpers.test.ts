@@ -42,6 +42,7 @@ import {
   getOrg,
   getUserId,
   getUserName,
+  getUserEmail,
   getRandomCourseImage,
   getContentImage,
   slugify,
@@ -58,10 +59,12 @@ import {
   getParentDomain,
   clearCookies,
   handleLogout,
+  onAccountDeleted,
   parseMarkdownLinks,
   inBrowserPrint,
   handleTenantSwitch,
   switchTenant,
+  setTenantSwitching,
   DEFAULT_OVERVIEW_PLACEHOLDER,
 } from '../helpers';
 import { getLocalStorageItem } from '../localstorage';
@@ -236,6 +239,25 @@ describe('helpers utility functions', () => {
     it('should return null when userData is null', () => {
       vi.mocked(getLocalStorageItem).mockReturnValueOnce(null);
       expect(getUserName()).toBeNull();
+    });
+  });
+
+  describe('getUserEmail', () => {
+    it('should return user_email from userData', () => {
+      vi.mocked(getLocalStorageItem).mockReturnValueOnce(
+        JSON.stringify({ user_email: 'test@example.com' }),
+      );
+      expect(getUserEmail()).toBe('test@example.com');
+    });
+
+    it('should return null for invalid JSON', () => {
+      vi.mocked(getLocalStorageItem).mockReturnValueOnce('invalid');
+      expect(getUserEmail()).toBeNull();
+    });
+
+    it('should return null when userData is null', () => {
+      vi.mocked(getLocalStorageItem).mockReturnValueOnce(null);
+      expect(getUserEmail()).toBeNull();
     });
   });
 
@@ -651,6 +673,107 @@ describe('helpers utility functions', () => {
       expect(locationHref).toContain(
         `redirect-to=${encodeURIComponent('https://elsewhere.example.com/landing')}`,
       );
+    });
+  });
+
+  describe('setTenantSwitching', () => {
+    afterEach(() => {
+      setTenantSwitching(false);
+    });
+
+    it('suppresses subsequent redirectToAuthSpa calls when set to true', async () => {
+      setTenantSwitching(true);
+      localStorage.setItem('preserved', 'yes');
+
+      await redirectToAuthSpa();
+
+      // Early return: localStorage was not cleared and no redirect happened
+      expect(localStorage.getItem('preserved')).toBe('yes');
+      expect(locationHref).toBe('');
+    });
+
+    it('re-enables redirectToAuthSpa when set back to false', async () => {
+      setTenantSwitching(true);
+      setTenantSwitching(false);
+
+      await redirectToAuthSpa();
+
+      expect(locationHref).toContain('https://auth.example.com/login');
+    });
+  });
+
+  describe('onAccountDeleted', () => {
+    it('schedules handleLogout via setTimeout', () => {
+      vi.useFakeTimers();
+      Object.defineProperty(window, 'self', { value: window, configurable: true });
+      Object.defineProperty(window, 'top', { value: window, configurable: true });
+
+      onAccountDeleted();
+
+      // Before timer elapses, no redirect
+      expect(locationHref).toBe('');
+
+      vi.advanceTimersByTime(3000);
+
+      // handleLogout was invoked, so the auth logout URL should now be set
+      expect(locationHref).toContain('https://auth.example.com/logout');
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('handleLogout timer', () => {
+    it('resets the suppression flag after 2 seconds when not in iframe', async () => {
+      vi.useFakeTimers();
+      Object.defineProperty(window, 'self', { value: window, configurable: true });
+      Object.defineProperty(window, 'top', { value: window, configurable: true });
+
+      handleLogout();
+
+      // While suppressed, a subsequent redirect call should be a no-op
+      locationHref = '';
+      await redirectToAuthSpa();
+      expect(locationHref).toBe('');
+
+      // After timer elapses, suppression flag is cleared
+      vi.advanceTimersByTime(2000);
+      await redirectToAuthSpa();
+      expect(locationHref).toContain('https://auth.example.com/login');
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('handleTenantSwitch timer', () => {
+    it('resets the suppression flag after 2 seconds', async () => {
+      vi.useFakeTimers();
+
+      await handleTenantSwitch('new-tenant');
+
+      locationHref = '';
+      await redirectToAuthSpa();
+      expect(locationHref).toBe('');
+
+      vi.advanceTimersByTime(2000);
+      await redirectToAuthSpa();
+      expect(locationHref).toContain('https://auth.example.com/login');
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('parseMarkdownLinks error path', () => {
+    it('returns empty array when regex.exec throws', () => {
+      const originalExec = RegExp.prototype.exec;
+      RegExp.prototype.exec = function () {
+        throw new Error('boom');
+      };
+
+      try {
+        expect(parseMarkdownLinks('[anything](https://x.com)')).toEqual([]);
+      } finally {
+        RegExp.prototype.exec = originalExec;
+      }
     });
   });
 
