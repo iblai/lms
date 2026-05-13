@@ -23,7 +23,10 @@ import {
   useCreateStripeCheckoutSessionMutation,
   useLazyCheckAccessQuery,
 } from '@iblai/iblai-js/data-layer';
-import { setDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import {
+  setAccessCheckResponse,
+  setDisplayMonetizationCheckoutModal,
+} from '@iblai/iblai-js/web-utils';
 
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '@/lib/hooks';
@@ -158,6 +161,7 @@ export const useCourseDetail = (courseId: string) => {
         platform_key: getTenant(),
       });
       const data = result?.data;
+      dispatch(setAccessCheckResponse(data));
       onComplete({ hasAccess: !!data?.has_access });
     } catch (error) {
       console.error('Error checking access:', error);
