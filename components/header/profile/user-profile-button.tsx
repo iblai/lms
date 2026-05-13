@@ -7,6 +7,7 @@ import {
   handleLogout,
   handleTenantSwitch,
   onAccountDeleted,
+  getUserEmail,
 } from '@/utils/helpers';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
@@ -16,6 +17,7 @@ import { selectRbacPermissions, updateRbacPermissions } from '@/features/rbac';
 
 export const UserProfileButton = () => {
   const username = getUserName();
+  const email = getUserEmail();
   const tenantKey = getTenant();
   const { currentTenant, saveCurrentTenant } = useCurrentTenant();
   const { userTenants = [], saveUserTenants } = useUserTenants();
@@ -53,6 +55,8 @@ export const UserProfileButton = () => {
       username={username || undefined}
       userIsAdmin={isAdmin}
       userIsStudent={false}
+      email={email}
+      mainPlatformKey={config.settings.mainPlatformKey()}
       // Tenant data
       tenantKey={tenantKey}
       mentorId={undefined} // Skills app doesn't have mentor concept
@@ -73,12 +77,6 @@ export const UserProfileButton = () => {
       onLogout={handleLogout}
       onTenantChange={handleTenantChange}
       onHelpClick={handleHelpClick}
-      // Modal props
-      billingEnabled={false}
-      billingURL=""
-      topUpEnabled={false}
-      topUpURL=""
-      currentPlan=""
       // Custom components
       LearnerModeSwitchComponent={undefined}
       // Additional data
