@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.26.0](https://github.com/iblai/skillsai/compare/skills-v0.25.0...skills-v0.26.0) (2026-05-14)
+
+### Features
+
+* monetization implementation on skills on progress ([462aa76](https://github.com/iblai/skillsai/commit/462aa76d951ad929f23299f4ec51cadee1bbd79d))
+* monetization implementation on skills on progress ([bc8cf3f](https://github.com/iblai/skillsai/commit/bc8cf3f502599ec02b382d05fac08f038d78d486))
+* monetization paywall showing up ([446bae6](https://github.com/iblai/skillsai/commit/446bae6584ad90c2650ec21778d01e5f983be0c7))
+* package version update ([da34825](https://github.com/iblai/skillsai/commit/da3482568459d32c90153038641ec2c81790fdc1))
+* programs and courses monetization feature > test coverage ([c50b361](https://github.com/iblai/skillsai/commit/c50b3612ffa69fe48f14c93b0183e55b6c3c70de))
+* programs and courses monetization feature > test coverage ([85d395c](https://github.com/iblai/skillsai/commit/85d395cb30a2ba5b1ed25df4f6ab6f27bb8ce382))
+* programs and courses monetization feature > test coverage ([b5527ca](https://github.com/iblai/skillsai/commit/b5527ca59f902931393570d5f6f4a50eefc7ddde))
+* programs and courses monetization feature > test coverage ([2bc1744](https://github.com/iblai/skillsai/commit/2bc174481a4934bac076f3dca3f0ed259edc0c3a))
+* programs and courses monetization feature completed ([7910d91](https://github.com/iblai/skillsai/commit/7910d915122ce58c7a4781a80ebbfabeb45fe97c))
+* programs and courses monetization feature completed ([a7fa1a1](https://github.com/iblai/skillsai/commit/a7fa1a1c8d937d818e9ea405441d28c742c15808))
+* programs and courses monetization feature completed ([a446a1f](https://github.com/iblai/skillsai/commit/a446a1f7f3becbb35e74db9e1baf2a866c877f45))
+* programs detail page implemented + monetization on progress ([85c286d](https://github.com/iblai/skillsai/commit/85c286d75ec202f996ff55bc300187c030653c35))
+* programs detail page implemented + monetization on progress ([95caf1e](https://github.com/iblai/skillsai/commit/95caf1ed663ad6fd4bde3a2d7eb484aff3c8a227))
+* skills monetization feature > playwright test coverage ([89dafa4](https://github.com/iblai/skillsai/commit/89dafa410b9c8f673aa089d1ea25290befe6b4d9))
+* skills monetization feature completed ([0dce729](https://github.com/iblai/skillsai/commit/0dce729eeb1d9061588078e5fd1817dafee99554))
+* skills monetization feature completed ([257cf09](https://github.com/iblai/skillsai/commit/257cf09c8ed31aa19b31834d39b686db8283704e))
+* skills monetization feature playwright test on progress ([a896104](https://github.com/iblai/skillsai/commit/a896104054500bc005b5a2bdddd79dfa75658b12))
+
+### Bug Fixes
+
+* playwright tests update ([26656fe](https://github.com/iblai/skillsai/commit/26656feaee6df5efef0859c7de99524f11a595c7))
+* playwright tests update ([ed53b07](https://github.com/iblai/skillsai/commit/ed53b07e5d57a95cdee5388d8749d3323953dc6e))
+
+## [0.10.18-patch-2](https://github.com/iblai/skillsai/compare/skills-v0.25.0...skills-v0.26.0) (2026-04-09)
+
+### Chores
+
+* release v0.10.18-patch-2 ([639f772](https://github.com/iblai/skillsai/commit/639f772c36ed22cfed2d771074c53d564f7f30b1))
+
+## [0.10.18-patch-1](https://github.com/iblai/skillsai/compare/skills-v0.25.0...skills-v0.26.0) (2026-04-08)
+
+### Features
+
+* monetization implemented ([f1be7d2](https://github.com/iblai/skillsai/commit/f1be7d295162a8017313379d2c42272e4f86b3d5))
+* monetization in progress RE courses ([4c2e7f4](https://github.com/iblai/skillsai/commit/4c2e7f40419960903dfdab73d2a92a0fb39a56a1))
+* monetization page implemented ([1e8003b](https://github.com/iblai/skillsai/commit/1e8003b9d899ace05f6d972af544f9f690c06bdf))
+
+### Chores
+
+* release v0.10.10-patch-1 ([ebd8d07](https://github.com/iblai/skillsai/commit/ebd8d07ae835d38e6e11a565285ba6747f80ebf5))
+* release v0.10.10-patch-1 ([84269ca](https://github.com/iblai/skillsai/commit/84269cae3e6ce478bcdbbb446b0be837d64a69df))
+* release v0.10.18-patch-1 ([a9c1e2c](https://github.com/iblai/skillsai/commit/a9c1e2c99ed30f6d912e6a61ed1ac73e18268772))
+
 ## [0.25.0](https://github.com/iblai/skillsai/compare/skills-v0.24.2...skills-v0.25.0) (2026-05-14)
 
 ### Features
