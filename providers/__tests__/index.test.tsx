@@ -55,10 +55,22 @@ vi.mock('@/utils/helpers', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
 }));
 
 vi.mock('@/features/rbac', () => ({
   updateRbacPermissions: vi.fn(() => ({ type: 'rbac/updatePermissions' })),
+}));
+
+vi.mock('@/features/tenant', () => ({
+  selectRequestedTenant: () => '',
 }));
 
 // Create a minimal test store

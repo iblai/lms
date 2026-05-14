@@ -12,7 +12,7 @@ import { MediaBox } from '@/components/profile/media-box';
 import { UserAvatar } from '@/components/header/profile/user-avatar';
 import { AppContext } from '@/components/client-layout';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant, onAccountDeleted } from '@/utils/helpers';
+import { getTenant, getUserEmail, onAccountDeleted } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { UserProfileModal } from '@iblai/iblai-js/web-containers/next';
@@ -32,6 +32,7 @@ export default function PublicProfilePage() {
 
   const rbacPermissions = useAppSelector(selectRbacPermissions);
   const isAdmin = useIsAdmin();
+  const email = getUserEmail();
 
   const openUserProfile = useCallback(
     (targetTab: string) => {
@@ -183,6 +184,8 @@ export default function PublicProfilePage() {
             tenantKey: getTenant(),
             isAdmin,
           }}
+          email={email}
+          mainPlatformKey={config.settings.mainPlatformKey()}
           showMentorAIDisplayCheckbox={true}
           showLeaderboardDisplayCheckbox={true}
           showUsernameField={false}
@@ -190,11 +193,6 @@ export default function PublicProfilePage() {
           useGravatarPicFallback={config.settings.enableGravatarOnProfilePic() !== 'false'}
           targetTab={userProfileTargetTab}
           onClose={handleCloseUserProfile}
-          billingEnabled={false}
-          billingURL={''}
-          topUpEnabled={false}
-          topUpURL={''}
-          currentPlan={''}
           currentSPA={config.settings.appName() || 'skills'}
           authURL={config.urls.auth()}
           tenants={userTenants}

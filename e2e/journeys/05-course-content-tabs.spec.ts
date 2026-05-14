@@ -381,6 +381,38 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Discussion post submitted');
   });
 
+  test('Checkpoint 23: Authoring tab links to studio for admin users', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
+    const isAdmin = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    if (!isAdmin) {
+      logger.info('Authoring tab is admin-gated like Instructor — skipping for non-admin');
+      test.skip();
+      return;
+    }
+
+    const url = new URL(page.url());
+    // /course-content/<course_id>/<tab> — strip the trailing tab to get the course id.
+    const parts = url.pathname.split('/').filter(Boolean);
+    const courseId = decodeURIComponent(parts[1] || '');
+
+    const authoringTab = page.getByRole('link', { name: 'Authoring' });
+    await expect(authoringTab).toBeVisible({ timeout: 10000 });
+    await expect(authoringTab).toHaveAttribute('target', '_blank');
+
+    const href = await authoringTab.getAttribute('href');
+    expect(href).toBeTruthy();
+    expect(href).toContain(`/course/${courseId}`);
+    logger.info(`Authoring tab points at studio: ${href}`);
+  });
+
   test('Checkpoint 9: Instructor tab (optional)', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 

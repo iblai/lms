@@ -15,6 +15,8 @@ vi.mock('lucide-react', () => ({
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
+  getUserEmail: vi.fn(() => 'test@example.com'),
+  onAccountDeleted: vi.fn(),
 }));
 
 // Mock config
@@ -24,6 +26,7 @@ vi.mock('@/lib/config', () => ({
       enableGravatarOnProfilePic: vi.fn(() => 'true'),
       appName: vi.fn(() => 'skills'),
       platformBaseDomain: vi.fn(() => 'example.com'),
+      mainPlatformKey: vi.fn(() => 'main'),
     },
     urls: {
       auth: vi.fn(() => 'https://auth.example.com'),

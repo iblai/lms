@@ -24,12 +24,10 @@ import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  setAdvancedDisplayMonetizationCheckoutModal,
-  setDisplayMonetizationCheckoutModal,
-} from '@iblai/iblai-js/web-utils';
+import { setAdvancedDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
 import { useDispatch } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
+import { config } from '@/lib/config';
 
 export default function CourseContentLayout({
   children,
@@ -316,6 +314,16 @@ export default function CourseContentLayout({
                       >
                         Instructor
                       </Link>
+                    )}
+                    {departmentMemberCheck?.is_platform_admin && (
+                      <a
+                        href={`${config.urls.studioUrl()}/course/${courseId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700"
+                      >
+                        Authoring
+                      </a>
                     )}
                   </div>
                   <div className="flex items-center gap-3 pr-4">

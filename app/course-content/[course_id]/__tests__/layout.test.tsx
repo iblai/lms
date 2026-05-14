@@ -162,6 +162,15 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
   ExamInfo: {},
 }));
 
+// Mock config — layout reads studioUrl for the Authoring tab
+vi.mock('@/lib/config', () => ({
+  config: {
+    urls: {
+      studioUrl: vi.fn(() => 'https://studio.example.com'),
+    },
+  },
+}));
+
 // Mock React.use
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof React>('react');
@@ -387,6 +396,87 @@ describe('CourseContentLayout', () => {
       </CourseContentLayout>,
     );
     expect(screen.getByText('Instructor')).toBeInTheDocument();
+  });
+
+  describe('Authoring tab (platform admin only)', () => {
+    it('renders Authoring tab for platform admin', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      expect(screen.getByText('Authoring')).toBeInTheDocument();
+    });
+
+    it('hides Authoring tab for non-admin users', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      expect(screen.queryByText('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+
+      const { container } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const authoringLink = Array.from(container.querySelectorAll('a')).find(
+        (a) => a.textContent?.trim() === 'Authoring',
+      );
+      expect(authoringLink).toBeTruthy();
+      // React.use mock decodes the param, so the courseId in the href has raw colons/plus.
+      expect(authoringLink?.getAttribute('href')).toBe(
+        'https://studio.example.com/course/course-v1:test+course+2024',
+      );
+      expect(authoringLink?.getAttribute('target')).toBe('_blank');
+      expect(authoringLink?.getAttribute('rel')).toContain('noopener');
+    });
+
+    it('Authoring tab is rendered immediately after Instructor tab', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+
+      const { container } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const tabLabels = Array.from(container.querySelectorAll('a'))
+        .map((a) => a.textContent?.trim() ?? '')
+        .filter((t) =>
+          [
+            'Agent',
+            'Course',
+            'Progress',
+            'Dates',
+            'Discussion',
+            'Instructor',
+            'Authoring',
+          ].includes(t),
+        );
+      const instructorIdx = tabLabels.indexOf('Instructor');
+      const authoringIdx = tabLabels.indexOf('Authoring');
+      expect(instructorIdx).toBeGreaterThanOrEqual(0);
+      expect(authoringIdx).toBe(instructorIdx + 1);
+    });
   });
 
   it('renders children within layout', () => {
