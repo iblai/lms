@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "lastUpdated": "2026-05-13",
+  "lastUpdated": "2026-05-14",
   "summary": {
-    "totalCheckpoints": 226,
-    "coveredCheckpoints": 226,
-    "totalCheckpoints": 226,
-    "coveredCheckpoints": 226,
+    "totalCheckpoints": 232,
+    "coveredCheckpoints": 232,
+    "totalCheckpoints": 232,
+    "coveredCheckpoints": 232,
     "percent": 100,
-    "totalJourneys": 30
+    "totalJourneys": 31
   },
   "journeys": [
     {
@@ -458,7 +458,7 @@
       "id": "profile-programs",
       "name": "Profile — Programs",
       "spec": "10-profile-programs.spec.ts",
-      "sourceFiles": ["app/profile/programs/page.tsx", "components/program-detail-modal.tsx"],
+      "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
         {
           "id": "prog-01",
@@ -472,22 +472,30 @@
         },
         {
           "id": "prog-03",
-          "description": "Clicking program opens detail modal",
+          "description": "Clicking program navigates to /programs/[program_id]",
           "status": "covered"
         },
         {
           "id": "prog-04",
-          "description": "Modal displays program name and close button",
+          "description": "Detail page shows program name and card image",
           "status": "covered"
         },
-        { "id": "prog-05", "description": "Modal closes with Close button", "status": "covered" },
+        {
+          "id": "prog-05",
+          "description": "Browser back returns to /profile/programs",
+          "status": "covered"
+        },
         {
           "id": "prog-06",
-          "description": "Admin sees Courses and Settings tabs",
+          "description": "Admin sees About, Courses, and Settings tabs (About selected by default)",
           "status": "covered"
         },
         { "id": "prog-07", "description": "Settings tab shows form sections", "status": "covered" },
-        { "id": "prog-08", "description": "Tab switching updates content", "status": "covered" },
+        {
+          "id": "prog-08",
+          "description": "Tab switching About → Courses → Settings updates content",
+          "status": "covered"
+        },
         {
           "id": "prog-09",
           "description": "Course card click navigates to course page",
@@ -1086,27 +1094,69 @@
         },
         {
           "id": "cag-04",
-          "description": "Redirects to auth /login/complete when platform_key is found in user tenants",
-          "status": "covered"
-        },
-        {
-          "id": "cag-05",
-          "description": "redirect-to query param echoes the current full URL with query string",
-          "status": "covered"
-        },
-        {
-          "id": "cag-06",
-          "description": "Cross-tenant redirect fires from the /course-content layout too",
-          "status": "covered"
-        },
-        {
-          "id": "cag-07",
-          "description": "Foreign platform_key not in tenants from /course-content lands on /error/403",
-          "status": "covered"
-        },
-        {
-          "id": "cag-08",
           "description": "Empty metadata response surfaces /error/404 (not the cross-tenant branch)",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "program-detail-page",
+      "name": "Program Detail Page",
+      "spec": "32-program-detail-page.spec.ts",
+      "sourceFiles": [
+        "app/programs/[program_id]/page.tsx",
+        "app/profile/programs/page.tsx",
+        "components/discover-content-card.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "pdp-01",
+          "description": "Clicking a profile > programs card navigates to /programs/[id] and renders the page",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-02",
+          "description": "Clicking a discover program card navigates to /programs/[id] and renders the page",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-03",
+          "description": "Program name heading and card image are visible",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-04",
+          "description": "Admin sees About, Courses, and Settings tabs with About selected by default",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-05",
+          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-06",
+          "description": "Settings tab renders Basic Information, Pricing & Dates, Visibility & Access, Images, Social & Promotion sections and Save button (admin only)",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-07",
+          "description": "Non-admin / non-tenant view renders the courses list (or empty state) directly",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-08",
+          "description": "Course card click navigates to /courses/[course_id]",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-09",
+          "description": "CTA button shows Enroll Now / Purchase Now for non-enrolled or paywalled users",
+          "status": "covered"
+        },
+        {
+          "id": "pdp-10",
+          "description": "Direct navigation to /programs/[id] renders the page",
           "status": "covered"
         }
       ]

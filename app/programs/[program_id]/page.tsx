@@ -545,7 +545,8 @@ export default function ProgramDetailPage() {
       : config.urls.lms() + program.program_metadata.card_image
     : randomImage;
 
-  const showCta = !enrollmentStatus && !isEnrollmentSuccess && !isEnrollmentLoading;
+  const showCta =
+    !hasMonetizationAccess || (!enrollmentStatus && !isEnrollmentSuccess && !isEnrollmentLoading);
   const ctaLabel = !hasMonetizationAccess
     ? 'Purchase Now'
     : isEnrollmentSubmitting

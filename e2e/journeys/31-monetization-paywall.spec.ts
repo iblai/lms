@@ -10,7 +10,7 @@ import {
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
-test.describe('Journey 30: Monetization — Paywall Config Wizard', () => {
+test.describe('Journey 31: Monetization — Paywall Config Wizard', () => {
   test.setTimeout(180_000);
 
   test.beforeEach(async ({ page }) => {
