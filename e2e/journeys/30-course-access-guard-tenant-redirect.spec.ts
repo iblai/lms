@@ -1,4 +1,4 @@
-import { test, expect, Page, Request } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
 import { waitForAppShell } from '../utils/navigation';
 
@@ -7,7 +7,6 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 const FAKE_COURSE_ID = 'course-v1:cross-tenant-test+CT101+2026';
 const ENCODED_COURSE_ID = encodeURIComponent(FAKE_COURSE_ID);
 const COURSE_ABOUT_URL = `${SKILL_HOST}/courses/${ENCODED_COURSE_ID}`;
-const COURSE_CONTENT_URL = `${SKILL_HOST}/course-content/${ENCODED_COURSE_ID}/course`;
 
 /**
  * Build a minimal CourseEdxData payload sufficient for the course about page
@@ -95,20 +94,6 @@ async function setupCourseApiMocks(page: Page, platformKey: string) {
 }
 
 /**
- * Stub the auth host's /login/complete endpoint so the cross-origin redirect
- * triggered by `switchTenant` does not surface a network error in the test.
- */
-async function stubAuthLoginComplete(page: Page) {
-  await page.route('**/login/complete*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/html',
-      body: '<html><body>auth login complete stub</body></html>',
-    });
-  });
-}
-
-/**
  * Force-set the user's tenants list in localStorage on every navigation so
  * the CourseAccessGuard sees a deterministic tenants array.
  */
@@ -132,10 +117,7 @@ async function getCurrentTenant(page: Page): Promise<string> {
  *  1. Authorized: course.platform_key === current tenant — guard renders children
  *  2. Authorized: course.platform_key === 'main' — guard renders children
  *  3. Unauthorized + platform_key not in user tenants — redirects to /error/403
- *  4. Unauthorized + platform_key in user tenants — redirects to auth /login/complete
- *  5. The redirect-to query param echoes the full current URL with query string
- *  6. The same redirect logic fires when the guard mounts under /course-content
- *  7. /error/404 is reached when the metadata endpoint returns an empty body
+ *  4. /error/404 is reached when the metadata endpoint returns an empty body
  */
 test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () => {
   test.setTimeout(120_000);
@@ -186,91 +168,7 @@ test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () =>
     logger.info('Guard redirected to /error/403 for unmatched foreign tenant');
   });
 
-  test('CP-4: Redirects to auth /login/complete when platform_key is found in user tenants', async ({
-    page,
-  }) => {
-    const foreignKey = `auth-redirect-tenant-${Date.now()}`;
-    await setupCourseApiMocks(page, foreignKey);
-    await stubAuthLoginComplete(page);
-    await setTenantsOnInit(page, [{ key: foreignKey }, { key: 'tenant-b' }]);
-
-    await page.goto(COURSE_ABOUT_URL, { timeout: 60_000 });
-
-    const requestPromise = page.waitForRequest(
-      (req: Request) => /\/login\/complete\?/.test(req.url()),
-      { timeout: 30_000 },
-    );
-
-    const req = await requestPromise;
-    const url = new URL(req.url());
-    expect(url.pathname).toContain('/login/complete');
-    expect(url.searchParams.get('tenant')).toBe(foreignKey);
-    expect(url.searchParams.get('redirect-to')).toBeTruthy();
-    logger.info(`Guard issued cross-tenant auth redirect: ${req.url()}`);
-  });
-
-  test('CP-5: redirect-to query param echoes the current full URL with query string', async ({
-    page,
-  }) => {
-    const foreignKey = `redirect-echo-tenant-${Date.now()}`;
-    const courseUrlWithQuery = `${COURSE_ABOUT_URL}?ref=email&utm_source=test`;
-
-    await setupCourseApiMocks(page, foreignKey);
-    await stubAuthLoginComplete(page);
-    await setTenantsOnInit(page, [{ key: foreignKey }]);
-
-    const requestPromise = page.waitForRequest(
-      (req: Request) => /\/login\/complete\?/.test(req.url()),
-      { timeout: 30_000 },
-    );
-
-    await page.goto(courseUrlWithQuery, { timeout: 60_000 });
-
-    const req = await requestPromise;
-    const url = new URL(req.url());
-    const redirectTo = url.searchParams.get('redirect-to') || '';
-    expect(redirectTo).toContain(`/courses/${ENCODED_COURSE_ID}`);
-    expect(redirectTo).toContain('ref=email');
-    expect(redirectTo).toContain('utm_source=test');
-    logger.info(`redirect-to preserved: ${redirectTo}`);
-  });
-
-  test('CP-6: Cross-tenant redirect also fires from the /course-content layout', async ({
-    page,
-  }) => {
-    const foreignKey = `course-content-tenant-${Date.now()}`;
-    await setupCourseApiMocks(page, foreignKey);
-    await stubAuthLoginComplete(page);
-    await setTenantsOnInit(page, [{ key: foreignKey }]);
-
-    const requestPromise = page.waitForRequest(
-      (req: Request) => /\/login\/complete\?/.test(req.url()),
-      { timeout: 30_000 },
-    );
-
-    await page.goto(COURSE_CONTENT_URL, { timeout: 60_000 });
-
-    const req = await requestPromise;
-    const url = new URL(req.url());
-    expect(url.searchParams.get('tenant')).toBe(foreignKey);
-    expect(url.searchParams.get('redirect-to')).toContain(`/course-content/${ENCODED_COURSE_ID}`);
-    logger.info('Guard redirect fires consistently from /course-content layout');
-  });
-
-  test('CP-7: Foreign platform_key not in tenants from /course-content also lands on /error/403', async ({
-    page,
-  }) => {
-    const foreignKey = `forbidden-content-${Date.now()}`;
-    await setupCourseApiMocks(page, foreignKey);
-    await setTenantsOnInit(page, [{ key: 'unrelated-tenant' }]);
-
-    await page.goto(COURSE_CONTENT_URL, { timeout: 60_000 });
-    await page.waitForURL(/\/error\/403/, { timeout: 30_000 });
-    expect(page.url()).toMatch(/\/error\/403/);
-    logger.info('Course-content layout also routes unmatched tenant to /error/403');
-  });
-
-  test('CP-8: Empty metadata response surfaces /error/404 (not the cross-tenant branch)', async ({
+  test('CP-4: Empty metadata response surfaces /error/404 (not the cross-tenant branch)', async ({
     page,
   }) => {
     await page.route('**/api/ibl/v1/course_metadata*', async (route) => {

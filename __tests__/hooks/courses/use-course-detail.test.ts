@@ -10,8 +10,23 @@ vi.mock('next/navigation', () => ({
 
 const mockUnwrap = vi.fn();
 const mockCreateStripeCheckoutSession = vi.fn(() => ({ unwrap: mockUnwrap }));
+const mockCheckAccess = vi.fn(() => Promise.resolve({ data: { has_access: true } }));
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   useCreateStripeCheckoutSessionMutation: () => [mockCreateStripeCheckoutSession],
+  useLazyCheckAccessQuery: () => [mockCheckAccess],
+}));
+
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  setAccessCheckResponse: (payload: unknown) => ({ type: 'setAccessCheckResponse', payload }),
+  setDisplayMonetizationCheckoutModal: (payload: unknown) => ({
+    type: 'setDisplayMonetizationCheckoutModal',
+    payload,
+  }),
+}));
+
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
+  useDispatch: () => mockDispatch,
 }));
 
 const mockCreateCourseEnrollment = vi.fn();

@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-05-13 | 231 checkpoints | 30 journeys | 100% covered
+> Last updated: 2026-05-14 | 237 checkpoints | 31 journeys | 100% covered
 
 ## How This Works
 
@@ -153,17 +153,17 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 10: Profile — Programs (10 checkpoints) — `journeys/10-profile-programs.spec.ts`
 
-**Source files:** `app/profile/programs/page.tsx`, `components/program-detail-modal.tsx`
+**Source files:** `app/profile/programs/page.tsx`, `app/programs/[program_id]/page.tsx`
 
 - [x] Programs page (/profile/programs) loads with "My programs" tab visible
 - [x] Program cards display or "No programs found." empty state is shown
-- [x] Clicking a program card opens the program detail modal with "Program Details" heading
-- [x] Program detail modal displays program name and close button
-- [x] Modal closes when clicking the Close button; user remains on /profile/programs
-- [x] Admin users see Courses and Settings tabs; Courses tab is selected by default _(admin only)_
+- [x] Clicking a program card navigates to the program detail page at `/programs/[program_id]`
+- [x] Program detail page displays the program name heading and card image
+- [x] Browser back from the detail page returns to /profile/programs
+- [x] Admin users see About, Courses, and Settings tabs with About selected by default _(admin only)_
 - [x] Settings tab displays form sections: Basic Information, Pricing & Dates, Visibility & Access, Images, Social & Promotion _(admin only)_
-- [x] Switching between Courses and Settings tabs updates content correctly _(admin only)_
-- [x] Clicking a course card within the modal navigates to the course page
+- [x] Switching between About → Courses → Settings tabs updates content correctly _(admin only)_
+- [x] Clicking a course card on the program detail page navigates to the course page
 - [x] "My programs" and "Assigned programs" tabs can be toggled _(if both available)_
 
 ---
@@ -427,18 +427,31 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 30: Course Access Guard — Cross-Tenant Redirect (8 checkpoints) — `journeys/30-course-access-guard-tenant-redirect.spec.ts`
+## Journey 30: Course Access Guard — Cross-Tenant Redirect (4 checkpoints) — `journeys/30-course-access-guard-tenant-redirect.spec.ts`
 
 **Source files:** `components/course-access-guard.tsx`, `utils/helpers.ts`
 
 - [x] Renders course about page when `course.platform_key` matches the current tenant
 - [x] Renders course about page when `course.platform_key === 'main'`
 - [x] Redirects to `/error/403` when `platform_key` is foreign and not in `getTenants()`
-- [x] Redirects to `<auth>/login/complete?tenant=<key>&redirect-to=<url>` when `platform_key` matches a key in `getTenants()`
-- [x] `redirect-to` query param echoes the current full URL with query string
-- [x] Cross-tenant redirect fires consistently from the `/course-content` layout
-- [x] Foreign `platform_key` not in tenants from `/course-content` also lands on `/error/403`
 - [x] Empty metadata response surfaces `/error/404` (not the cross-tenant branch)
+
+---
+
+## Journey 32: Program Detail Page (10 checkpoints) — `journeys/32-program-detail-page.spec.ts`
+
+**Source files:** `app/programs/[program_id]/page.tsx`, `app/profile/programs/page.tsx`, `components/discover-content-card.tsx`
+
+- [x] Clicking a profile > programs card navigates to `/programs/[program_id]` and renders the page
+- [x] Clicking a discover program card navigates to `/programs/[program_id]` and renders the page
+- [x] Program name heading and card image are visible on the detail page
+- [x] Admin users see About, Courses, and Settings tabs with About selected by default _(admin only)_
+- [x] Tab switching About → Courses → Settings updates `aria-selected` and tab content _(admin only)_
+- [x] Settings tab renders Basic Information, Pricing & Dates, Visibility & Access, Images, Social & Promotion sections plus Save button _(admin only)_
+- [x] Non-admin / non-tenant view renders the program courses list (or empty state) directly without tabs
+- [x] Clicking a course card on the program page navigates to `/courses/[course_id]`
+- [x] CTA button shows "Enroll Now" or "Purchase Now" for non-enrolled or paywalled users _(state-dependent)_
+- [x] Direct navigation to `/programs/[program_id]` renders the page
 
 ---
 

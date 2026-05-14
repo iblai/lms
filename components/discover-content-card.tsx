@@ -4,20 +4,18 @@ import { useState } from 'react';
 import { DiscoverContentCardProps } from '../types/discover';
 import { useRouter } from 'next/navigation';
 import { PathwayDetailModal } from './pathway-detail-modal';
-import { ProgramDetailModal } from './program-detail-modal';
 
 export function DiscoverContentCard({ content }: { content: DiscoverContentCardProps }) {
   const router = useRouter();
   const [randomImage] = useState(() => getRandomCourseImage());
   const [selectedPathway, setSelectedPathway] = useState<any>(null);
-  const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const handleContentClick = () => {
     switch (content.contentType) {
       case 'pathway':
         setSelectedPathway(content);
         break;
       case 'program':
-        setSelectedProgram(content);
+        router.push(`/programs/${content.id}`);
         break;
       default:
         router.push(`/courses/${content.id}`);
@@ -57,16 +55,6 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
       </div>
       {selectedPathway && (
         <PathwayDetailModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} />
-      )}
-      {selectedProgram && (
-        <ProgramDetailModal
-          program={{
-            ...selectedProgram,
-            program_metadata: selectedProgram?.data,
-            metadata: selectedProgram?.data,
-          }}
-          onClose={() => setSelectedProgram(null)}
-        />
       )}
     </>
   );

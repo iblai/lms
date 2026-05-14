@@ -81,6 +81,10 @@ const mockHandleOpenLesson = vi.fn();
 const mockHandleFetchCourseProgress = vi.fn();
 const mockHandleFetchCourseCompletion = vi.fn();
 
+const mockHandleCheckCourseMonetizationAccess = vi.fn(async (cb?: any) => {
+  cb?.({ hasAccess: true });
+});
+
 vi.mock('@/hooks/courses/use-course-detail', () => ({
   useCourseDetail: vi.fn(() => ({
     handleFetchCourseInfo: mockHandleFetchCourseInfo,
@@ -88,6 +92,7 @@ vi.mock('@/hooks/courses/use-course-detail', () => ({
     handleOpenLesson: mockHandleOpenLesson,
     handleFetchCourseProgress: mockHandleFetchCourseProgress,
     handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+    handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
     course: null,
     courseInfoLoadingState: 'successful',
     courseOutline: null,
@@ -162,6 +167,20 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
   ExamInfo: {},
 }));
 
+// Mock web-utils — layout dispatches setAdvancedDisplayMonetizationCheckoutModal
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  setAdvancedDisplayMonetizationCheckoutModal: (payload: unknown) => ({
+    type: 'setAdvancedDisplayMonetizationCheckoutModal',
+    payload,
+  }),
+}));
+
+// Mock react-redux — layout calls useDispatch
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
+  useDispatch: () => mockDispatch,
+}));
+
 // Mock config — layout reads studioUrl for the Authoring tab
 vi.mock('@/lib/config', () => ({
   config: {
@@ -200,6 +219,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: null,
       courseInfoLoadingState: 'successful',
       courseOutline: null,
@@ -260,6 +280,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: { agent_content_mode: false, course_content_mode: true },
       courseInfoLoadingState: 'successful',
       courseOutline: null,
@@ -284,6 +305,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: { agent_content_mode: true, course_content_mode: false },
       courseInfoLoadingState: 'successful',
       courseOutline: null,
@@ -308,6 +330,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: { agent_content_mode: null, course_content_mode: true },
       courseInfoLoadingState: 'successful',
       courseOutline: null,
@@ -332,6 +355,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: { agent_content_mode: true, course_content_mode: null },
       courseInfoLoadingState: 'successful',
       courseOutline: null,
@@ -355,6 +379,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: { agent_content_mode: false, course_content_mode: false },
       courseInfoLoadingState: 'successful',
       courseOutline: null,
@@ -495,6 +520,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: { display_name: 'My Test Course', mentor_hidden: false, mentor_uuid: 'uuid-123' },
       courseOutline: null,
       courseOutlineLoading: false,
@@ -518,6 +544,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: null,
       courseOutline: null,
       courseOutlineLoading: false,
@@ -541,6 +568,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: null,
       courseOutline: null,
       courseOutlineLoading: false,
@@ -565,6 +593,7 @@ describe('CourseContentLayout', () => {
       handleOpenLesson: mockHandleOpenLesson,
       handleFetchCourseProgress: mockHandleFetchCourseProgress,
       handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
       course: null,
       courseOutline: null,
       courseOutlineLoading: false,
@@ -708,6 +737,7 @@ describe('CourseContentLayout', () => {
         handleOpenLesson: mockHandleOpenLesson,
         handleFetchCourseProgress: mockHandleFetchCourseProgress,
         handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
         course: { agent_content_mode: true, course_content_mode: true },
         courseInfoLoadingState: 'successful',
         courseOutline: outline,
@@ -827,6 +857,7 @@ describe('CourseContentLayout', () => {
         handleOpenLesson: mockHandleOpenLesson,
         handleFetchCourseProgress: mockHandleFetchCourseProgress,
         handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
         course: { agent_content_mode: true, course_content_mode: true },
         courseInfoLoadingState: 'successful',
         courseOutline: outlineWithUnit,

@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+// Mock next/navigation
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 // Mock next/image
 vi.mock('next/image', () => ({
   default: ({ src, alt, onError, ...props }: any) => (
@@ -47,16 +55,6 @@ vi.mock('@/hooks/profile/use-profile-programs', () => ({
     programCompletions: [],
     programCompletionsLoading: false,
   })),
-}));
-
-// Mock ProgramDetailModal
-vi.mock('@/components/program-detail-modal', () => ({
-  ProgramDetailModal: ({ program, onClose }: any) => (
-    <div data-testid="program-detail-modal">
-      Modal for: {program?.name}
-      <button onClick={onClose}>Close Modal</button>
-    </div>
-  ),
 }));
 
 // Mock components
@@ -270,7 +268,7 @@ describe('ProgramsPage', () => {
     expect(screen.getByText('75%')).toBeInTheDocument();
   });
 
-  it('opens program detail modal when program card is clicked', () => {
+  it('navigates to program detail page when program card is clicked', () => {
     const mockPrograms = [
       {
         name: 'Program 1',
@@ -297,41 +295,7 @@ describe('ProgramsPage', () => {
     const programCard = screen.getByTestId('program-card');
     fireEvent.click(programCard);
 
-    expect(screen.getByTestId('program-detail-modal')).toBeInTheDocument();
-  });
-
-  it('closes program detail modal', () => {
-    const mockPrograms = [
-      {
-        name: 'Program 1',
-        program_id: 'prog-1',
-        program_key: 'key-1',
-        program_metadata: {},
-        ended: '',
-      },
-    ];
-
-    vi.mocked(useProfilePrograms).mockReturnValue({
-      programs: mockPrograms,
-      filteredPrograms: mockPrograms,
-      isLoading: false,
-      isError: false,
-      setFilteredPrograms: mockSetFilteredPrograms,
-      setPrograms: mockSetPrograms,
-      programCompletions: [],
-      programCompletionsLoading: false,
-    });
-
-    render(<ProgramsPage />);
-
-    // Open modal
-    const programCard = screen.getByTestId('program-card');
-    fireEvent.click(programCard);
-    expect(screen.getByTestId('program-detail-modal')).toBeInTheDocument();
-
-    // Close modal
-    fireEvent.click(screen.getByText('Close Modal'));
-    expect(screen.queryByTestId('program-detail-modal')).not.toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/programs/prog-1');
   });
 
   it('switches tabs and resets state', () => {

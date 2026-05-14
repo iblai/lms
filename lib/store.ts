@@ -9,6 +9,8 @@ import { CourseMetadataSlice } from '@/services/course-metadata';
 import { CatalogSlice } from '@/services/catalog';
 // @ts-ignore
 import { skillsMiddleware, skillsReducer } from '@iblai/iblai-js/data-layer';
+// @ts-ignore
+import { monetizationSlice } from '@iblai/iblai-js/web-utils';
 import { CareerSlice } from '@/services/career';
 import { NotificationsSlice } from '@/services/notifications';
 import { EdxSSOSlice } from '@/services/edx-sso';
@@ -33,6 +35,7 @@ export const store = configureStore({
     [rbacSlice.reducerPath]: rbacSlice.reducer,
     [tenantSlice.reducerPath]: tenantSlice.reducer,
     [StudioSlice.reducerPath]: StudioSlice.reducer,
+    monetization: monetizationSlice.reducer,
     ...skillsReducer,
   },
   middleware: (getDefaultMiddleware) => {

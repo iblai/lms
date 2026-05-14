@@ -48,8 +48,23 @@ vi.mock('@/services/course-metadata', () => ({
   ]),
 }));
 
+const mockCheckAccess = vi.fn();
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   useCreateStripeCheckoutSessionMutation: vi.fn(() => [mockCreateStripeCheckoutSession]),
+  useLazyCheckAccessQuery: vi.fn(() => [mockCheckAccess]),
+}));
+
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  setAccessCheckResponse: vi.fn((payload) => ({ type: 'setAccessCheckResponse', payload })),
+  setDisplayMonetizationCheckoutModal: vi.fn((payload) => ({
+    type: 'setDisplayMonetizationCheckoutModal',
+    payload,
+  })),
+}));
+
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
+  useDispatch: vi.fn(() => mockDispatch),
 }));
 
 const mockHandleFetchCourseMetaData = vi.fn();
@@ -81,6 +96,7 @@ describe('useCourseDetail', () => {
     });
     mockGetCourseProgress.mockResolvedValue({ data: null });
     mockGetCourseCompletion.mockResolvedValue({ data: null });
+    mockCheckAccess.mockResolvedValue({ data: { has_access: true } });
   });
 
   it('returns expected shape', () => {

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-import { ProgramDetailModal } from '@/components/program-detail-modal';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
@@ -15,6 +15,7 @@ import { getRandomCourseImage } from '@/utils/helpers';
 import { config } from '@/lib/config';
 
 export default function ProgramsPage() {
+  const router = useRouter();
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
     org: getTenant(),
   });
@@ -22,7 +23,6 @@ export default function ProgramsPage() {
   const ENROLLED_TAB = 'enrolled';
   const ASSIGNED_TAB = 'assigned';
   const [activeTab, setActiveTab] = useState<'enrolled' | 'assigned' | 'catalog'>(ENROLLED_TAB); // "my" or "assigned"
-  const [selectedProgram, setSelectedProgram] = useState<CustomProgramEnrollmentPlus | null>(null);
   const [randomImage] = useState(() => getRandomCourseImage());
   const {
     programs,
@@ -123,7 +123,7 @@ export default function ProgramsPage() {
               <div
                 key={index}
                 className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-                onClick={() => setSelectedProgram(program)}
+                onClick={() => router.push(`/programs/${program.program_id}`)}
                 data-testid={'program-card'}
               >
                 <div className="relative h-32 w-full overflow-hidden">
@@ -178,10 +178,6 @@ export default function ProgramsPage() {
             ))}
         </div>
       </div>
-      {/* Program Detail Modal */}
-      {selectedProgram && (
-        <ProgramDetailModal program={selectedProgram} onClose={() => setSelectedProgram(null)} />
-      )}
     </>
   );
 }

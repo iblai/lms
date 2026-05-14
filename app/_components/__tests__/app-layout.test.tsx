@@ -93,6 +93,12 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: vi.fn(() => 'test-user'),
 }));
 
+// Mock monetization wrapper (transitively pulls @iblai/iblai-js/web-containers,
+// which doesn't resolve under vitest's module resolver).
+vi.mock('../monetization-wrapper', () => ({
+  MonetizationWrapper: () => <div data-testid="monetization-wrapper" />,
+}));
+
 import AppLayout from '../app-layout';
 import { usePathname } from 'next/navigation';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';

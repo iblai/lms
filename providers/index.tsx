@@ -2,8 +2,8 @@
 
 import { useDispatch } from 'react-redux';
 // @ts-ignore
-import { initializeDataLayer } from '@iblai/iblai-js/data-layer';
-import { useEffect, useMemo, useState } from 'react';
+import { AccessCheckResponse, initializeDataLayer } from '@iblai/iblai-js/data-layer';
+import { useEffect, useState, useMemo } from 'react';
 import { config } from '@/lib/config';
 import {
   handleTenantSwitch,
@@ -11,7 +11,7 @@ import {
   useCurrentTenant,
   useUserTenants,
 } from '@/utils/localstorage';
-import { AuthProvider, TenantProvider } from '@iblai/iblai-js/web-utils';
+import { AuthProvider, setAccessCheckResponse, TenantProvider } from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
 import { usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
@@ -41,6 +41,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         401: () => {
           console.log('[auth-redirect] API returned 401 Unauthorized');
           redirectToAuthSpa(undefined, undefined, true);
+        },
+        402: (error402Response) => {
+          dispatch(setAccessCheckResponse(error402Response as unknown as AccessCheckResponse));
         },
       },
     );

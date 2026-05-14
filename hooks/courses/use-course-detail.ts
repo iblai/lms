@@ -19,7 +19,16 @@ import {
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 //@ts-ignore
-import { useCreateStripeCheckoutSessionMutation } from '@iblai/iblai-js/data-layer';
+import {
+  useCreateStripeCheckoutSessionMutation,
+  useLazyCheckAccessQuery,
+} from '@iblai/iblai-js/data-layer';
+import {
+  setAccessCheckResponse,
+  setDisplayMonetizationCheckoutModal,
+} from '@iblai/iblai-js/web-utils';
+
+import { useDispatch } from 'react-redux';
 
 export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
 
@@ -31,6 +40,7 @@ interface CourseEligibility {
 
 export const useCourseDetail = (courseId: string) => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const ACCESS_COURSE_LABEL = 'Access Course';
   const ENROLL_NOW_LABEL = 'Enroll Now';
   const REQUEST_ACCESS_LABEL = 'Request Access';
@@ -38,6 +48,7 @@ export const useCourseDetail = (courseId: string) => {
   const REQUEST_ACCESS_COURSE_STARTING_SOON_LABEL = 'Request Access - Course Starting Soon';
   const INVITATION_ONLY_LABEL = 'Invitation Only';
   const BUY_NOW_LABEL = 'Buy Now';
+  const PURCHASE_NOW_LABEL = 'Purchase Now';
   const [createCourseEnrollment, { isError: isCourseEnrollmentError }] =
     useCreateCourseEnrollmentMutation();
   const [createStripeCheckoutSession] = useCreateStripeCheckoutSessionMutation();
@@ -54,6 +65,7 @@ export const useCourseDetail = (courseId: string) => {
     handleFetchCourseCompletionOutlines,
     handleFetchCourseEligibility,
   } = useCourseMetadata();
+  const [checkAccess] = useLazyCheckAccessQuery();
   const [courseInfoLoadingState, setCourseInfoLoadingState] =
     useState<CourseInfoLoadingState>('not-started');
   const [course, setCourse] = useState<CourseEdxData | null>(null);
@@ -134,8 +146,44 @@ export const useCourseDetail = (courseId: string) => {
     btn_action: handleEnrollToCourse,
   });
 
+  const handleOpenMonetizationCheckoutModal = () => {
+    dispatch(setDisplayMonetizationCheckoutModal(true));
+  };
+
+  const handleCheckCourseMonetizationAccess = async (
+    onComplete: (result: { hasAccess: boolean }) => void,
+  ) => {
+    try {
+      const result = await checkAccess({
+        item_type: 'course',
+        item_id: courseId,
+        platform_key: getTenant(),
+      });
+      const data = result?.data;
+      dispatch(setAccessCheckResponse(data));
+      onComplete({ hasAccess: !!data?.has_access });
+    } catch (error) {
+      console.error('Error checking access:', error);
+    }
+  };
+
   const handleFetchCourseEligibilityInfo = async () => {
     setCourseEligibilityLoading(true);
+    // Monetization access supersedes other eligibility rules — if the user
+    // doesn't have monetization access, show Purchase Now and stop.
+    let hasMonetizationAccess = true;
+    await handleCheckCourseMonetizationAccess((result) => {
+      hasMonetizationAccess = result.hasAccess;
+    });
+    if (!hasMonetizationAccess) {
+      setCourseEligibility({
+        btn_label: PURCHASE_NOW_LABEL,
+        btn_action: () => handleOpenMonetizationCheckoutModal(),
+      });
+      setCourseEligibilityLoading(false);
+      return;
+    }
+
     const courseEligibility = await handleFetchCourseEligibility(courseId);
     if (!_.isEmpty(courseEligibility)) {
       const enrollmentStarted = dayjs(course?.enrollment_start).diff(dayjs(), 'seconds') > 0;
@@ -319,6 +367,7 @@ export const useCourseDetail = (courseId: string) => {
     handleOpenLesson,
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
+    handleCheckCourseMonetizationAccess,
     course,
     courseInfoLoadingState,
     courseOutline,

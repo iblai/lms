@@ -24,6 +24,9 @@ import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { setAdvancedDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import { useDispatch } from 'react-redux';
+import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 import { config } from '@/lib/config';
 
 export default function CourseContentLayout({
@@ -41,6 +44,7 @@ export default function CourseContentLayout({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
+  const dispatch = useDispatch();
   const { setCourseMentor } = useChatState();
   const {
     handleFetchCourseInfo,
@@ -48,6 +52,7 @@ export default function CourseContentLayout({
     handleOpenLesson,
     handleFetchCourseProgress,
     handleFetchCourseCompletion,
+    handleCheckCourseMonetizationAccess,
     course,
     courseInfoLoadingState,
     courseOutline,
@@ -58,7 +63,22 @@ export default function CourseContentLayout({
 
   const { getUnitToIframe, getParentsInfosFromSublessonId } = useEdxIframe();
 
+  const checkCourseMonetizationAccess = async () => {
+    await handleCheckCourseMonetizationAccess((result) => {
+      if (!result.hasAccess) {
+        dispatch(
+          setAdvancedDisplayMonetizationCheckoutModal({
+            showModal: true,
+            paywallClosable: true,
+            onClosePayload: MONETIZATION_CLOSE_PAYLOAD.redirect_402,
+          }),
+        );
+      }
+    });
+  };
+
   useEffect(() => {
+    checkCourseMonetizationAccess();
     handleFetchCourseInfo();
     handleFetchCourseProgress();
     handleFetchCourseCompletion(getUserId());

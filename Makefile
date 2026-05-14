@@ -330,3 +330,6 @@ help:
 	@echo "    make tauri-update     - Update Tauri CLI and deps"
 	@echo "    make tauri-clean      - Clean Rust build artifacts"
 	@echo "    make tauri-icons      - Generate icons from source image"
+
+yalc-refresh:
+	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers && yalc add @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers 
