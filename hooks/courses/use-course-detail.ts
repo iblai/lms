@@ -170,16 +170,20 @@ export const useCourseDetail = (courseId: string) => {
 
   const handleFetchCourseEligibilityInfo = async () => {
     setCourseEligibilityLoading(true);
-    // check access check endpoint
-    handleCheckCourseMonetizationAccess((result) => {
-      if (!result.hasAccess) {
-        setCourseEligibility({
-          btn_label: PURCHASE_NOW_LABEL,
-          btn_action: () => handleOpenMonetizationCheckoutModal(),
-        });
-        return;
-      }
+    // Monetization access supersedes other eligibility rules — if the user
+    // doesn't have monetization access, show Purchase Now and stop.
+    let hasMonetizationAccess = true;
+    await handleCheckCourseMonetizationAccess((result) => {
+      hasMonetizationAccess = result.hasAccess;
     });
+    if (!hasMonetizationAccess) {
+      setCourseEligibility({
+        btn_label: PURCHASE_NOW_LABEL,
+        btn_action: () => handleOpenMonetizationCheckoutModal(),
+      });
+      setCourseEligibilityLoading(false);
+      return;
+    }
 
     const courseEligibility = await handleFetchCourseEligibility(courseId);
     if (!_.isEmpty(courseEligibility)) {

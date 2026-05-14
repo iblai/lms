@@ -395,9 +395,6 @@ export default function ProgramDetailPage() {
       setHasMonetizationAccess(accessGranted);
       dispatch(setAccessCheckResponse(data));
       setAccessCheckData(data ?? null);
-      if (!accessGranted && data?.pricing) {
-        dispatchPaywall(data);
-      }
     } catch (error) {
       console.error('Error checking access:', error);
     }
@@ -578,7 +575,7 @@ export default function ProgramDetailPage() {
       </div>
     ) : (
       <div className="pt-4">
-        <h4 className="mb-4 text-lg font-medium text-gray-800">Courses in this Program</h4>
+        <h4 className="mb-4 text-lg font-medium text-gray-800">Courses</h4>
         <div className="space-y-4">
           {(!programDetail?.courses || programDetail?.courses?.length === 0) && (
             <DefaultEmptyBox message="No courses found under this program." className="w-full" />
