@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.25.0](https://github.com/iblai/skillsai/compare/skills-v0.24.2...skills-v0.25.0) (2026-05-14)
+
+### Features
+
+* add authoring tab on course pages ([4ba370f](https://github.com/iblai/skillsai/commit/4ba370fe66cf2871dcc8ee08024e787da8e26cbe))
+* add authoring tab on course pages > tests coverage ([c7581c7](https://github.com/iblai/skillsai/commit/c7581c7558287a6e582a1106b1a87333ab522628))
+* sdk profile props fixed due to upgrade ([b328e23](https://github.com/iblai/skillsai/commit/b328e2309c7095b2a75ed5f864cde9e4ae9897f7))
+* sdk profile props fixed due to upgrade > test coverage ([0d66ddf](https://github.com/iblai/skillsai/commit/0d66ddf36fae7707e9f6ab4e58ee01db8872dfae))
+* sdk profile props fixed due to upgrade > test coverage ([0b12d75](https://github.com/iblai/skillsai/commit/0b12d752170b72ee3f05eb26156050ad24e90932))
+
 ## [0.24.2](https://github.com/iblai/skillsai/compare/skills-v0.24.1...skills-v0.24.2) (2026-05-12)
 
 ### Bug Fixes
