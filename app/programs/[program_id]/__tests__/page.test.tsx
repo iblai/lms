@@ -375,7 +375,7 @@ describe('ProgramDetailPage', () => {
     mockCheckAccess.mockResolvedValue({ data: { has_access: false } });
     await renderPage();
     const cta = await screen.findByTestId('program-page-cta');
-    expect(cta).toHaveTextContent('Purchase Now');
+    await waitFor(() => expect(cta).toHaveTextContent('Purchase Now'));
   });
 
   it('dispatches setDisplayMonetizationCheckoutModal when Purchase Now is clicked', async () => {
@@ -395,7 +395,7 @@ describe('ProgramDetailPage', () => {
     mockCheckAccess.mockResolvedValue({ error: { data: { has_access: false } } });
     await renderPage();
     const cta = await screen.findByTestId('program-page-cta');
-    expect(cta).toHaveTextContent('Purchase Now');
+    await waitFor(() => expect(cta).toHaveTextContent('Purchase Now'));
   });
 
   it('handles checkAccess exception without crashing', async () => {
