@@ -2,7 +2,7 @@
  * Navigation utilities for SkillsAI E2E tests.
  * Provides resilient navigation helpers that handle cross-browser quirks.
  */
-import { Page, expect } from '@playwright/test';
+import test, { Page, Locator, expect } from '@playwright/test';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -89,11 +89,62 @@ export async function navigateToAnalytics(page: Page): Promise<void> {
 }
 
 /**
+ * Open the user profile dialog via the "More options" dropdown and switch to
+ * the named sidebar tab. Throws when the platform_name can't be read from
+ * localStorage. Returns the dialog locator scoped to the selected tab.
+ */
+export async function navigateToAccountComponent(
+  page: Page,
+  wantedTabName: string,
+  skipIfTabNotExists: boolean = false,
+): Promise<Locator> {
+  const profileBtn = page.getByRole('button', { name: 'More options' });
+  await expect(profileBtn).toBeVisible({ timeout: 15_000 });
+  await profileBtn.click();
+
+  const menu = page.getByRole('menu', { name: 'More options' });
+  await expect(menu).toBeVisible({ timeout: 5_000 });
+
+  const platformName = await page.evaluate(() => {
+    const raw = localStorage.getItem('current_tenant');
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw)?.platform_name ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  if (!platformName) {
+    throw new Error(
+      'Could not retrieve platform_name from localStorage — cannot navigate to account settings',
+    );
+  }
+
+  const tenantMenuItem = menu.getByText(platformName, { exact: true });
+  await expect(tenantMenuItem).toBeVisible({ timeout: 5_000 });
+  await tenantMenuItem.click();
+
+  const accountDialog = page.getByRole('dialog', { name: 'User Profile' });
+  await expect(accountDialog).toBeVisible({ timeout: 10_000 });
+
+  const wantedTab = accountDialog.getByRole('button', { name: wantedTabName });
+  try {
+    await expect(wantedTab).toBeVisible({ timeout: 5_000 });
+    await wantedTab.click();
+    return accountDialog;
+  } catch (error) {
+    if (skipIfTabNotExists) {
+      test.skip(true, `Tab ${wantedTabName} not found`);
+    }
+    throw error;
+  }
+}
+
+/**
  * Navigate to advanced settings dialog.
  */
-export async function navigateToAdvancedSettings(
-  page: Page,
-): Promise<import('@playwright/test').Locator> {
+export async function navigateToAdvancedSettings(page: Page): Promise<Locator> {
   const profileBtn = page.getByRole('button', { name: 'More options' });
   await expect(profileBtn).toBeVisible({ timeout: 15_000 });
   await profileBtn.click();
