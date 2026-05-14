@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.24.2](https://github.com/iblai/skillsai/compare/skills-v0.24.1...skills-v0.24.2) (2026-05-12)
+
+### Bug Fixes
+
+* ato switch tenant when having a course direct link from another tenant ([42467fd](https://github.com/iblai/skillsai/commit/42467fd9c9be142987365aae3b4bfe6b8dcdee2c))
+* ato switch tenant when having a course direct link from another tenant on progress ([22c10bb](https://github.com/iblai/skillsai/commit/22c10bb456973f107c2f6c2bdf4b9f1bd07a95ef))
+* autoSwitch user to direct course link tenant instead of displaying a 403 error page ([4e26614](https://github.com/iblai/skillsai/commit/4e26614324462e84b01b9fade51f92162efe7c95))
+* use library SsoLogin on sso-login-complete, inline SSO logic on sso-login with ref guard ([33320df](https://github.com/iblai/skillsai/commit/33320df54a188259f78df9edd3963cf6358b0dfd))
+
+### Chores
+
+* **deps:** bump @iblai/iblai-js from 1.8.5 to 1.9.7 ([2899219](https://github.com/iblai/skillsai/commit/28992199c30afcd3696a1951f0fe786bdcaa1b8a))
+* install @iblai/agent-ai ([f9bab5e](https://github.com/iblai/skillsai/commit/f9bab5e0c3d2f689736a9e9f6beeee3dd294007a))
+* replace mentor-ai with agent-ai ([fa9284e](https://github.com/iblai/skillsai/commit/fa9284ee40f709c20856c12db10c16a0498211b0))
+
+### CI
+
+* make run-tests depend on build-app-image ([29845b8](https://github.com/iblai/skillsai/commit/29845b8bb8af38d08d752afd8759101ffb9ac684))
+* update pr-e2e-tests.yml ([0a19c13](https://github.com/iblai/skillsai/commit/0a19c1384db6e4b2da6858443f4e1454571df307))
+* update pr-e2e-tests.yml ([9316e82](https://github.com/iblai/skillsai/commit/9316e82f5b0efe19a08d7d273691202259b54936))
+* use iblai-stg-runner for deploy job, add build-app-image to summary needs ([d9d8efc](https://github.com/iblai/skillsai/commit/d9d8efc99d4ee01b8814985393cb6381fb3c8ef1))
+* use iblai-stg-runner for PR e2e gate and summary jobs ([febb32f](https://github.com/iblai/skillsai/commit/febb32fbdcd930bc39e552bdc040f46def3f71f9))
+
+## [0.24.1](https://github.com/iblai/skillsai/compare/skills-v0.24.0...skills-v0.24.1) (2026-05-08)
+
+### Bug Fixes
+
+* assessment mode css update ([1dee76a](https://github.com/iblai/skillsai/commit/1dee76a5074e1f8b0b814ca7dde83765ca0b805c))
+
+## [0.24.0-patch-1](https://github.com/iblai/skillsai/compare/skills-v0.24.0...skills-v0.24.1) (2026-05-08)
+
+### Bug Fixes
+
+* assessment mode css update ([7d9483a](https://github.com/iblai/skillsai/commit/7d9483a4f548c01cf3030d234297db9e75aa1b2b))
+* assessment mode css update ([0b4712e](https://github.com/iblai/skillsai/commit/0b4712ea7fb7bfd9fd943559944cb82e1ef650d2))
+
+### Chores
+
+* bump spa version to 0.24.0-patch-1 ([ee07ef3](https://github.com/iblai/skillsai/commit/ee07ef387aa03028b7f4219f19dd2bd8ea494110))
+
 ## [0.24.0](https://github.com/iblai/skillsai/compare/skills-v0.23.0...skills-v0.24.0) (2026-05-07)
 
 ### Bug Fixes

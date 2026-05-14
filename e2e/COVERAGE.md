@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-05-05 | 224 checkpoints | 29 journeys | 100% covered
+> Last updated: 2026-05-05 | 229 checkpoints | 30 journeys | 100% covered
 
 ## How This Works
 
@@ -88,11 +88,11 @@ When adding a new page or modifying an existing user flow:
 - [x] URL updates correctly when switching between tabs
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
 - [x] Agent tab is visible when `course.agent_content_mode === true` and its link points at `/course-content/<id>/agent`
-- [x] `/agent` route mounts the `<mentor-ai>` chat full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class
+- [x] `/agent` route mounts the `<agent-ai>` chat full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class
 - [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode !== true`
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
-- [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<mentor-ai>` shadow-root iframe and the agent renders an AI response
+- [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<agent-ai>` shadow-root iframe and the agent renders an AI response
 - [x] New-chat button on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
 - [x] Learning/Assessment toggle on `/agent` only renders when `getCourseBlockDetails` returns a block of `type=ibl_mentor_xblock`
 - [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
@@ -422,6 +422,21 @@ When adding a new page or modifying an existing user flow:
 - [x] Notification dropdown has proper ARIA attributes
 - [x] All major interactive elements have accessible names
 - [x] No images without alt text on key pages
+
+---
+
+## Journey 30: Course Access Guard — Cross-Tenant Redirect (8 checkpoints) — `journeys/30-course-access-guard-tenant-redirect.spec.ts`
+
+**Source files:** `components/course-access-guard.tsx`, `utils/helpers.ts`
+
+- [x] Renders course about page when `course.platform_key` matches the current tenant
+- [x] Renders course about page when `course.platform_key === 'main'`
+- [x] Redirects to `/error/403` when `platform_key` is foreign and not in `getTenants()`
+- [x] Redirects to `<auth>/login/complete?tenant=<key>&redirect-to=<url>` when `platform_key` matches a key in `getTenants()`
+- [x] `redirect-to` query param echoes the current full URL with query string
+- [x] Cross-tenant redirect fires consistently from the `/course-content` layout
+- [x] Foreign `platform_key` not in tenants from `/course-content` also lands on `/error/403`
+- [x] Empty metadata response surfaces `/error/404` (not the cross-tenant branch)
 
 ---
 

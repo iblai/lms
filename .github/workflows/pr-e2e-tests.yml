@@ -39,9 +39,24 @@ jobs:
   # ============================================================
   gate:
     if: contains(github.event.pull_request.labels.*.name, 'run-tests')
-    runs-on: ubuntu-latest
+    runs-on: iblai-stg-runner
     steps:
       - run: echo "run-tests label detected — proceeding"
+
+  # ============================================================
+  # BUILD APP IMAGE
+  # ============================================================
+  build-app-image:
+    needs: gate
+    uses: iblai/iblai-web-ops/.github/workflows/reusable-pr-docker-build.yml@main
+    secrets: inherit
+    with:
+      dockerfile-path: Dockerfile
+      build-context: .
+      image-name: iblai-skills-spa-pro
+      registry-type: ocir
+      event-name: pull_request
+      pr-number: ${{ github.event.pull_request.number }}
 
   # ============================================================
   # BUILD PLAYWRIGHT IMAGE
@@ -63,7 +78,7 @@ jobs:
   # RUN PLAYWRIGHT TESTS ON OCI
   # ============================================================
   run-tests:
-    needs: build-playwright-image
+    needs: [build-app-image, build-playwright-image]
     uses: iblai/iblai-web-ops/.github/workflows/reusable-oci-test-runner.yml@main
     secrets: inherit
     with:
@@ -73,16 +88,25 @@ jobs:
       max-wait: 10800
       total-shards: 1
       run-type: main
-      browsers: 'firefox,chrome,safari,edge'
+      browsers: 'chrome'
       workers: '3'
+      registry-type: 'ocir'
+      ec2-host: '32.196.111.179'
+      ec2-user: 'ubuntu'
+      runs-on: iblai-stg-runner
+      ec2-commands: >-
+        cd /ibl/app/ibl-spa/skills &&
+        sed -i 's|image: .*|image: ${{ needs.build-app-image.outputs.image-uri }}|' docker-compose.yml &&
+        docker compose down &&
+        docker compose up -d
 
   # ============================================================
   # SUMMARY
   # ============================================================
   summary:
-    needs: [build-playwright-image, run-tests]
+    needs: [build-playwright-image, build-app-image, run-tests]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: iblai-stg-runner
     steps:
       - name: Results
         run: |

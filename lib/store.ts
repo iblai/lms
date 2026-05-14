@@ -16,6 +16,7 @@ import { NotificationsSlice } from '@/services/notifications';
 import { EdxSSOSlice } from '@/services/edx-sso';
 import { CoreSlice } from '@/services/core';
 import { rbacSlice } from '@/features/rbac';
+import { tenantSlice } from '@/features/tenant';
 import { StudioSlice } from '@/services/studio';
 export const store = configureStore({
   reducer: {
@@ -32,6 +33,7 @@ export const store = configureStore({
     [EdxSSOSlice.reducerPath]: EdxSSOSlice.reducer,
     [CoreSlice.reducerPath]: CoreSlice.reducer,
     [rbacSlice.reducerPath]: rbacSlice.reducer,
+    [tenantSlice.reducerPath]: tenantSlice.reducer,
     [StudioSlice.reducerPath]: StudioSlice.reducer,
     monetization: monetizationSlice.reducer,
     ...skillsReducer,

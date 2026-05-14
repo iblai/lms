@@ -19,8 +19,15 @@ RUN pnpm install --frozen-lockfile
 
 # Stage 1: Builder
 FROM base AS builder
+ARG APP_VERSION
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY . .
+
+# Override version in package.json if APP_VERSION is provided
+RUN if [ -n "$APP_VERSION" ]; then \
+      sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$APP_VERSION\"/" package.json; \
+    fi
+    
 RUN pnpm run build
 
 # Stage 2: Runner

@@ -43,7 +43,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-vi.mock('@iblai/iblai-web-mentor', () => ({}));
+vi.mock('@iblai/agent-ai', () => ({}));
 
 vi.mock('lodash', () => ({
   default: {
@@ -109,10 +109,10 @@ describe('CourseAgentChat', () => {
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('renders the mentor-ai web component after resolving a mentor', async () => {
+  it('renders the agent-ai web component after resolving a mentor', async () => {
     const { container } = renderWithContext();
     await waitFor(() => {
-      expect(container.querySelector('mentor-ai')).toBeInTheDocument();
+      expect(container.querySelector('agent-ai')).toBeInTheDocument();
     });
   });
 
@@ -120,7 +120,7 @@ describe('CourseAgentChat', () => {
     const contextValue = { ...defaultContextValue, courseMentor: 'course-mentor-id' };
     const { container } = renderWithContext(contextValue as any);
     await waitFor(() => {
-      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
       expect(el).toBeInTheDocument();
       expect(el?.getAttribute('mentor')).toBe('course-mentor-id');
     });
@@ -131,7 +131,7 @@ describe('CourseAgentChat', () => {
     mockGetEmbeddedMentorToUse.mockReturnValue({ unique_id: 'embedded-mentor-id' } as any);
     const { container } = renderWithContext();
     await waitFor(() => {
-      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
       expect(el?.getAttribute('mentor')).toBe('embedded-mentor-id');
     });
     expect(mockGetMentors).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('CourseAgentChat', () => {
     });
     const { container } = renderWithContext();
     await waitFor(() => {
-      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
       expect(el?.getAttribute('mentor')).toBe('mentor-b');
     });
   });
@@ -164,7 +164,7 @@ describe('CourseAgentChat', () => {
     });
     const { container } = renderWithContext();
     await waitFor(() => {
-      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
       expect(el?.getAttribute('mentor')).toBe('mentor-a');
     });
   });
@@ -176,7 +176,7 @@ describe('CourseAgentChat', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('No mentors found');
     });
-    expect(container.querySelector('mentor-ai')).not.toBeInTheDocument();
+    expect(container.querySelector('agent-ai')).not.toBeInTheDocument();
   });
 
   it('renders nothing when mentor fetch rejects', async () => {
@@ -186,7 +186,7 @@ describe('CourseAgentChat', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('No mentors found');
     });
-    expect(container.querySelector('mentor-ai')).not.toBeInTheDocument();
+    expect(container.querySelector('agent-ai')).not.toBeInTheDocument();
   });
 
   it('errors when the selected mentor has no unique_id', async () => {
@@ -198,13 +198,13 @@ describe('CourseAgentChat', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('No mentors found');
     });
-    expect(container.querySelector('mentor-ai')).not.toBeInTheDocument();
+    expect(container.querySelector('agent-ai')).not.toBeInTheDocument();
   });
 
   it('forwards mentor:unit-switched messages to the mentor iframe via postMessage', async () => {
     const { container } = renderWithContext();
     const mentorEl = await waitFor(() => {
-      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
       expect(el).toBeInTheDocument();
       return el!;
     });
@@ -233,7 +233,7 @@ describe('CourseAgentChat', () => {
   it('ignores mentor:unit-switched events with no message', async () => {
     const { container } = renderWithContext();
     const mentorEl = await waitFor(() => {
-      const el = container.querySelector('mentor-ai') as HTMLElement | null;
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
       expect(el).toBeInTheDocument();
       return el!;
     });
@@ -277,7 +277,7 @@ describe('CourseAgentChat', () => {
     it('does not render the new-chat button while the spinner is visible', async () => {
       const { container } = renderWithContext();
       const mentorEl = await waitFor(() => {
-        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
         expect(el).toBeInTheDocument();
         return el!;
       });
@@ -297,7 +297,7 @@ describe('CourseAgentChat', () => {
     it('renders the new-chat button once the spinner is hidden', async () => {
       const { container } = renderWithContext();
       const mentorEl = await waitFor(() => {
-        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
         expect(el).toBeInTheDocument();
         return el!;
       });
@@ -315,7 +315,7 @@ describe('CourseAgentChat', () => {
     it('toggles the new-chat button as the spinner display style changes', async () => {
       const { container } = renderWithContext();
       const mentorEl = await waitFor(() => {
-        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
         expect(el).toBeInTheDocument();
         return el!;
       });
@@ -343,7 +343,7 @@ describe('CourseAgentChat', () => {
     it('posts MENTOR:NEW_CHAT to the iframe when the button is clicked', async () => {
       const { container } = renderWithContext();
       const mentorEl = await waitFor(() => {
-        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
         expect(el).toBeInTheDocument();
         return el!;
       });
@@ -382,7 +382,7 @@ describe('CourseAgentChat', () => {
 
       const { container, unmount } = renderWithContext();
       const mentorEl = await waitFor(() => {
-        const el = container.querySelector('mentor-ai') as HTMLElement | null;
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
         expect(el).toBeInTheDocument();
         return el!;
       });

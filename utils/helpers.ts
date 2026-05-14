@@ -212,6 +212,8 @@ export async function redirectToAuthSpa(
 
   const redirectPath = redirectTo ?? `${window.location.pathname}${window.location.search}`;
 
+  console.log('################### [redirectToAuthSpa] redirectPath', redirectPath);
+
   // Never save sso-login routes as redirect paths
   if (
     !redirectPath.startsWith('/sso-login') &&
@@ -398,6 +400,20 @@ export const parseMarkdownLinks = (markdownString: string): MarkdownMenuItem[] =
   } catch (error) {
     return [];
   }
+};
+
+/**
+ * Redirects to the auth SPA's login/complete endpoint for the given tenant,
+ * forwarding back to `redirectTo` (defaults to the current URL) on success.
+ * Use when the app needs to acquire/refresh a session for a specific tenant
+ * without clearing local storage (unlike `handleTenantSwitch`).
+ */
+export const switchTenant = (tenantKey: string, redirectTo?: string) => {
+  const params = new URLSearchParams({
+    tenant: tenantKey,
+    'redirect-to': redirectTo ?? window.location.href,
+  }).toString();
+  window.location.href = `${config.urls.auth()}/login/complete?${params}`;
 };
 
 export const handleTenantSwitch = async (tenant: string, saveRedirect = false) => {

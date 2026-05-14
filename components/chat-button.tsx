@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { createContext, useContext } from 'react';
 import { getTenant, getUserName } from '@/utils/helpers';
 import { config } from '@/lib/config';
-import '@iblai/iblai-web-mentor';
+import '@iblai/agent-ai';
 import React from 'react';
 // @ts-ignore
 import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
@@ -151,7 +151,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
               >
                 <ArrowRight className="h-4 w-4" />
               </button> */}
-              {React.createElement('mentor-ai', {
+              {React.createElement('agent-ai', {
                 mentorUrl: config.urls.mentor(),
                 authUrl: config.urls.auth(),
                 lmsUrl: config.urls.lms(),
@@ -219,7 +219,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
             >
               <X className="h-5 w-5" />
             </button> */}
-            {React.createElement('mentor-ai', {
+            {React.createElement('agent-ai', {
               mentorUrl: config.urls.mentor(),
               authUrl: config.urls.auth(),
               lmsUrl: config.urls.lms(),
