@@ -35,9 +35,7 @@ import {
 } from '@iblai/iblai-js/data-layer';
 import {
   setAccessCheckResponse,
-  setAdvancedDisplayMonetizationCheckoutModal,
   setDisplayMonetizationCheckoutModal,
-  showMonetizationCheckoutModal,
 } from '@iblai/iblai-js/web-utils';
 
 import { DefaultEmptyBox } from '@/components/default-empty-box';
@@ -56,7 +54,6 @@ import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/
 import { CustomProgramEnrollmentPlus } from '@/types/program';
 import { getRandomCourseImage, getTenant, getUserName } from '@/utils/helpers';
 import { useIsAdmin } from '@/utils/localstorage';
-import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 
 interface ProgramSettingsForm {
   subject: string;

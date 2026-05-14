@@ -7,7 +7,7 @@ import {
   CourseOutlineResponse,
   CourseProgress,
 } from '@/types/courses';
-import _, { result } from 'lodash';
+import _ from 'lodash';
 import { getTenant, getUserName, inIframe } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import dayjs from 'dayjs';
@@ -29,7 +29,6 @@ import {
 } from '@iblai/iblai-js/web-utils';
 
 import { useDispatch } from 'react-redux';
-import { useAppSelector } from '@/lib/hooks';
 
 export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
 
