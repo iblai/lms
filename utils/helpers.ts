@@ -82,6 +82,15 @@ export function getUserName() {
 }
 
 /**
+ * Retrieves the user's display name from userData in localStorage
+ * @returns {string | null} - Returns the user's display name or null if not found
+ */
+export function getUserEmail() {
+  const userData = getLocalStorageItem(LOCALSTORAGE_KEYS.USER_DATA);
+  return userData && isJSON(userData) ? JSON.parse(userData)?.user_email : null;
+}
+
+/**
  * Gets a random course image from the /images/courses/ directory
  * @returns {string} - Returns the path to a random course image
  */

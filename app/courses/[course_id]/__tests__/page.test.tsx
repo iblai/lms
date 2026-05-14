@@ -25,6 +25,7 @@ vi.mock('@/lib/config', () => ({
   config: {
     urls: {
       lms: vi.fn(() => 'https://lms.example.com'),
+      studioUrl: vi.fn(() => 'https://studio.example.com'),
     },
   },
 }));
@@ -381,6 +382,85 @@ describe('CourseDetailsPage', () => {
     render(<CourseDetailsPage />);
 
     expect(screen.queryByText('Configuration')).not.toBeInTheDocument();
+  });
+
+  describe('Authoring tab (platform admin only)', () => {
+    const mockCourse = {
+      display_name: 'Test Course',
+      course_image_asset_path: '/course-image.jpg',
+      course_price: '$99',
+      language: 'English',
+      start_date: '2024-01-01',
+    };
+
+    const mockCourseDetail = () =>
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        course: mockCourse,
+        courseOutline: null,
+        courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
+        courseOutlineLoading: false,
+        courseEligibilityLoading: false,
+        courseButtonActionLoading: false,
+        courseInfoLoadingState: 'successful',
+      } as any);
+
+    it('renders Authoring tab for platform admin', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      mockCourseDetail();
+
+      render(<CourseDetailsPage />);
+
+      expect(screen.getByText('Authoring')).toBeInTheDocument();
+    });
+
+    it('hides Authoring tab for non-admin users', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+      mockCourseDetail();
+
+      render(<CourseDetailsPage />);
+
+      expect(screen.queryByText('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      mockCourseDetail();
+
+      render(<CourseDetailsPage />);
+
+      const link = screen.getByText('Authoring').closest('a');
+      // The mocked useParams returns the URL-encoded id; the page decodes it.
+      expect(link?.getAttribute('href')).toBe(
+        'https://studio.example.com/course/course-v1:test+course+2024',
+      );
+      expect(link?.getAttribute('target')).toBe('_blank');
+      expect(link?.getAttribute('rel')).toContain('noopener');
+    });
+
+    it('Authoring tab is rendered after Configuration tab', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      mockCourseDetail();
+
+      const { container } = render(<CourseDetailsPage />);
+      const tabRow = container.querySelector('div.flex.space-x-8');
+      const labels = Array.from(tabRow?.children ?? []).map((el) => el.textContent?.trim());
+      const configIdx = labels.indexOf('Configuration');
+      const authoringIdx = labels.indexOf('Authoring');
+      expect(configIdx).toBeGreaterThanOrEqual(0);
+      expect(authoringIdx).toBe(configIdx + 1);
+    });
   });
 
   it('shows skeleton button when loading eligibility', () => {

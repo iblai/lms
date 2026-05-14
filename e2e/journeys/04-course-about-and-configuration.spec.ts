@@ -357,6 +357,38 @@ test.describe('Journey 04: Course About & Configuration', () => {
     }
   });
 
+  test('Checkpoint 11: Authoring tab links to studio for admin users', async ({ page }) => {
+    const courseName = await navigateToCourseAbout(page);
+
+    if (!courseName) {
+      test.skip();
+      return;
+    }
+
+    const configTab = page.getByRole('button', { name: 'Configuration' });
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    if (!isAdmin) {
+      logger.info('Authoring tab is admin-gated like Configuration — skipping for non-admin');
+      test.skip();
+      return;
+    }
+
+    // Read the course id straight off the URL — the studio link is constructed from it.
+    const url = new URL(page.url());
+    const courseId = decodeURIComponent(url.pathname.split('/').filter(Boolean).pop() || '');
+
+    const authoringTab = page.getByRole('link', { name: 'Authoring' });
+    await expect(authoringTab).toBeVisible({ timeout: 10000 });
+    await expect(authoringTab).toHaveAttribute('target', '_blank');
+
+    const href = await authoringTab.getAttribute('href');
+    expect(href).toBeTruthy();
+    expect(href).toMatch(/\/course\//);
+    expect(href).toContain(`/course/${courseId}`);
+    logger.info(`Authoring tab points at studio: ${href}`);
+  });
+
   test('Checkpoint 10: Save Changes button appears on modification', async ({ page }) => {
     const courseName = await navigateToCourseAbout(page);
 

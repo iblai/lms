@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { Profile, InviteUserDialog, InvitedUsersDialog } from '@iblai/iblai-js/web-containers';
 import { Dialog, DialogTitle, DialogContent } from '@/components/ui/dialog';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getTenant, getTenants, getUserName } from '@/utils/helpers';
 import { config } from '@/lib/config';
 
 interface UserProfileModalProps {
@@ -47,6 +47,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
           <Profile
             //onInviteClick={() => setIsInviteUserDialogOpen(true)}
             tenant={params.tenantKey}
+            tenants={getTenants()}
             username={getUserName()}
             onClose={() => {}}
             customization={{
