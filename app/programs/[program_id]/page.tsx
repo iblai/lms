@@ -361,7 +361,7 @@ export default function ProgramDetailPage() {
     router.push(`/courses/${courseId}`);
   };
 
-  const dispatchPaywall = (data: AccessCheckResponse) => {
+  const dispatchPaywall = () => {
     dispatch(setDisplayMonetizationCheckoutModal(true));
     /* dispatch(
         setAdvancedDisplayMonetizationCheckoutModal({
@@ -374,7 +374,7 @@ export default function ProgramDetailPage() {
 
   const handleOpenMonetizationCheckoutModal = () => {
     if (accessCheckData) {
-      dispatchPaywall(accessCheckData);
+      dispatchPaywall();
     }
   };
 
