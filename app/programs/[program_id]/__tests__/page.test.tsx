@@ -139,7 +139,11 @@ vi.mock('@/components/ui/tabs', () => ({
 }));
 
 vi.mock('lucide-react', () => {
-  const stub = (name: string) => (props: any) => <span data-testid={`icon-${name}`} {...props} />;
+  const stub = (name: string) => {
+    const Icon = (props: any) => <span data-testid={`icon-${name}`} {...props} />;
+    Icon.displayName = `Icon(${name})`;
+    return Icon;
+  };
   return {
     Award: stub('award'),
     Calendar: stub('calendar'),
@@ -323,7 +327,7 @@ describe('ProgramDetailPage', () => {
   it('renders the courses-loading spinner during programDetail fetch', async () => {
     let resolveDetail: (v: any) => void = () => {};
     let firstCall = true;
-    mockHandleSearch.mockImplementation((args: any) => {
+    mockHandleSearch.mockImplementation(() => {
       if (firstCall) {
         firstCall = false;
         return Promise.resolve({
@@ -785,7 +789,7 @@ describe('ProgramDetailPage', () => {
   it('deduplicates courses across results and surfaces them from multiple program entries', async () => {
     mockHandleSearch.mockReset();
     let callCount = 0;
-    mockHandleSearch.mockImplementation(async (args: any) => {
+    mockHandleSearch.mockImplementation(async () => {
       callCount += 1;
       if (callCount === 1) {
         return {

@@ -20,7 +20,6 @@ vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({ push: mockPush })),
 }));
 
-const mockHandleSearch = vi.fn();
 const mockPagination = { count: 0, current_page: 1, total_pages: 1 };
 const mockCatalog = vi.hoisted(() => ({
   handleSearch: vi.fn(),
