@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.27.0](https://github.com/iblai/skillsai/compare/skills-v0.26.0...skills-v0.27.0) (2026-05-15)
+
+### Chores
+
+* bump agent-ai version to 2.6.0 ([bcecf59](https://github.com/iblai/skillsai/commit/bcecf59ce184e7f996e73713da884da5e66edaa2))
+
 ## [0.26.0](https://github.com/iblai/skillsai/compare/skills-v0.25.0...skills-v0.26.0) (2026-05-14)
 
 ### Features
