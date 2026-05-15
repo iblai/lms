@@ -201,33 +201,110 @@ describe('CourseAgentChat', () => {
     expect(container.querySelector('agent-ai')).not.toBeInTheDocument();
   });
 
-  it('forwards mentor:unit-switched messages to the mentor iframe via postMessage', async () => {
-    const { container } = renderWithContext();
-    const mentorEl = await waitFor(() => {
-      const el = container.querySelector('agent-ai') as HTMLElement | null;
-      expect(el).toBeInTheDocument();
-      return el!;
-    });
+  it('forwards mentor:unit-switched messages to the iframe 2s after spinner is hidden', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { container } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
 
-    const postMessage = vi.fn();
-    const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
-    const shadowRoot = {
-      querySelector: vi.fn((selector: string) => (selector === 'iframe' ? iframe : null)),
-    };
-    Object.defineProperty(mentorEl, 'shadowRoot', {
-      value: shadowRoot,
-      configurable: true,
-    });
+      const postMessage = vi.fn();
+      const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      spinner.style.display = 'none';
+      Object.defineProperty(mentorEl, 'shadowRoot', {
+        value: {
+          querySelector: (selector: string) => {
+            if (selector === '#loading-spinner') return spinner;
+            if (selector === 'iframe') return iframe;
+            return null;
+          },
+        },
+        configurable: true,
+      });
 
-    window.dispatchEvent(
-      new CustomEvent('mentor:unit-switched', { detail: { message: 'switched unit' } }),
-    );
+      await waitFor(() => {
+        expect(container.querySelector('button[aria-label="New chat"]')).toBeInTheDocument();
+      });
 
-    expect(shadowRoot.querySelector).toHaveBeenCalledWith('iframe');
-    expect(postMessage).toHaveBeenCalledWith(
-      { type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message: 'switched unit' },
-      '*',
-    );
+      window.dispatchEvent(
+        new CustomEvent('mentor:unit-switched', { detail: { message: 'switched unit' } }),
+      );
+
+      expect(postMessage).not.toHaveBeenCalled();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+
+      expect(postMessage).toHaveBeenCalledWith(
+        { type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message: 'switched unit' },
+        '*',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('queues mentor:unit-switched messages while spinner is visible and flushes once hidden', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { container } = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = container.querySelector('agent-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+
+      const postMessage = vi.fn();
+      const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+      const spinner = document.createElement('div');
+      spinner.id = 'loading-spinner';
+      Object.defineProperty(mentorEl, 'shadowRoot', {
+        value: {
+          querySelector: (selector: string) => {
+            if (selector === '#loading-spinner') return spinner;
+            if (selector === 'iframe') return iframe;
+            return null;
+          },
+        },
+        configurable: true,
+      });
+
+      // Let the spinner observer attach.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200);
+      });
+
+      window.dispatchEvent(
+        new CustomEvent('mentor:unit-switched', { detail: { message: 'queued message' } }),
+      );
+
+      // Even after a long wait, nothing is sent while spinner is visible.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(postMessage).not.toHaveBeenCalled();
+
+      // Hide the spinner; queued message flushes after 2s.
+      await act(async () => {
+        spinner.style.display = 'none';
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+
+      expect(postMessage).toHaveBeenCalledWith(
+        { type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message: 'queued message' },
+        '*',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('ignores mentor:unit-switched events with no message', async () => {
@@ -238,15 +315,26 @@ describe('CourseAgentChat', () => {
       return el!;
     });
 
-    const querySelector = vi.fn();
+    const postMessage = vi.fn();
+    const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+    const spinner = document.createElement('div');
+    spinner.id = 'loading-spinner';
+    spinner.style.display = 'none';
     Object.defineProperty(mentorEl, 'shadowRoot', {
-      value: { querySelector },
+      value: {
+        querySelector: (selector: string) => {
+          if (selector === '#loading-spinner') return spinner;
+          if (selector === 'iframe') return iframe;
+          return null;
+        },
+      },
       configurable: true,
     });
 
     window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: {} }));
 
-    expect(querySelector).not.toHaveBeenCalled();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(postMessage).not.toHaveBeenCalled();
   });
 
   it('removes the mentor:unit-switched listener on unmount', async () => {

@@ -59,14 +59,43 @@ export function CourseAgentChat() {
     resolveMentor();
   }, [metadataLoaded, courseMentor]);
 
+  const pendingMessagesRef = useRef<string[]>([]);
+  const spinnerHiddenRef = useRef(spinnerHidden);
+  useEffect(() => {
+    spinnerHiddenRef.current = spinnerHidden;
+  }, [spinnerHidden]);
+
+  const flushPendingMessages = (messages: string[]) => {
+    setTimeout(() => {
+      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
+        'iframe',
+      ) as HTMLIFrameElement | null;
+      messages.forEach((message) => {
+        iframe?.contentWindow?.postMessage(
+          { type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message },
+          '*',
+        );
+      });
+    }, 2000);
+  };
+
+  useEffect(() => {
+    if (!spinnerHidden || pendingMessagesRef.current.length === 0) return;
+    const messages = pendingMessagesRef.current;
+    pendingMessagesRef.current = [];
+    flushPendingMessages(messages);
+  }, [spinnerHidden]);
+
   useEffect(() => {
     const handleUnitSwitched = (event: Event) => {
       const message = (event as CustomEvent<{ message?: string }>).detail?.message;
       if (!message) return;
-      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
-        'iframe',
-      ) as HTMLIFrameElement | null;
-      iframe?.contentWindow?.postMessage({ type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message }, '*');
+      pendingMessagesRef.current.push(message);
+      if (spinnerHiddenRef.current) {
+        const messages = pendingMessagesRef.current;
+        pendingMessagesRef.current = [];
+        flushPendingMessages(messages);
+      }
     };
     window.addEventListener('mentor:unit-switched', handleUnitSwitched);
     return () => window.removeEventListener('mentor:unit-switched', handleUnitSwitched);
