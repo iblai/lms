@@ -158,6 +158,23 @@ export default function CourseContentLayout({
     previousUnitIdRef.current = unitId;
   }, [currentCourseInfo?.id, currentTab]);
 
+  const courseLoadedFiredRef = useRef(false);
+  useEffect(() => {
+    const unitId = currentCourseInfo?.id;
+    if (
+      currentTab !== 'agent' ||
+      !unitId ||
+      !course?.display_name ||
+      courseLoadedFiredRef.current
+    ) {
+      return;
+    }
+    courseLoadedFiredRef.current = true;
+    const message = `Loaded "${course.display_name}"`;
+    toast.success(message);
+    window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
+  }, [currentCourseInfo?.id, course?.display_name, currentTab]);
+
   const toggleModule = (moduleId: string) => {
     setExpandedModule(expandedModule === moduleId ? '' : moduleId);
   };
