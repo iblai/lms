@@ -15,8 +15,8 @@ importers:
         specifier: 3.10.0
         version: 3.10.0(react-hook-form@7.71.2(react@19.1.0))
       '@iblai/agent-ai':
-        specifier: 2.5.2
-        version: 2.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 2.6.0
+        version: 2.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@iblai/iblai-api':
         specifier: 4.166.0-ai
         version: 4.166.0-ai
@@ -794,8 +794,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@iblai/agent-ai@2.5.2':
-    resolution: {integrity: sha512-ObIQYKdYB6s/0J6WOUo2VAykRMwDuGY+2dUbB8Xssv/VQ3QYhILWgW1IXG46kODG+O1rBgORQd+9tS7XZD0//g==}
+  '@iblai/agent-ai@2.6.0':
+    resolution: {integrity: sha512-Udfbnzspl4V8ODNsonHIZMQ2/Z3qv/0MDXvNKM/ZiKSjS5oWz+WFuWFcJ2PZjGNbcDxJBWNNsmIq9O2cKg4TcA==}
     engines: {node: 25.3.0}
     peerDependencies:
       react: 19.1.0
@@ -8220,7 +8220,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iblai/agent-ai@2.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@iblai/agent-ai@2.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
