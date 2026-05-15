@@ -24,7 +24,7 @@
   "dependencies": {
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
-    "@iblai/agent-ai": "2.5.2",
+    "@iblai/agent-ai": "2.6.0",
     "@iblai/iblai-api": "4.166.0-ai",
     "@iblai/iblai-js": "1.9.10",
     "@radix-ui/react-accordion": "1.2.2",
