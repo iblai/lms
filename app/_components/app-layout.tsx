@@ -12,6 +12,7 @@ import { getTenant, getUserName } from '@/utils/helpers';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 import { MonetizationWrapper } from './monetization-wrapper';
+import { useCurrentTenant } from '@/utils/localstorage';
 
 function DefaultPageLayout({ children }: { children: any }) {
   return (
@@ -26,6 +27,7 @@ export default function AppLayout({ children }: { children: any }) {
     useChatState();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const username = getUserName();
+  const { currentTenant } = useCurrentTenant();
   const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery(
     {
       params: { username },
@@ -66,7 +68,7 @@ export default function AppLayout({ children }: { children: any }) {
           />
         </div>
         <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <MonetizationWrapper />
+        {currentTenant?.enable_monetization && <MonetizationWrapper />}
         <div className="flex h-full flex-col items-start md:flex-row">
           <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
             {children}

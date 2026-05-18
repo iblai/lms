@@ -29,6 +29,8 @@ import {
 } from '@iblai/iblai-js/web-utils';
 
 import { useDispatch } from 'react-redux';
+import { useCurrentTenant } from '@/utils/localstorage';
+import { current } from '@reduxjs/toolkit';
 
 export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
 
@@ -41,6 +43,7 @@ interface CourseEligibility {
 export const useCourseDetail = (courseId: string) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { currentTenant } = useCurrentTenant();
   const ACCESS_COURSE_LABEL = 'Access Course';
   const ENROLL_NOW_LABEL = 'Enroll Now';
   const REQUEST_ACCESS_LABEL = 'Request Access';
@@ -153,6 +156,10 @@ export const useCourseDetail = (courseId: string) => {
   const handleCheckCourseMonetizationAccess = async (
     onComplete: (result: { hasAccess: boolean }) => void,
   ) => {
+    if (!currentTenant?.enable_monetization) {
+      onComplete({ hasAccess: true });
+      return;
+    }
     try {
       const result = await checkAccess({
         item_type: 'course',
