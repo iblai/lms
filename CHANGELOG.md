@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.0](https://github.com/iblai/skillsai/compare/skills-v0.28.0...skills-v0.29.0) (2026-05-18)
+
+### Features
+
+* monetization flag updated from show_paywall to enable_monetization ([a188b6d](https://github.com/iblai/skillsai/commit/a188b6d4e483838832a89621ef799ea7b7eeab5a))
+* monetization flag updated from show_paywall to enable_monetization > iblai-js version bump ([f31d47c](https://github.com/iblai/skillsai/commit/f31d47c72fb5291d40c8cb16bd1f97164acccef3))
+* monetization flag updated from show_paywall to enable_monetization > pnpm issue fixed ([a31eb5d](https://github.com/iblai/skillsai/commit/a31eb5df9cd43a81219e4fcbf1cdea65d8cf8a3d))
+
 ## [0.28.0](https://github.com/iblai/skillsai/compare/skills-v0.27.0...skills-v0.28.0) (2026-05-18)
 
 ### Features
