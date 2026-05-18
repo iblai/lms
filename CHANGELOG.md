@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.28.0](https://github.com/iblai/skillsai/compare/skills-v0.27.0...skills-v0.28.0) (2026-05-18)
+
+### Features
+
+* agent mode > initial course load should trigger proactive agent message ([f7e5ee5](https://github.com/iblai/skillsai/commit/f7e5ee594a834ddea92465fef38327fa5cbbce79))
+* agent mode initial course load should trigger proactive agent message ([a913d16](https://github.com/iblai/skillsai/commit/a913d16f2b4083f209121db1f706e9d64e2930cf))
+* agent mode initial course load should trigger proactive agent message ([9cd6db8](https://github.com/iblai/skillsai/commit/9cd6db8653bf42f95588061a61c2efbb35a5e830))
+* agent mode initial course load should trigger proactive agent message > test coverage ([86b763a](https://github.com/iblai/skillsai/commit/86b763a27011e7053d01df3525289116ad1198f1))
+
 ## [0.27.0](https://github.com/iblai/skillsai/compare/skills-v0.26.0...skills-v0.27.0) (2026-05-15)
 
 ### Chores
