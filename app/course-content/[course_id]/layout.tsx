@@ -25,9 +25,10 @@ import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { setAdvancedDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 import { config } from '@/lib/config';
+import { selectMentorSpinnerHidden } from '@/features/mentor';
 
 export default function CourseContentLayout({
   children,
@@ -45,6 +46,7 @@ export default function CourseContentLayout({
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
   const dispatch = useDispatch();
+  const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
   const {
     handleFetchCourseInfo,
@@ -158,22 +160,26 @@ export default function CourseContentLayout({
     previousUnitIdRef.current = unitId;
   }, [currentCourseInfo?.id, currentTab]);
 
-  const courseLoadedFiredRef = useRef(false);
+  const unitLoadedScheduledRef = useRef(false);
   useEffect(() => {
     const unitId = currentCourseInfo?.id;
+    const unitName = currentCourseInfo?.display_name;
     if (
       currentTab !== 'agent' ||
       !unitId ||
-      !course?.display_name ||
-      courseLoadedFiredRef.current
+      !unitName ||
+      !mentorSpinnerHidden ||
+      unitLoadedScheduledRef.current
     ) {
       return;
     }
-    courseLoadedFiredRef.current = true;
-    const message = `Loaded "${course.display_name}"`;
-    toast.success(message);
-    window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
-  }, [currentCourseInfo?.id, course?.display_name, currentTab]);
+    unitLoadedScheduledRef.current = true;
+    setTimeout(() => {
+      const message = `Loaded "${unitName}"`;
+      toast.success(message);
+      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
+    }, 4000);
+  }, [currentCourseInfo?.id, currentCourseInfo?.display_name, currentTab, mentorSpinnerHidden]);
 
   const toggleModule = (moduleId: string) => {
     setExpandedModule(expandedModule === moduleId ? '' : moduleId);
