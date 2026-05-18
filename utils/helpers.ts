@@ -1,4 +1,5 @@
 import { config } from '@/lib/config';
+import { isTauriApp } from '@/lib/utils';
 import { LOCALSTORAGE_KEYS } from '../constants/storage';
 import { getLocalStorageItem } from './localstorage';
 import { QUERY_PARAMS } from '@/constants/global';
@@ -234,7 +235,7 @@ export async function redirectToAuthSpa(
 
   const platform = platformKey ?? getTenant();
 
-  const redirectToUrl = `${window.location.origin}`;
+  const redirectToUrl = isTauriApp() ? 'iblai-skills://' : `${window.location.origin}`;
 
   let authRedirectUrl = `${config.urls.auth()}/login?${QUERY_PARAMS.APP}=${config.settings.appName()}`;
 

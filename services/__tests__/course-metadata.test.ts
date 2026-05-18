@@ -1,6 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
+
+// Mock iblFetchBaseQuery to avoid Node 25 + jsdom AbortSignal cross-realm
+// incompatibility in fetchBaseQuery's Request constructor (undici rejects
+// jsdom's AbortSignal with "Expected signal to be an instance of AbortSignal").
+// We capture the query args directly instead of intercepting fetch.
+let capturedBaseQueryArgs: Array<{ url: string; method: string; body?: unknown }> = [];
+vi.mock('@/lib/utils', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/lib/utils')>();
+  return {
+    ...original,
+    iblFetchBaseQuery: async (args: any) => {
+      capturedBaseQueryArgs.push({
+        url: args.url,
+        method: (args.method ?? 'GET').toUpperCase(),
+        body: args.body,
+      });
+      return { data: { ok: true } };
+    },
+  };
+});
+
 import { CourseMetadataSlice } from '../course-metadata';
 
 describe('CourseMetadataSlice', () => {
@@ -193,36 +214,9 @@ describe('CourseMetadataSlice internal utils', () => {
 
 describe('CourseMetadataSlice query functions (executed via store dispatch)', () => {
   let store: ReturnType<typeof configureStore>;
-  let fetchMock: ReturnType<typeof vi.fn>;
-  let capturedRequests: Array<{ url: string; method: string; body?: string | null }>;
 
   beforeEach(() => {
-    capturedRequests = [];
-    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const isRequest = typeof Request !== 'undefined' && input instanceof Request;
-      const url = typeof input === 'string' ? input : isRequest ? input.url : String(input);
-      const method = (
-        init?.method ??
-        (isRequest ? input.method : undefined) ??
-        'GET'
-      ).toUpperCase();
-      let body: string | null = null;
-      if (init?.body) {
-        body = String(init.body);
-      } else if (isRequest) {
-        try {
-          body = await input.clone().text();
-        } catch {
-          body = null;
-        }
-      }
-      capturedRequests.push({ url, method, body });
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    });
-    vi.stubGlobal('fetch', fetchMock);
+    capturedBaseQueryArgs = [];
 
     store = configureStore({
       reducer: {
@@ -233,19 +227,15 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
     setupListeners(store.dispatch);
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('getCourseMetaData builds the expected URL with encoded courseKey', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].method).toBe('GET');
-    expect(capturedRequests[0].url).toContain(
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].method).toBe('GET');
+    expect(capturedBaseQueryArgs[0].url).toContain(
       '/api/ibl/v1/course_metadata?course_key=course-v1%3AOrg%2BRun%2B1',
     );
   });
@@ -256,8 +246,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].url).toContain(
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].url).toContain(
       '/api/ibl/completion/course_outline/course-v1:Org+Run+1?course_id=course-v1%3AOrg%2BRun%2B1',
     );
   });
@@ -268,8 +258,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].url).toContain(
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].url).toContain(
       '/api/ibl/enrollment/enroll_status?course_id=course-v1%3AOrg%2BRun%2B1',
     );
   });
@@ -279,10 +269,10 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
     await store.dispatch(
       (CourseMetadataSlice.endpoints.createCourseEnrollment as any).initiate(request),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].method).toBe('POST');
-    expect(capturedRequests[0].url).toContain('/api/enrollment/v1/enrollment');
-    expect(capturedRequests[0].body).toBe(JSON.stringify(request));
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].method).toBe('POST');
+    expect(capturedBaseQueryArgs[0].url).toContain('/api/enrollment/v1/enrollment');
+    expect(capturedBaseQueryArgs[0].body).toEqual(request);
   });
 
   it('getCourseProgress builds the expected URL', async () => {
@@ -291,8 +281,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].url).toContain('/api/course_home/progress/course-v1:Org+Run+1');
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].url).toContain('/api/course_home/progress/course-v1:Org+Run+1');
   });
 
   it('getCourseCompletion builds the expected URL with course and user id', async () => {
@@ -302,8 +292,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
         userID: 42,
       }),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].url).toContain(
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].url).toContain(
       '/api/catalog/milestones/completions/course/manage/?course_id=course-v1:Org+Run+1&user_id=42',
     );
   });
@@ -315,8 +305,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
         username: 'jane doe',
       }),
     );
-    expect(capturedRequests).toHaveLength(1);
-    expect(capturedRequests[0].url).toContain(
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].url).toContain(
       '/api/courses/v2/blocks/block-v1%3AOrg%2BRun%2B1%2Btype%40vertical%2Bblock%40abc?username=jane%20doe&depth=all',
     );
   });
