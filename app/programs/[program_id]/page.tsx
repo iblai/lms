@@ -53,7 +53,7 @@ import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalo
 import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/services/studio';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
 import { getRandomCourseImage, getTenant, getUserName } from '@/utils/helpers';
-import { useIsAdmin } from '@/utils/localstorage';
+import { useCurrentTenant, useIsAdmin } from '@/utils/localstorage';
 
 interface ProgramSettingsForm {
   subject: string;
@@ -213,6 +213,7 @@ export default function ProgramDetailPage() {
   const programId = decodeURIComponent(params.program_id as string);
   const dispatch = useDispatch();
   const isAdmin = useIsAdmin();
+  const { currentTenant } = useCurrentTenant();
 
   const { handleSearch } = usePersonnalizedCatalog();
   const [getUserEnrolledPrograms, { isLoading: isEnrollmentLoading }] =
@@ -379,6 +380,10 @@ export default function ProgramDetailPage() {
   };
 
   const handleCheckMonetizationAccess = async (programKey: string) => {
+    if (!currentTenant?.enable_monetization) {
+      setHasMonetizationAccess(true);
+      return;
+    }
     try {
       const result = await checkAccess({
         item_type: 'program',

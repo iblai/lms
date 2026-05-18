@@ -67,8 +67,12 @@ vi.mock('@/lib/config', () => ({
 }));
 
 const isAdminState = vi.hoisted(() => ({ value: true }));
+const currentTenantState = vi.hoisted(() => ({
+  value: { key: 'main', enable_monetization: true } as any,
+}));
 vi.mock('@/utils/localstorage', () => ({
   useIsAdmin: () => isAdminState.value,
+  useCurrentTenant: () => ({ currentTenant: currentTenantState.value }),
 }));
 
 const mockHandleSearch = vi.fn();
