@@ -30,7 +30,6 @@ import {
 
 import { useDispatch } from 'react-redux';
 import { useCurrentTenant } from '@/utils/localstorage';
-import { current } from '@reduxjs/toolkit';
 
 export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
 
