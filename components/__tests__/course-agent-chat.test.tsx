@@ -45,6 +45,18 @@ vi.mock('sonner', () => ({
 
 vi.mock('@iblai/agent-ai', () => ({}));
 
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
+  useDispatch: () => mockDispatch,
+}));
+
+vi.mock('@/features/mentor', () => ({
+  setMentorSpinnerHidden: vi.fn((value: boolean) => ({
+    type: 'mentor/setMentorSpinnerHidden',
+    payload: value,
+  })),
+}));
+
 vi.mock('lodash', () => ({
   default: {
     isEmpty: vi.fn(
@@ -254,6 +266,35 @@ describe('CourseAgentChat', () => {
     const { unmount } = renderWithContext();
     unmount();
     expect(removeSpy).toHaveBeenCalledWith('mentor:unit-switched', expect.any(Function));
+  });
+
+  it('dispatches setMentorSpinnerHidden(true) once the spinner is hidden and resets on unmount', async () => {
+    const { setMentorSpinnerHidden } = await import('@/features/mentor');
+    const { container, unmount } = renderWithContext();
+    const mentorEl = await waitFor(() => {
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
+      expect(el).toBeInTheDocument();
+      return el!;
+    });
+
+    const spinner = document.createElement('div');
+    spinner.id = 'loading-spinner';
+    spinner.style.display = 'none';
+    Object.defineProperty(mentorEl, 'shadowRoot', {
+      value: {
+        querySelector: (selector: string) => (selector === '#loading-spinner' ? spinner : null),
+      },
+      configurable: true,
+    });
+
+    await waitFor(() => {
+      expect(setMentorSpinnerHidden).toHaveBeenCalledWith(true);
+    });
+
+    mockDispatch.mockClear();
+    (setMentorSpinnerHidden as unknown as ReturnType<typeof vi.fn>).mockClear();
+    unmount();
+    expect(setMentorSpinnerHidden).toHaveBeenCalledWith(false);
   });
 
   describe('new-chat button', () => {

@@ -8,9 +8,11 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
 import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import '@iblai/agent-ai';
+import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
 import { getTenant, getUserName } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
+import { setMentorSpinnerHidden } from '@/features/mentor';
 
 export function CourseAgentChat() {
   const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
@@ -20,6 +22,14 @@ export function CourseAgentChat() {
   const [mentorInUse, setMentorInUse] = useState<string | null>(null);
   const [spinnerHidden, setSpinnerHidden] = useState(false);
   const mentorElementRef = useRef<HTMLElement | null>(null);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setMentorSpinnerHidden(spinnerHidden));
+    return () => {
+      dispatch(setMentorSpinnerHidden(false));
+    };
+  }, [spinnerHidden, dispatch]);
 
   useEffect(() => {
     const resolveMentor = async () => {
