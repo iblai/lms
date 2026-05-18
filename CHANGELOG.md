@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.30.0](https://github.com/iblai/skillsai/compare/skills-v0.29.0...skills-v0.30.0) (2026-05-18)
+
+### Features
+
+* **tauri:** use iblai-skills:// deep link as auth redirect URL ([fe1b1ed](https://github.com/iblai/skillsai/commit/fe1b1ed5385349c52d0033c466b42939cb1b8b69))
+
 ## [0.29.0](https://github.com/iblai/skillsai/compare/skills-v0.28.0...skills-v0.29.0) (2026-05-18)
 
 ### Features
