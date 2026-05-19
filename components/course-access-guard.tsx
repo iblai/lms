@@ -3,7 +3,8 @@
 import type React from 'react';
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getTenant, getTenants } from '@/utils/helpers';
+import { getTenants } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import type { CourseEdxData } from '@/types/courses';
 import type { CourseInfoLoadingState } from '@/hooks/courses/use-course-detail';
 import type { Tenant } from '@/types/tenants';
@@ -24,13 +25,14 @@ export function CourseAccessGuard({
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const tenant = useTenantParam();
 
   const isLoaded = courseInfoLoadingState === 'successful' || courseInfoLoadingState === 'failure';
 
   const isUnauthorizedTenant =
     isLoaded &&
     course?.platform_key &&
-    course.platform_key !== getTenant() &&
+    course.platform_key !== tenant &&
     course.platform_key !== 'main';
 
   const isNotFound = courseInfoLoadingState === 'failure' && !course;
@@ -65,12 +67,12 @@ export function CourseAccessGuard({
       if (matchingTenant) {
         dispatch(updateRequestedTenant(matchingTenant.key));
       } else {
-        router.push('/error/403');
+        router.push(`/${tenant}/error/403`);
       }
     } else if (isTabDisabled) {
-      router.push('/error/403');
+      router.push(`/${tenant}/error/403`);
     } else if (isNotFound) {
-      router.push('/error/404');
+      router.push(`/${tenant}/error/404`);
     }
   }, [
     isUnauthorizedTenant,

@@ -5,6 +5,7 @@ import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 // Mock dependencies
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush }),
 }));
 

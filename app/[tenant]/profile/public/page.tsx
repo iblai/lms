@@ -12,7 +12,8 @@ import { MediaBox } from '@/components/profile/media-box';
 import { UserAvatar } from '@/components/header/profile/user-avatar';
 import { AppContext } from '@/components/client-layout';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant, getUserEmail, onAccountDeleted } from '@/utils/helpers';
+import { getUserEmail, onAccountDeleted } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import { UserProfileModal } from '@iblai/iblai-js/web-containers/next';
@@ -21,9 +22,10 @@ import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
 
 export default function PublicProfilePage() {
+  const tenant = useTenantParam();
   const { userMetaData } = useUserMetadata();
   const { metadataLoaded, isSkillsResumeFeatureHidden } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const { isUserProfileOpen, setIsUserProfileOpen, userProfileTargetTab, setUserProfileTargetTab } =
     useContext(AppContext);
@@ -181,7 +183,7 @@ export default function PublicProfilePage() {
         <UserProfileModal
           isOpen={isUserProfileOpen}
           params={{
-            tenantKey: getTenant(),
+            tenantKey: tenant,
             isAdmin,
           }}
           email={email}

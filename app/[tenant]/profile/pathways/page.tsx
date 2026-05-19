@@ -10,12 +10,14 @@ import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
 import { PathwayEnrollmentPlus } from '@iblai/iblai-api';
-import { getRandomCourseImage, getTenant } from '@/utils/helpers';
+import { getRandomCourseImage } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 export default function PathwaysPage() {
+  const tenant = useTenantParam();
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const [searchQuery, setSearchQuery] = useState('');
   const CATALOG_TAB = 'catalog';

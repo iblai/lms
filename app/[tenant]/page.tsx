@@ -1,6 +1,7 @@
 'use client';
 import { config } from '@/lib/config';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 // @ts-ignore
 import { useGetReportedSkillsQuery } from '@iblai/iblai-js/data-layer';
 import { redirect } from 'next/navigation';
@@ -9,12 +10,13 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { Spinner } from '@/components/spinner';
 
 export default function Home() {
+  const tenant = useTenantParam();
   const {
     metadata,
     isLoading: isLoadingMetadata,
     isError: isErrorMetadata,
   } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const startPageEnabled =
     config.settings.startPageEnabled() && metadata?.enable_start_screen_display === true;
@@ -24,7 +26,7 @@ export default function Home() {
     error: errorGetReportedSkills,
   } = useGetReportedSkillsQuery([
     {
-      org: getTenant(),
+      org: tenant,
       //@ts-ignore
       userId: getUserName(),
     },
@@ -38,11 +40,11 @@ export default function Home() {
 
     // On metadata error, redirect to home
     if (isErrorMetadata) {
-      redirect('/home');
+      redirect(`/${tenant}/home`);
     }
 
     if (!startPageEnabled) {
-      redirect('/home');
+      redirect(`/${tenant}/home`);
     }
 
     if (!isLoadingReportedSkills) {
@@ -50,12 +52,13 @@ export default function Home() {
         isErrorGetReportedSkills &&
         (errorGetReportedSkills as { status: number })?.status === 400
       ) {
-        redirect('/start');
+        redirect(`/${tenant}/start`);
       } else {
-        redirect('/home');
+        redirect(`/${tenant}/home`);
       }
     }
   }, [
+    tenant,
     isLoadingMetadata,
     isErrorMetadata,
     isLoadingReportedSkills,

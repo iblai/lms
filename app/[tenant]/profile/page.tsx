@@ -6,15 +6,17 @@ import { SkillLeaderboardChart } from '@/components/skill-leaderboard-chart';
 import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-stats';
 import { ActivityStats } from '@/types/catalog';
 import { SkeletonActivityStatBox } from '@/components/skeleton-activity-stat-box';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 
 export default function ProfilePage() {
+  const tenant = useTenantParam();
   const { stats } = useProfileActivityStats();
   const { metadataLoaded, isSkillsLeaderBoardEnabled } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const username = getUserName();
   const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery(

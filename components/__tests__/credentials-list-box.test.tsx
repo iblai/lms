@@ -2,6 +2,14 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
+}));
+
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
+}));
+
 vi.mock('next/image', () => ({
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }));
@@ -67,7 +75,7 @@ describe('CredentialsListBox', () => {
   it('renders the Add Credential link', () => {
     render(<CredentialsListBox credentials={mockCredentials} />);
     const addLink = screen.getByLabelText('Add Credential');
-    expect(addLink).toHaveAttribute('href', '/discover');
+    expect(addLink).toHaveAttribute('href', '/test-tenant/discover');
   });
 
   it('renders the Add Credential tooltip text', () => {

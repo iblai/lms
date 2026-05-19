@@ -8,6 +8,7 @@ import '@testing-library/jest-dom';
 
 // Mock dependencies
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useSearchParams: () => new URLSearchParams(),
 }));
 

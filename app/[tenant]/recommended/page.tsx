@@ -8,14 +8,15 @@ import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { CourseCardSkeleton } from '@/components/course-card-skeleton';
 import { RecommendedCourseResult } from '@/types/courses';
 import { CourseBox } from '@/components/course-box';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export default function RecommendedPage() {
+  const tenant = useTenantParam();
   const [searchQuery, setSearchQuery] = useState('');
   const { recommendedCourses, isLoading, isError } = useRecommendedCourses({
     limit: 8,
     search: searchQuery,
-    tenant: getTenant(),
+    tenant,
   });
 
   return (

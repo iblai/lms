@@ -11,11 +11,12 @@ import { DefaultEmptyBox } from '@/components/default-empty-box';
 import { Course } from '@/types/courses';
 import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export default function CoursesPage() {
+  const tenant = useTenantParam();
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const [searchQuery, setSearchQuery] = useState('');
   const ENROLLED_TAB = 'enrolled';

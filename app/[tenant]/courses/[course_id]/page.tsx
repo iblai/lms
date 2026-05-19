@@ -14,7 +14,7 @@ import { SkeletonCourseAccessBtn } from '@/components/skeleton-course-access-btn
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { AboutTab } from './_components/about-tab';
 import { SyllabusTab } from './_components/syllabus-tab';
 import { LearningInfoTab } from './_components/learning-info-tab';
@@ -25,12 +25,13 @@ dayjs.extend(duration);
 
 export default function CourseDetailsPage() {
   const params = useParams();
+  const tenant = useTenantParam();
   const { setCourseMentor, setMentorSidebarHidden } = useChatState();
   const courseId = decodeURIComponent(params.course_id as string);
 
   // Fetch department member check for is_platform_admin
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
-    platform_key: getTenant(),
+    platform_key: tenant,
   });
 
   const {

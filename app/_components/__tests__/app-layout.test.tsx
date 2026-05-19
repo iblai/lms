@@ -4,12 +4,18 @@ import '@testing-library/jest-dom';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   usePathname: vi.fn(() => '/home'),
 }));
 
-// Mock NON_AUTH_PAGES constant
+// Mock isNonAuthPathname (and NON_AUTH_PAGES for back-compat)
 vi.mock('@/constants/global', () => ({
-  NON_AUTH_PAGES: ['/start', '/sso-login', '/sso-login-complete', '/version', '/'],
+  NON_AUTH_PAGES: ['/sso-login', '/sso-login-complete', '/version', '/'],
+  isNonAuthPathname: (pathname: string) => {
+    const list = ['/sso-login', '/sso-login-complete', '/version', '/'];
+    if (list.includes(pathname)) return true;
+    return /^\/[^/]+\/start\/?$/.test(pathname);
+  },
 }));
 
 // Mock useChatState
@@ -112,7 +118,7 @@ describe('AppLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Restore defaults
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadataLoaded: true,
       isMentorAIEnabled: vi.fn(() => true),
@@ -137,7 +143,7 @@ describe('AppLayout', () => {
   });
 
   it('renders DefaultPageLayout for NON_AUTH_PAGES (/start)', () => {
-    vi.mocked(usePathname).mockReturnValue('/start');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/start');
 
     render(
       <AppLayout>
@@ -177,7 +183,7 @@ describe('AppLayout', () => {
   });
 
   it('renders full layout (NavBar, Footer) for auth pages', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
 
     render(
       <AppLayout>
@@ -191,7 +197,7 @@ describe('AppLayout', () => {
   });
 
   it('renders children within auth layout', () => {
-    vi.mocked(usePathname).mockReturnValue('/profile');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/profile');
 
     render(
       <AppLayout>
@@ -203,7 +209,7 @@ describe('AppLayout', () => {
   });
 
   it('shows ChatButton when all conditions are met', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(config.settings.mentorEnabled).mockReturnValue(true);
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadataLoaded: true,
@@ -220,7 +226,7 @@ describe('AppLayout', () => {
   });
 
   it('hides ChatButton when mentorEnabled returns false', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(config.settings.mentorEnabled).mockReturnValue(false);
 
     render(<AppLayout>Content</AppLayout>);
@@ -229,7 +235,7 @@ describe('AppLayout', () => {
   });
 
   it('hides ChatButton when metadataLoaded is false', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadataLoaded: false,
       isMentorAIEnabled: vi.fn(() => true),
@@ -241,7 +247,7 @@ describe('AppLayout', () => {
   });
 
   it('hides ChatButton when isMentorAIEnabled returns false', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadataLoaded: true,
       isMentorAIEnabled: vi.fn(() => false),
@@ -253,7 +259,7 @@ describe('AppLayout', () => {
   });
 
   it('hides ChatButton when userMetadata is loading', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useGetUserMetadataQuery).mockReturnValue({
       data: undefined,
       isLoading: true,
@@ -265,7 +271,7 @@ describe('AppLayout', () => {
   });
 
   it('hides ChatButton when enable_sidebar_ai_mentor_display is false', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useGetUserMetadataQuery).mockReturnValue({
       data: { enable_sidebar_ai_mentor_display: false },
       isLoading: false,
@@ -277,7 +283,7 @@ describe('AppLayout', () => {
   });
 
   it('renders ChatButton with isMobile=true when on mobile', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useMediaQuery).mockReturnValue(true);
 
     render(<AppLayout>Content</AppLayout>);
@@ -287,7 +293,7 @@ describe('AppLayout', () => {
   });
 
   it('renders ChatButton with isMobile=false when not on mobile', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useMediaQuery).mockReturnValue(false);
 
     render(<AppLayout>Content</AppLayout>);
@@ -305,7 +311,7 @@ describe('AppLayout', () => {
   });
 
   it('passes "home" as active page when pathname is root-level', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
 
     render(<AppLayout>Content</AppLayout>);
 
@@ -313,7 +319,7 @@ describe('AppLayout', () => {
   });
 
   it('calls setCourseMentor(null) when navigating away from course pages with courseMentor set', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useChatState).mockReturnValue({
       courseMentor: 'some-mentor-uuid',
       setCourseMentor: mockSetCourseMentor,
@@ -328,7 +334,7 @@ describe('AppLayout', () => {
   });
 
   it('calls setMentorSidebarHidden(false) when navigating away with mentorSidebarHidden=true', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useChatState).mockReturnValue({
       courseMentor: null,
       setCourseMentor: mockSetCourseMentor,
@@ -342,7 +348,7 @@ describe('AppLayout', () => {
   });
 
   it('does NOT reset courseMentor when on course-content path', () => {
-    vi.mocked(usePathname).mockReturnValue('/course-content/some-course');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/course-content/some-course');
     vi.mocked(useChatState).mockReturnValue({
       courseMentor: 'some-mentor-uuid',
       setCourseMentor: mockSetCourseMentor,
@@ -356,7 +362,7 @@ describe('AppLayout', () => {
   });
 
   it('does NOT reset courseMentor when on /courses/ path', () => {
-    vi.mocked(usePathname).mockReturnValue('/courses/some-course');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/courses/some-course');
     vi.mocked(useChatState).mockReturnValue({
       courseMentor: 'some-mentor-uuid',
       setCourseMentor: mockSetCourseMentor,
@@ -370,7 +376,7 @@ describe('AppLayout', () => {
   });
 
   it('does NOT call setCourseMentor when courseMentor and mentorSidebarHidden are both falsy', () => {
-    vi.mocked(usePathname).mockReturnValue('/home');
+    vi.mocked(usePathname).mockReturnValue('/test-tenant/home');
     vi.mocked(useChatState).mockReturnValue({
       courseMentor: null,
       setCourseMentor: mockSetCourseMentor,
@@ -386,7 +392,9 @@ describe('AppLayout', () => {
 
   describe('agent tab special-case', () => {
     it('hides the sidebar ChatButton when pathname is a course-content agent route', () => {
-      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
+      vi.mocked(usePathname).mockReturnValue(
+        '/test-tenant/course-content/course-v1:test+course+2024/agent',
+      );
 
       render(<AppLayout>Content</AppLayout>);
 
@@ -394,7 +402,9 @@ describe('AppLayout', () => {
     });
 
     it('still renders the sidebar ChatButton on other course-content tabs', () => {
-      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+      vi.mocked(usePathname).mockReturnValue(
+        '/test-tenant/course-content/course-v1:test+course+2024/course',
+      );
 
       render(<AppLayout>Content</AppLayout>);
 

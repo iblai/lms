@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { DefaultEmptyBox } from './default-empty-box';
 import { SkeletonMultiplier } from './skeleton-multiplier';
 import { CourseBox } from './course-box';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 export function SuggestedCourses() {
+  const tenant = useTenantParam();
   const {
     recommendedCourses: courses,
     isLoading: loading,
@@ -16,7 +17,7 @@ export function SuggestedCourses() {
   } = useRecommendedCourses({
     limit: 8,
     forceLimit: true,
-    tenant: getTenant(),
+    tenant,
   });
 
   return (
@@ -30,7 +31,7 @@ export function SuggestedCourses() {
             Suggested Courses
           </h3>
           <Link
-            href="/recommended"
+            href={`/${tenant}/recommended`}
             className="flex items-center gap-1 rounded-md px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 sm:text-sm"
           >
             See More

@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 const mockPathname = vi.fn(() => '/analytics');
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   usePathname: () => mockPathname(),
 }));
 

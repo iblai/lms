@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 // @ts-ignore
 import { TopBanner, PaywallModal } from '@iblai/iblai-js/web-containers';
 // @ts-ignore
@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 export function MonetizationWrapper() {
   const router = useRouter();
-  const platformKey = getTenant();
+  const platformKey = useTenantParam();
   const dispatch = useAppDispatch();
   const { displayMonetizationCheckoutModal, accessCheckResponse, paywallClosable, onClosePayload } =
     useAppSelector((state) => state.monetization);
@@ -31,7 +31,7 @@ export function MonetizationWrapper() {
 
   const handleModalClose = () => {
     if (onClosePayload === MONETIZATION_CLOSE_PAYLOAD.redirect_402) {
-      router.push('/error/402');
+      router.push(`/${platformKey}/error/402`);
     }
     dispatch(setDisplayMonetizationCheckoutModal(false));
   };

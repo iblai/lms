@@ -11,7 +11,8 @@ import _ from 'lodash';
 import { toast } from 'sonner';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { getTenant, getUserId, getUserName } from '@/utils/helpers';
+import { getUserId, getUserName } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { CourseOutline } from '@/components/course-outline';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
@@ -37,8 +38,9 @@ export default function CourseContentLayout({
   children: React.ReactNode;
   params: Promise<{ course_id: string }>;
 }) {
+  const tenant = useTenantParam();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
-    platform_key: getTenant(),
+    platform_key: tenant,
   });
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
@@ -266,7 +268,7 @@ export default function CourseContentLayout({
                   <div className="flex min-w-0 overflow-x-auto">
                     {agentTabVisible && (
                       <Link
-                        href={`/course-content/${resolvedParams.course_id}/agent`}
+                        href={`/${tenant}/course-content/${resolvedParams.course_id}/agent`}
                         aria-current={activeTab === 'agent' ? 'page' : undefined}
                         className={`border-b-2 px-4 py-3 text-sm font-medium ${
                           activeTab === 'agent'
@@ -279,7 +281,7 @@ export default function CourseContentLayout({
                     )}
                     {courseTabVisible && (
                       <Link
-                        href={`/course-content/${resolvedParams.course_id}/course${
+                        href={`/${tenant}/course-content/${resolvedParams.course_id}/course${
                           currentCourseInfo?.id ? `?unit_id=${currentCourseInfo?.id}` : ''
                         }`}
                         aria-current={activeTab === 'course' ? 'page' : undefined}
@@ -293,7 +295,7 @@ export default function CourseContentLayout({
                       </Link>
                     )}
                     <Link
-                      href={`/course-content/${resolvedParams.course_id}/progress`}
+                      href={`/${tenant}/course-content/${resolvedParams.course_id}/progress`}
                       aria-current={activeTab === 'progress' ? 'page' : undefined}
                       className={`border-b-2 px-4 py-3 text-sm font-medium ${
                         activeTab === 'progress'
@@ -304,7 +306,7 @@ export default function CourseContentLayout({
                       Progress
                     </Link>
                     <Link
-                      href={`/course-content/${resolvedParams.course_id}/dates`}
+                      href={`/${tenant}/course-content/${resolvedParams.course_id}/dates`}
                       aria-current={activeTab === 'dates' ? 'page' : undefined}
                       className={`border-b-2 px-4 py-3 text-sm font-medium ${
                         activeTab === 'dates'
@@ -315,7 +317,7 @@ export default function CourseContentLayout({
                       Dates
                     </Link>
                     <Link
-                      href={`/course-content/${resolvedParams.course_id}/discussion`}
+                      href={`/${tenant}/course-content/${resolvedParams.course_id}/discussion`}
                       aria-current={activeTab === 'forum' ? 'page' : undefined}
                       className={`border-b-2 px-4 py-3 text-sm font-medium ${
                         activeTab === 'forum'
@@ -327,7 +329,7 @@ export default function CourseContentLayout({
                     </Link>
                     {departmentMemberCheck?.is_platform_admin && (
                       <Link
-                        href={`/course-content/${resolvedParams.course_id}/instructor`}
+                        href={`/${tenant}/course-content/${resolvedParams.course_id}/instructor`}
                         aria-current={activeTab === 'instructor' ? 'page' : undefined}
                         className={`border-b-2 px-4 py-3 text-sm font-medium ${
                           activeTab === 'instructor'

@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 const mockPush = vi.fn();
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush }),
 }));
 
@@ -38,7 +39,7 @@ describe('RecommendedLayout', () => {
         <span>test child</span>
       </RecommendedLayout>,
     );
-    expect(mockPush).toHaveBeenCalledWith('/home');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/home');
     expect(container.innerHTML).toBe('');
   });
 });

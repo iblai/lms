@@ -17,6 +17,7 @@ vi.mock('@/lib/config', () => ({
 
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: vi.fn(() => ({ push: mockPush })),
 }));
 

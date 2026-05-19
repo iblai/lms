@@ -11,30 +11,30 @@ import {
 // @ts-ignore
 import { useLazyPlatformUserGroupsQuery } from '@iblai/iblai-js/data-layer';
 import { usePathname, useRouter } from 'next/navigation';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export default function AnalyticsLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const tenant = useTenantParam();
   const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
 
   const [fetchGroups, { data: groupsData, isLoading: isLoadingGroups }] =
     useLazyPlatformUserGroupsQuery();
 
-  const basePath = '/analytics';
+  const basePath = `/${tenant}/analytics`;
 
   // Fetch groups on mount
   useEffect(() => {
-    const tenantKey = getTenant();
-    if (tenantKey) {
+    if (tenant) {
       const onDataReportPage = pathname === `${basePath}/reports`;
       fetchGroups({
-        platformKey: tenantKey,
+        platformKey: tenant,
         requiredAction: onDataReportPage ? 'Ibl.Analytics/Reports/read' : 'Ibl.Analytics/Core/read',
       });
     }
-  }, [fetchGroups, pathname]);
+  }, [fetchGroups, pathname, tenant, basePath]);
 
   // Update groups state when data changes
   useEffect(() => {

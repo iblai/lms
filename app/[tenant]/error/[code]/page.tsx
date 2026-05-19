@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { config } from '@/lib/config';
 import { hideInitialLoader } from '@/lib/initial-loader';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 const ERROR_MAP: Record<string, { title: string; description: string; icon: React.ReactNode }> = {
   '401': {
@@ -149,7 +149,8 @@ const DEFAULT_ERROR = {
 export default function ErrorPage() {
   const params = useParams();
   const code = params.code as string;
-  const { getSupportEmail } = useTenantMetadata({ org: getTenant() });
+  const tenant = useTenantParam();
+  const { getSupportEmail } = useTenantMetadata({ org: tenant });
   const supportEmail = getSupportEmail() || config.settings.supportEmail();
 
   const { title, description, icon } = ERROR_MAP[code] ?? DEFAULT_ERROR;
@@ -177,7 +178,7 @@ export default function ErrorPage() {
         {/* Actions */}
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/"
+            href={`/${tenant}`}
             className="w-full rounded-md bg-amber-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-600 sm:w-auto"
           >
             Back to Home

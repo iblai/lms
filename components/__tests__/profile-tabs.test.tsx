@@ -14,6 +14,7 @@ vi.mock('next/link', () => ({
 const mockPathname = vi.fn(() => '/profile');
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   usePathname: () => mockPathname(),
 }));
 

@@ -52,7 +52,8 @@ import { config } from '@/lib/config';
 import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
 import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/services/studio';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
-import { getRandomCourseImage, getTenant, getUserName } from '@/utils/helpers';
+import { getRandomCourseImage, getUserName } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useCurrentTenant, useIsAdmin } from '@/utils/localstorage';
 
 interface ProgramSettingsForm {
@@ -211,6 +212,7 @@ export default function ProgramDetailPage() {
   const router = useRouter();
   const params = useParams();
   const programId = decodeURIComponent(params.program_id as string);
+  const tenant = useTenantParam();
   const dispatch = useDispatch();
   const isAdmin = useIsAdmin();
   const { currentTenant } = useCurrentTenant();
@@ -263,8 +265,8 @@ export default function ProgramDetailPage() {
     social_channels: '',
   });
 
-  const programOrg = (program as any)?.org || (program as any)?.platform_key || getTenant();
-  const showTabs = !!program && program?.platform_key === getTenant() && isAdmin;
+  const programOrg = (program as any)?.org || (program as any)?.platform_key || tenant;
+  const showTabs = !!program && program?.platform_key === tenant && isAdmin;
 
   const {
     data: programMetadata,
@@ -359,7 +361,7 @@ export default function ProgramDetailPage() {
   };
 
   const handleCourseClick = (courseId: string) => {
-    router.push(`/courses/${courseId}`);
+    router.push(`/${tenant}/courses/${courseId}`);
   };
 
   const dispatchPaywall = () => {
@@ -388,7 +390,7 @@ export default function ProgramDetailPage() {
       const result = await checkAccess({
         item_type: 'program',
         item_id: programKey,
-        platform_key: getTenant(),
+        platform_key: tenant,
       });
       const data = (result?.data ?? (result as any)?.error?.data) as
         | AccessCheckResponse
@@ -458,7 +460,7 @@ export default function ProgramDetailPage() {
         content: ['programs'],
         programId: programInfo.program_id,
         returnItems: true,
-        tenant: (programInfo as any)?.platform || programInfo?.platform_key || getTenant(),
+        tenant: (programInfo as any)?.platform || programInfo?.platform_key || tenant,
       });
       if (
         response?.data?.results &&
@@ -510,7 +512,7 @@ export default function ProgramDetailPage() {
           content: ['programs'],
           programId,
           returnItems: true,
-          tenant: getTenant(),
+          tenant,
         });
         const result = response?.data?.results?.[0];
         if (cancelled) return;
@@ -519,12 +521,12 @@ export default function ProgramDetailPage() {
           setLoadingState('success');
         } else {
           setLoadingState('failure');
-          router.push('/error/403');
+          router.push(`/${tenant}/error/403`);
         }
       } catch {
         if (cancelled) return;
         setLoadingState('failure');
-        router.push('/error/403');
+        router.push(`/${tenant}/error/403`);
       }
     };
     fetchProgram();

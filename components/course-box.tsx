@@ -3,7 +3,9 @@ import { Course } from '@/types/courses';
 import { config } from '@/lib/config';
 import { getRandomCourseImage } from '@/utils/helpers';
 import Link from 'next/link';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 export const CourseBox = ({ course }: { course: Course }) => {
+  const tenant = useTenantParam();
   const getCourseImage = (course: Course) => {
     if (course.edx_data?.course_image_asset_path) {
       return config.urls.lms() + course.edx_data?.course_image_asset_path;
@@ -12,7 +14,7 @@ export const CourseBox = ({ course }: { course: Course }) => {
   };
   return (
     <Link
-      href={`/courses/${course.course_id}`}
+      href={`/${tenant}/courses/${course.course_id}`}
       key={course.course_id}
       className="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-transform duration-500 ease-in-out hover:scale-105"
     >

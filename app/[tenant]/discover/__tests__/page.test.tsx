@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 // Mock next/navigation
 const mockGet = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useSearchParams: vi.fn(() => ({
     get: mockGet,
   })),

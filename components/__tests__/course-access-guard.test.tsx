@@ -6,6 +6,7 @@ const mockPush = vi.fn();
 const mockReplace = vi.fn();
 const mockPathname = { current: '/course-content/course-v1:test+course+2024/course' };
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush, replace: mockReplace }),
   usePathname: () => mockPathname.current,
 }));
@@ -139,7 +140,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
       expect(mockDispatch).not.toHaveBeenCalled();
     });
 
@@ -181,7 +182,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/404');
+      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/404');
     });
 
     it('shows spinner instead of children when course is null', () => {
@@ -260,7 +261,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -297,7 +298,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 

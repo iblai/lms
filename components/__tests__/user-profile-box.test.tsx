@@ -6,6 +6,7 @@ import React from 'react';
 const mockPush = vi.fn();
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush }),
 }));
 
@@ -45,6 +46,6 @@ describe('UserProfileBox', () => {
     render(<UserProfileBox />);
     const editButton = screen.getByRole('button');
     fireEvent.click(editButton);
-    expect(mockPush).toHaveBeenCalledWith('/profile/public');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/profile/public');
   });
 });

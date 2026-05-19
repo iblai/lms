@@ -1,6 +1,6 @@
 import { Footer } from '@/components/footer';
 import { NavBar } from '@/components/nav-bar';
-import { NON_AUTH_PAGES } from '@/constants/global';
+import { isNonAuthPathname } from '@/constants/global';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ChatButton, useChatState } from '@/components/chat-button';
@@ -8,7 +8,8 @@ import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
 import { NavigationDrawer } from '@/components/navigation-drawer';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 import { MonetizationWrapper } from './monetization-wrapper';
@@ -36,8 +37,9 @@ export default function AppLayout({ children }: { children: any }) {
       skip: !username,
     },
   );
+  const tenant = useTenantParam();
   const { metadataLoaded, isMentorAIEnabled } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const pathname = usePathname();
@@ -52,9 +54,14 @@ export default function AppLayout({ children }: { children: any }) {
     }
   }, [pathname]);
 
-  if (NON_AUTH_PAGES.includes(pathname)) {
+  if (isNonAuthPathname(pathname)) {
     return <DefaultPageLayout>{children}</DefaultPageLayout>;
   }
+
+  // After the tenant segment, the next path piece identifies the active page
+  // (`/main/home` → "home"). Fallback to the first segment for legacy paths.
+  const segments = pathname.split('/').filter(Boolean);
+  const activePage = (tenant && segments[0] === tenant ? segments[1] : segments[0]) || 'home';
 
   return (
     <DefaultPageLayout>
@@ -63,7 +70,7 @@ export default function AppLayout({ children }: { children: any }) {
         <div className="sticky top-0 z-40 w-full">
           <NavBar
             sidebarOpen={sidebarOpen}
-            activePage={pathname.split('/')[1] || 'home'}
+            activePage={activePage}
             onMenuClick={() => setSidebarOpen(!sidebarOpen)}
           />
         </div>

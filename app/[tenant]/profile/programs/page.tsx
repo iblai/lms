@@ -9,15 +9,16 @@ import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
 import { useProfilePrograms } from '@/hooks/profile/use-profile-programs';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
 import { getRandomCourseImage } from '@/utils/helpers';
 import { config } from '@/lib/config';
 
 export default function ProgramsPage() {
   const router = useRouter();
+  const tenant = useTenantParam();
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const [searchQuery, setSearchQuery] = useState('');
   const ENROLLED_TAB = 'enrolled';
@@ -123,7 +124,7 @@ export default function ProgramsPage() {
               <div
                 key={index}
                 className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-                onClick={() => router.push(`/programs/${program.program_id}`)}
+                onClick={() => router.push(`/${tenant}/programs/${program.program_id}`)}
                 data-testid={'program-card'}
               >
                 <div className="relative h-32 w-full overflow-hidden">

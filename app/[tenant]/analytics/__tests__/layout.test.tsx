@@ -16,9 +16,11 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
   useLazyPlatformUserGroupsQuery: () => mockUseLazyPlatformUserGroupsQuery(),
 }));
 
-const mockUsePathname = vi.fn(() => '/analytics');
+const mockUsePathname = vi.fn(() => '/test-tenant/analytics');
 const mockRouterPush = vi.fn();
+const mockUseParams = vi.fn(() => ({ tenant: 'test-tenant' }));
 vi.mock('next/navigation', () => ({
+  useParams: () => mockUseParams(),
   usePathname: () => mockUsePathname(),
   useRouter: () => ({ push: mockRouterPush }),
 }));
@@ -53,7 +55,8 @@ describe('AnalyticsLayoutWrapper', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetTenant.mockReturnValue('test-tenant');
-    mockUsePathname.mockReturnValue('/analytics');
+    mockUseParams.mockReturnValue({ tenant: 'test-tenant' });
+    mockUsePathname.mockReturnValue('/test-tenant/analytics');
     mockUseLazyPlatformUserGroupsQuery.mockReturnValue([
       mockFetchGroups,
       { data: undefined, isLoading: false },
@@ -70,7 +73,7 @@ describe('AnalyticsLayoutWrapper', () => {
   });
 
   it('fetches groups with the Core read action on non-reports analytics pages', () => {
-    mockUsePathname.mockReturnValue('/analytics');
+    mockUsePathname.mockReturnValue('/test-tenant/analytics');
     render(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -83,7 +86,7 @@ describe('AnalyticsLayoutWrapper', () => {
   });
 
   it('fetches groups with the Core read action on sub-pages other than reports', () => {
-    mockUsePathname.mockReturnValue('/analytics/courses');
+    mockUsePathname.mockReturnValue('/test-tenant/analytics/courses');
     render(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -96,7 +99,7 @@ describe('AnalyticsLayoutWrapper', () => {
   });
 
   it('fetches groups with the Reports read action on the data reports page', () => {
-    mockUsePathname.mockReturnValue('/analytics/reports');
+    mockUsePathname.mockReturnValue('/test-tenant/analytics/reports');
     render(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -109,7 +112,7 @@ describe('AnalyticsLayoutWrapper', () => {
   });
 
   it('re-fetches groups when pathname changes between reports and another tab', () => {
-    mockUsePathname.mockReturnValue('/analytics');
+    mockUsePathname.mockReturnValue('/test-tenant/analytics');
     const { rerender } = render(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -120,7 +123,7 @@ describe('AnalyticsLayoutWrapper', () => {
       requiredAction: 'Ibl.Analytics/Core/read',
     });
 
-    mockUsePathname.mockReturnValue('/analytics/reports');
+    mockUsePathname.mockReturnValue('/test-tenant/analytics/reports');
     rerender(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -134,6 +137,7 @@ describe('AnalyticsLayoutWrapper', () => {
 
   it('does not fetch groups when there is no tenant key', () => {
     mockGetTenant.mockReturnValue('');
+    mockUseParams.mockReturnValue({});
     render(
       <AnalyticsLayoutWrapper>
         <span>content</span>

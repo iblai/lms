@@ -4,7 +4,19 @@ export const QUERY_PARAMS = {
   TENANT: 'tenant',
 };
 
-export const NON_AUTH_PAGES = ['/start', '/sso-login', '/sso-login-complete', '/version', '/'];
+export const NON_AUTH_PAGES = ['/sso-login', '/sso-login-complete', '/version', '/'];
+
+/**
+ * Returns true when the pathname is one of the non-authenticated pages
+ * (sso-login, version, root) OR a tenant-prefixed onboarding/start page
+ * such as `/main/start`.
+ */
+export const isNonAuthPathname = (pathname: string): boolean => {
+  if (NON_AUTH_PAGES.includes(pathname)) return true;
+  // /{tenant}/start
+  if (/^\/[^/]+\/start\/?$/.test(pathname)) return true;
+  return false;
+};
 
 export const MONETIZATION_CLOSE_PAYLOAD = {
   redirect_402: 'redirect_402',

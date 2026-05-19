@@ -118,7 +118,7 @@ describe('ErrorPage', () => {
       render(<ErrorPage />);
       const homeLink = screen.getByText('Back to Home');
       expect(homeLink).toBeInTheDocument();
-      expect(homeLink.closest('a')).toHaveAttribute('href', '/');
+      expect(homeLink.closest('a')).toHaveAttribute('href', '/test-tenant');
     });
 
     it('renders Contact Support link with tenant support email', () => {

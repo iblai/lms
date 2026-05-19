@@ -3,24 +3,25 @@
 import OnboardingFlow from '@/components/onboarding';
 import { Spinner } from '@/components/spinner';
 import { config } from '@/lib/config';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { redirect } from 'next/navigation';
 
 export default function StartOnboarding() {
+  const tenant = useTenantParam();
   const {
     metadata,
     isLoading: isLoadingMetadata,
     isError: isErrorMetadata,
   } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
 
   const startPageEnabled =
     config.settings.startPageEnabled() && metadata?.enable_start_screen_display === true;
 
   if (!startPageEnabled || isErrorMetadata) {
-    redirect('/home');
+    redirect(`/${tenant}/home`);
   }
 
   if (isLoadingMetadata) {

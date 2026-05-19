@@ -15,6 +15,7 @@ vi.mock('next/link', () => ({
 // Mock next/navigation — return stable references so effects don't loop
 const mockState = vi.hoisted(() => ({ searchParams: new URLSearchParams() }));
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useSearchParams: vi.fn(() => mockState.searchParams),
   usePathname: vi.fn(() => '/course-content/course-v1:test+course+2024/course'),
 }));

@@ -5,23 +5,24 @@ import { useContext, useEffect } from 'react';
 import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { redirect } from 'next/navigation';
 
 export default function InstructorTab() {
+  const tenant = useTenantParam();
   const { setActiveTab } = useContext(EdxIframeContext);
   const { data: departmentMemberCheck, isSuccess } = useGetDepartmentMemberCheckQuery({
-    platform_key: getTenant(),
+    platform_key: tenant,
   });
   useEffect(() => {
     if (isSuccess) {
       if (!departmentMemberCheck?.is_platform_admin) {
-        redirect('/');
+        redirect(`/${tenant}`);
       } else {
         setActiveTab('instructor');
       }
     }
-  }, [isSuccess, departmentMemberCheck, setActiveTab]);
+  }, [tenant, isSuccess, departmentMemberCheck, setActiveTab]);
 
   return <EdxIframe />;
 }

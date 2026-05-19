@@ -261,7 +261,7 @@ describe('ProgramDetailPage', () => {
     mockHandleSearch.mockResolvedValue({ data: { results: [] } });
     render(<ProgramDetailPage />);
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
     });
   });
 
@@ -269,7 +269,7 @@ describe('ProgramDetailPage', () => {
     mockHandleSearch.mockRejectedValue(new Error('boom'));
     render(<ProgramDetailPage />);
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
     });
   });
 
@@ -304,7 +304,7 @@ describe('ProgramDetailPage', () => {
     await renderPage();
     await waitFor(() => expect(screen.getByTestId('course-card-0')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('course-card-0'));
-    expect(mockPush).toHaveBeenCalledWith('/courses/cid-1');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/courses/cid-1');
   });
 
   it('opens the course when Enter/Space is pressed on a card', async () => {
@@ -312,7 +312,7 @@ describe('ProgramDetailPage', () => {
     await renderPage();
     await waitFor(() => expect(screen.getByTestId('course-card-0')).toBeInTheDocument());
     fireEvent.keyDown(screen.getByTestId('course-card-0'), { key: 'Enter' });
-    expect(mockPush).toHaveBeenCalledWith('/courses/cid-1');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/courses/cid-1');
   });
 
   it('shows the empty box when programDetail has no courses', async () => {

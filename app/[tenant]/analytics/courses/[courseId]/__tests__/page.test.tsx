@@ -68,6 +68,6 @@ describe('CourseDetailPage', () => {
   it('navigates to courses list when back button is clicked', () => {
     render(<CourseDetailPage />);
     fireEvent.click(screen.getByTestId('back-button'));
-    expect(mockPush).toHaveBeenCalledWith('/analytics/courses');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/analytics/courses');
   });
 });

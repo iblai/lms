@@ -68,6 +68,6 @@ describe('ProgramDetailPage', () => {
   it('navigates to programs list when back button is clicked', () => {
     render(<ProgramDetailPage />);
     fireEvent.click(screen.getByTestId('back-button'));
-    expect(mockPush).toHaveBeenCalledWith('/analytics/programs');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/analytics/programs');
   });
 });

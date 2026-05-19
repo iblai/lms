@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 // Mock next/navigation
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({
     push: mockPush,
   }),
@@ -295,7 +296,7 @@ describe('ProgramsPage', () => {
     const programCard = screen.getByTestId('program-card');
     fireEvent.click(programCard);
 
-    expect(mockPush).toHaveBeenCalledWith('/programs/prog-1');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/programs/prog-1');
   });
 
   it('switches tabs and resets state', () => {

@@ -109,7 +109,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         username={getUserName() || ''}
         onAuthFailure={(reason) => {
           console.error('[TenantProvider] Auth failure:', reason);
-          router.push('/error/403');
+          router.push(`/${getTenant()}/error/403`);
         }}
         onLoadPlatformPermissions={onLoadPlatformpermissions}
         fallback={

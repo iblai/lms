@@ -6,6 +6,7 @@ import '@testing-library/jest-dom';
 // Mock next/navigation
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({
     push: mockPush,
   }),
@@ -42,7 +43,7 @@ describe('DiscoverContentCard', () => {
     const content = {
       id: 'course-123',
       title: 'Test Course',
-      url: '/courses/course-123',
+      url: '/test-tenant/courses/course-123',
       image: '/test-course.jpg',
       contentType: 'course',
     };
@@ -57,7 +58,7 @@ describe('DiscoverContentCard', () => {
     const content = {
       id: 'course-123',
       title: 'Test Course',
-      url: '/courses/course-123',
+      url: '/test-tenant/courses/course-123',
       image: '/test-course.jpg',
       contentType: 'course',
     };
@@ -67,7 +68,7 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Course').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(mockPush).toHaveBeenCalledWith('/courses/course-123');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/courses/course-123');
   });
 
   it('opens pathway modal when pathway content is clicked', () => {
@@ -92,7 +93,7 @@ describe('DiscoverContentCard', () => {
     const content = {
       id: 'program-123',
       title: 'Test Program',
-      url: '/programs/program-123',
+      url: '/test-tenant/programs/program-123',
       image: '/test-program.jpg',
       contentType: 'program',
     };
@@ -102,14 +103,14 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Program').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(mockPush).toHaveBeenCalledWith('/programs/program-123');
+    expect(mockPush).toHaveBeenCalledWith('/test-tenant/programs/program-123');
   });
 
   it('displays content type badge', () => {
     const content = {
       id: 'course-123',
       title: 'Test Course',
-      url: '/courses/course-123',
+      url: '/test-tenant/courses/course-123',
       image: '/test-course.jpg',
       contentType: 'course',
     };
@@ -123,7 +124,7 @@ describe('DiscoverContentCard', () => {
     const content = {
       id: 'course-123',
       title: 'Test Course',
-      url: '/courses/course-123',
+      url: '/test-tenant/courses/course-123',
       image: '',
       contentType: 'course',
     };
@@ -138,7 +139,7 @@ describe('DiscoverContentCard', () => {
     const content = {
       id: 'course-123',
       title: 'Test Course',
-      url: '/courses/course-123',
+      url: '/test-tenant/courses/course-123',
       image: '/custom-image.jpg',
       contentType: 'course',
     };
@@ -174,7 +175,7 @@ describe('DiscoverContentCard', () => {
     const content = {
       id: 'course-123',
       title: 'Test Course',
-      url: '/courses/course-123',
+      url: '/test-tenant/courses/course-123',
       image: '/broken-image.jpg',
       contentType: 'course',
     };

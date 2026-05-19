@@ -39,6 +39,10 @@ vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
+}));
+
 import { SuggestedCourses } from '../suggested-courses';
 
 describe('SuggestedCourses', () => {
@@ -74,7 +78,7 @@ describe('SuggestedCourses', () => {
     });
     render(<SuggestedCourses />);
     const link = screen.getByText('See More');
-    expect(link.closest('a')).toHaveAttribute('href', '/recommended');
+    expect(link.closest('a')).toHaveAttribute('href', '/test-tenant/recommended');
   });
 
   it('shows skeleton when loading', () => {

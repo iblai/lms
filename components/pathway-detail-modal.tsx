@@ -7,6 +7,7 @@ import { config } from '@/lib/config';
 import { useEffect, useState } from 'react';
 import { DefaultEmptyBox } from './default-empty-box';
 import { useRouter } from 'next/navigation';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import {
   // @ts-ignore
   useLazyGetPathwayCompletionQuery,
@@ -34,6 +35,7 @@ export function PathwayDetailModal({
   const [randomImage] = useState(() => getRandomCourseImage());
   const [paths, setPaths] = useState<any[]>([]);
   const router = useRouter();
+  const tenant = useTenantParam();
   const { handleSearch } = usePersonnalizedCatalog();
   const [getUserEnrolledPathways, { isLoading: isEnrollmentLoading }] =
     useLazyGetUserEnrolledPathwaysQuery();
@@ -46,7 +48,7 @@ export function PathwayDetailModal({
   const [getPathwayList] = useLazyGetPathwayListQuery();
   const handleCourseClick = (course: any) => {
     if (course?.item_type === 'course') {
-      router.push(`/courses/${course.course_id}`);
+      router.push(`/${tenant}/courses/${course.course_id}`);
     } else {
       window.open(course?.url, '_blank');
     }

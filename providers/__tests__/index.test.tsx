@@ -54,6 +54,7 @@ vi.mock('@/utils/helpers', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   usePathname: () => '/dashboard',
   useRouter: () => ({
     push: vi.fn(),
