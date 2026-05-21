@@ -373,8 +373,13 @@ export const onAccountDeleted = () => {
   }, 3000);
 };
 
-export const handleLogout = (redirectUrl = window.location.origin, callback?: () => void) => {
-  const tenant = getTenant();
+export const handleLogout = (
+  redirectUrl = window.location.origin,
+  callback?: () => void,
+  alternateTenant?: string,
+  enforceLogin?: boolean,
+) => {
+  const tenant = alternateTenant ?? getTenant();
   _suppressAuthRedirect = true;
   window.localStorage.clear();
   window.localStorage.setItem(LOCALSTORAGE_KEYS.TENANT, tenant ?? '');
@@ -383,7 +388,7 @@ export const handleLogout = (redirectUrl = window.location.origin, callback?: ()
   callback?.();
 
   if (!isInIframe()) {
-    window.location.href = `${config.urls.auth()}/logout?redirect-to=${redirectUrl}${tenant ? '&tenant=' + tenant : ''}`;
+    window.location.href = `${config.urls.auth()}/logout?redirect-to=${redirectUrl}${tenant ? '&tenant=' + tenant : ''}${enforceLogin ? '&enforce-login=1' : ''}`;
     // Set logout timestamp cookie to trigger logout on other SPAs
     setCookieForAuth('ibl_logout_timestamp', Date.now().toString());
     setTimeout(() => {

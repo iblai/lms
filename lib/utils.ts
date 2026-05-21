@@ -24,6 +24,7 @@ export interface CustomQueryArgs extends Omit<FetchArgs, 'url'> {
   service: SERVICES;
   includeCredentials?: boolean;
   isJson?: boolean;
+  noAuth?: boolean;
 }
 
 export type ExtendedFetchBaseQueryError = FetchBaseQueryError & {
@@ -74,7 +75,7 @@ function getHeaders(service: SERVICES) {
   }
 }
 
-const baseQuery = (service: SERVICES, isJson = true) =>
+const baseQuery = (service: SERVICES, isJson = true, noAuth = false) =>
   fetchBaseQuery({
     baseUrl: getServiceUrl(service),
     credentials: 'omit',
@@ -90,6 +91,10 @@ const baseQuery = (service: SERVICES, isJson = true) =>
         headers.set(key, value);
       });
 
+      if (noAuth) {
+        headers.delete('Authorization');
+      }
+
       return headers;
     },
   });
@@ -102,7 +107,7 @@ export const iblFetchBaseQuery: BaseQueryFn<
   FetchBaseQueryMeta
 > = async (args, api, extraOptions) => {
   try {
-    const result = await baseQuery(args.service, args.isJson)(args, api, extraOptions);
+    const result = await baseQuery(args.service, args.isJson, args.noAuth)(args, api, extraOptions);
     if (result.error) {
       const errorData = result.error.data;
       const errorMessage =

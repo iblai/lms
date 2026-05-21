@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserName, isRecommendedTabHidden } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useMediaQuery } from 'react-responsive';
@@ -23,6 +24,7 @@ interface NavBarProps {
 
 export function NavBar({ activePage, onMenuClick }: NavBarProps) {
   const tenant = useTenantParam();
+  const isUserLoggedIn = isLoggedIn();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
@@ -220,16 +222,19 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
             </WithPermissions>
           )}
           {/* Notification Bell */}
-          <NotificationDropdown
-            org={tenant}
-            userId={getUserName()}
-            isAdmin={departmentMemberCheck?.is_platform_admin}
-            onViewNotifications={handleViewNotifications}
-          />
-
-          <div className="relative">
-            <UserProfileButton />
-          </div>
+          {isUserLoggedIn && (
+            <NotificationDropdown
+              org={tenant}
+              userId={getUserName()}
+              isAdmin={departmentMemberCheck?.is_platform_admin}
+              onViewNotifications={handleViewNotifications}
+            />
+          )}
+          {isUserLoggedIn && (
+            <div className="relative">
+              <UserProfileButton />
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -34,6 +34,7 @@ import {
   useLazyGetUserEnrolledProgramsQuery,
 } from '@iblai/iblai-js/data-layer';
 import {
+  isLoggedIn,
   setAccessCheckResponse,
   setDisplayMonetizationCheckoutModal,
 } from '@iblai/iblai-js/web-utils';
@@ -216,8 +217,9 @@ export default function ProgramDetailPage() {
   const dispatch = useDispatch();
   const isAdmin = useIsAdmin();
   const { currentTenant } = useCurrentTenant();
+  const userIsLoggedIn = isLoggedIn();
 
-  const { handleSearch } = usePersonnalizedCatalog();
+  const { handleSearch } = usePersonnalizedCatalog({ isLoggedIn: userIsLoggedIn });
   const [getUserEnrolledPrograms, { isLoading: isEnrollmentLoading }] =
     useLazyGetUserEnrolledProgramsQuery();
   const [getProgramCompletion] = useLazyGetProgramCompletionQuery();
@@ -364,6 +366,13 @@ export default function ProgramDetailPage() {
     router.push(`/${tenant}/courses/${courseId}`);
   };
 
+  const handleNotLoggedInAction = () => {
+    toast.info('Please login to access this resource');
+    setTimeout(() => {
+      window.location.href = `${config.urls.auth()}/login?redirect-to=${window.location.href}&tenant=${tenant}`;
+    }, 2000);
+  };
+
   const dispatchPaywall = () => {
     dispatch(setDisplayMonetizationCheckoutModal(true));
     /* dispatch(
@@ -467,9 +476,13 @@ export default function ProgramDetailPage() {
         Array.isArray(response.data.results) &&
         response.data.results.length > 0
       ) {
+        // The catalog-search endpoint wraps each result as `{ type, data }`,
+        // while the personalized-search endpoint returns the program flat —
+        // unwrap when needed so we always read from the program payload.
         const allCourses = response.data.results.reduce((acc: any[], p: any) => {
-          if (p?.courses && Array.isArray(p.courses)) {
-            return [...acc, ...p.courses];
+          const programPayload = p?.type && p?.data ? p.data : p;
+          if (programPayload?.courses && Array.isArray(programPayload.courses)) {
+            return [...acc, ...programPayload.courses];
           }
           return acc;
         }, []);
@@ -514,10 +527,20 @@ export default function ProgramDetailPage() {
           returnItems: true,
           tenant,
         });
-        const result = response?.data?.results?.[0];
+        const rawResult = response?.data?.results?.[0];
+        // Catalog search wraps the program in `{ type, data: { ..., data: <metadata> } }`,
+        // so unwrap to the program payload and surface the nested metadata via the
+        // `program_metadata` key the page expects.
+        const normalized =
+          rawResult?.type && rawResult?.data
+            ? {
+                ...rawResult.data,
+                program_metadata: rawResult.data.program_metadata ?? rawResult.data.data,
+              }
+            : rawResult;
         if (cancelled) return;
-        if (result) {
-          setProgram(result as CustomProgramEnrollmentPlus);
+        if (normalized) {
+          setProgram(normalized as CustomProgramEnrollmentPlus);
           setLoadingState('success');
         } else {
           setLoadingState('failure');
@@ -559,9 +582,11 @@ export default function ProgramDetailPage() {
     : isEnrollmentSubmitting
       ? 'Enrolling...'
       : 'Enroll Now';
-  const ctaAction = hasMonetizationAccess
-    ? handleEnrollIntoProgram
-    : handleOpenMonetizationCheckoutModal;
+  const ctaAction = !userIsLoggedIn
+    ? handleNotLoggedInAction
+    : hasMonetizationAccess
+      ? handleEnrollIntoProgram
+      : handleOpenMonetizationCheckoutModal;
 
   const metadata = program?.program_metadata as any;
 

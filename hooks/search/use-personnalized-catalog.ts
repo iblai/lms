@@ -1,6 +1,9 @@
 import { GenericPagination } from '@/types/discover';
 // @ts-ignore
-import { useLazyGetPersonnalizedSearchQuery } from '@iblai/iblai-js/data-layer';
+import {
+  useLazyGetCatalogSearchQuery,
+  useLazyGetPersonnalizedSearchQuery,
+} from '@iblai/iblai-js/data-layer';
 import { useState } from 'react';
 
 export type PersonnalizedCatalogSearchParams = {
@@ -39,14 +42,18 @@ export type PersonnalizedCatalogSearchParams = {
   updateFacet?: string;
 };
 
-export const usePersonnalizedCatalog = () => {
+export const usePersonnalizedCatalog = ({ isLoggedIn = true }: { isLoggedIn?: boolean }) => {
   const [getPersonnalizedSearch, { isLoading, isError }] = useLazyGetPersonnalizedSearchQuery();
+
+  const [getCatalogSearch, { isLoading: isLoadingCatalog, isError: isErrorCatalog }] =
+    useLazyGetCatalogSearchQuery();
 
   const [pagination, setPagination] = useState<GenericPagination | null>(null);
 
   const handleSearch = async (searchParams: PersonnalizedCatalogSearchParams) => {
     try {
-      const response = await getPersonnalizedSearch(
+      const searchFn = isLoggedIn ? getPersonnalizedSearch : getCatalogSearch;
+      const response = await searchFn(
         [
           {
             ...searchParams,
@@ -66,8 +73,8 @@ export const usePersonnalizedCatalog = () => {
   };
 
   return {
-    isLoading,
-    isError,
+    isLoading: isLoggedIn ? isLoading : isLoadingCatalog,
+    isError: isLoggedIn ? isError : isErrorCatalog,
     handleSearch,
     pagination,
   };

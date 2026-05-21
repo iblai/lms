@@ -2,7 +2,11 @@
 
 import { useDispatch } from 'react-redux';
 // @ts-ignore
-import { AccessCheckResponse, initializeDataLayer } from '@iblai/iblai-js/data-layer';
+import {
+  AccessCheckResponse,
+  initializeDataLayer,
+  useGetPlatformMembershipQuery,
+} from '@iblai/iblai-js/data-layer';
 import { useEffect, useState, useMemo } from 'react';
 import { config } from '@/lib/config';
 import {
@@ -27,6 +31,22 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const requestedTenant = useAppSelector(selectRequestedTenant);
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
+
+  // Tenant key for the platform-membership lookup is the first path segment
+  // (e.g. `/babatunde/discover` -> `babatunde`). Anonymous visitors landing on
+  // a public route won't have a tenant in localStorage yet, so the URL is the
+  // only reliable source here.
+  const tenantFromPath = useMemo(() => pathname.split('/').filter(Boolean)[0] ?? '', [pathname]);
+
+  const skipPlatformMembership = !tenantFromPath || isSsoLoginRoute || isVersionRoute;
+
+  const { data: platformMembership, isLoading: isPlatformMembershipLoading } =
+    useGetPlatformMembershipQuery(
+      { platform_key: tenantFromPath },
+      { skip: !ready || skipPlatformMembership },
+    );
+
+  const allowSelfLinking = true; //Boolean(platformMembership?.allow_self_linking);
 
   console.log('################### [Providers] isSsoLoginRoute', isSsoLoginRoute);
   console.log('################### [Providers] isVersionRoute', isVersionRoute);
@@ -75,10 +95,34 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // allow user to go to version page without auth
     map.set(new RegExp('^\/version'), async () => false);
 
+    // Discover / course-about / program-about pages are only public when the
+    // tenant has self-linking enabled. Otherwise they fall through to the
+    // standard auth gate.
+    if (allowSelfLinking) {
+      map.set(new RegExp('^/[^/]+/discover(/|$)'), async () => false);
+      map.set(new RegExp('^/[^/]+/courses/[^/]+/?$'), async () => false);
+      map.set(new RegExp('^/[^/]+/programs/[^/]+/?$'), async () => false);
+    }
+
     return map;
-  }, []);
+  }, [allowSelfLinking]);
+
+  const spinnerFallback = (
+    <div className="flex h-dvh w-screen items-center justify-center">
+      <div className="space-y-3">
+        <Spinner className="h-14 w-14 text-amber-500" />
+      </div>
+    </div>
+  );
 
   if (!ready) return null;
+
+  // Hold rendering until we know whether self-linking is enabled — otherwise the
+  // AuthProvider could redirect a visitor away from a route that should have
+  // been public.
+  if (!skipPlatformMembership && isPlatformMembershipLoading) {
+    return spinnerFallback;
+  }
 
   function onLoadPlatformpermissions(rbacPermissions: Record<string, unknown> | undefined) {
     dispatch(updateRbacPermissions(rbacPermissions ?? {}));
@@ -112,13 +156,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           router.push(`/${getTenant()}/error/403`);
         }}
         onLoadPlatformPermissions={onLoadPlatformpermissions}
-        fallback={
-          <div className="flex h-dvh w-screen items-center justify-center">
-            <div className="space-y-3">
-              <Spinner className="h-14 w-14 text-amber-500" />
-            </div>
-          </div>
-        }
+        fallback={spinnerFallback}
       >
         {children}
       </TenantProvider>

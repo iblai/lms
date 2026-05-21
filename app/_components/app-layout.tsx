@@ -7,7 +7,7 @@ import { ChatButton, useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
 import { NavigationDrawer } from '@/components/navigation-drawer';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 // @ts-ignore
@@ -28,6 +28,7 @@ export default function AppLayout({ children }: { children: any }) {
     useChatState();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const username = getUserName();
+  const userIsLoggedIn = isLoggedIn();
   const { currentTenant } = useCurrentTenant();
   const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery(
     {
@@ -82,6 +83,7 @@ export default function AppLayout({ children }: { children: any }) {
             <Footer />
           </div>
           {config.settings.mentorEnabled() &&
+            userIsLoggedIn &&
             metadataLoaded &&
             isMentorAIEnabled() &&
             !isUserMetadataLoading &&
