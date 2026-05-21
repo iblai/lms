@@ -355,6 +355,110 @@ describe('config module', () => {
       const { config } = await import('../config');
       expect(config.settings.supportEmail()).toBe('help@example.com');
     });
+
+    it('returns mainPlatformKey with default when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_MAIN_PLATFORM_KEY;
+
+      const { config } = await import('../config');
+      expect(config.settings.mainPlatformKey()).toBe('main');
+    });
+
+    it('returns mainPlatformKey when configured', async () => {
+      processEnv.NEXT_PUBLIC_MAIN_PLATFORM_KEY = 'tenant-x';
+
+      const { config } = await import('../config');
+      expect(config.settings.mainPlatformKey()).toBe('tenant-x');
+    });
+
+    it('returns hideDiscoverTab as false by default', async () => {
+      delete processEnv.NEXT_PUBLIC_HIDE_DISCOVER_TAB;
+
+      const { config } = await import('../config');
+      expect(config.settings.hideDiscoverTab()).toBe(false);
+    });
+
+    it('returns hideDiscoverTab as true when set', async () => {
+      processEnv.NEXT_PUBLIC_HIDE_DISCOVER_TAB = 'true';
+
+      const { config } = await import('../config');
+      expect(config.settings.hideDiscoverTab()).toBe(true);
+    });
+
+    it('returns additionalLeftHeaderMenuItems with empty default when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_ADDITIONAL_LEFT_HEADER_MENU_ITEMS;
+
+      const { config } = await import('../config');
+      expect(config.settings.additionalLeftHeaderMenuItems()).toBe('');
+    });
+
+    it('returns additionalLeftHeaderMenuItems when configured', async () => {
+      processEnv.NEXT_PUBLIC_ADDITIONAL_LEFT_HEADER_MENU_ITEMS =
+        '[Forums](https://discourse.vtoxford.org/)|[VON Portal](https://portal.vtoxford.org/home)';
+
+      const { config } = await import('../config');
+      expect(config.settings.additionalLeftHeaderMenuItems()).toBe(
+        '[Forums](https://discourse.vtoxford.org/)|[VON Portal](https://portal.vtoxford.org/home)',
+      );
+    });
+
+    it('returns additionalRightHeaderMenuItems with empty default when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_ADDITIONAL_RIGHT_HEADER_MENU_ITEMS;
+
+      const { config } = await import('../config');
+      expect(config.settings.additionalRightHeaderMenuItems()).toBe('');
+    });
+
+    it('returns additionalRightHeaderMenuItems when configured', async () => {
+      processEnv.NEXT_PUBLIC_ADDITIONAL_RIGHT_HEADER_MENU_ITEMS =
+        '[My QI](https://portal.vtoxford.org/collaborative)';
+
+      const { config } = await import('../config');
+      expect(config.settings.additionalRightHeaderMenuItems()).toBe(
+        '[My QI](https://portal.vtoxford.org/collaborative)',
+      );
+    });
+
+    it('returns aiAnalyticsHeaderMenuEnabled as true by default', async () => {
+      delete processEnv.NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU;
+
+      const { config } = await import('../config');
+      expect(config.settings.aiAnalyticsHeaderMenuEnabled()).toBe(true);
+    });
+
+    it('returns aiAnalyticsHeaderMenuEnabled as false when set to false', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU = 'false';
+
+      const { config } = await import('../config');
+      expect(config.settings.aiAnalyticsHeaderMenuEnabled()).toBe(false);
+    });
+
+    it('returns studioHeaderMenuEnabled as true by default', async () => {
+      delete processEnv.NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU;
+
+      const { config } = await import('../config');
+      expect(config.settings.studioHeaderMenuEnabled()).toBe(true);
+    });
+
+    it('returns studioHeaderMenuEnabled as false when set to false', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU = 'false';
+
+      const { config } = await import('../config');
+      expect(config.settings.studioHeaderMenuEnabled()).toBe(false);
+    });
+
+    it('returns staticCopyrightEnabled as false by default', async () => {
+      delete processEnv.NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT;
+
+      const { config } = await import('../config');
+      expect(config.settings.staticCopyrightEnabled()).toBe(false);
+    });
+
+    it('returns staticCopyrightEnabled as true when set', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT = 'true';
+
+      const { config } = await import('../config');
+      expect(config.settings.staticCopyrightEnabled()).toBe(true);
+    });
   });
 
   describe('config.urls (additional)', () => {
