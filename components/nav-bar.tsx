@@ -6,7 +6,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Logo } from './logo';
 import { UserProfileButton } from './header/profile/user-profile-button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getTenant, getUserName, isRecommendedTabHidden } from '@/utils/helpers';
+import {
+  getTenant,
+  getUserName,
+  isRecommendedTabHidden,
+  parseMarkdownLinks,
+} from '@/utils/helpers';
 import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
@@ -31,6 +36,16 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
   const isMobile = useMediaQuery({ maxWidth: 760 });
   const [searchQuery, setSearchQuery] = useState('');
   const [searchVisible, setSearchVisible] = useState(false);
+
+  const hideDiscoverTab = config.settings.hideDiscoverTab();
+  const aiAnalyticsHeaderMenuEnabled = config.settings.aiAnalyticsHeaderMenuEnabled();
+  const studioHeaderMenuEnabled = config.settings.studioHeaderMenuEnabled();
+  const additionalLeftHeaderMenuItems = parseMarkdownLinks(
+    config.settings.additionalLeftHeaderMenuItems(),
+  );
+  const additionalRightHeaderMenuItems = parseMarkdownLinks(
+    config.settings.additionalRightHeaderMenuItems(),
+  );
 
   useEffect(() => {
     setSearchQuery(decodeURIComponent(searchParams.get('q') || ''));
@@ -109,16 +124,29 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                   Recommended
                 </Link>
               )}
-              <Link
-                href="/discover"
-                className={`text-sm font-medium ${
-                  activePage === 'discover' && !activePage.startsWith('course')
-                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                    : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } flex h-full items-center`}
-              >
-                Discover
-              </Link>
+              {!hideDiscoverTab && (
+                <Link
+                  href="/discover"
+                  className={`text-sm font-medium ${
+                    activePage === 'discover' && !activePage.startsWith('course')
+                      ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                      : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                  } flex h-full items-center`}
+                >
+                  Discover
+                </Link>
+              )}
+              {additionalLeftHeaderMenuItems.map((menu, index) => (
+                <Link
+                  key={`left-header-menu-${index}`}
+                  href={menu.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-full items-center text-sm font-medium text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]"
+                >
+                  {menu.label}
+                </Link>
+              ))}
             </nav>
           )}
         </div>
@@ -193,6 +221,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
 
           {/* AI Analytics Button */}
           {!(isTabletRange && searchVisible) &&
+            studioHeaderMenuEnabled &&
             (departmentMemberCheck?.is_platform_admin ||
               departmentMemberCheck?.is_department_admin) && (
               <Link
@@ -203,7 +232,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 Studio
               </Link>
             )}
-          {!(isTabletRange && searchVisible) && (
+          {!(isTabletRange && searchVisible) && aiAnalyticsHeaderMenuEnabled && (
             <WithPermissions rbacResource={`/platforms/${getTenant()}/#can_view_analytics`}>
               {({ hasPermission }) =>
                 hasPermission && (
@@ -217,6 +246,18 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               }
             </WithPermissions>
           )}
+          {!(isTabletRange && searchVisible) &&
+            additionalRightHeaderMenuItems.map((menu, index) => (
+              <Link
+                key={`right-header-menu-${index}`}
+                href={menu.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
+              >
+                {menu.label}
+              </Link>
+            ))}
           {/* Notification Bell */}
           <NotificationDropdown
             org={getTenant()}
