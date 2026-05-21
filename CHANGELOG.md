@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.31.0](https://github.com/iblai/skillsai/compare/skills-v0.30.0...skills-v0.31.0) (2026-05-21)
+
+### Features
+
+* memory enabled on profile component ([56d3064](https://github.com/iblai/skillsai/commit/56d3064a46d30f8a287486644dc7a2a8399c5c48))
+* update overall UI to match VON requirements with env flags ([7bbcf58](https://github.com/iblai/skillsai/commit/7bbcf58d5fc2b7343929a33154d83db98f0614dd))
+* update overall UI to match VON requirements with env flags > test coverage ([6acaba6](https://github.com/iblai/skillsai/commit/6acaba6d6595a7cc7d58e6b8c477e9f72a7c2794))
+
+### Bug Fixes
+
+* lint issue fixed ([e20cc44](https://github.com/iblai/skillsai/commit/e20cc449ee8020ed15a3a8a326e4531ec388cd44))
+
+### Chores
+
+* iblai-js version bump & pnpm lock update ([396200a](https://github.com/iblai/skillsai/commit/396200abd055a468c6042a705e9618febeec6607))
+
 ## [0.30.0](https://github.com/iblai/skillsai/compare/skills-v0.29.0...skills-v0.30.0) (2026-05-18)
 
 ### Features
