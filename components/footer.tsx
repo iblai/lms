@@ -84,7 +84,9 @@ export function Footer() {
             </Link>
           ))}
         </div>
-        {platformName ? (
+        {config.settings.staticCopyrightEnabled() ? (
+          config.settings.copyright() && <div>{config.settings.copyright()}</div>
+        ) : platformName ? (
           <div>© {platformName}</div>
         ) : (
           config.settings.copyright() && <div>{config.settings.copyright()}</div>

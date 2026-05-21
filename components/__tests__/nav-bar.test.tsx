@@ -23,6 +23,22 @@ vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
   isRecommendedTabHidden: vi.fn(() => false),
+  parseMarkdownLinks: vi.fn(() => []),
+}));
+
+vi.mock('@/lib/config', () => ({
+  config: {
+    settings: {
+      hideDiscoverTab: vi.fn(() => false),
+      aiAnalyticsHeaderMenuEnabled: vi.fn(() => true),
+      studioHeaderMenuEnabled: vi.fn(() => true),
+      additionalLeftHeaderMenuItems: vi.fn(() => ''),
+      additionalRightHeaderMenuItems: vi.fn(() => ''),
+    },
+    urls: {
+      studioUrl: vi.fn(() => 'https://studio.example.com'),
+    },
+  },
 }));
 
 vi.mock('@/services/core', () => ({
