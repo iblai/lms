@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.0](https://github.com/iblai/skillsai/compare/skills-v0.31.0...skills-v0.32.0) (2026-05-22)
+
+### Bug Fixes
+
+* .env.von added to .gitignore ([0447115](https://github.com/iblai/skillsai/commit/0447115ecf3a3a9fd4c2f7350fb38e9a5a085914))
+* vont requirement env flags shouldn't conflict with existing envs ([734737e](https://github.com/iblai/skillsai/commit/734737e8804a862d4943d61ff0bb652ad6e4778e))
+
 ## [0.31.0](https://github.com/iblai/skillsai/compare/skills-v0.30.0...skills-v0.31.0) (2026-05-21)
 
 ### Features
