@@ -81,9 +81,9 @@ export const config = {
     additionalRightHeaderMenuItems: () =>
       getEnv('NEXT_PUBLIC_ADDITIONAL_RIGHT_HEADER_MENU_ITEMS', ''),
     aiAnalyticsHeaderMenuEnabled: () =>
-      getEnv('NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU', 'true') === 'true',
+      getEnv('NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU', 'true') !== 'false',
     studioHeaderMenuEnabled: () =>
-      getEnv('NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU', 'true') === 'true',
+      getEnv('NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU', 'true') !== 'false',
     staticCopyrightEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT', 'false') === 'true',
   },
 };
