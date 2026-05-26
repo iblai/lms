@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.33.0](https://github.com/iblai/skillsai/compare/skills-v0.32.0...skills-v0.33.0) (2026-05-26)
+
+### Features
+
+* **ci:** add update-gate job to pr-gate workflow ([502742b](https://github.com/iblai/skillsai/commit/502742be92d1394d9283c104baa2519b9998376d))
+
 ## [0.32.0](https://github.com/iblai/skillsai/compare/skills-v0.31.0...skills-v0.32.0) (2026-05-22)
 
 ### Bug Fixes
