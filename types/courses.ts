@@ -88,6 +88,7 @@ export interface CourseEdxData {
   mentor_uuid?: string;
   agent_content_mode?: boolean | null;
   course_content_mode?: boolean | null;
+  agent_autoplay?: boolean | null;
 }
 
 export interface Course {
