@@ -121,7 +121,7 @@ export default function CourseContentLayout({
     window.dispatchEvent(new CustomEvent('mentor:autoplay-changed', { detail: { enabled } }));
   };
 
-  const autoplayToggleVisible = true; // course?.agent_autoplay === true;
+  const autoplayToggleVisible = course?.agent_autoplay === true;
 
   const { data: courseBlockDetails } = useGetCourseBlockDetailsQuery(
     { blockId: currentUnitID || '', username: getUserName() },
