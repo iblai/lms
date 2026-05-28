@@ -1145,10 +1145,58 @@ describe('CourseContentLayout', () => {
   });
 
   describe('agent autoplay toggle', () => {
-    // NOTE: layout.tsx temporarily hard-codes `autoplayToggleVisible = true`, so
-    // the toggle currently renders regardless of `course.agent_autoplay`. Once
-    // the proper gate is restored, hide-when-false / hide-when-null specs can
-    // be added back here.
+    const renderWithCourse = (course: any) => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course,
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      return render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+    };
+
+    it('hides the autoplay toggle when course.agent_autoplay is false', () => {
+      renderWithCourse({ agent_autoplay: false });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when course.agent_autoplay is null', () => {
+      renderWithCourse({ agent_autoplay: null });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when course.agent_autoplay is missing', () => {
+      renderWithCourse({});
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when course is null (still loading)', () => {
+      renderWithCourse(null);
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle for truthy-but-not-true values (e.g. 1)', () => {
+      renderWithCourse({ agent_autoplay: 1 });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
 
     it('shows the autoplay toggle (defaults to off, play icon visible)', () => {
       vi.mocked(useCourseDetail).mockReturnValue({
