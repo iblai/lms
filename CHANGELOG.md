@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.34.0](https://github.com/iblai/skillsai/compare/skills-v0.33.0...skills-v0.34.0) (2026-05-28)
+
+### Features
+
+* agent autoplay feature ([23480af](https://github.com/iblai/skillsai/commit/23480afaeaf9e7818d0928caf46a453a53416b77))
+
 ## [0.33.0](https://github.com/iblai/skillsai/compare/skills-v0.32.0...skills-v0.33.0) (2026-05-26)
 
 ### Features
