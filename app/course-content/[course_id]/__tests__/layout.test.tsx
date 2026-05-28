@@ -175,11 +175,16 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
 }));
 
 // Mock web-utils — layout dispatches setAdvancedDisplayMonetizationCheckoutModal
+// and reads the tenant `enable_course_voice_autoplay` flag via useTenantMetadata.
+const mockTenantMetadata = vi.hoisted(() => ({
+  current: { enable_course_voice_autoplay: true } as Record<string, unknown>,
+}));
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   setAdvancedDisplayMonetizationCheckoutModal: (payload: unknown) => ({
     type: 'setAdvancedDisplayMonetizationCheckoutModal',
     payload,
   }),
+  useTenantMetadata: vi.fn(() => ({ metadata: mockTenantMetadata.current })),
 }));
 
 // Mock react-redux — layout calls useDispatch + useSelector(selectMentorSpinnerHidden)
@@ -226,6 +231,7 @@ describe('CourseContentLayout', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -1196,6 +1202,33 @@ describe('CourseContentLayout', () => {
       renderWithCourse({ agent_autoplay: 1 });
       expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
       expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when tenant enable_course_voice_autoplay is false (course flag on)', () => {
+      mockTenantMetadata.current = { enable_course_voice_autoplay: false };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when tenant enable_course_voice_autoplay is missing', () => {
+      mockTenantMetadata.current = {};
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle for tenant truthy-but-not-true values (e.g. "true")', () => {
+      mockTenantMetadata.current = { enable_course_voice_autoplay: 'true' };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('shows the autoplay toggle only when BOTH course.agent_autoplay AND tenant flag are true', () => {
+      mockTenantMetadata.current = { enable_course_voice_autoplay: true };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.getByTestId('agent-autoplay-toggle')).toBeInTheDocument();
     });
 
     it('shows the autoplay toggle (defaults to off, play icon visible)', () => {
