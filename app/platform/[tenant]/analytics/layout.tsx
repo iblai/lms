@@ -23,7 +23,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
   const [fetchGroups, { data: groupsData, isLoading: isLoadingGroups }] =
     useLazyPlatformUserGroupsQuery();
 
-  const basePath = `/${tenant}/analytics`;
+  const basePath = `/platform/${tenant}/analytics`;
 
   // Fetch groups on mount
   useEffect(() => {

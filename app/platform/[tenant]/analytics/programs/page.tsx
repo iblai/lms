@@ -5,5 +5,11 @@ import { AnalyticsPrograms } from '@iblai/iblai-js/web-containers';
 
 export default function ProgramsPage() {
   const tenant = useTenantParam();
-  return <AnalyticsPrograms tenantKey={tenant} mentorId={''} basePath={`/${tenant}/analytics`} />;
+  return (
+    <AnalyticsPrograms
+      tenantKey={tenant}
+      mentorId={''}
+      basePath={`/platform/${tenant}/analytics`}
+    />
+  );
 }

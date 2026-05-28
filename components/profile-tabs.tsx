@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 export function ProfileTabs() {
   const pathname = usePathname();
   const tenant = useTenantParam();
-  const baseProfilePath = `/${tenant}/profile`;
+  const baseProfilePath = `/platform/${tenant}/profile`;
 
   const tabs = [
     { name: 'Activity', href: `${baseProfilePath}` },

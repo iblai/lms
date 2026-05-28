@@ -23,29 +23,29 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   const navigationItems = [
     {
       name: 'Home',
-      href: `/${tenant}/home`,
+      href: `/platform/${tenant}/home`,
       icon: Home,
     },
     {
       name: 'Profile',
-      href: `/${tenant}/profile`,
+      href: `/platform/${tenant}/profile`,
       icon: User,
     },
     {
       name: 'Recommended',
-      href: `/${tenant}/recommended`,
+      href: `/platform/${tenant}/recommended`,
       icon: BookOpen,
     },
     {
       name: 'Discover',
-      href: `/${tenant}/discover`,
+      href: `/platform/${tenant}/discover`,
       icon: Search,
     },
     ...(((departmentMemberCheck?.is_platform_admin ||
       departmentMemberCheck?.is_department_admin) && [
       {
         name: 'AI Analytics',
-        href: `/${tenant}/analytics`,
+        href: `/platform/${tenant}/analytics`,
         icon: BarChart3,
       },
     ]) ||

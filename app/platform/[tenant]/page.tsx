@@ -40,11 +40,11 @@ export default function Home() {
 
     // On metadata error, redirect to home
     if (isErrorMetadata) {
-      redirect(`/${tenant}/home`);
+      redirect(`/platform/${tenant}/home`);
     }
 
     if (!startPageEnabled) {
-      redirect(`/${tenant}/home`);
+      redirect(`/platform/${tenant}/home`);
     }
 
     if (!isLoadingReportedSkills) {
@@ -52,9 +52,9 @@ export default function Home() {
         isErrorGetReportedSkills &&
         (errorGetReportedSkills as { status: number })?.status === 400
       ) {
-        redirect(`/${tenant}/start`);
+        redirect(`/platform/${tenant}/start`);
       } else {
-        redirect(`/${tenant}/home`);
+        redirect(`/platform/${tenant}/home`);
       }
     }
   }, [

@@ -31,7 +31,7 @@ export function SuggestedCourses() {
             Suggested Courses
           </h3>
           <Link
-            href={`/${tenant}/recommended`}
+            href={`/platform/${tenant}/recommended`}
             className="flex items-center gap-1 rounded-md px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 sm:text-sm"
           >
             See More

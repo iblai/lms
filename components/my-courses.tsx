@@ -28,7 +28,7 @@ export function MyCourses() {
             My Courses
           </h3>
           <Link
-            href={`/${tenant}/profile/courses`}
+            href={`/platform/${tenant}/profile/courses`}
             className="flex items-center gap-1 rounded-md px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 sm:text-sm"
           >
             See More

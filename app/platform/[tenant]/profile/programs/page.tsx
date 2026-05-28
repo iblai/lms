@@ -124,7 +124,7 @@ export default function ProgramsPage() {
               <div
                 key={index}
                 className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-                onClick={() => router.push(`/${tenant}/programs/${program.program_id}`)}
+                onClick={() => router.push(`/platform/${tenant}/programs/${program.program_id}`)}
                 data-testid={'program-card'}
               >
                 <div className="relative h-32 w-full overflow-hidden">

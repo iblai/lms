@@ -11,7 +11,7 @@ export default function RootRedirect() {
   useEffect(() => {
     const tenant = getTenant();
     if (tenant) {
-      router.replace(`/${tenant}`);
+      router.replace(`/platform/${tenant}`);
     } else {
       redirectToAuthSpa();
     }

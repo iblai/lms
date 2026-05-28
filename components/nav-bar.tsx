@@ -42,7 +42,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
 
   const handleViewNotifications = useCallback(
     (notificationId?: string) => {
-      router.push(`/${tenant}/notifications/${notificationId ?? ''}`);
+      router.push(`/platform/${tenant}/notifications/${notificationId ?? ''}`);
     },
     [router],
   );
@@ -53,7 +53,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
       url.searchParams.set('q', encodeURIComponent(searchQuery));
       router.push(url.pathname + url.search);
     } else {
-      router.push(`/${tenant}/discover?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/platform/${tenant}/discover?q=${encodeURIComponent(searchQuery)}`);
     }
   };
   const shouldShowNavLinks = () => {
@@ -82,7 +82,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           {shouldShowNavLinks() && (
             <nav className="ml-8 hidden h-full items-center space-x-6 md:flex">
               <Link
-                href={`/${tenant}/home`}
+                href={`/platform/${tenant}/home`}
                 className={`text-sm font-medium ${
                   activePage === 'home'
                     ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -92,7 +92,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 Home
               </Link>
               <Link
-                href={`/${tenant}/profile`}
+                href={`/platform/${tenant}/profile`}
                 className={`text-sm font-medium ${
                   activePage === 'profile'
                     ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -103,7 +103,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               </Link>
               {!isRecommendedTabHidden() && (
                 <Link
-                  href={`/${tenant}/recommended`}
+                  href={`/platform/${tenant}/recommended`}
                   className={`text-sm font-medium ${
                     activePage === 'recommended'
                       ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -114,7 +114,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 </Link>
               )}
               <Link
-                href={`/${tenant}/discover`}
+                href={`/platform/${tenant}/discover`}
                 className={`text-sm font-medium ${
                   activePage === 'discover' && !activePage.startsWith('course')
                     ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -212,7 +212,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               {({ hasPermission }) =>
                 hasPermission && (
                   <Link
-                    href={`/${tenant}/analytics`}
+                    href={`/platform/${tenant}/analytics`}
                     className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
                   >
                     AI Analytics

@@ -11,7 +11,7 @@ export default function ProgramDetailPage() {
   const programId = params.programId as string;
 
   const handleBack = () => {
-    router.push(`/${tenant}/analytics/programs`);
+    router.push(`/platform/${tenant}/analytics/programs`);
   };
 
   return (

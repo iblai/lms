@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { getTenant } from '@/utils/helpers';
 
 /**
- * Returns the tenant from the URL params for routes under `/[tenant]/`.
+ * Returns the tenant from the URL params for routes under `/platform/[tenant]/`.
  * Falls back to the stored tenant when the param is not present (e.g.
  * components rendered outside the `[tenant]` segment).
  */

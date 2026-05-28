@@ -17,7 +17,7 @@ export const LatestSkillsBox = ({ skills, onClose }: { skills: Skill[]; onClose?
           className="group relative rounded-sm p-1 text-[var(--text-light)] hover:bg-[var(--sidebar-hover-bg)]"
           onClick={() => {
             if (onClose) onClose();
-            router.push(`/${tenant}/profile/skills`);
+            router.push(`/platform/${tenant}/profile/skills`);
           }}
           aria-label="Add Skill"
         >

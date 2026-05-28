@@ -17,7 +17,7 @@ export default function InstructorTab() {
   useEffect(() => {
     if (isSuccess) {
       if (!departmentMemberCheck?.is_platform_admin) {
-        redirect(`/${tenant}`);
+        redirect(`/platform/${tenant}`);
       } else {
         setActiveTab('instructor');
       }

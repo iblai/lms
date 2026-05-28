@@ -11,7 +11,7 @@ export default function CourseDetailPage() {
   const courseId = params.courseId as string;
 
   const handleBack = () => {
-    router.push(`/${tenant}/analytics/courses`);
+    router.push(`/platform/${tenant}/analytics/courses`);
   };
 
   return (

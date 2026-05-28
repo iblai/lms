@@ -21,6 +21,7 @@ import {
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
+import { isLoggedIn } from '@iblai/web-utils';
 interface PathwayDetailModalProps {
   pathway: PathwayEnrollmentPlus;
   onClose: () => void;
@@ -36,7 +37,8 @@ export function PathwayDetailModal({
   const [paths, setPaths] = useState<any[]>([]);
   const router = useRouter();
   const tenant = useTenantParam();
-  const { handleSearch } = usePersonnalizedCatalog();
+  const userLoggedIn = isLoggedIn();
+  const { handleSearch } = usePersonnalizedCatalog({ isLoggedIn: userLoggedIn });
   const [getUserEnrolledPathways, { isLoading: isEnrollmentLoading }] =
     useLazyGetUserEnrolledPathwaysQuery();
   const [
@@ -48,7 +50,7 @@ export function PathwayDetailModal({
   const [getPathwayList] = useLazyGetPathwayListQuery();
   const handleCourseClick = (course: any) => {
     if (course?.item_type === 'course') {
-      router.push(`/${tenant}/courses/${course.course_id}`);
+      router.push(`/platform/${tenant}/courses/${course.course_id}`);
     } else {
       window.open(course?.url, '_blank');
     }

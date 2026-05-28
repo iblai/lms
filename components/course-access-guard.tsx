@@ -67,12 +67,12 @@ export function CourseAccessGuard({
       if (matchingTenant) {
         dispatch(updateRequestedTenant(matchingTenant.key));
       } else {
-        router.push(`/${tenant}/error/403`);
+        router.push(`/platform/${tenant}/error/403`);
       }
     } else if (isTabDisabled) {
-      router.push(`/${tenant}/error/403`);
+      router.push(`/platform/${tenant}/error/403`);
     } else if (isNotFound) {
-      router.push(`/${tenant}/error/404`);
+      router.push(`/platform/${tenant}/error/404`);
     }
   }, [
     isUnauthorizedTenant,

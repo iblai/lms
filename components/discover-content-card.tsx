@@ -17,10 +17,10 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
         setSelectedPathway(content);
         break;
       case 'program':
-        router.push(`/${tenant}/programs/${content.id}`);
+        router.push(`/platform/${tenant}/programs/${content.id}`);
         break;
       default:
-        router.push(`/${tenant}/courses/${content.id}`);
+        router.push(`/platform/${tenant}/courses/${content.id}`);
         break;
     }
   };

@@ -31,7 +31,7 @@ export function MonetizationWrapper() {
 
   const handleModalClose = () => {
     if (onClosePayload === MONETIZATION_CLOSE_PAYLOAD.redirect_402) {
-      router.push(`/${platformKey}/error/402`);
+      router.push(`/platform/${platformKey}/error/402`);
     }
     dispatch(setDisplayMonetizationCheckoutModal(false));
   };

@@ -7,7 +7,7 @@ export default function RecommendedLayout({ children }: { children: React.ReactN
   const router = useRouter();
   const tenant = useTenantParam();
   if (isRecommendedTabHidden()) {
-    router.push(`/${tenant}/home`);
+    router.push(`/platform/${tenant}/home`);
     return;
   }
   return <>{children}</>;

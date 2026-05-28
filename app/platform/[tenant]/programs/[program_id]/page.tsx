@@ -363,7 +363,7 @@ export default function ProgramDetailPage() {
   };
 
   const handleCourseClick = (courseId: string) => {
-    router.push(`/${tenant}/courses/${courseId}`);
+    router.push(`/platform/${tenant}/courses/${courseId}`);
   };
 
   const handleNotLoggedInAction = () => {
@@ -544,12 +544,12 @@ export default function ProgramDetailPage() {
           setLoadingState('success');
         } else {
           setLoadingState('failure');
-          router.push(`/${tenant}/error/403`);
+          router.push(`/platform/${tenant}/error/403`);
         }
       } catch {
         if (cancelled) return;
         setLoadingState('failure');
-        router.push(`/${tenant}/error/403`);
+        router.push(`/platform/${tenant}/error/403`);
       }
     };
     fetchProgram();

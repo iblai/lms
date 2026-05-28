@@ -34,7 +34,7 @@ export function ProfileDropdown({ onClose, onAccountClick }: ProfileDropdownProp
       className="absolute top-full right-0 z-50 mt-2 w-48 rounded-sm border border-gray-200 bg-white py-2 shadow-lg"
     >
       <Link
-        href={`/${tenant}/profile`}
+        href={`/platform/${tenant}/profile`}
         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
         onClick={onClose}
       >

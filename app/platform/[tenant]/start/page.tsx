@@ -21,7 +21,7 @@ export default function StartOnboarding() {
     config.settings.startPageEnabled() && metadata?.enable_start_screen_display === true;
 
   if (!startPageEnabled || isErrorMetadata) {
-    redirect(`/${tenant}/home`);
+    redirect(`/platform/${tenant}/home`);
   }
 
   if (isLoadingMetadata) {

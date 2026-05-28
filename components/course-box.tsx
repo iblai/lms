@@ -14,7 +14,7 @@ export const CourseBox = ({ course }: { course: Course }) => {
   };
   return (
     <Link
-      href={`/${tenant}/courses/${course.course_id}`}
+      href={`/platform/${tenant}/courses/${course.course_id}`}
       key={course.course_id}
       className="flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-transform duration-500 ease-in-out hover:scale-105"
     >

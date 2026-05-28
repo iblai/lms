@@ -15,7 +15,7 @@ export default function GlobalError({
   useEffect(() => {
     console.error('Unhandled global error:', error);
     const tenant = getTenant();
-    router.replace(tenant ? `/${tenant}/error/500` : '/');
+    router.replace(tenant ? `/platform/${tenant}/error/500` : '/');
   }, [error, router]);
 
   return (

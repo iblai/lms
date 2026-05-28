@@ -15,7 +15,7 @@ export default function Error({
   useEffect(() => {
     console.error('Unhandled client error:', error);
     const tenant = getTenant();
-    router.replace(tenant ? `/${tenant}/error/500` : '/');
+    router.replace(tenant ? `/platform/${tenant}/error/500` : '/');
   }, [error, router]);
 
   return null;

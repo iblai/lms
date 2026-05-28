@@ -17,7 +17,7 @@ export function CredentialsListBox({ credentials }: CredentialsListBoxProps) {
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-medium text-[var(--sidebar-text)] md:text-base">Credentials</h3>
         <Link
-          href={`/${tenant}/discover`}
+          href={`/platform/${tenant}/discover`}
           className="group relative rounded-sm p-1 text-[var(--text-light)] hover:bg-[var(--sidebar-hover-bg)]"
           aria-label="Add Credential"
         >

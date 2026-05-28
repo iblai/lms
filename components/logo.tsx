@@ -6,6 +6,7 @@ import { config } from '@/lib/config';
 import { useEffect, useState } from 'react';
 import { getTenant } from '@/utils/helpers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export function Logo({
   width = 120,
@@ -15,15 +16,16 @@ export function Logo({
   width?: number;
   height?: number;
 }) {
+  const tenant = useTenantParam();
   const { metadata } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   const loadLogo = async () => {
     setLogoUrl(
       metadata?.auth_web_skillsai?.display_logo ||
-        `${config.urls.dm()}/api/core/orgs/${getTenant()}/logo/`,
+        `${config.urls.dm()}/api/core/orgs/${tenant}/logo/`,
     );
   };
 
