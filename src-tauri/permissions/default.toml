@@ -1,0 +1,146 @@
+# Default permissions for custom app commands
+# These commands are defined in lib.rs and need explicit permissions
+
+[[permission]]
+identifier = "allow-open-external-url"
+description = "Enables opening URLs in ASWebAuthenticationSession for OAuth flows"
+[permission.commands]
+allow = ["open_external_url"]
+
+[[permission]]
+identifier = "allow-navigate-to"
+description = "Enables navigating to a URL in the webview"
+[permission.commands]
+allow = ["navigate_to"]
+
+[[permission]]
+identifier = "allow-navigate-back"
+description = "Enables navigating back in the webview"
+[permission.commands]
+allow = ["navigate_back"]
+
+[[permission]]
+identifier = "allow-get-os-type"
+description = "Enables getting the OS type"
+[permission.commands]
+allow = ["get_os_type"]
+
+[[permission]]
+identifier = "allow-install-ollama"
+description = "Enables installing Ollama"
+[permission.commands]
+allow = ["install_ollama"]
+
+[[permission]]
+identifier = "allow-check-ollama-status"
+description = "Enables checking Ollama status"
+[permission.commands]
+allow = ["check_ollama_status"]
+
+[[permission]]
+identifier = "allow-check-disk-space-for-model"
+description = "Enables checking disk space for model downloads"
+[permission.commands]
+allow = ["check_disk_space_for_model"]
+
+[[permission]]
+identifier = "allow-download-phi3-model"
+description = "Enables downloading the phi3 model"
+[permission.commands]
+allow = ["download_phi3_model"]
+
+[[permission]]
+identifier = "allow-cancel-model-download"
+description = "Enables canceling model downloads"
+[permission.commands]
+allow = ["cancel_model_download"]
+
+[[permission]]
+identifier = "allow-check-network-status"
+description = "Enables checking network status"
+[permission.commands]
+allow = ["check_network_status"]
+
+[[permission]]
+identifier = "allow-set-cache-online-status"
+description = "Enables setting cache online status"
+[permission.commands]
+allow = ["set_cache_online_status"]
+
+[[permission]]
+identifier = "allow-clear-web-cache"
+description = "Enables clearing the web cache"
+[permission.commands]
+allow = ["clear_web_cache"]
+
+[[permission]]
+identifier = "allow-get-web-cache-stats"
+description = "Enables getting web cache statistics"
+[permission.commands]
+allow = ["get_web_cache_stats"]
+
+[[permission]]
+identifier = "allow-get-offline-server-url"
+description = "Enables getting the offline server URL"
+[permission.commands]
+allow = ["get_offline_server_url"]
+
+[[permission]]
+identifier = "allow-is-offline-server-ready"
+description = "Enables checking if the offline server is ready"
+[permission.commands]
+allow = ["is_offline_server_ready"]
+
+[[permission]]
+identifier = "allow-precache-app"
+description = "Enables pre-caching the app"
+[permission.commands]
+allow = ["precache_app"]
+
+[[permission]]
+identifier = "allow-save-last-skills-route"
+description = "Enables saving the last skills route"
+[permission.commands]
+allow = ["save_last_skills_route"]
+
+[[permission]]
+identifier = "allow-get-last-skills-route"
+description = "Enables getting the last skills route"
+[permission.commands]
+allow = ["get_last_skills_route"]
+
+[[permission]]
+identifier = "allow-save-offline-context"
+description = "Enables saving offline context"
+[permission.commands]
+allow = ["save_offline_context"]
+
+[[permission]]
+identifier = "allow-get-offline-context"
+description = "Enables getting offline context"
+[permission.commands]
+allow = ["get_offline_context"]
+
+[[permission]]
+identifier = "allow-ollama-chat"
+description = "Enables Ollama chat"
+[permission.commands]
+allow = ["ollama_chat"]
+
+[[permission]]
+identifier = "allow-ollama-chat-stream"
+description = "Enables Ollama streaming chat"
+[permission.commands]
+allow = ["ollama_chat_stream"]
+
+[[permission]]
+identifier = "allow-cache-api-response"
+description = "Enables caching API responses"
+[permission.commands]
+allow = ["cache_api_response"]
+
+[[permission]]
+identifier = "allow-get-cached-api-response"
+description = "Enables getting cached API responses"
+[permission.commands]
+allow = ["get_cached_api_response"]

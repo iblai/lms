@@ -19,6 +19,17 @@ export function isTauriApp(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 }
 
+/**
+ * Check if we're being served from the offline server (localhost:3456)
+ * This is the most reliable way to detect offline mode, as it works even before
+ * Tauri initialization scripts run or localStorage is restored
+ */
+export function isOfflineServerOrigin(): boolean {
+  if (typeof window === 'undefined') return false;
+  const origin = window.location.origin;
+  return origin === 'http://127.0.0.1:3456' || origin === 'http://localhost:3456';
+}
+
 export interface CustomQueryArgs extends Omit<FetchArgs, 'url'> {
   url: string;
   service: SERVICES;

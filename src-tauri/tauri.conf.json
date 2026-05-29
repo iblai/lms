@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "IBL Skills",
+  "productName": "SkillsAI",
   "version": "1.0.0",
   "identifier": "ai.ibl.skills",
   "build": {
@@ -10,6 +10,7 @@
     "frontendDist": "./offline-shell"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [],
     "security": {
       "csp": null
@@ -38,7 +39,7 @@
       "exceptionDomain": null
     },
     "iOS": {
-      "developmentTeam": null
+      "developmentTeam": "L4FWRM8W5Z"
     }
   },
   "plugins": {
@@ -46,14 +47,9 @@
       "open": true
     },
     "deep-link": {
-      "mobile": [
-        {
-          "host": "iblai-skills"
-        },
-        {
-          "host": "ai.ibl.skills"
-        }
-      ]
+      "desktop": {
+        "schemes": ["iblai-skills", "ai.ibl.skills"]
+      }
     }
   }
 }

@@ -20,23 +20,26 @@ use std::sync::Arc;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use std::sync::Mutex;
 use tauri::{command, AppHandle, Emitter, Manager};
-#[cfg(any(target_os = "ios", target_os = "android"))]
+#[cfg(any(target_os = "ios", target_os = "android", target_os = "macos"))]
 use tauri::Url;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use tauri_plugin_deep_link::DeepLinkExt;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use tauri::Listener;
-#[cfg(not(target_os = "ios"))]
+#[cfg(not(any(target_os = "ios", target_os = "macos")))]
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::RwLock;
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 use web_cache::WebCache;
-#[cfg(target_os = "ios")]
+#[cfg(any(target_os = "ios", target_os = "macos"))]
 use {
+    block::ConcreteBlock,
     objc::{class, msg_send, sel, sel_impl},
     objc::runtime::{Class, Object, BOOL, YES},
-    std::ffi::CString,
+    objc::declare::ClassDecl,
+    std::ffi::{CStr, CString},
     std::ptr,
+    std::sync::Once,
     tokio::sync::oneshot,
 };
 
@@ -63,7 +66,7 @@ fn get_app_url() -> String {
 
     // Mobile platforms always use production URL (localhost doesn't work on device)
     #[cfg(any(target_os = "ios", target_os = "android"))]
-    return "https://skills.iblai.app".to_string();
+    return "https://skillsai.iblai.app".to_string();
 
     // Desktop: localhost for debug, production URL for release
     #[cfg(not(any(target_os = "ios", target_os = "android")))]
@@ -91,17 +94,26 @@ fn get_pending_deep_link() -> &'static Mutex<Option<String>> {
 }
 
 const OAUTH_URL_PATTERNS: &[&str] = &[
+    // Google OAuth
     "accounts.google.com",
     "google.com/o/oauth",
     "googleapis.com/oauth",
     "google-oauth2",
     "/auth/login/google",
     "/login/google",
+    // Apple OAuth
+    "appleid.apple.com",
+    "/auth/login/apple",
+    "/login/apple",
 ];
 
 fn is_oauth_url(url: &str) -> bool {
     OAUTH_URL_PATTERNS.iter().any(|pattern| url.contains(pattern))
 }
+
+#[cfg(any(target_os = "ios", target_os = "macos"))]
+#[link(name = "AuthenticationServices", kind = "framework")]
+extern "C" {}
 
 #[cfg(target_os = "ios")]
 #[link(name = "SafariServices", kind = "framework")]
@@ -110,6 +122,8 @@ extern "C" {}
 #[cfg(target_os = "ios")]
 #[allow(unexpected_cfgs)]
 fn open_url_via_application(ns_url: *mut Object) -> Result<(), String> {
+    println!("[ibl.ai] open_url_via_application called (FALLBACK - will open in Safari app)");
+
     unsafe {
         if ns_url.is_null() {
             return Err("NSURL was null".to_string());
@@ -139,9 +153,56 @@ fn open_url_via_application(ns_url: *mut Object) -> Result<(), String> {
 
 #[cfg(target_os = "ios")]
 #[allow(unexpected_cfgs)]
-fn open_in_app_browser(url: &str) -> Result<(), String> {
+unsafe fn get_presentation_window() -> *mut Object {
+    let app: *mut Object = msg_send![class!(UIApplication), sharedApplication];
+    let windows: *mut Object = msg_send![app, windows];
+    let window_count: usize = msg_send![windows, count];
+
+    if window_count > 0 {
+        let window: *mut Object = msg_send![windows, objectAtIndex: 0usize];
+        println!("[ibl.ai] Got window for presentation (count: {})", window_count);
+        window
+    } else {
+        println!("[ibl.ai] No windows available");
+        ptr::null_mut()
+    }
+}
+
+#[cfg(target_os = "ios")]
+#[allow(unexpected_cfgs)]
+unsafe fn get_context_provider_class() -> &'static Class {
+    static REGISTER_CLASS: Once = Once::new();
+    static mut CONTEXT_PROVIDER_CLASS: Option<&'static Class> = None;
+
+    REGISTER_CLASS.call_once(|| {
+        let superclass = class!(NSObject);
+        let mut decl = ClassDecl::new("IBLAuthContextProvider", superclass).unwrap();
+
+        extern "C" fn presentation_anchor_for_session(_: &Object, _: objc::runtime::Sel, _session: *mut Object) -> *mut Object {
+            unsafe { get_presentation_window() }
+        }
+
+        unsafe {
+            decl.add_method(
+                sel!(presentationAnchorForWebAuthenticationSession:),
+                presentation_anchor_for_session as extern "C" fn(&Object, objc::runtime::Sel, *mut Object) -> *mut Object,
+            );
+        }
+
+        let class = decl.register();
+        CONTEXT_PROVIDER_CLASS = Some(class);
+    });
+
+    unsafe { CONTEXT_PROVIDER_CLASS.unwrap() }
+}
+
+#[cfg(target_os = "ios")]
+#[allow(unexpected_cfgs)]
+fn open_with_auth_session(url: &str, app_handle: &AppHandle) -> Result<(), String> {
+    println!("[ibl.ai] open_with_auth_session called with URL: {}", url);
+
     unsafe {
-        let c_url = CString::new(url).map_err(|_| "Invalid URL".to_string())?;
+        let c_url = CString::new(url).map_err(|_| "Failed to create CString from URL".to_string())?;
         let ns_string: *mut Object =
             msg_send![class!(NSString), stringWithUTF8String: c_url.as_ptr()];
         if ns_string.is_null() {
@@ -152,86 +213,354 @@ fn open_in_app_browser(url: &str) -> Result<(), String> {
         if ns_url.is_null() {
             return Err("Failed to create NSURL".to_string());
         }
+        println!("[ibl.ai] NSURL created successfully");
 
-        let safari_class = match Class::get("SFSafariViewController") {
-            Some(class) => class,
-            None => return open_url_via_application(ns_url),
-        };
-        let safari_vc: *mut Object = msg_send![safari_class, alloc];
-        let safari_vc: *mut Object = msg_send![safari_vc, initWithURL: ns_url];
-        if safari_vc.is_null() {
-            return open_url_via_application(ns_url);
-        }
+        let scheme_c = CString::new("iblai-skills").unwrap();
+        let scheme_ns: *mut Object = msg_send![class!(NSString), stringWithUTF8String: scheme_c.as_ptr()];
 
-        let app: *mut Object = msg_send![class!(UIApplication), sharedApplication];
-        if app.is_null() {
-            return Err("Failed to access UIApplication".to_string());
-        }
-
-        let windows: *mut Object = msg_send![app, windows];
-        let window_count: usize = if windows.is_null() {
-            0
-        } else {
-            msg_send![windows, count]
+        let auth_session_class = match Class::get("ASWebAuthenticationSession") {
+            Some(class) => {
+                println!("[ibl.ai] ASWebAuthenticationSession class found");
+                class
+            },
+            None => {
+                println!("[ibl.ai] ASWebAuthenticationSession class NOT found, falling back to Safari app");
+                return open_url_via_application(ns_url);
+            }
         };
 
-        let mut target_window: *mut Object = ptr::null_mut();
-        for index in 0..window_count {
-            let window: *mut Object = msg_send![windows, objectAtIndex: index];
-            if window.is_null() {
-                continue;
+        let app_handle_clone = app_handle.clone();
+        let block = ConcreteBlock::new(move |callback_url: *mut Object, error: *mut Object| {
+            unsafe {
+                if !callback_url.is_null() {
+                    let url_string_ns: *mut Object = msg_send![callback_url, absoluteString];
+                    let url_c_str: *const i8 = msg_send![url_string_ns, UTF8String];
+                    if !url_c_str.is_null() {
+                        let url_str = CStr::from_ptr(url_c_str).to_string_lossy().to_string();
+                        println!("[ibl.ai] ASWebAuthenticationSession completed with callback URL: {}", url_str);
+                        handle_deep_link_url(&app_handle_clone, &url_str);
+                    }
+                } else if !error.is_null() {
+                    let description: *mut Object = msg_send![error, localizedDescription];
+                    let c_str: *const i8 = msg_send![description, UTF8String];
+                    if !c_str.is_null() {
+                        let error_str = CStr::from_ptr(c_str);
+                        println!("[ibl.ai] ASWebAuthenticationSession error: {:?}", error_str);
+                    }
+                }
             }
-            let is_key: BOOL = msg_send![window, isKeyWindow];
-            if is_key == YES {
-                target_window = window;
-                break;
-            }
-            if target_window.is_null() {
-                target_window = window;
-            }
-        }
+        });
+        let block = block.copy();
 
-        if target_window.is_null() {
-            return open_url_via_application(ns_url);
-        }
-
-        let mut presenter: *mut Object = msg_send![target_window, rootViewController];
-        if presenter.is_null() {
-            return open_url_via_application(ns_url);
-        }
-
-        loop {
-            let presented: *mut Object = msg_send![presenter, presentedViewController];
-            if presented.is_null() {
-                break;
-            }
-            presenter = presented;
-        }
-
-        let _: () = msg_send![
-            presenter,
-            presentViewController: safari_vc
-            animated: YES
-            completion: ptr::null::<Object>()
+        let session: *mut Object = msg_send![auth_session_class, alloc];
+        let session: *mut Object = msg_send![
+            session,
+            initWithURL: ns_url
+            callbackURLScheme: scheme_ns
+            completionHandler: &*block
         ];
+
+        if session.is_null() {
+            return Err("Failed to create ASWebAuthenticationSession".to_string());
+        }
+        println!("[ibl.ai] ASWebAuthenticationSession created successfully");
+
+        let responds: BOOL = msg_send![session, respondsToSelector: sel!(setPrefersEphemeralWebBrowserSession:)];
+        if responds == YES {
+            println!("[ibl.ai] Setting prefersEphemeralWebBrowserSession = YES");
+            let _: () = msg_send![session, setPrefersEphemeralWebBrowserSession: YES];
+        }
+
+        let provider_class = get_context_provider_class();
+        let provider: *mut Object = msg_send![provider_class, new];
+        if !provider.is_null() {
+            let responds_to_provider: BOOL = msg_send![session, respondsToSelector: sel!(setPresentationContextProvider:)];
+            if responds_to_provider == YES {
+                println!("[ibl.ai] Setting presentation context provider");
+                let _: () = msg_send![session, setPresentationContextProvider: provider];
+            }
+        }
+
+        let started: BOOL = msg_send![session, start];
+        if started == YES {
+            println!("[ibl.ai] ASWebAuthenticationSession started successfully");
+            Ok(())
+        } else {
+            Err("Failed to start ASWebAuthenticationSession".to_string())
+        }
+    }
+}
+
+// macOS-specific implementations for ASWebAuthenticationSession
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+unsafe fn get_presentation_window_macos() -> *mut Object {
+    let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+    let key_window: *mut Object = msg_send![app, keyWindow];
+
+    if !key_window.is_null() {
+        println!("[ibl.ai] Got key window for macOS presentation");
+        key_window
+    } else {
+        let main_window: *mut Object = msg_send![app, mainWindow];
+        if !main_window.is_null() {
+            println!("[ibl.ai] Got main window for macOS presentation");
+            main_window
+        } else {
+            let windows: *mut Object = msg_send![app, windows];
+            let window_count: usize = msg_send![windows, count];
+            if window_count > 0 {
+                let window: *mut Object = msg_send![windows, objectAtIndex: 0usize];
+                println!("[ibl.ai] Got first window for macOS presentation (count: {})", window_count);
+                window
+            } else {
+                println!("[ibl.ai] No windows available on macOS");
+                ptr::null_mut()
+            }
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+unsafe fn get_context_provider_class_macos() -> &'static Class {
+    static REGISTER_CLASS: Once = Once::new();
+    static mut CONTEXT_PROVIDER_CLASS: Option<&'static Class> = None;
+
+    REGISTER_CLASS.call_once(|| {
+        let superclass = class!(NSObject);
+        let mut decl = ClassDecl::new("IBLAuthContextProviderMac", superclass).unwrap();
+
+        extern "C" fn presentation_anchor_for_session(_: &Object, _: objc::runtime::Sel, _session: *mut Object) -> *mut Object {
+            unsafe { get_presentation_window_macos() }
+        }
+
+        unsafe {
+            decl.add_method(
+                sel!(presentationAnchorForWebAuthenticationSession:),
+                presentation_anchor_for_session as extern "C" fn(&Object, objc::runtime::Sel, *mut Object) -> *mut Object,
+            );
+        }
+
+        let class = decl.register();
+        CONTEXT_PROVIDER_CLASS = Some(class);
+    });
+
+    unsafe { CONTEXT_PROVIDER_CLASS.unwrap() }
+}
+
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+fn open_with_auth_session_macos(url: &str, app_handle: &AppHandle) -> Result<(), String> {
+    println!("[ibl.ai] open_with_auth_session_macos called with URL: {}", url);
+
+    unsafe {
+        let c_url = CString::new(url).map_err(|_| "Failed to create CString from URL".to_string())?;
+        let ns_string: *mut Object =
+            msg_send![class!(NSString), stringWithUTF8String: c_url.as_ptr()];
+        if ns_string.is_null() {
+            return Err("Failed to create NSString".to_string());
+        }
+
+        let ns_url: *mut Object = msg_send![class!(NSURL), URLWithString: ns_string];
+        if ns_url.is_null() {
+            return Err("Failed to create NSURL".to_string());
+        }
+        println!("[ibl.ai] NSURL created successfully");
+
+        let scheme_c = CString::new("iblai-skills").unwrap();
+        let scheme_ns: *mut Object = msg_send![class!(NSString), stringWithUTF8String: scheme_c.as_ptr()];
+
+        let auth_session_class = match Class::get("ASWebAuthenticationSession") {
+            Some(class) => {
+                println!("[ibl.ai] ASWebAuthenticationSession class found on macOS");
+                class
+            },
+            None => {
+                println!("[ibl.ai] ASWebAuthenticationSession class NOT found on macOS");
+                return Err("ASWebAuthenticationSession not available".to_string());
+            }
+        };
+
+        let app_handle_clone = app_handle.clone();
+        let block = ConcreteBlock::new(move |callback_url: *mut Object, error: *mut Object| {
+            unsafe {
+                if !callback_url.is_null() {
+                    let url_string_ns: *mut Object = msg_send![callback_url, absoluteString];
+                    let url_c_str: *const i8 = msg_send![url_string_ns, UTF8String];
+                    if !url_c_str.is_null() {
+                        let url_str = CStr::from_ptr(url_c_str).to_string_lossy().to_string();
+                        println!("[ibl.ai] macOS ASWebAuthenticationSession completed with callback URL: {}", url_str);
+                        handle_auth_session_callback_macos(&app_handle_clone, &url_str);
+                    }
+                } else if !error.is_null() {
+                    let description: *mut Object = msg_send![error, localizedDescription];
+                    let c_str: *const i8 = msg_send![description, UTF8String];
+                    if !c_str.is_null() {
+                        let error_str = CStr::from_ptr(c_str);
+                        println!("[ibl.ai] macOS ASWebAuthenticationSession error: {:?}", error_str);
+                    }
+                }
+            }
+        });
+        let block = block.copy();
+
+        let session: *mut Object = msg_send![auth_session_class, alloc];
+        let session: *mut Object = msg_send![
+            session,
+            initWithURL: ns_url
+            callbackURLScheme: scheme_ns
+            completionHandler: &*block
+        ];
+
+        if session.is_null() {
+            return Err("Failed to create ASWebAuthenticationSession on macOS".to_string());
+        }
+        println!("[ibl.ai] ASWebAuthenticationSession created successfully on macOS");
+
+        let responds: BOOL = msg_send![session, respondsToSelector: sel!(setPrefersEphemeralWebBrowserSession:)];
+        if responds == YES {
+            println!("[ibl.ai] Setting prefersEphemeralWebBrowserSession = YES on macOS");
+            let _: () = msg_send![session, setPrefersEphemeralWebBrowserSession: YES];
+        }
+
+        let provider_class = get_context_provider_class_macos();
+        let provider: *mut Object = msg_send![provider_class, new];
+        if !provider.is_null() {
+            let responds_to_provider: BOOL = msg_send![session, respondsToSelector: sel!(setPresentationContextProvider:)];
+            if responds_to_provider == YES {
+                println!("[ibl.ai] Setting macOS presentation context provider");
+                let _: () = msg_send![session, setPresentationContextProvider: provider];
+            }
+        }
+
+        let started: BOOL = msg_send![session, start];
+        if started == YES {
+            println!("[ibl.ai] macOS ASWebAuthenticationSession started successfully");
+            Ok(())
+        } else {
+            Err("Failed to start ASWebAuthenticationSession on macOS".to_string())
+        }
+    }
+}
+
+/// Handle ASWebAuthenticationSession callback URL on macOS
+#[cfg(target_os = "macos")]
+fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
+    println!("[ibl.ai] macOS auth session callback: {}", raw_url);
+
+    let parsed = match tauri::Url::parse(raw_url) {
+        Ok(url) => url,
+        Err(e) => {
+            println!("[ibl.ai] Failed to parse callback URL: {}", e);
+            return;
+        }
+    };
+
+    let scheme = parsed.scheme();
+    let host = parsed.host_str().unwrap_or("");
+    let path = parsed.path();
+    println!("[ibl.ai] Parsed callback - scheme: {}, host: {}, path: {}", scheme, host, path);
+
+    let is_custom_scheme = scheme == "iblai-skills" || scheme == "ai.ibl.skills";
+    if !is_custom_scheme {
+        println!("[ibl.ai] Not a custom scheme callback, ignoring");
+        return;
     }
 
-    Ok(())
+    let mut final_path = parsed.path().to_string();
+    if final_path.is_empty() || final_path == "/" {
+        if !host.is_empty() {
+            final_path = format!("/{}", host);
+        }
+    }
+
+    if !final_path.starts_with("/sso-login") && !final_path.starts_with("/mobile-sso-login") && !final_path.starts_with("/sso-login-complete") {
+        println!("[ibl.ai] Path '{}' not SSO-related, ignoring", final_path);
+        return;
+    }
+
+    // Normalize /sso-login to /sso-login-complete for all SSO callbacks
+    let final_path = if final_path.starts_with("/sso-login") && !final_path.starts_with("/sso-login-complete") {
+        let normalized = final_path.replacen("/sso-login", "/sso-login-complete", 1);
+        println!("[ibl.ai] Normalized path: {} -> {}", final_path, normalized);
+        normalized
+    } else {
+        final_path
+    };
+
+    // Extract query params from raw URL, fully decode them, and use JS URLSearchParams
+    let base_url = format!("{}{}", get_app_url(), final_path);
+    let raw_query = raw_url.find('?').map(|i| &raw_url[i + 1..]).unwrap_or("");
+
+    let mut params: Vec<(String, String)> = Vec::new();
+    for part in raw_query.split('&') {
+        if part.is_empty() { continue; }
+        let (key, value) = match part.find('=') {
+            Some(i) => (&part[..i], &part[i + 1..]),
+            None => (part, ""),
+        };
+        let mut decoded = value.to_string();
+        loop {
+            match urlencoding::decode(&decoded) {
+                Ok(d) if d != decoded => decoded = d.into_owned(),
+                _ => break,
+            }
+        }
+        let decoded_key = urlencoding::decode(key).unwrap_or_else(|_| key.into()).into_owned();
+        params.push((decoded_key, decoded));
+    }
+
+    println!("[ibl.ai] Target base URL: {}, params: {:?}", base_url, params.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>());
+
+    if let Some(window) = app_handle.get_webview_window("main") {
+        let js_base = serde_json::to_string(&base_url).unwrap_or_default();
+        let mut js_parts = vec![format!("var u = new URL({});", js_base)];
+        for (key, value) in &params {
+            let js_key = serde_json::to_string(key).unwrap_or_default();
+            let js_val = serde_json::to_string(value).unwrap_or_default();
+            js_parts.push(format!("u.searchParams.set({}, {});", js_key, js_val));
+        }
+        js_parts.push("window.location.href = u.toString();".to_string());
+        let js = js_parts.join(" ");
+
+        match window.eval(&js) {
+            Ok(_) => println!("[ibl.ai] Successfully navigated via URLSearchParams"),
+            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+        }
+    } else {
+        println!("[ibl.ai] Main window not found for callback navigation");
+    }
 }
 
 fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
     #[cfg(target_os = "ios")]
     {
         let url_for_main = url.to_string();
+        let app_handle = app.clone();
+
         app.run_on_main_thread(move || {
-            if let Err(err) = open_in_app_browser(&url_for_main) {
-                println!("[IBL Skills] Failed to open Safari view: {}", err);
+            if let Err(err) = open_with_auth_session(&url_for_main, &app_handle) {
+                println!("[ibl.ai] Failed to open auth session: {}", err);
             }
         })
-        .map_err(|e| format!("Failed to schedule Safari view: {}", e))
+        .map_err(|e| format!("Failed to schedule auth session: {}", e))
     }
 
-    #[cfg(not(target_os = "ios"))]
+    #[cfg(target_os = "macos")]
+    {
+        let url_for_main = url.to_string();
+        let app_handle = app.clone();
+
+        app.run_on_main_thread(move || {
+            if let Err(err) = open_with_auth_session_macos(&url_for_main, &app_handle) {
+                println!("[ibl.ai] Failed to open auth session on macOS: {}", err);
+            }
+        })
+        .map_err(|e| format!("Failed to schedule auth session: {}", e))
+    }
+
+    #[cfg(not(any(target_os = "ios", target_os = "macos")))]
     {
         app.shell()
             .open(url, None)
@@ -241,45 +570,115 @@ fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
 
 #[cfg(any(target_os = "ios", target_os = "android"))]
 fn handle_deep_link_url(app_handle: &AppHandle, raw_url: &str) {
+    let window = app_handle.get_webview_window("main");
+    println!("[ibl.ai] Deep link received: {}", raw_url);
+
     let parsed = match Url::parse(raw_url) {
         Ok(url) => url,
-        Err(_) => return,
+        Err(e) => {
+            println!("[ibl.ai] Failed to parse URL: {}", e);
+            return;
+        }
     };
 
     let scheme = parsed.scheme();
-    if scheme != "iblai-skills" && scheme != "ai.ibl.skills" {
+    let host = parsed.host_str().unwrap_or("");
+    let path = parsed.path();
+    println!("[ibl.ai] Parsed URL - scheme: {}, host: {}, path: {}", scheme, host, path);
+
+    // Handle both custom URI schemes and Universal Links (https with our domain)
+    let is_custom_scheme = scheme == "iblai-skills" || scheme == "ai.ibl.skills";
+    let is_universal_link = scheme == "https" && (host == "skillsai.iblai.app" || host == "skills.iblai.app");
+    println!("[ibl.ai] is_custom_scheme: {}, is_universal_link: {}", is_custom_scheme, is_universal_link);
+
+    if !is_custom_scheme && !is_universal_link {
+        println!("[ibl.ai] URL not a custom scheme or universal link, ignoring");
         return;
     }
 
     let mut path = parsed.path().to_string();
-    if path.is_empty() || path == "/" {
-        if let Some(host) = parsed.host_str() {
+
+    // For custom schemes, the host might be part of the path
+    if is_custom_scheme && (path.is_empty() || path == "/") {
+        if !host.is_empty() {
             path = format!("/{}", host);
+            println!("[ibl.ai] Adjusted path from host: {}", path);
         }
     }
 
-    let normalized_path = if path.starts_with("/sso-login") {
-        path.replacen("/sso-login", "/mobile-sso-login", 1)
-    } else if path.starts_with("/mobile-sso-login") {
-        path
-    } else {
+    println!("[ibl.ai] Final path: {}", path);
+
+    // Only handle SSO-related paths
+    if !path.starts_with("/sso-login") && !path.starts_with("/mobile-sso-login") && !path.starts_with("/sso-login-complete") {
+        println!("[ibl.ai] Path does not start with SSO-related paths, ignoring");
         return;
+    }
+
+    // Normalize /sso-login to /sso-login-complete for all SSO callbacks
+    let final_path = if path.starts_with("/sso-login") && !path.starts_with("/sso-login-complete") {
+        let normalized = path.replacen("/sso-login", "/sso-login-complete", 1);
+        println!("[ibl.ai] Normalized path: {} -> {}", path, normalized);
+        normalized
+    } else {
+        path
     };
 
-    let mut target_url = format!("{}{}", get_app_url(), normalized_path);
-    if let Some(query) = parsed.query() {
-        if !query.is_empty() {
-            target_url.push('?');
-            target_url.push_str(query);
+    // Extract query params from raw URL, fully decode them, and use JS URLSearchParams
+    // to construct the target URL (avoids browser re-encoding percent-encoded chars)
+    let base_url = format!("{}{}", get_app_url(), final_path);
+    let raw_query = raw_url.find('?').map(|i| &raw_url[i + 1..]).unwrap_or("");
+
+    // Parse individual query params and fully decode their values
+    let mut params: Vec<(String, String)> = Vec::new();
+    for part in raw_query.split('&') {
+        if part.is_empty() { continue; }
+        let (key, value) = match part.find('=') {
+            Some(i) => (&part[..i], &part[i + 1..]),
+            None => (part, ""),
+        };
+        // Fully decode: keep decoding until no more percent-encoded chars remain
+        let mut decoded = value.to_string();
+        loop {
+            match urlencoding::decode(&decoded) {
+                Ok(d) if d != decoded => decoded = d.into_owned(),
+                _ => break,
+            }
         }
+        let decoded_key = urlencoding::decode(key).unwrap_or_else(|_| key.into()).into_owned();
+        params.push((decoded_key, decoded));
     }
 
-    if let Some(window) = app_handle.get_webview_window("main") {
-        if let Ok(js_url) = serde_json::to_string(&target_url) {
-            let _ = window.eval(&format!("window.location.href = {};", js_url));
+    println!("[ibl.ai] Target base URL: {}, params: {:?}", base_url, params.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>());
+
+    if let Some(window) = window {
+        println!("[ibl.ai] Main window found, attempting navigation");
+
+        // Build JS that uses URLSearchParams to properly encode the URL
+        let js_base = serde_json::to_string(&base_url).unwrap_or_default();
+        let mut js_parts = vec![format!("var u = new URL({});", js_base)];
+        for (key, value) in &params {
+            let js_key = serde_json::to_string(key).unwrap_or_default();
+            let js_val = serde_json::to_string(value).unwrap_or_default();
+            js_parts.push(format!("u.searchParams.set({}, {});", js_key, js_val));
         }
-    } else if let Ok(mut pending) = get_pending_deep_link().lock() {
-        *pending = Some(target_url);
+        js_parts.push("window.location.href = u.toString();".to_string());
+        let js = js_parts.join(" ");
+
+        let eval_result = window.eval(&js);
+        match eval_result {
+            Ok(_) => println!("[ibl.ai] Successfully navigated via URLSearchParams"),
+            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+        }
+    } else {
+        println!("[ibl.ai] Main window not found, storing as pending deep link");
+
+        // Store the raw URL for later processing when the window is available
+        if let Ok(mut pending) = get_pending_deep_link().lock() {
+            *pending = Some(raw_url.to_string());
+            println!("[ibl.ai] Stored pending deep link: {}", raw_url);
+        } else {
+            println!("[ibl.ai] Failed to store pending deep link");
+        }
     }
 }
 
@@ -692,25 +1091,40 @@ fn get_os_type() -> String {
     return "unknown".to_string();
 }
 
-/// Open an external URL in the system's default browser
+/// Open an external URL using ASWebAuthenticationSession (iOS/macOS) or system browser
 /// This is needed for OAuth flows (like Google login) that don't work in WebViews
 #[command]
 async fn open_external_url(app: AppHandle, url: String) -> Result<(), String> {
-    println!("[IBL Skills] Opening external URL in system browser: {}", url);
+    println!("[ibl.ai] Opening external URL for OAuth: {}", url);
     #[cfg(target_os = "ios")]
     {
         let (tx, rx) = oneshot::channel();
         let url_for_main = url.clone();
+        let app_handle = app.clone();
         app.run_on_main_thread(move || {
-            let _ = tx.send(open_in_app_browser(&url_for_main));
+            let _ = tx.send(open_with_auth_session(&url_for_main, &app_handle));
         })
-        .map_err(|e| format!("Failed to schedule Safari view: {}", e))?;
+        .map_err(|e| format!("Failed to schedule auth session: {}", e))?;
         return rx
             .await
-            .unwrap_or_else(|_| Err("Failed to open Safari view".to_string()));
+            .unwrap_or_else(|_| Err("Failed to open auth session".to_string()));
     }
 
-    #[cfg(not(target_os = "ios"))]
+    #[cfg(target_os = "macos")]
+    {
+        let (tx, rx) = oneshot::channel();
+        let url_for_main = url.clone();
+        let app_handle = app.clone();
+        app.run_on_main_thread(move || {
+            let _ = tx.send(open_with_auth_session_macos(&url_for_main, &app_handle));
+        })
+        .map_err(|e| format!("Failed to schedule auth session: {}", e))?;
+        return rx
+            .await
+            .unwrap_or_else(|_| Err("Failed to open auth session".to_string()));
+    }
+
+    #[cfg(not(any(target_os = "ios", target_os = "macos")))]
     {
         app.shell()
             .open(&url, None)
@@ -1047,9 +1461,15 @@ const URL_MONITOR_SCRIPT_ONLINE: &str = r#"
     // Intercept fetch to cache API responses for offline use (GET and POST)
     var originalFetch = window.fetch;
     window.fetch = function(input, init) {
-        var url = typeof input === 'string' ? input : input.url;
+        var url = typeof input === 'string' ? input : (input && input.url ? input.url : (input && input.href ? input.href : String(input)));
         var method = (init && init.method) ? init.method.toUpperCase() : 'GET';
         var requestBody = (init && init.body) ? init.body : null;
+
+        // Only cache when on the skills app domain - prevents errors on auth app
+        var isSkillsDomain = window.location.hostname === 'skillsai.iblai.app' ||
+                            window.location.hostname === 'skills.iblai.app' ||
+                            window.location.hostname === 'localhost' ||
+                            window.location.hostname === '127.0.0.1';
 
         var isApiCall = url.includes('/api/') && (
             url.includes('manager.iblai') ||
@@ -1066,8 +1486,11 @@ const URL_MONITOR_SCRIPT_ONLINE: &str = r#"
         var isAsset = url.includes('/_next/static/') || url.includes('/static/');
 
         // Cache API calls (GET and POST) and static assets (GET only)
-        var shouldCache = (isApiCall && (method === 'GET' || method === 'POST')) ||
-                         (isAsset && method === 'GET');
+        // BUT only when on skills domain and desktop (cache commands not available on mobile)
+        var shouldCache = !window.__TAURI_MOBILE__ && isSkillsDomain && (
+            (isApiCall && (method === 'GET' || method === 'POST')) ||
+            (isAsset && method === 'GET')
+        );
 
         return originalFetch.apply(this, arguments).then(function(response) {
             // Cache successful API responses (both GET and POST)
@@ -1121,6 +1544,9 @@ const URL_MONITOR_SCRIPT_ONLINE: &str = r#"
     // Cache the current page HTML and assets for offline use
     // Wait for the page to fully load and render before caching
     function cachePageHtml() {
+        // precache_app is a desktop-only command, skip on mobile
+        if (window.__TAURI_MOBILE__) return;
+
         console.log('[SkillsRouteMonitor] cachePageHtml called', {
             hasTauri: typeof window.__TAURI__ !== 'undefined',
             hasCore: window.__TAURI__ && typeof window.__TAURI__.core !== 'undefined',
@@ -1129,6 +1555,17 @@ const URL_MONITOR_SCRIPT_ONLINE: &str = r#"
 
         if (!window.__TAURI__ || !window.__TAURI__.core || !window.__TAURI__.core.invoke) {
             console.error('[SkillsRouteMonitor] Tauri API not available, cannot cache page');
+            return;
+        }
+
+        // Only cache when on skills app domain - prevents IPC errors on auth app
+        var isSkillsDomain = window.location.hostname === 'skillsai.iblai.app' ||
+                            window.location.hostname === 'skills.iblai.app' ||
+                            window.location.hostname === 'localhost' ||
+                            window.location.hostname === '127.0.0.1';
+
+        if (!isSkillsDomain) {
+            console.log('[SkillsRouteMonitor] Not on skills domain, skipping page cache');
             return;
         }
 
@@ -1167,7 +1604,20 @@ const URL_MONITOR_SCRIPT_ONLINE: &str = r#"
 
     // Save offline context (localStorage snapshot) for offline mode
     function saveOfflineContext() {
+        // save_offline_context is a desktop-only command, skip on mobile
+        if (window.__TAURI_MOBILE__) return;
         if (!window.__TAURI__ || !window.__TAURI__.core) return;
+
+        // Only save when on skills app domain - prevents IPC errors on auth app
+        var isSkillsDomain = window.location.hostname === 'skillsai.iblai.app' ||
+                            window.location.hostname === 'skills.iblai.app' ||
+                            window.location.hostname === 'localhost' ||
+                            window.location.hostname === '127.0.0.1';
+
+        if (!isSkillsDomain) {
+            console.log('[SkillsRouteMonitor] Not on skills domain, skipping offline context save');
+            return;
+        }
 
         try {
             // Collect important localStorage keys for offline mode
@@ -1207,10 +1657,23 @@ const URL_MONITOR_SCRIPT_ONLINE: &str = r#"
     }
 
     function saveSkillsRoute(route) {
+        // save_last_skills_route is a desktop-only command, skip on mobile
+        if (window.__TAURI_MOBILE__) return;
         if (route === lastSavedRoute) return;
         lastSavedRoute = route;
 
         console.log('[SkillsRouteMonitor] Saving route:', route);
+
+        // Only save when on skills app domain - prevents IPC errors on auth app
+        var isSkillsDomain = window.location.hostname === 'skillsai.iblai.app' ||
+                            window.location.hostname === 'skills.iblai.app' ||
+                            window.location.hostname === 'localhost' ||
+                            window.location.hostname === '127.0.0.1';
+
+        if (!isSkillsDomain) {
+            console.log('[SkillsRouteMonitor] Not on skills domain, skipping route save');
+            return;
+        }
 
         if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
             window.__TAURI__.core.invoke('save_last_skills_route', { route: route })
@@ -1568,14 +2031,13 @@ pub fn run() {
                 .initialization_script(init_script)
                 .on_navigation(move |url| {
                     let url_str = url.as_str();
-                    if is_oauth_url(url_str) {
-                        println!(
-                            "[IBL Skills] OAuth navigation intercepted, opening system browser: {}",
-                            url_str
-                        );
+                    println!("[IBL Skills] [DESKTOP] on_navigation: {}", url_str);
+                    let is_oauth = is_oauth_url(url_str);
+                    println!("[IBL Skills] [DESKTOP] is_oauth_url: {}", is_oauth);
+                    if is_oauth {
+                        println!("[IBL Skills] [DESKTOP] OAuth navigation intercepted, opening ASWebAuthenticationSession: {}", url_str);
                         if let Err(e) = open_oauth_url(&app_handle, url_str) {
-                            println!("[IBL Skills] Failed to open external URL: {}", e);
-                            return true;
+                            println!("[IBL Skills] [DESKTOP] Failed to open auth session: {} — blocking navigation anyway", e);
                         }
                         return false;
                     }
@@ -1610,21 +2072,17 @@ pub fn run() {
 
     console.log('[IBL Skills] Setting up safe area handling...');
 
-    // Ensure viewport has viewport-fit=cover for safe area support
-    var viewport = document.querySelector('meta[name="viewport"]');
-    if (viewport) {
-        var content = viewport.getAttribute('content') || '';
-        if (!content.includes('viewport-fit=cover')) {
-            viewport.setAttribute('content', content + ', viewport-fit=cover');
-            console.log('[IBL Skills] Added viewport-fit=cover to viewport meta');
+    // Wait for document.head to be available before DOM operations
+    function waitForHead(callback) {
+        if (document.head) {
+            callback();
+        } else {
+            setTimeout(function() { waitForHead(callback); }, 10);
         }
-    } else {
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
-        document.head.appendChild(meta);
-        console.log('[IBL Skills] Created viewport meta with viewport-fit=cover');
     }
+
+    // DOM setup deferred until document.head is available
+    waitForHead(function() {
 
     // Add CSS for safe area handling
     var style = document.createElement('style');
@@ -1674,52 +2132,39 @@ pub fn run() {
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        /* Back button styles for login page */
-        .ibl-mobile-back-btn {
-            position: fixed;
-            top: calc(env(safe-area-inset-top, 20px) + 10px);
-            left: calc(env(safe-area-inset-left, 0px) + 16px);
-            z-index: 99999;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .ibl-mobile-back-btn:active {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(0.95);
-        }
     `;
     document.head.appendChild(style);
     console.log('[IBL Skills] Safe area CSS applied');
+    }); // end waitForHead
 
-    // Prevent overscroll/bounce effect on iOS
-    document.body.addEventListener('touchmove', function(e) {
-        // Allow scrolling within scrollable elements
-        var target = e.target;
-        while (target && target !== document.body) {
-            var style = window.getComputedStyle(target);
-            if (style.overflow === 'auto' || style.overflow === 'scroll' ||
-                style.overflowY === 'auto' || style.overflowY === 'scroll') {
-                return; // Allow scroll within this element
-            }
-            target = target.parentElement;
+    // Wait for document.body before adding body event listeners
+    function waitForBody(callback) {
+        if (document.body) {
+            callback();
+        } else {
+            setTimeout(function() { waitForBody(callback); }, 10);
         }
-        // Prevent bounce on body
-        e.preventDefault();
-    }, { passive: false });
+    }
 
-    console.log('[IBL Skills] Safe area setup complete');
+    waitForBody(function() {
+        // Prevent overscroll/bounce effect on iOS
+        document.body.addEventListener('touchmove', function(e) {
+            // Allow scrolling within scrollable elements
+            var target = e.target;
+            while (target && target !== document.body) {
+                var style = window.getComputedStyle(target);
+                if (style.overflow === 'auto' || style.overflow === 'scroll' ||
+                    style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                    return; // Allow scroll within this element
+                }
+                target = target.parentElement;
+            }
+            // Prevent bounce on body
+            e.preventDefault();
+        }, { passive: false });
+
+        console.log('[IBL Skills] Safe area setup complete');
+    }); // end waitForBody
 
     // =====================
     // GOOGLE OAUTH HANDLING
@@ -1735,23 +2180,52 @@ pub fn run() {
             url.includes('googleapis.com/oauth') ||
             url.includes('/auth/login/google') ||
             url.includes('/login/google') ||
-            url.includes('google-oauth2')
+            url.includes('google-oauth2') ||
+            url.includes('appleid.apple.com') ||
+            url.includes('/auth/login/apple') ||
+            url.includes('/login/apple')
         );
     }
 
     function openInSystemBrowser(url) {
-        console.log('[IBL Skills] Opening OAuth URL in system browser:', url);
+        console.log('[IBL Skills] Opening OAuth URL via ASWebAuthenticationSession:', url);
+
+        var invoker = null;
+
+        // Primary: window.__TAURI__ (available when withGlobalTauri: true)
         if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
-            window.__TAURI__.core.invoke('open_external_url', { url: url })
+            console.log('[IBL Skills] IPC: using window.__TAURI__.core.invoke');
+            invoker = window.__TAURI__.core.invoke.bind(window.__TAURI__.core);
+        }
+        // Fallback: window.__TAURI_INTERNALS__ (always available in any Tauri webview)
+        else if (window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.transformCallback && window.__TAURI_INTERNALS__.postMessage) {
+            console.log('[IBL Skills] IPC: using __TAURI_INTERNALS__ raw IPC (withGlobalTauri may be missing)');
+            invoker = function(cmd, payload) {
+                return new Promise(function(resolve, reject) {
+                    var cb = window.__TAURI_INTERNALS__.transformCallback(resolve, true);
+                    var err = window.__TAURI_INTERNALS__.transformCallback(reject, true);
+                    window.__TAURI_INTERNALS__.postMessage({
+                        cmd: cmd,
+                        callback: cb,
+                        error: err,
+                        payload: payload || {}
+                    });
+                });
+            };
+        }
+
+        if (invoker) {
+            invoker('open_external_url', { url: url })
                 .then(function() {
-                    console.log('[IBL Skills] Successfully opened URL in system browser');
+                    console.log('[IBL Skills] Successfully opened URL via ASWebAuthenticationSession');
                 })
                 .catch(function(e) {
                     console.error('[IBL Skills] Failed to open URL:', e);
-                    alert('Please open Safari and go to:\n' + url);
                 });
             return true;
         }
+
+        console.error('[IBL Skills] No Tauri IPC available - cannot intercept OAuth URL');
         return false;
     }
 
@@ -1906,103 +2380,15 @@ pub fn run() {
 
     console.log('[IBL Skills] OAuth interceptor installed (location.href + window.open + click)');
 
-    // =====================
-    // BACK BUTTON FOR LOGIN
-    // =====================
-    var backButton = null;
-
-    function showBackButton() {
-        if (backButton) return;
-
-        backButton = document.createElement('button');
-        backButton.className = 'ibl-mobile-back-btn';
-        backButton.innerHTML = '←';
-        backButton.setAttribute('aria-label', 'Go back');
-        backButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Check if we can go back in history
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                // Navigate to home/login
-                window.location.href = appBaseUrl;
-            }
-        });
-        document.body.appendChild(backButton);
-        console.log('[IBL Skills] Back button added');
-    }
-
-    function hideBackButton() {
-        if (backButton && backButton.parentNode) {
-            backButton.parentNode.removeChild(backButton);
-            backButton = null;
-            console.log('[IBL Skills] Back button removed');
-        }
-    }
-
-    function checkIfLoginPage() {
-        var path = window.location.pathname;
-        var isLoginRelated = (
-            path.includes('/login') ||
-            path.includes('/auth') ||
-            path.includes('/signin') ||
-            path.includes('/signup') ||
-            path.includes('/register') ||
-            path.includes('/accounts') ||
-            path.includes('/oauth') ||
-            path === '/' ||
-            document.querySelector('[data-testid="login-form"]') ||
-            document.querySelector('.login-form') ||
-            document.querySelector('#login-form')
-        );
-
-        var isOAuthPage = isOAuthUrl(window.location.href);
-
-        // Show back button for OAuth pages or login-related pages with history
-        if (isOAuthPage || (isLoginRelated && window.history.length > 1)) {
-            showBackButton();
-        } else {
-            hideBackButton();
-        }
-    }
-
-    // Check on page load
-    if (document.readyState === 'complete') {
-        setTimeout(checkIfLoginPage, 500);
-    } else {
-        window.addEventListener('load', function() {
-            setTimeout(checkIfLoginPage, 500);
-        });
-    }
-
-    // Monitor for URL changes (SPA navigation)
-    var originalPushState = history.pushState;
-    var originalReplaceState = history.replaceState;
-
-    history.pushState = function() {
-        originalPushState.apply(this, arguments);
-        setTimeout(checkIfLoginPage, 100);
-    };
-
-    history.replaceState = function() {
-        originalReplaceState.apply(this, arguments);
-        setTimeout(checkIfLoginPage, 100);
-    };
-
-    window.addEventListener('popstate', function() {
-        setTimeout(checkIfLoginPage, 100);
-    });
-
-    console.log('[IBL Skills] Mobile setup complete (safe area + OAuth + navigation)');
+    console.log('[IBL Skills] Mobile setup complete (safe area + OAuth)');
 })();
 "#;
                 let safe_area_script =
                     safe_area_script.replace("__IBL_APP_BASE_URL__", &app_base_url_json);
 
                 // Combine safe area script with online monitoring script
-                let combined_script = format!("{}\n{}", safe_area_script, URL_MONITOR_SCRIPT_ONLINE);
+                // Set mobile flag so desktop-only IPC commands (precache_app, cache_api_response, etc.) are skipped
+                let combined_script = format!("window.__TAURI_MOBILE__ = true;\n{}\n{}", safe_area_script, URL_MONITOR_SCRIPT_ONLINE);
                 let app_handle = app.handle().clone();
 
                 // Use online monitoring script with safe area handling
@@ -2014,14 +2400,13 @@ pub fn run() {
                 .initialization_script(&combined_script)
                 .on_navigation(move |url| {
                     let url_str = url.as_str();
-                    if is_oauth_url(url_str) {
-                        println!(
-                            "[IBL Skills] OAuth navigation intercepted, opening system browser: {}",
-                            url_str
-                        );
+                    println!("[IBL Skills] [MOBILE] on_navigation: {}", url_str);
+                    let is_oauth = is_oauth_url(url_str);
+                    println!("[IBL Skills] [MOBILE] is_oauth_url: {}", is_oauth);
+                    if is_oauth {
+                        println!("[IBL Skills] [MOBILE] OAuth navigation intercepted, opening ASWebAuthenticationSession: {}", url_str);
                         if let Err(e) = open_oauth_url(&app_handle, url_str) {
-                            println!("[IBL Skills] Failed to open external URL: {}", e);
-                            return true;
+                            println!("[IBL Skills] [MOBILE] Failed to open auth session: {} — blocking navigation anyway", e);
                         }
                         return false;
                     }

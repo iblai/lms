@@ -12,7 +12,7 @@ import {
   useUserTenants,
 } from '@/utils/localstorage';
 import { AuthProvider, setAccessCheckResponse, TenantProvider } from '@iblai/iblai-js/web-utils';
-import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
+import { getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
 import { usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
 import { selectRequestedTenant } from '@/features/tenant';
@@ -27,9 +27,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const requestedTenant = useAppSelector(selectRequestedTenant);
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
-
-  console.log('################### [Providers] isSsoLoginRoute', isSsoLoginRoute);
-  console.log('################### [Providers] isVersionRoute', isVersionRoute);
 
   const loadDataLayer = () => {
     initializeDataLayer(
@@ -93,7 +90,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         logout = false,
         saveRedirect = true,
       ) => redirectToAuthSpa(redirectTo, platformKey, logout, saveRedirect)}
-      hasNonExpiredAuthToken={hasNonExpiredAuthToken}
       username={getUserName() || ''}
       storageService={LocalStorageService.getInstance()}
       middleware={middleware}

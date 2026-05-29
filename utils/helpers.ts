@@ -1,9 +1,14 @@
 import { config } from '@/lib/config';
-import { isTauriApp } from '@/lib/utils';
+import { isOfflineServerOrigin, isTauriApp } from '@/lib/utils';
 import { LOCALSTORAGE_KEYS } from '../constants/storage';
 import { getLocalStorageItem } from './localstorage';
 import { QUERY_PARAMS } from '@/constants/global';
 import { MarkdownMenuItem } from '@/types/utils';
+import {
+  isTauriOfflineMode,
+  LOCAL_STORAGE_KEYS,
+  redirectToAuthSpa as sdkRedirectToAuthSpa,
+} from '@iblai/iblai-js/web-utils';
 
 // Set to true during any intentional navigation away from the app (tenant switch,
 // logout) to suppress concurrent auth redirects that would race and cancel it.
@@ -207,48 +212,31 @@ export async function redirectToAuthSpa(
   platformKey?: string,
   logout?: boolean,
   saveRedirect = true,
+  explicitUserAction = false,
 ) {
   // Suppress auth redirects while an intentional navigation is already in flight
   if (_suppressAuthRedirect) return;
-  localStorage.clear();
-
-  if (logout) {
-    // Delete authentication cookies for cross-SPA synchronization
-    const currentDomain = window.location.hostname;
-    deleteCookieOnAllDomains('ibl_current_tenant', currentDomain);
-    deleteCookieOnAllDomains('ibl_user_data', currentDomain);
-    deleteCookieOnAllDomains('ibl_tenant', currentDomain);
-  }
-
-  const redirectPath = redirectTo ?? `${window.location.pathname}${window.location.search}`;
-
-  console.log('################### [redirectToAuthSpa] redirectPath', redirectPath);
-
-  // Never save sso-login routes as redirect paths
-  if (
-    !redirectPath.startsWith('/sso-login') &&
-    !redirectPath.startsWith('/sso-login-complete') &&
-    saveRedirect
-  ) {
-    window.localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_TO, redirectPath);
-  }
-
-  const platform = platformKey ?? getTenant();
-
-  const redirectToUrl = isTauriApp() ? 'iblai-skills://' : `${window.location.origin}`;
-
-  let authRedirectUrl = `${config.urls.auth()}/login?${QUERY_PARAMS.APP}=${config.settings.appName()}`;
-
-  authRedirectUrl += `&${QUERY_PARAMS.REDIRECT_TO}=${redirectToUrl}`;
-
-  if (platform) {
-    authRedirectUrl += `&${QUERY_PARAMS.TENANT}=${platform}`;
-  }
-  if (logout) {
-    authRedirectUrl += '&logout=1';
-  }
-
-  window.location.href = authRedirectUrl;
+  return sdkRedirectToAuthSpa({
+    redirectTo,
+    platformKey,
+    logout,
+    saveRedirect,
+    forceRedirect: explicitUserAction,
+    authUrl: config.urls.auth(),
+    appName: config.settings.appName(),
+    queryParams: {
+      app: QUERY_PARAMS.APP,
+      redirectTo: QUERY_PARAMS.REDIRECT_TO,
+      tenant: QUERY_PARAMS.TENANT,
+    },
+    redirectPathStorageKey: LOCAL_STORAGE_KEYS.REDIRECT_TO,
+    hasNonExpiredAuthToken,
+    isOffline: () => isOfflineServerOrigin() || (isTauriApp() && isTauriOfflineMode()),
+    preserveTokenKey: 'edx_jwt_token',
+    authRedirectProxy: '/api/auth-redirect',
+    isNativeApp: () => isTauriApp(),
+    scheme: 'iblai-skills://',
+  });
 }
 
 export function hasNonExpiredAuthToken() {
