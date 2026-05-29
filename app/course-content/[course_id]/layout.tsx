@@ -24,7 +24,10 @@ import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { setAdvancedDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import {
+  setAdvancedDisplayMonetizationCheckoutModal,
+  useTenantMetadata,
+} from '@iblai/iblai-js/web-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 import { config } from '@/lib/config';
@@ -48,6 +51,7 @@ export default function CourseContentLayout({
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
+  const { metadata } = useTenantMetadata({ org: getTenant() });
   const {
     handleFetchCourseInfo,
     handleFetchCourseSyllabus,
@@ -121,7 +125,9 @@ export default function CourseContentLayout({
     window.dispatchEvent(new CustomEvent('mentor:autoplay-changed', { detail: { enabled } }));
   };
 
-  const autoplayToggleVisible = true; // course?.agent_autoplay === true;
+  // enable_course_voice_autoplay tenant metadata flag and agent_autoplay flag from the course settings on studio to allow this feature
+  const autoplayToggleVisible =
+    course?.agent_autoplay === true && metadata?.enable_course_voice_autoplay === true;
 
   const { data: courseBlockDetails } = useGetCourseBlockDetailsQuery(
     { blockId: currentUnitID || '', username: getUserName() },
