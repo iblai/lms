@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.35.0](https://github.com/iblai/skillsai/compare/skills-v0.34.0...skills-v0.35.0) (2026-05-29)
+
+### Bug Fixes
+
+* autoplay icon based also  on enable_course_voice_autoplay tenant metadata > test coverage ([07772de](https://github.com/iblai/skillsai/commit/07772dee2945fac4ac3f6150d29c71e424cc3e0d))
+* autoplay icon based also on on enable_course_voice_autoplay tenant metadata flag ([decc746](https://github.com/iblai/skillsai/commit/decc7469d555817ee95dd55fa66a9801b014ce9b))
+* autoplay icon based on agent_autoplay settings flag on studio ([be3b8dd](https://github.com/iblai/skillsai/commit/be3b8dd1746b9109d7d197a8422a0ed42ad2a6bd))
+* autoplay icon based on agent_autoplay settings flag on studio > test coverage ([fbe1edc](https://github.com/iblai/skillsai/commit/fbe1edc1344c2a06d5bfdfc1875bb9a3c18ff0bd))
+
 ## [0.34.0](https://github.com/iblai/skillsai/compare/skills-v0.33.0...skills-v0.34.0) (2026-05-28)
 
 ### Features
