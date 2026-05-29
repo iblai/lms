@@ -4,6 +4,7 @@ import { LOCALSTORAGE_KEYS } from '../constants/storage';
 import { getLocalStorageItem } from './localstorage';
 import { QUERY_PARAMS } from '@/constants/global';
 import { MarkdownMenuItem } from '@/types/utils';
+import { toast } from 'sonner';
 
 // Set to true during any intentional navigation away from the app (tenant switch,
 // logout) to suppress concurrent auth redirects that would race and cancel it.
@@ -200,6 +201,28 @@ export function getTimeAgo(createdAt: string) {
   } else {
     return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
   }
+}
+
+/**
+ * Notify an anonymous visitor that login is required, persist the current
+ * in-app path so the auth SPA can route them back, then redirect to the login
+ * page. The `redirect-to` query param is intentionally the *origin* only —
+ * the auth SPA reads the saved `REDIRECT_PATH` from localStorage to land on
+ * the original page once authentication succeeds.
+ */
+export function handleNotLoggedInAction(tenant: string) {
+  toast.info('Please login to access this resource');
+  if (typeof window === 'undefined') return;
+  // Stamp `?trigger_cta=1` onto the persisted redirect path so the destination
+  // page (course about / program about) can auto-click the CTA button after
+  // the user lands back here post-authentication.
+  const url = new URL(window.location.href);
+  url.searchParams.set('trigger_cta', '1');
+  const currentPath = `${url.pathname}${url.search}${url.hash}`;
+  window.localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
+  setTimeout(() => {
+    window.location.href = `${config.urls.auth()}/login?redirect-to=${window.location.origin}&tenant=${tenant}`;
+  }, 2000);
 }
 
 export async function redirectToAuthSpa(

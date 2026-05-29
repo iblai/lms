@@ -3,13 +3,9 @@
 import type React from 'react';
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getTenants } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import type { CourseEdxData } from '@/types/courses';
 import type { CourseInfoLoadingState } from '@/hooks/courses/use-course-detail';
-import type { Tenant } from '@/types/tenants';
-import { useAppDispatch } from '@/lib/hooks';
-import { updateRequestedTenant } from '@/features/tenant';
 
 export function CourseAccessGuard({
   course,
@@ -24,16 +20,9 @@ export function CourseAccessGuard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const dispatch = useAppDispatch();
   const tenant = useTenantParam();
 
   const isLoaded = courseInfoLoadingState === 'successful' || courseInfoLoadingState === 'failure';
-
-  const isUnauthorizedTenant =
-    isLoaded &&
-    course?.platform_key &&
-    course.platform_key !== tenant &&
-    course.platform_key !== 'main';
 
   const isNotFound = courseInfoLoadingState === 'failure' && !course;
 
@@ -61,28 +50,14 @@ export function CourseAccessGuard({
       const siblingTab = shouldRedirectAgentToCourse ? 'course' : 'agent';
       const siblingPath = pathname.replace(/\/(agent|course)$/, `/${siblingTab}`);
       router.replace(siblingPath);
-    } else if (isUnauthorizedTenant) {
-      const tenants = getTenants() as Tenant[];
-      const matchingTenant = tenants.find((t) => t?.key === course?.platform_key);
-      if (matchingTenant) {
-        dispatch(updateRequestedTenant(matchingTenant.key));
-      } else {
-        router.push(`/platform/${tenant}/error/403`);
-      }
     } else if (isTabDisabled) {
       router.push(`/platform/${tenant}/error/403`);
     } else if (isNotFound) {
       router.push(`/platform/${tenant}/error/404`);
     }
-  }, [
-    isUnauthorizedTenant,
-    isNotFound,
-    isTabDisabled,
-    shouldRedirectToSibling,
-    shouldRedirectAgentToCourse,
-  ]);
+  }, [isNotFound, isTabDisabled, shouldRedirectToSibling, shouldRedirectAgentToCourse]);
 
-  if (!isLoaded || isUnauthorizedTenant || isNotFound || isTabDisabled || shouldRedirectToSibling) {
+  if (!isLoaded || isNotFound || isTabDisabled || shouldRedirectToSibling) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />

@@ -1,7 +1,7 @@
 'use client';
 
-import { KeyboardEvent, useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
   Award,
@@ -53,7 +53,7 @@ import { config } from '@/lib/config';
 import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
 import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/services/studio';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
-import { getRandomCourseImage, getUserName } from '@/utils/helpers';
+import { getRandomCourseImage, getUserName, handleNotLoggedInAction } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useCurrentTenant, useIsAdmin } from '@/utils/localstorage';
 
@@ -238,6 +238,10 @@ export default function ProgramDetailPage() {
     null,
   );
   const [hasMonetizationAccess, setHasMonetizationAccess] = useState<boolean>(true);
+  // Tracks whether the monetization access check has settled, so the
+  // `trigger_cta` auto-click effect waits for the correct CTA target before
+  // firing (Enroll vs. Paywall depends on this).
+  const [monetizationChecked, setMonetizationChecked] = useState<boolean>(false);
   const [accessCheckData, setAccessCheckData] = useState<AccessCheckResponse | null>(null);
   const [isEnrollmentSubmitting, setIsEnrollmentSubmitting] = useState(false);
   const [randomImage] = useState(() => getRandomCourseImage());
@@ -366,12 +370,7 @@ export default function ProgramDetailPage() {
     router.push(`/platform/${tenant}/courses/${courseId}`);
   };
 
-  const handleNotLoggedInAction = () => {
-    toast.info('Please login to access this resource');
-    setTimeout(() => {
-      window.location.href = `${config.urls.auth()}/login?redirect-to=${window.location.href}&tenant=${tenant}`;
-    }, 2000);
-  };
+  const triggerNotLoggedInAction = () => handleNotLoggedInAction(tenant);
 
   const dispatchPaywall = () => {
     dispatch(setDisplayMonetizationCheckoutModal(true));
@@ -393,6 +392,7 @@ export default function ProgramDetailPage() {
   const handleCheckMonetizationAccess = async (programKey: string) => {
     if (!currentTenant?.enable_monetization) {
       setHasMonetizationAccess(true);
+      setMonetizationChecked(true);
       return;
     }
     try {
@@ -410,6 +410,8 @@ export default function ProgramDetailPage() {
       setAccessCheckData(data ?? null);
     } catch (error) {
       console.error('Error checking access:', error);
+    } finally {
+      setMonetizationChecked(true);
     }
   };
 
@@ -583,10 +585,40 @@ export default function ProgramDetailPage() {
       ? 'Enrolling...'
       : 'Enroll Now';
   const ctaAction = !userIsLoggedIn
-    ? handleNotLoggedInAction
+    ? triggerNotLoggedInAction
     : hasMonetizationAccess
       ? handleEnrollIntoProgram
       : handleOpenMonetizationCheckoutModal;
+
+  // Auto-fire the CTA when the user returns from auth with `?trigger_cta=1`.
+  // Waits for the program payload AND the monetization check so the resolved
+  // `ctaAction` is correct (Enroll vs. Paywall). Strips the param afterwards
+  // so a refresh doesn't re-trigger.
+  const searchParams = useSearchParams();
+  const ctaAutoTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    if (ctaAutoTriggeredRef.current) return;
+    if (searchParams.get('trigger_cta') !== '1') return;
+    if (!userIsLoggedIn) return;
+    if (loadingState !== 'success') return;
+    if (!monetizationChecked) return;
+    if (!showCta || isEnrollmentSubmitting) return;
+
+    ctaAutoTriggeredRef.current = true;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('trigger_cta');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    ctaAction();
+  }, [
+    searchParams,
+    userIsLoggedIn,
+    loadingState,
+    monetizationChecked,
+    showCta,
+    isEnrollmentSubmitting,
+    ctaAction,
+  ]);
 
   const metadata = program?.program_metadata as any;
 

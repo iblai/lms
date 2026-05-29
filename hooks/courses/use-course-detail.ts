@@ -8,7 +8,7 @@ import {
   CourseProgress,
 } from '@/types/courses';
 import _ from 'lodash';
-import { getTenant, getUserName, handleLogout, inIframe } from '@/utils/helpers';
+import { getTenant, getUserName, handleNotLoggedInAction, inIframe } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import dayjs from 'dayjs';
 import {
@@ -102,17 +102,12 @@ export const useCourseDetail = (rawCourseId: string) => {
 
   const userLoggedIn = isLoggedIn();
 
-  const handleNotLoggedInAction = () => {
-    toast.info('Please login to access this resource');
-    setTimeout(() => {
-      window.location.href = `${config.urls.auth()}/login?redirect-to=${window.location.href}&tenant=${tenant}`;
-    }, 2000);
-  };
+  const triggerNotLoggedInAction = () => handleNotLoggedInAction(tenant);
 
   const applyEligibility = (eligibility: CourseEligibility) => {
     setCourseEligibility({
       ...eligibility,
-      btn_action: userLoggedIn ? eligibility.btn_action : handleNotLoggedInAction,
+      btn_action: userLoggedIn ? eligibility.btn_action : triggerNotLoggedInAction,
     });
   };
 
@@ -180,7 +175,7 @@ export const useCourseDetail = (rawCourseId: string) => {
   };
   const [courseEligibility, setCourseEligibility] = useState<CourseEligibility>({
     btn_label: ENROLL_NOW_LABEL,
-    btn_action: userLoggedIn ? handleEnrollToCourse : handleNotLoggedInAction,
+    btn_action: userLoggedIn ? handleEnrollToCourse : triggerNotLoggedInAction,
   });
 
   const handleOpenMonetizationCheckoutModal = () => {
@@ -421,6 +416,7 @@ export const useCourseDetail = (rawCourseId: string) => {
     courseProgress,
     courseCompletion,
     courseGradingPolicyActive,
+    userLoggedIn,
     ACCESS_COURSE_LABEL,
     ENROLL_NOW_LABEL,
     REQUEST_ACCESS_LABEL,

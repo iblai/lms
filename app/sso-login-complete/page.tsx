@@ -12,7 +12,7 @@ function SsoLoginCompleteContent() {
         USER_DATA: LOCAL_STORAGE_KEYS.USER_DATA,
         TENANTS: LOCAL_STORAGE_KEYS.TENANTS,
       }}
-      redirectPathKey="redirect-to"
+      redirectPathKey="redirect-path"
       defaultRedirectPath="/"
     />
   );

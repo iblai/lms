@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Clock, Calendar, Globe, DollarSign } from 'lucide-react';
 import _ from 'lodash';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
@@ -46,9 +46,40 @@ export default function CourseDetailsPage() {
     courseEligibilityLoading,
     courseButtonActionLoading,
     courseInfoLoadingState,
+    userLoggedIn,
   } = useCourseDetail(courseId);
 
   const [randomCourseImage] = useState(() => getRandomCourseImage());
+
+  // When the user is sent back from the auth SPA after clicking the CTA while
+  // anonymous, `?trigger_cta=1` is appended to the URL. Once the page and
+  // eligibility have loaded — and the user is actually authenticated — fire
+  // the CTA action automatically, then strip the param so a refresh doesn't
+  // re-trigger it.
+  const searchParams = useSearchParams();
+  const ctaAutoTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    if (ctaAutoTriggeredRef.current) return;
+    if (searchParams.get('trigger_cta') !== '1') return;
+    if (!userLoggedIn) return;
+    if (courseInfoLoadingState !== 'successful') return;
+    if (courseEligibilityLoading || courseButtonActionLoading) return;
+    if (!courseEligibility?.btn_action || courseEligibility.disabled) return;
+
+    ctaAutoTriggeredRef.current = true;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('trigger_cta');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    courseEligibility.btn_action();
+  }, [
+    searchParams,
+    userLoggedIn,
+    courseInfoLoadingState,
+    courseEligibilityLoading,
+    courseButtonActionLoading,
+    courseEligibility,
+  ]);
 
   useEffect(() => {
     if (!_.isEmpty(courseId)) {

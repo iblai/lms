@@ -15,8 +15,6 @@ import { AuthProvider, setAccessCheckResponse, TenantProvider } from '@iblai/ibl
 import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
 import { usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
-import { selectRequestedTenant } from '@/features/tenant';
-import { useAppSelector } from '@/lib/hooks';
 import { Spinner } from '@/components/spinner';
 export default function Providers({
   children,
@@ -28,11 +26,24 @@ export default function Providers({
   allowSelfLinking?: boolean;
 }) {
   const pathname = usePathname();
+  const tenant = getTenant();
+  console.log('[PATHNAME UPDATE]: ', { pathname });
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
-  const requestedTenant = useAppSelector(selectRequestedTenant);
+  // The URL is now the source of truth for the requested tenant: `/platform/<tenant>/...`.
+  // Only surface a `requestedTenant` when the URL tenant differs from the
+  // currently-stored tenant — that's the signal the SDK uses to trigger a
+  // tenant switch. When they already match (or the URL has no tenant), there's
+  // nothing to request.
+  const requestedTenant = useMemo(() => {
+    const segments = pathname.split('/').filter(Boolean);
+    const urlTenant = segments[0] === 'platform' ? (segments[1] ?? '') : '';
+    if (!urlTenant || urlTenant === tenant) return '';
+    return urlTenant;
+  }, [pathname, tenant]);
+  console.log('[REQUESTED TENANT UPDATE]: ', { requestedTenant });
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
 
@@ -126,7 +137,7 @@ export default function Providers({
     >
       <TenantProvider
         skip={isSsoLoginRoute || isVersionRoute}
-        currentTenant={getTenant() || ''}
+        currentTenant={tenant || ''}
         requestedTenant={requestedTenant}
         saveCurrentTenant={saveCurrentTenant}
         saveUserTenants={saveUserTenants}
@@ -134,7 +145,7 @@ export default function Providers({
         username={getUserName() || ''}
         onAuthFailure={(reason) => {
           console.error('[TenantProvider] Auth failure:', reason);
-          router.push(`/platform/${getTenant()}/error/403`);
+          router.push(`/platform/${tenant}/error/403`);
         }}
         onLoadPlatformPermissions={onLoadPlatformpermissions}
         fallback={spinnerFallback}
