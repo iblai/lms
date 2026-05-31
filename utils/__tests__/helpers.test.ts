@@ -29,9 +29,14 @@ vi.mock('../localstorage', () => ({
 }));
 
 // Mock @iblai/web-utils
-vi.mock('@iblai/iblai-js/web-utils', () => ({
-  clearCurrentTenantCookie: vi.fn(),
-}));
+vi.mock(import('@iblai/iblai-js/web-utils'), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    clearCurrentTenantCookie: vi.fn(),
+    redirectToAuthSpa: vi.fn(),
+  };
+});
 
 // Import after mocking
 import {
@@ -68,6 +73,7 @@ import {
   DEFAULT_OVERVIEW_PLACEHOLDER,
 } from '../helpers';
 import { getLocalStorageItem } from '../localstorage';
+import { redirectToAuthSpa as sdkRedirectToAuthSpa } from '@iblai/iblai-js/web-utils';
 
 describe('helpers utility functions', () => {
   let locationHref = '';
@@ -372,7 +378,9 @@ describe('helpers utility functions', () => {
 
       await redirectToAuthSpa();
 
-      expect(localStorage.getItem('redirect-to')).toBe('/dashboard?param=value');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({ saveRedirect: true }),
+      );
     });
 
     it('should not save redirect path when saveRedirect is false', async () => {
@@ -384,33 +392,42 @@ describe('helpers utility functions', () => {
 
       await redirectToAuthSpa(undefined, undefined, false, false);
 
-      expect(localStorage.getItem('redirect-to')).toBeNull();
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({ saveRedirect: false }),
+      );
     });
 
     it('should redirect to auth URL with correct parameters', async () => {
       await redirectToAuthSpa();
 
-      expect(locationHref).toContain('https://auth.example.com/login');
-      expect(locationHref).toContain('app=skills');
-      expect(locationHref).toContain('redirect-to=https://skills.example.com');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({
+          authUrl: 'https://auth.example.com',
+          appName: 'skills',
+        }),
+      );
     });
 
     it('should include logout parameter when logout is true', async () => {
       await redirectToAuthSpa(undefined, undefined, true);
 
-      expect(locationHref).toContain('logout=1');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(expect.objectContaining({ logout: true }));
     });
 
     it('should include tenant parameter when provided', async () => {
       await redirectToAuthSpa(undefined, 'custom-tenant');
 
-      expect(locationHref).toContain('tenant=custom-tenant');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({ platformKey: 'custom-tenant' }),
+      );
     });
 
     it('should use provided redirectTo path', async () => {
       await redirectToAuthSpa('/custom/path');
 
-      expect(localStorage.getItem('redirect-to')).toBe('/custom/path');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({ redirectTo: '/custom/path' }),
+      );
     });
   });
 
@@ -698,7 +715,7 @@ describe('helpers utility functions', () => {
 
       await redirectToAuthSpa();
 
-      expect(locationHref).toContain('https://auth.example.com/login');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalled();
     });
   });
 
@@ -737,8 +754,9 @@ describe('helpers utility functions', () => {
 
       // After timer elapses, suppression flag is cleared
       vi.advanceTimersByTime(2000);
+      vi.mocked(sdkRedirectToAuthSpa).mockClear();
       await redirectToAuthSpa();
-      expect(locationHref).toContain('https://auth.example.com/login');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalled();
 
       vi.useRealTimers();
     });
@@ -750,13 +768,14 @@ describe('helpers utility functions', () => {
 
       await handleTenantSwitch('new-tenant');
 
-      locationHref = '';
+      vi.mocked(sdkRedirectToAuthSpa).mockClear();
       await redirectToAuthSpa();
-      expect(locationHref).toBe('');
+      expect(sdkRedirectToAuthSpa).not.toHaveBeenCalled();
 
       vi.advanceTimersByTime(2000);
+      vi.mocked(sdkRedirectToAuthSpa).mockClear();
       await redirectToAuthSpa();
-      expect(locationHref).toContain('https://auth.example.com/login');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalled();
 
       vi.useRealTimers();
     });
