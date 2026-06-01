@@ -247,6 +247,64 @@ describe('EducationBox', () => {
     expect(screen.getByText('Ongoing Program')).toBeInTheDocument();
   });
 
+  it('renders the grade when one is set', () => {
+    mockGetUserEducationQuery.mockReturnValue({
+      data: [
+        {
+          degree: 'BSc',
+          institution: { name: 'Uni A' },
+          start_date: '2015-01-01',
+          end_date: '2019-01-01',
+          grade: 'A',
+          description: null,
+        },
+      ],
+      isLoading: false,
+      error: null,
+    });
+    render(<EducationBox />);
+    expect(screen.getByText(/Grade: A/)).toBeInTheDocument();
+  });
+
+  it('does not render grade info when grade is not set', () => {
+    mockGetUserEducationQuery.mockReturnValue({
+      data: [
+        {
+          degree: 'BSc',
+          institution: { name: 'Uni A' },
+          start_date: '2015-01-01',
+          end_date: '2019-01-01',
+          grade: null,
+          description: null,
+        },
+      ],
+      isLoading: false,
+      error: null,
+    });
+    render(<EducationBox />);
+    expect(screen.getByText('BSc')).toBeInTheDocument();
+    expect(screen.queryByText(/Grade:/)).not.toBeInTheDocument();
+  });
+
+  it('does not render grade info when grade is an empty string', () => {
+    mockGetUserEducationQuery.mockReturnValue({
+      data: [
+        {
+          degree: 'BSc',
+          institution: { name: 'Uni A' },
+          start_date: '2015-01-01',
+          end_date: '2019-01-01',
+          grade: '',
+          description: null,
+        },
+      ],
+      isLoading: false,
+      error: null,
+    });
+    render(<EducationBox />);
+    expect(screen.queryByText(/Grade:/)).not.toBeInTheDocument();
+  });
+
   it('renders multiple education items', () => {
     mockGetUserEducationQuery.mockReturnValue({
       data: [
