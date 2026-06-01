@@ -38,11 +38,12 @@ interface ChatButtonProps {
 }
 
 export function ChatButton({ isMobile = false }: ChatButtonProps) {
-  const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
   const { isOpen, setIsOpen, courseMentor, mentorSidebarHidden } = useChatState();
   const [alreadyOpened, setAlreadyOpened] = useState(false);
+  const tenant = getTenant();
+  const username = getUserName();
   const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
 
   const handleOpen = (open: boolean) => {
@@ -57,34 +58,59 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
   const [mentorInUse, setMentorInUse] = useState<string | null>(null);
 
   const handleFetchMentors = async () => {
+    // Step 1 - use course mentor if set
     if (courseMentor) {
       setMentorInUse(courseMentor);
       return;
     }
     if (!metadataLoaded) return;
+
+    // Step 2 - use embedded mentor if set
     const embeddedMentor = getEmbeddedMentorToUse();
     if (embeddedMentor) {
       setMentorInUse(embeddedMentor?.unique_id);
       return;
     }
+
+    // Step 3 - fetch for recently accessed mentors
     try {
       const response = await getMentors({
-        org: getTenant(),
-        username: getUserName(),
-        query: DEFAULT_MENTOR_NAME,
-      });
-      if (_.isEmpty(response?.data?.results)) {
-        throw new Error('No mentors found');
+        org: tenant,
+        username: username,
+        orderBy: 'recently_accessed_at',
+        limit: 10,
+      }).unwrap();
+      // Step 3.1 - if there are recently accessed mentors, use the first one
+      if (!_.isEmpty(response?.results)) {
+        const mentor =
+          (response?.results.find((item: any) => item?.metadata?.default) || response?.results[0])
+            ?.unique_id || null;
+        if (!mentor) {
+          throw new Error('No mentors found');
+        }
+        setMentorInUse(mentor);
+        return;
       }
-      const mentor =
-        (
-          response?.data?.results.find((item: any) => item?.metadata?.default) ||
-          response?.data?.results[0]
-        )?.unique_id || null;
-      if (!mentor) {
-        throw new Error('No mentors found');
+      // Step 3.2 - if no recent mentors, get featured mentors
+      const featuredMentorsResult = await getMentors({
+        org: tenant,
+        username: username,
+        featured: true,
+        limit: 10,
+      }).unwrap();
+      if (!_.isEmpty(featuredMentorsResult?.results)) {
+        const mentor =
+          (
+            featuredMentorsResult?.results.find((item: any) => item?.metadata?.default) ||
+            featuredMentorsResult?.results[0]
+          )?.unique_id || null;
+        if (!mentor) {
+          throw new Error('No mentors found');
+        }
+        setMentorInUse(mentor);
+        return;
       }
-      setMentorInUse(mentor);
+      throw new Error('No mentors found');
     } catch {
       handleOpen(false);
       setMentorInUse(null);
