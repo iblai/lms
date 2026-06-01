@@ -95,6 +95,12 @@ export const useCourseDetail = (rawCourseId: string) => {
   );
   const [courseOutlineLoading, setCourseOutlineLoading] = useState(false);
   const [courseEligibilityLoading, setCourseEligibilityLoading] = useState(false);
+  // Flips to `true` the first time `handleFetchCourseEligibilityInfo` settles.
+  // `courseEligibilityLoading` alone isn't sufficient — it's `false` both before
+  // the fetch starts and after it finishes, so consumers (e.g. the `trigger_cta`
+  // auto-click) need a positive "has-fetched" signal to avoid acting on the
+  // initial default eligibility.
+  const [courseEligibilityFetched, setCourseEligibilityFetched] = useState(false);
   const [courseButtonActionLoading, setCourseButtonActionLoading] = useState(false);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
   const [courseCompletion, setCourseCompletion] = useState<CourseCompletion | null>(null);
@@ -205,6 +211,7 @@ export const useCourseDetail = (rawCourseId: string) => {
 
   const handleFetchCourseEligibilityInfo = async () => {
     setCourseEligibilityLoading(true);
+    setCourseEligibilityFetched(false);
     // Monetization access supersedes other eligibility rules — if the user
     // doesn't have monetization access, show Purchase Now and stop.
     let hasMonetizationAccess = true;
@@ -217,6 +224,7 @@ export const useCourseDetail = (rawCourseId: string) => {
         btn_action: () => handleOpenMonetizationCheckoutModal(),
       });
       setCourseEligibilityLoading(false);
+      setCourseEligibilityFetched(true);
       return;
     }
 
@@ -292,14 +300,29 @@ export const useCourseDetail = (rawCourseId: string) => {
         }
       }
       setCourseEligibilityLoading(false);
+      setCourseEligibilityFetched(true);
     } else {
       applyEligibility({
         btn_label: ENROLL_NOW_LABEL,
         btn_action: handleEnrollToCourse,
       });
       setCourseEligibilityLoading(false);
+      setCourseEligibilityFetched(true);
     }
   };
+
+  // Once the course metadata is loaded, automatically resolve eligibility +
+  // monetization-access internally. The page used to call
+  // `handleFetchCourseEligibilityInfo` itself after `course` arrived — moving
+  // it here keeps the responsibility (and the `applyEligibility` state
+  // machine) entirely inside the hook so consumers don't have to remember to
+  // wire it up.
+  useEffect(() => {
+    if (_.isEmpty(course)) return;
+    handleFetchCourseEligibilityInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course]);
+
   const handleFetchCourseInfo = async () => {
     setCourseInfoLoadingState('loading');
     try {
@@ -410,6 +433,7 @@ export const useCourseDetail = (rawCourseId: string) => {
     courseEligibility,
     courseOutlineLoading,
     courseEligibilityLoading,
+    courseEligibilityFetched,
     courseButtonActionLoading,
     isCourseProgressLoading,
     isCourseCompletionLoading,

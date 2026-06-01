@@ -35,7 +35,6 @@ export default function CourseDetailsPage() {
   });
 
   const {
-    handleFetchCourseEligibilityInfo,
     handleFetchCourseInfo,
     handleFetchCourseSyllabus,
     handleOpenLesson,
@@ -44,6 +43,7 @@ export default function CourseDetailsPage() {
     courseEligibility,
     courseOutlineLoading,
     courseEligibilityLoading,
+    courseEligibilityFetched,
     courseButtonActionLoading,
     courseInfoLoadingState,
     userLoggedIn,
@@ -64,6 +64,11 @@ export default function CourseDetailsPage() {
     if (searchParams.get('trigger_cta') !== '1') return;
     if (!userLoggedIn) return;
     if (courseInfoLoadingState !== 'successful') return;
+    // Wait until `handleFetchCourseEligibilityInfo` has actually settled —
+    // `courseEligibilityLoading` is `false` both before and after the fetch,
+    // so we need the positive `courseEligibilityFetched` signal to know the
+    // resolved CTA reflects the real eligibility.
+    if (!courseEligibilityFetched) return;
     if (courseEligibilityLoading || courseButtonActionLoading) return;
     if (!courseEligibility?.btn_action || courseEligibility.disabled) return;
 
@@ -76,6 +81,7 @@ export default function CourseDetailsPage() {
     searchParams,
     userLoggedIn,
     courseInfoLoadingState,
+    courseEligibilityFetched,
     courseEligibilityLoading,
     courseButtonActionLoading,
     courseEligibility,
@@ -95,7 +101,8 @@ export default function CourseDetailsPage() {
         setMentorSidebarHidden(true);
       }
       handleFetchCourseSyllabus();
-      handleFetchCourseEligibilityInfo();
+      // Eligibility + monetization-access is now driven internally by
+      // `useCourseDetail` once `course` arrives — no manual trigger needed.
     }
   }, [course]);
 
