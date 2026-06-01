@@ -11,11 +11,23 @@ import {
   useCurrentTenant,
   useUserTenants,
 } from '@/utils/localstorage';
-import { AuthProvider, setAccessCheckResponse, TenantProvider } from '@iblai/iblai-js/web-utils';
+import {
+  AuthProvider,
+  isLoggedIn,
+  setAccessCheckResponse,
+  TenantProvider,
+} from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
 import { Spinner } from '@/components/spinner';
+
+declare global {
+  interface Window {
+    localStorage: Storage;
+  }
+}
+
 export default function Providers({
   children,
   allowSelfLinking = false,
@@ -26,23 +38,17 @@ export default function Providers({
   allowSelfLinking?: boolean;
 }) {
   const pathname = usePathname();
-  const tenant = getTenant();
+  const [tenant, setTenant] = useState('');
+  useEffect(() => {
+    setTenant(getTenant());
+  }, []);
   console.log('[PATHNAME UPDATE]: ', { pathname });
   const router = useRouter();
+  const { tenant: requestedTenant } = useParams<{ tenant: string }>();
   const [ready, setReady] = useState(false);
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
-  // The URL is now the source of truth for the requested tenant: `/platform/<tenant>/...`.
-  // Only surface a `requestedTenant` when the URL tenant differs from the
-  // currently-stored tenant — that's the signal the SDK uses to trigger a
-  // tenant switch. When they already match (or the URL has no tenant), there's
-  // nothing to request.
-  const requestedTenant = useMemo(() => {
-    const segments = pathname.split('/').filter(Boolean);
-    const urlTenant = segments[0] === 'platform' ? (segments[1] ?? '') : '';
-    if (!urlTenant || urlTenant === tenant) return '';
-    return urlTenant;
-  }, [pathname, tenant]);
+  const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
   console.log('[REQUESTED TENANT UPDATE]: ', { requestedTenant });
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
@@ -84,6 +90,10 @@ export default function Providers({
 
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    setUserIsLoggedIn(isLoggedIn());
+  }, []);
+
   const middleware = useMemo(() => {
     const map = new Map();
 
@@ -97,14 +107,14 @@ export default function Providers({
     // Discover / course-about / program-about pages are only public when the
     // tenant has self-linking enabled. Otherwise they fall through to the
     // standard auth gate.
-    if (allowSelfLinking) {
+    if (allowSelfLinking && !userIsLoggedIn) {
       map.set(new RegExp('^/platform/[^/]+/discover(/|$)'), async () => false);
       map.set(new RegExp('^/platform/[^/]+/courses/[^/]+/?$'), async () => false);
       map.set(new RegExp('^/platform/[^/]+/programs/[^/]+/?$'), async () => false);
     }
 
     return map;
-  }, [allowSelfLinking]);
+  }, [allowSelfLinking, userIsLoggedIn]);
 
   const spinnerFallback = (
     <div className="flex h-dvh w-screen items-center justify-center">
@@ -129,7 +139,6 @@ export default function Providers({
         logout = false,
         saveRedirect = true,
       ) => redirectToAuthSpa(redirectTo, platformKey, logout, saveRedirect)}
-      hasNonExpiredAuthToken={hasNonExpiredAuthToken}
       username={getUserName() || ''}
       storageService={LocalStorageService.getInstance()}
       middleware={middleware}
@@ -138,7 +147,7 @@ export default function Providers({
       <TenantProvider
         skip={isSsoLoginRoute || isVersionRoute}
         currentTenant={tenant || ''}
-        requestedTenant={requestedTenant}
+        requestedTenant={requestedTenant || ''}
         saveCurrentTenant={saveCurrentTenant}
         saveUserTenants={saveUserTenants}
         handleTenantSwitch={(tenant, saveRedirect) => handleTenantSwitch(tenant, saveRedirect)}
