@@ -73,6 +73,12 @@ const renderWithContext = (ui: React.ReactElement, contextValue = defaultContext
   return render(<ChatContext.Provider value={contextValue}>{ui}</ChatContext.Provider>);
 };
 
+// The lazy `getMentors` trigger returns an RTK-Query result whose `.unwrap()`
+// resolves to the response payload directly (i.e. `{ results: [...] }`).
+const makeMentorResult = (results: any[]) => ({
+  unwrap: () => Promise.resolve({ results }),
+});
+
 describe('useChatState', () => {
   it('returns context values', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -87,9 +93,9 @@ describe('useChatState', () => {
 describe('ChatButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([{ unique_id: 'mentor-1', metadata: { default: true } }]),
+    );
     mockGetEmbeddedMentorToUse.mockReturnValue(null);
     mockUseTenantMetadata.mockReturnValue({
       getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
@@ -152,9 +158,9 @@ describe('ChatButton', () => {
   });
 
   it('renders mobile version when isMobile is true', async () => {
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([{ unique_id: 'mentor-1', metadata: { default: true } }]),
+    );
     const { container } = renderWithContext(<ChatButton isMobile />);
     await waitFor(() => {
       expect(container).toBeTruthy();
@@ -164,9 +170,9 @@ describe('ChatButton', () => {
   it('handles open button click on desktop', async () => {
     const setIsOpen = vi.fn();
     const contextValue = { ...defaultContextValue, setIsOpen };
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([{ unique_id: 'mentor-1', metadata: { default: true } }]),
+    );
     renderWithContext(<ChatButton />, contextValue);
     await waitFor(() => {
       const btn = screen.queryByLabelText('Open chat assistant');
@@ -229,34 +235,32 @@ describe('ChatButton', () => {
   });
 
   it('shows toast error when no mentors found', async () => {
-    await import('sonner');
-    const _ = await import('lodash');
-    vi.mocked(_.default.isEmpty).mockReturnValue(true);
-    mockGetMentors.mockResolvedValue({ data: { results: [] } });
+    const { toast } = await import('sonner');
+    // Both the recently-accessed and featured lookups return nothing.
+    mockGetMentors.mockReturnValue(makeMentorResult([]));
 
     renderWithContext(<ChatButton />);
-    await waitFor(
-      () => {
-        // Should call toast.error
-      },
-      { timeout: 500 },
-    );
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('No mentors found');
+    });
   });
 
   it('handles mentor fetch error gracefully', async () => {
-    await import('sonner');
-    mockGetMentors.mockRejectedValue(new Error('Network error'));
-    const { container } = renderWithContext(<ChatButton />);
+    const { toast } = await import('sonner');
+    mockGetMentors.mockReturnValue({
+      unwrap: () => Promise.reject(new Error('Network error')),
+    } as any);
+    renderWithContext(<ChatButton />);
     await waitFor(() => {
-      expect(container).toBeTruthy();
-    }).catch(() => {});
+      expect(toast.error).toHaveBeenCalledWith('No mentors found');
+    });
   });
 
   it('shows mentor AI element when alreadyOpened and mentorInUse on desktop', async () => {
     const contextValue = { ...defaultContextValue, isOpen: true };
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([{ unique_id: 'mentor-1', metadata: { default: true } }]),
+    );
     const { container } = renderWithContext(<ChatButton />, contextValue);
     await waitFor(() => {
       expect(container).toBeTruthy();
@@ -265,9 +269,9 @@ describe('ChatButton', () => {
 
   it('shows mentor AI element when alreadyOpened and mentorInUse on mobile', async () => {
     const contextValue = { ...defaultContextValue, isOpen: true };
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([{ unique_id: 'mentor-1', metadata: { default: true } }]),
+    );
     const { container } = renderWithContext(<ChatButton isMobile />, contextValue);
     await waitFor(() => {
       expect(container).toBeTruthy();
@@ -277,9 +281,9 @@ describe('ChatButton', () => {
   it('handles open click on mobile version', async () => {
     const setIsOpen = vi.fn();
     const contextValue = { ...defaultContextValue, isOpen: false, setIsOpen };
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([{ unique_id: 'mentor-1', metadata: { default: true } }]),
+    );
     renderWithContext(<ChatButton isMobile />, contextValue);
     await waitFor(() => {
       const btn = document.querySelector('button');
@@ -290,14 +294,12 @@ describe('ChatButton', () => {
   it('handles mentor with no default metadata', async () => {
     const _ = await import('lodash');
     vi.mocked(_.default.isEmpty).mockReturnValue(false);
-    mockGetMentors.mockResolvedValue({
-      data: {
-        results: [
-          { unique_id: 'mentor-1', metadata: {} },
-          { unique_id: 'mentor-2', metadata: { default: false } },
-        ],
-      },
-    });
+    mockGetMentors.mockReturnValue(
+      makeMentorResult([
+        { unique_id: 'mentor-1', metadata: {} },
+        { unique_id: 'mentor-2', metadata: { default: false } },
+      ]),
+    );
     const { container } = renderWithContext(<ChatButton />);
     await waitFor(() => {
       expect(container).toBeTruthy();
@@ -317,5 +319,80 @@ describe('ChatButton', () => {
       );
     });
     expect(setIsOpen).not.toHaveBeenCalled();
+  });
+});
+
+describe('ChatButton - mentor resolution logic', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetEmbeddedMentorToUse.mockReturnValue(null);
+    mockUseTenantMetadata.mockReturnValue({
+      getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
+      metadataLoaded: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('uses the course mentor first and skips the mentor lookup entirely', async () => {
+    const contextWithCourseMentor = {
+      ...defaultContextValue,
+      courseMentor: 'course-mentor-id',
+    };
+    renderWithContext(<ChatButton />, contextWithCourseMentor as any);
+    await waitFor(() => {
+      expect(mockGetMentors).not.toHaveBeenCalled();
+    });
+  });
+
+  it('uses the embedded mentor before falling back to the mentor lookup', async () => {
+    mockGetEmbeddedMentorToUse.mockReturnValue({ unique_id: 'embedded-mentor-id' } as any);
+    renderWithContext(<ChatButton />);
+    await waitFor(() => {
+      expect(mockGetMentors).not.toHaveBeenCalled();
+    });
+  });
+
+  it('queries recently accessed mentors first', async () => {
+    mockGetMentors.mockReturnValue(makeMentorResult([{ unique_id: 'recent-1', metadata: {} }]));
+    renderWithContext(<ChatButton />);
+    await waitFor(() => {
+      expect(mockGetMentors).toHaveBeenCalledWith({
+        org: 'test-tenant',
+        username: 'test-user',
+        orderBy: 'recently_accessed_at',
+        limit: 10,
+      });
+    });
+    // A recent mentor exists, so the featured fallback must not run.
+    expect(mockGetMentors).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to featured mentors when there are no recently accessed mentors', async () => {
+    mockGetMentors
+      .mockReturnValueOnce(makeMentorResult([]))
+      .mockReturnValueOnce(makeMentorResult([{ unique_id: 'featured-1', metadata: {} }]));
+    renderWithContext(<ChatButton />);
+    await waitFor(() => {
+      expect(mockGetMentors).toHaveBeenCalledTimes(2);
+    });
+    expect(mockGetMentors).toHaveBeenNthCalledWith(2, {
+      org: 'test-tenant',
+      username: 'test-user',
+      featured: true,
+      limit: 10,
+    });
+  });
+
+  it('shows an error when neither recent nor featured mentors are found', async () => {
+    const { toast } = await import('sonner');
+    mockGetMentors.mockReturnValue(makeMentorResult([]));
+    renderWithContext(<ChatButton />);
+    await waitFor(() => {
+      expect(mockGetMentors).toHaveBeenCalledTimes(2);
+    });
+    expect(toast.error).toHaveBeenCalledWith('No mentors found');
   });
 });
