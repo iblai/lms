@@ -57,13 +57,15 @@ vi.mock('@/features/mentor', () => ({
   })),
 }));
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
-    ),
-  },
-}));
+vi.mock('lodash', () => {
+  const isEmpty = (val: any) =>
+    val == null ||
+    (Array.isArray(val)
+      ? val.length === 0
+      : typeof val === 'object' && Object.keys(val).length === 0);
+  const lodash = { isEmpty };
+  return { default: lodash, isEmpty };
+});
 
 const defaultContextValue = {
   isOpen: false,
@@ -85,8 +87,14 @@ const renderWithContext = (contextValue: typeof defaultContextValue = defaultCon
   );
 
 describe('CourseAgentChat', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Re-establish useLazyGetMentorsQuery mock (may be cleared by other test files)
+    const { useLazyGetMentorsQuery } = await import('@iblai/iblai-js/data-layer');
+    vi.mocked(useLazyGetMentorsQuery).mockReturnValue([
+      mockGetMentors,
+      { isLoading: false, isFetching: false },
+    ] as any);
     mockGetMentors.mockResolvedValue({
       data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
     });
@@ -98,7 +106,7 @@ describe('CourseAgentChat', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders a loader while tenant metadata is loading', () => {
@@ -493,11 +501,11 @@ describe('CourseAgentChat', () => {
       const observe = vi.fn();
       const originalMO = window.MutationObserver;
       // @ts-ignore — override constructor for the duration of the test
-      window.MutationObserver = vi.fn().mockImplementation(() => ({
-        observe,
-        disconnect,
-        takeRecords: () => [],
-      }));
+      window.MutationObserver = vi.fn(function (this: any) {
+        this.observe = observe;
+        this.disconnect = disconnect;
+        this.takeRecords = () => [];
+      }) as any;
 
       const { container, unmount } = renderWithContext();
       const mentorEl = await waitFor(() => {

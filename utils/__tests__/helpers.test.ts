@@ -550,7 +550,14 @@ describe('helpers utility functions', () => {
   });
 
   describe('handleLogout', () => {
-    it('should clear localStorage and set tenant', () => {
+    it('should clear localStorage and set tenant', async () => {
+      const { getLocalStorageItem } = await import('../localstorage');
+      vi.mocked(getLocalStorageItem).mockImplementation((key: string) => {
+        const store: Record<string, string> = {
+          tenant: 'test-tenant',
+        };
+        return store[key] || null;
+      });
       localStorage.setItem('someKey', 'someValue');
       handleLogout('https://redirect.example.com');
       expect(localStorage.getItem('tenant')).toBe('test-tenant');
