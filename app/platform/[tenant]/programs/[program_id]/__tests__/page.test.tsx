@@ -10,10 +10,13 @@ vi.mock('next/image', () => ({
 
 const mockPush = vi.fn();
 const mockParams = vi.hoisted(() => ({ program_id: 'prog-1' }));
+const searchParamsState = vi.hoisted(() => ({ triggerCta: null as string | null }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   useParams: () => mockParams,
-  useSearchParams: () => ({ get: vi.fn(() => null) }),
+  useSearchParams: () => ({
+    get: (key: string) => (key === 'trigger_cta' ? searchParamsState.triggerCta : null),
+  }),
 }));
 
 vi.mock('sonner', () => ({
@@ -244,6 +247,8 @@ describe('ProgramDetailPage', () => {
     enrollmentMutationState.isSuccess = false;
     updateMutationState.isLoading = false;
     isAdminState.value = true;
+    canMonetizeState.value = true;
+    searchParamsState.triggerCta = null;
     programMetadataState.data = undefined;
     programMetadataState.isLoading = false;
     programMetadataState.refetch = vi.fn();
@@ -892,5 +897,25 @@ describe('ProgramDetailPage', () => {
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalled();
     });
+  });
+
+  it('grants monetization access without calling checkAccess when canMonetize is false', async () => {
+    canMonetizeState.value = false;
+    await renderPage();
+    const cta = await screen.findByTestId('program-page-cta');
+    // Access is granted locally, so the enroll path is shown (not Purchase Now).
+    expect(cta).toHaveTextContent('Enroll Now');
+    expect(mockCheckAccess).not.toHaveBeenCalled();
+  });
+
+  it('auto-fires the CTA and strips the param when ?trigger_cta=1', async () => {
+    searchParamsState.triggerCta = '1';
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+    await renderPage();
+    await waitFor(() => {
+      expect(mockCreateCatalogProgramSelfEnrollment).toHaveBeenCalled();
+    });
+    expect(replaceStateSpy).toHaveBeenCalled();
+    replaceStateSpy.mockRestore();
   });
 });
