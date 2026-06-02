@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.36.0](https://github.com/iblai/lms/compare/skills-v0.35.0...skills-v0.36.0) (2026-06-02)
+
+### Features
+
+* **tauri:** add oauth popup, bump to v1.0.6, rename identifier ([d1a594e](https://github.com/iblai/lms/commit/d1a594e1efc79e39d6c7f1bc316cac4270c4091e))
+
+### Bug Fixes
+
+* **security:** add permissions to workflows missing them ([fb8e2f1](https://github.com/iblai/lms/commit/fb8e2f17818c824de15f9e07f6c7dc187d2fc1fd))
+* **security:** update vite and lodash to patch vulnerabilities ([8b8933f](https://github.com/iblai/lms/commit/8b8933f38857e4b61dfb8b045ad65a4915c2d956))
+* **tests:** fix 18 failing tests across 3 test files ([b0d9625](https://github.com/iblai/lms/commit/b0d9625f728df10d1f90e6dee0144e7f0f28664b))
+* **tests:** fix lint/typecheck errors and add missing test coverage ([4cbba5b](https://github.com/iblai/lms/commit/4cbba5bf05fd7d04b7540b3555e8ade0d67825a0))
+* **tests:** resolve lint error and typecheck failures ([0bd8a74](https://github.com/iblai/lms/commit/0bd8a74139b9ebf21aab26196ff1bb1d4e92433f))
+* **tests:** update redirectToAuthSpa mock to use importOriginal ([2d4011a](https://github.com/iblai/lms/commit/2d4011a216424cf1282a627e5cdf2553459f3985))
+
+### Chores
+
+* bump iblai-js to 1.17.0 ([c31d557](https://github.com/iblai/lms/commit/c31d557eba831bd8de5d62a468d523410c820ab7))
+
+### CI
+
+* **docker:** flip run-name 'Build skills' → 'Build lms' ([2def577](https://github.com/iblai/lms/commit/2def5774dfdabe8789618062a761e452fd36b7cb)), closes [iblai/iblai-cli-ops#1985](https://github.com/iblai/iblai-cli-ops/issues/1985) [iblai/iblai-prod-images#154](https://github.com/iblai/iblai-prod-images/issues/154)
+
 ## [0.35.0](https://github.com/iblai/skillsai/compare/skills-v0.34.0...skills-v0.35.0) (2026-05-29)
 
 ### Bug Fixes
