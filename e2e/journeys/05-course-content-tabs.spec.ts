@@ -1,17 +1,13 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell, waitForLoaderToDisappear } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { gotoTenantPage, waitForAppShell, waitForLoaderToDisappear } from '../utils/navigation';
 
 /**
  * Helper: Navigate from /home → first course → Access Course → course content tabs.
  * Returns true if successful, false if skipped (no courses).
  */
 async function navigateToCourseContent(page: Page): Promise<boolean> {
-  await page.goto(`${SKILL_HOST}/home`, {
-    timeout: 120000,
-  });
+  await gotoTenantPage(page, 'home', { timeout: 120000 });
   await waitForAppShell(page);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
@@ -335,7 +331,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    await addPostButton.click();
+    await addPostButton.first().click();
 
     const addPostHeading = discussionIframe.getByRole('heading', { name: 'Add a post' });
     await expect(addPostHeading).toBeVisible({ timeout: 30000 });
@@ -363,7 +359,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const submitButton = discussionIframe.getByRole('button', { name: 'Submit' });
     await expect(submitButton).toBeVisible({ timeout: 15000 });
     await expect(submitButton).toBeEnabled({ timeout: 15000 });
-    await submitButton.click();
+    await submitButton.first().click();
 
     // Wait for submission to complete
     await Promise.race([
@@ -401,7 +397,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const url = new URL(page.url());
     // /course-content/<course_id>/<tab> — strip the trailing tab to get the course id.
     const parts = url.pathname.split('/').filter(Boolean);
-    const courseId = decodeURIComponent(parts[1] || '');
+    const courseId = decodeURIComponent(parts[3] || '');
 
     const authoringTab = page.getByRole('link', { name: 'Authoring' });
     await expect(authoringTab).toBeVisible({ timeout: 10000 });
@@ -580,7 +576,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Agent tab renders agent-ai and keeps edX iframe wrapper hidden');
   });
 
-  test('Checkpoint 15: Agent tab route rejects courses with agent_content_mode !== true', async ({
+  test('Checkpoint 15: Agent tab route redirect to course tab for courses with agent_content_mode !== true', async ({
     page,
   }) => {
     const ready = await navigateToCourseContent(page);
@@ -606,9 +602,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const agentUrl = courseUrl.replace(/\/(course|progress|dates|discussion)(\?.*)?$/, '/agent');
 
     await page.goto(agentUrl, { timeout: 60_000 });
-    await page.waitForURL(/\/error\/403/, { timeout: 30_000 });
-    await expect(page).toHaveURL(/\/error\/403/);
-    logger.info('Agent route redirects to /error/403 when agent_content_mode !== true');
+    await page.waitForURL(/\/course-content\/.+\/course/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/course-content\/.+\/course/);
+    logger.info('Agent route redirects to course tab when agent_content_mode !== true');
   });
 
   test('Checkpoint 16: Previous/Keep Learning buttons navigate units from the tabs row', async ({

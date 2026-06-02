@@ -1,12 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
 
 const FAKE_COURSE_ID = 'course-v1:cross-tenant-test+CT101+2026';
 const ENCODED_COURSE_ID = encodeURIComponent(FAKE_COURSE_ID);
-const COURSE_ABOUT_URL = `${SKILL_HOST}/courses/${ENCODED_COURSE_ID}`;
+const COURSE_ABOUT_SUBPATH = `courses/${ENCODED_COURSE_ID}`;
 
 /**
  * Build a minimal CourseEdxData payload sufficient for the course about page
@@ -57,8 +55,7 @@ function buildCourseFixture(platformKey: string, overrides: Record<string, unkno
 
 /**
  * Intercept the course metadata API (and a few siblings) so we can serve a
- * course payload with an arbitrary `platform_key`. This is what drives the
- * `isUnauthorizedTenant` branch in the CourseAccessGuard.
+ * course payload with an arbitrary `platform_key` for the CourseAccessGuard.
  */
 async function setupCourseApiMocks(page: Page, platformKey: string) {
   await page.route('**/api/ibl/v1/course_metadata*', async (route) => {
@@ -93,18 +90,8 @@ async function setupCourseApiMocks(page: Page, platformKey: string) {
   });
 }
 
-/**
- * Force-set the user's tenants list in localStorage on every navigation so
- * the CourseAccessGuard sees a deterministic tenants array.
- */
-async function setTenantsOnInit(page: Page, tenants: { key: string }[]) {
-  await page.addInitScript((tenantsJson) => {
-    window.localStorage.setItem('tenants', tenantsJson);
-  }, JSON.stringify(tenants));
-}
-
 async function getCurrentTenant(page: Page): Promise<string> {
-  await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+  await gotoTenantPage(page, 'home', { timeout: 120_000 });
   await waitForAppShell(page);
   const tenant = await page.evaluate(() => window.localStorage.getItem('tenant') || '');
   return tenant;
@@ -116,8 +103,8 @@ async function getCurrentTenant(page: Page): Promise<string> {
  * Validates the CourseAccessGuard's tenant-mismatch handling:
  *  1. Authorized: course.platform_key === current tenant — guard renders children
  *  2. Authorized: course.platform_key === 'main' — guard renders children
- *  3. Unauthorized + platform_key not in user tenants — redirects to /error/403
- *  4. /error/404 is reached when the metadata endpoint returns an empty body
+ *  3. /error/404 is reached when the metadata endpoint returns an empty body
+ *  4. A foreign platform_key still renders — cross-tenant gating was removed
  */
 test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () => {
   test.setTimeout(120_000);
@@ -134,7 +121,7 @@ test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () =>
 
     await setupCourseApiMocks(page, currentTenant);
 
-    await page.goto(COURSE_ABOUT_URL, { timeout: 60_000 });
+    await gotoTenantPage(page, COURSE_ABOUT_SUBPATH, { timeout: 60_000 });
     await waitForAppShell(page);
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
@@ -146,7 +133,7 @@ test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () =>
   test('CP-2: Renders course about page when platform_key is "main"', async ({ page }) => {
     await setupCourseApiMocks(page, 'main');
 
-    await page.goto(COURSE_ABOUT_URL, { timeout: 60_000 });
+    await gotoTenantPage(page, COURSE_ABOUT_SUBPATH, { timeout: 60_000 });
     await waitForAppShell(page);
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
@@ -155,22 +142,7 @@ test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () =>
     logger.info('Guard rendered children for platform_key="main"');
   });
 
-  test('CP-3: Redirects to /error/403 when platform_key is foreign and not in user tenants', async ({
-    page,
-  }) => {
-    const foreignKey = `foreign-tenant-${Date.now()}`;
-    await setupCourseApiMocks(page, foreignKey);
-    await setTenantsOnInit(page, [{ key: 'tenant-a' }, { key: 'tenant-b' }]);
-
-    await page.goto(COURSE_ABOUT_URL, { timeout: 60_000 });
-    await page.waitForURL(/\/error\/403/, { timeout: 30_000 });
-    expect(page.url()).toMatch(/\/error\/403/);
-    logger.info('Guard redirected to /error/403 for unmatched foreign tenant');
-  });
-
-  test('CP-4: Empty metadata response surfaces /error/404 (not the cross-tenant branch)', async ({
-    page,
-  }) => {
+  test('CP-3: Empty metadata response surfaces /error/404', async ({ page }) => {
     await page.route('**/api/ibl/v1/course_metadata*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -179,9 +151,26 @@ test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () =>
       });
     });
 
-    await page.goto(COURSE_ABOUT_URL, { timeout: 60_000 });
+    await gotoTenantPage(page, COURSE_ABOUT_SUBPATH, { timeout: 60_000 });
     await page.waitForURL(/\/error\/404/, { timeout: 30_000 });
     expect(page.url()).toMatch(/\/error\/404/);
     logger.info('Empty metadata response routed to /error/404');
+  });
+
+  test('CP-4: Renders course about page for a foreign platform_key (cross-tenant gating removed)', async ({
+    page,
+  }) => {
+    // The guard no longer gates on platform_key, so a course whose platform_key
+    // does not match the current tenant must still render rather than redirect
+    // to /error/403. This pins the removal of the cross-tenant branch.
+    const foreignKey = `foreign-tenant-${Date.now()}`;
+    await setupCourseApiMocks(page, foreignKey);
+
+    await gotoTenantPage(page, COURSE_ABOUT_SUBPATH, { timeout: 60_000 });
+    await waitForAppShell(page);
+
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+    expect(page.url()).not.toMatch(/\/error\/403/);
+    logger.info('Guard rendered children for a foreign platform_key — cross-tenant gating is gone');
   });
 });

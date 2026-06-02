@@ -1,13 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 15: Notifications', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
@@ -129,7 +127,7 @@ test.describe('Journey 15: Notifications', () => {
 
     if (!hasViewAll) {
       // Alternatively navigate directly
-      await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+      await gotoTenantPage(page, 'notifications', { timeout: 60_000 });
       await waitForAppShell(page);
     } else {
       await viewAllLink.click();
@@ -140,7 +138,7 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-4: notification list shows titles and timestamps', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'notifications', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // Check for notification items
@@ -174,7 +172,7 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-5: click notification navigates to detail', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'notifications', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const notificationItem = page
@@ -209,7 +207,7 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-6: notification detail shows content', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'notifications', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const notificationItem = page
@@ -255,7 +253,7 @@ test.describe('Journey 15: Notifications', () => {
   });
 
   test('CP-7: mark all as read', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/notifications`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'notifications', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const markAllReadBtn = page

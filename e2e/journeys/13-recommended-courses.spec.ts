@@ -1,19 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 13: Recommended Courses', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
   test('CP-1: recommended page loads with cards or empty state', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/recommended`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'recommended', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // CourseBox renders as <Link href="/courses/...">. Empty state says "No courses found."
@@ -29,7 +27,7 @@ test.describe('Journey 13: Recommended Courses', () => {
   });
 
   test('CP-2: cards show title and description', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/recommended`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'recommended', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const courseCard = page.locator('a[href*="/courses/"]').first();
@@ -50,7 +48,7 @@ test.describe('Journey 13: Recommended Courses', () => {
   });
 
   test('CP-3: click card navigates to course about page', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/recommended`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'recommended', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const courseCard = page.locator('a[href*="/courses/"]').first();
@@ -72,7 +70,7 @@ test.describe('Journey 13: Recommended Courses', () => {
   });
 
   test('CP-4: personalized recommendations displayed', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/recommended`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'recommended', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // Wait for page to finish loading
@@ -87,7 +85,7 @@ test.describe('Journey 13: Recommended Courses', () => {
   });
 
   test('CP-5: proper heading is displayed', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/recommended`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'recommended', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // The page renders an <h1>Recommended for Me</h1>

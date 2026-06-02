@@ -1,11 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-05-14",
+  "lastUpdated": "2026-06-02",
   "summary": {
-    "totalCheckpoints": 232,
-    "coveredCheckpoints": 232,
-    "totalCheckpoints": 232,
-    "coveredCheckpoints": 232,
+    "totalCheckpoints": 222,
+    "coveredCheckpoints": 222,
     "percent": 100,
     "totalJourneys": 31
   },
@@ -1089,12 +1087,12 @@
         },
         {
           "id": "cag-03",
-          "description": "Redirects to /error/403 when platform_key is foreign and not in user tenants",
+          "description": "Empty metadata response surfaces /error/404",
           "status": "covered"
         },
         {
           "id": "cag-04",
-          "description": "Empty metadata response surfaces /error/404 (not the cross-tenant branch)",
+          "description": "Renders course about page for a foreign platform_key (cross-tenant gating removed)",
           "status": "covered"
         }
       ]

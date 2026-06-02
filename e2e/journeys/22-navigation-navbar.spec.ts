@@ -1,15 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 22: Navigation & NavBar', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
@@ -28,9 +24,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
 
   test('CP-2: Home link navigates to /home', async ({ page }) => {
     // Navigate away first
-    await page.goto(`${SKILL_HOST}/discover`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'discover', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const homeLink = page.getByRole('link', { name: /home/i });
@@ -125,9 +119,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
 
   test('CP-8: Logo link navigates to home', async ({ page }) => {
     // Navigate away from home first
-    await page.goto(`${SKILL_HOST}/discover`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'discover', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Click the logo (typically the first link in the banner)

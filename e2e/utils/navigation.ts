@@ -37,10 +37,48 @@ export async function safeWaitForURL(
 }
 
 /**
+ * Resolve the active tenant slug from localStorage.
+ *
+ * App routes are now scoped as `/platform/<tenant>/<page>` and the slug is
+ * persisted under the `tenant` key. localStorage is restored per-origin from
+ * the saved storageState, so it is only readable once the page has loaded the
+ * app origin. When the slug isn't available yet (e.g. the page is still on
+ * about:blank at the start of a test) we visit the root first — which both
+ * primes localStorage and redirects to `/platform/<tenant>` — then read it.
+ */
+export async function getCurrentTenant(page: Page): Promise<string> {
+  let tenant = await page.evaluate(() => localStorage.getItem('tenant')).catch(() => null);
+  if (!tenant) {
+    await page.goto(SKILL_HOST, { timeout: 120_000 });
+    await safeWaitForURL(page, /\/platform\//, { timeout: 120_000 }).catch(() => undefined);
+    tenant = await page.evaluate(() => localStorage.getItem('tenant'));
+  }
+  return tenant ?? '';
+}
+
+/**
+ * Navigate to a tenant-scoped page. `subpath` is everything after the tenant
+ * segment, e.g. `gotoTenantPage(page, 'home')` →
+ * `${SKILL_HOST}/platform/<tenant>/home`. Query strings are supported
+ * (`gotoTenantPage(page, 'discover?q=python')`). Pass `''` for the tenant root.
+ */
+export async function gotoTenantPage(
+  page: Page,
+  subpath = '',
+  options: { timeout?: number } = {},
+): Promise<void> {
+  const tenant = await getCurrentTenant(page);
+  const suffix = subpath ? `/${subpath.replace(/^\//, '')}` : '';
+  await page.goto(`${SKILL_HOST}/platform/${tenant}${suffix}`, {
+    timeout: options.timeout ?? 120_000,
+  });
+}
+
+/**
  * Navigate to the skills home page (authenticated).
  */
 export async function navigateToHome(page: Page): Promise<void> {
-  await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+  await gotoTenantPage(page, 'home');
   await waitForAppShell(page);
 }
 
@@ -107,9 +145,14 @@ export async function navigateToAccountComponent(
 
   const platformName = await page.evaluate(() => {
     const raw = localStorage.getItem('current_tenant');
+    const tenant = localStorage.getItem('tenant');
+    const tenants = localStorage.getItem('tenants');
     if (!raw) return null;
     try {
-      return JSON.parse(raw)?.platform_name ?? null;
+      return (
+        JSON.parse(raw)?.platform_name ??
+        JSON.parse(tenants as string)?.find((t: any) => t.key === tenant)?.platform_name
+      );
     } catch {
       return null;
     }

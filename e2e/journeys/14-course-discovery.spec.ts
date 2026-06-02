@@ -1,19 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 14: Course Discovery', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
   test('CP-1: discover page loads with catalog and search', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // DiscoverContentCard uses data-testid="discover-content-card". Empty state: "No content found."
@@ -29,7 +27,7 @@ test.describe('Journey 14: Course Discovery', () => {
 
   test('CP-2: search filters results by keyword', async ({ page }) => {
     // Discover page uses URL query param ?q= for search
-    await page.goto(`${SKILL_HOST}/discover?q=python`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover?q=python', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // After search, results should update — either showing matches or "no content found"
@@ -43,7 +41,7 @@ test.describe('Journey 14: Course Discovery', () => {
   });
 
   test('CP-3: faceted filters are visible', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // Wait for content to finish loading first
@@ -65,7 +63,7 @@ test.describe('Journey 14: Course Discovery', () => {
   });
 
   test('CP-4: applying filter narrows results', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // Wait for catalog to load
@@ -108,7 +106,7 @@ test.describe('Journey 14: Course Discovery', () => {
   test('CP-5: clearing filter restores full catalog', async ({ page }) => {
     // Discover page uses URL query param ?q= for search, not a visible search input.
     // Navigate with a nonsense query, then clear it by navigating without the param.
-    await page.goto(`${SKILL_HOST}/discover?q=xyznonexistent`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover?q=xyznonexistent', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // Wait for filtered results (likely empty)
@@ -117,7 +115,7 @@ test.describe('Journey 14: Course Discovery', () => {
     await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
     // Clear the search by navigating without query param
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // Catalog should be restored — wait for content cards or empty state
@@ -130,7 +128,7 @@ test.describe('Journey 14: Course Discovery', () => {
   });
 
   test('CP-6: click course navigates to about page', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const contentCard = page.locator('[data-testid="discover-content-card"]').first();
@@ -169,7 +167,7 @@ test.describe('Journey 14: Course Discovery', () => {
     // Resize to mobile viewport
     await page.setViewportSize({ width: 375, height: 812 });
 
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // On mobile, filters are typically behind a drawer/button
@@ -196,7 +194,7 @@ test.describe('Journey 14: Course Discovery', () => {
   });
 
   test('CP-8: pagination loads more courses', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const contentCard = page.locator('[data-testid="discover-content-card"]');

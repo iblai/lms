@@ -1,15 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 21: Search', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
@@ -144,9 +140,7 @@ test.describe('Journey 21: Search', () => {
   });
 
   test('CP-5: Search on discover page', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'discover', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Look for a search input on the discover page

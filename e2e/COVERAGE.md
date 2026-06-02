@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-05-14 | 237 checkpoints | 31 journeys | 100% covered
+> Last updated: 2026-06-02 | 237 checkpoints | 31 journeys | 100% covered
 
 ## How This Works
 
@@ -433,8 +433,8 @@ When adding a new page or modifying an existing user flow:
 
 - [x] Renders course about page when `course.platform_key` matches the current tenant
 - [x] Renders course about page when `course.platform_key === 'main'`
-- [x] Redirects to `/error/403` when `platform_key` is foreign and not in `getTenants()`
-- [x] Empty metadata response surfaces `/error/404` (not the cross-tenant branch)
+- [x] Empty metadata response surfaces `/error/404`
+- [x] Renders course about page for a foreign `platform_key` (cross-tenant gating removed)
 
 ---
 
