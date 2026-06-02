@@ -4,7 +4,11 @@
 <dict>
 	<!-- Application identifier (must match provisioning profile) -->
 	<key>com.apple.application-identifier</key>
-	<string>L4FWRM8W5Z.ai.ibl.skills</string>
+	<string>L4FWRM8W5Z.ai.ibl.skillsai</string>
+
+	<!-- Team identifier -->
+	<key>com.apple.developer.team-identifier</key>
+	<string>L4FWRM8W5Z</string>
 
 	<!-- Required for Mac App Store -->
 	<key>com.apple.security.app-sandbox</key>

@@ -19,7 +19,7 @@ use ollama_installer::download_and_install_ollama;
 use std::sync::Arc;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use std::sync::Mutex;
-use tauri::{command, AppHandle, Emitter, Manager};
+use tauri::{command, AppHandle, Emitter, Manager, WebviewWindowBuilder};
 #[cfg(any(target_os = "ios", target_os = "android", target_os = "macos"))]
 use tauri::Url;
 #[cfg(any(target_os = "ios", target_os = "android"))]
@@ -568,6 +568,76 @@ fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
     }
 }
 
+/// Open OAuth URL in an in-app popup window (desktop only)
+/// The window monitors for callback URLs and closes automatically when auth completes
+#[cfg(not(any(target_os = "ios", target_os = "android")))]
+fn open_oauth_in_popup(url: &str, app_handle: &AppHandle) -> Result<(), String> {
+    println!("[IBL Skills] Opening OAuth in popup window: {}", url);
+
+    let app_handle_clone = app_handle.clone();
+
+    let _auth_window = WebviewWindowBuilder::new(
+        app_handle,
+        "oauth-popup",
+        tauri::WebviewUrl::External(url.parse().map_err(|e| format!("Invalid URL: {}", e))?),
+    )
+    .title("Sign In")
+    .inner_size(500.0, 700.0)
+    .center()
+    .focused(true)
+    .on_navigation(move |nav_url| {
+        let url_str = nav_url.as_str();
+        println!("[OAuth Popup] Navigation to: {}", url_str);
+
+        // Check if this is a callback URL (auth completed)
+        let is_callback = url_str.contains("login.iblai.app") &&
+            (url_str.contains("/callback") ||
+             url_str.contains("code=") ||
+             url_str.contains("token=") ||
+             url_str.contains("access_token="));
+
+        // Also check for custom scheme callbacks
+        let is_custom_scheme = url_str.starts_with("iblai-skills://") ||
+                               url_str.starts_with("ai.ibl.skills://");
+
+        if is_callback || is_custom_scheme {
+            println!("[OAuth Popup] Auth callback detected: {}", url_str);
+
+            // Navigate the main window to the callback URL
+            if let Some(main_win) = app_handle_clone.get_webview_window("main") {
+                let target_url = if is_custom_scheme {
+                    // Convert custom scheme to app URL
+                    let path = url_str
+                        .replace("iblai-skills://", "/")
+                        .replace("ai.ibl.skills://", "/");
+                    format!("{}{}", get_app_url(), path)
+                } else {
+                    url_str.to_string()
+                };
+
+                println!("[OAuth Popup] Navigating main window to: {}", target_url);
+                let _ = main_win.eval(&format!("window.location.href = '{}';", target_url));
+                let _ = main_win.set_focus();
+            }
+
+            // Close the OAuth popup
+            if let Some(oauth_win) = app_handle_clone.get_webview_window("oauth-popup") {
+                println!("[OAuth Popup] Closing popup window");
+                let _ = oauth_win.close();
+            }
+
+            return false;
+        }
+
+        true
+    })
+    .build()
+    .map_err(|e| format!("Failed to create OAuth popup: {}", e))?;
+
+    println!("[IBL Skills] OAuth popup window created");
+    Ok(())
+}
+
 #[cfg(any(target_os = "ios", target_os = "android"))]
 fn handle_deep_link_url(app_handle: &AppHandle, raw_url: &str) {
     let window = app_handle.get_webview_window("main");
@@ -1110,25 +1180,9 @@ async fn open_external_url(app: AppHandle, url: String) -> Result<(), String> {
             .unwrap_or_else(|_| Err("Failed to open auth session".to_string()));
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(not(target_os = "ios"))]
     {
-        let (tx, rx) = oneshot::channel();
-        let url_for_main = url.clone();
-        let app_handle = app.clone();
-        app.run_on_main_thread(move || {
-            let _ = tx.send(open_with_auth_session_macos(&url_for_main, &app_handle));
-        })
-        .map_err(|e| format!("Failed to schedule auth session: {}", e))?;
-        return rx
-            .await
-            .unwrap_or_else(|_| Err("Failed to open auth session".to_string()));
-    }
-
-    #[cfg(not(any(target_os = "ios", target_os = "macos")))]
-    {
-        app.shell()
-            .open(&url, None)
-            .map_err(|e| format!("Failed to open URL: {}", e))
+        open_oauth_in_popup(&url, &app)
     }
 }
 
@@ -2032,14 +2086,13 @@ pub fn run() {
                 .on_navigation(move |url| {
                     let url_str = url.as_str();
                     println!("[IBL Skills] [DESKTOP] on_navigation: {}", url_str);
-                    let is_oauth = is_oauth_url(url_str);
-                    println!("[IBL Skills] [DESKTOP] is_oauth_url: {}", is_oauth);
-                    if is_oauth {
-                        println!("[IBL Skills] [DESKTOP] OAuth navigation intercepted, opening ASWebAuthenticationSession: {}", url_str);
-                        if let Err(e) = open_oauth_url(&app_handle, url_str) {
-                            println!("[IBL Skills] [DESKTOP] Failed to open auth session: {} — blocking navigation anyway", e);
+                    if is_oauth_url(url_str) {
+                        println!("[IBL Skills] [DESKTOP] OAuth URL detected, opening in popup: {}", url_str);
+                        if let Err(e) = open_oauth_in_popup(url_str, &app_handle) {
+                            println!("[IBL Skills] [DESKTOP] Failed to open OAuth popup: {}", e);
+                            return true; // Allow navigation as last resort
                         }
-                        return false;
+                        return false; // Prevent webview navigation in main window
                     }
                     true
                 })

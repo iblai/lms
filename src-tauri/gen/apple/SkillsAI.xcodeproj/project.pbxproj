@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		008A28F2C19C80A3697E1C78 /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = A6593FF2A7D6BDEE9D789F91 /* libapp.a */; };
 		04D36DAC8A3E0BE0DAA5F426 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF7DA2603DDE0A6463EB1C /* QuartzCore.framework */; };
 		04FC26258073EAAD655AAEF0 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE134258DFA4913468E7D1F5 /* WebKit.framework */; };
 		15DFEED5497872A7B40A4AAA /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D1F7660C1C5732A7A371ECA /* MetalKit.framework */; };
@@ -253,7 +252,6 @@
 				CB31CB5E3A9C0B1BA9E2C0BE /* Assets.xcassets in Resources */,
 				A68593F0271C61931B36966E /* LaunchScreen.storyboard in Resources */,
 				D11FCA2EC1E2F1C2BF76AD72 /* assets in Resources */,
-				008A28F2C19C80A3697E1C78 /* libapp.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -437,7 +435,7 @@
 				);
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skills;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skillsai;
 				PRODUCT_NAME = "SkillsAI";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -469,7 +467,7 @@
 				);
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skills;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skillsai;
 				PRODUCT_NAME = "SkillsAI";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

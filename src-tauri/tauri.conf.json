@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "SkillsAI",
-  "version": "1.0.0",
-  "identifier": "ai.ibl.skills",
+  "version": "1.0.6",
+  "identifier": "ai.ibl.skillsai",
   "build": {
     "beforeDevCommand": "",
     "devUrl": "https://skillsai.iblai.app",
@@ -35,7 +35,7 @@
     "macOS": {
       "minimumSystemVersion": "10.15",
       "hardenedRuntime": true,
-      "entitlements": null,
+      "entitlements": "entitlements.mac.plist",
       "exceptionDomain": null
     },
     "iOS": {
