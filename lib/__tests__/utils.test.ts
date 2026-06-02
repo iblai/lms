@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cn, getServiceUrl, iblFetchBaseQuery } from '../utils';
+import { cn, getServiceUrl, iblFetchBaseQuery, isTauriApp, isOfflineServerOrigin } from '../utils';
 import { SERVICES } from '../constants';
 import { config } from '../config';
 
@@ -422,6 +422,53 @@ describe('utils', () => {
 
       // Should not include Content-Type when isJson is false
       expect(mockHeaders.set).not.toHaveBeenCalledWith('Content-Type', 'application/json');
+    });
+  });
+
+  describe('isTauriApp', () => {
+    it('returns false when __TAURI_INTERNALS__ is not present', () => {
+      delete (window as any).__TAURI_INTERNALS__;
+      expect(isTauriApp()).toBe(false);
+    });
+
+    it('returns true when __TAURI_INTERNALS__ is present', () => {
+      (window as any).__TAURI_INTERNALS__ = {};
+      expect(isTauriApp()).toBe(true);
+      delete (window as any).__TAURI_INTERNALS__;
+    });
+  });
+
+  describe('isOfflineServerOrigin', () => {
+    const originalLocation = window.location;
+
+    afterEach(() => {
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('returns false for non-localhost origins', () => {
+      expect(isOfflineServerOrigin()).toBe(false);
+    });
+
+    it('returns true for localhost:3456', () => {
+      Object.defineProperty(window, 'location', {
+        value: { origin: 'http://localhost:3456' },
+        writable: true,
+        configurable: true,
+      });
+      expect(isOfflineServerOrigin()).toBe(true);
+    });
+
+    it('returns true for 127.0.0.1:3456', () => {
+      Object.defineProperty(window, 'location', {
+        value: { origin: 'http://127.0.0.1:3456' },
+        writable: true,
+        configurable: true,
+      });
+      expect(isOfflineServerOrigin()).toBe(true);
     });
   });
 });
