@@ -83,6 +83,7 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
     metadataLoaded: true,
     isMentorAIEnabled: vi.fn(() => true),
   })),
+  isLoggedIn: vi.fn(() => true),
 }));
 
 // Mock useGetUserMetadataQuery

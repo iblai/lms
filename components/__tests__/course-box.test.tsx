@@ -14,6 +14,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('next/navigation', () => ({
+  useParams: vi.fn(() => ({ tenant: 'test-tenant' })),
+}));
+
 vi.mock('@/lib/config', () => ({
   config: {
     urls: {
@@ -24,6 +28,7 @@ vi.mock('@/lib/config', () => ({
 
 vi.mock('@/utils/helpers', () => ({
   getRandomCourseImage: vi.fn(() => '/random-course-image.jpg'),
+  getTenant: vi.fn(() => 'test-tenant'),
 }));
 
 import { CourseBox } from '../course-box';
@@ -55,7 +60,7 @@ describe('CourseBox', () => {
   it('renders a link to the course page', () => {
     render(<CourseBox course={courseWithImage} />);
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/courses/course-v1:Test+101+2024');
+    expect(link).toHaveAttribute('href', '/platform/test-tenant/courses/course-v1:Test+101+2024');
   });
 
   it('renders the course badge', () => {

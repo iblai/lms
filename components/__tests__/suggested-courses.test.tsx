@@ -78,7 +78,7 @@ describe('SuggestedCourses', () => {
     });
     render(<SuggestedCourses />);
     const link = screen.getByText('See More');
-    expect(link.closest('a')).toHaveAttribute('href', '/test-tenant/recommended');
+    expect(link.closest('a')).toHaveAttribute('href', '/platform/test-tenant/recommended');
   });
 
   it('shows skeleton when loading', () => {

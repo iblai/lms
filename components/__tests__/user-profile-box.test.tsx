@@ -46,6 +46,6 @@ describe('UserProfileBox', () => {
     render(<UserProfileBox />);
     const editButton = screen.getByRole('button');
     fireEvent.click(editButton);
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/profile/public');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/profile/public');
   });
 });

@@ -39,7 +39,7 @@ describe('RecommendedLayout', () => {
         <span>test child</span>
       </RecommendedLayout>,
     );
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/home');
     expect(container.innerHTML).toBe('');
   });
 });

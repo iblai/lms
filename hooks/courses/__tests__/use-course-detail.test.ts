@@ -61,6 +61,8 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
     type: 'setDisplayMonetizationCheckoutModal',
     payload,
   })),
+  isLoggedIn: vi.fn(() => true),
+  useUserTenants: vi.fn(() => ({ userTenants: [] })),
 }));
 
 const mockDispatch = vi.fn();
@@ -161,7 +163,9 @@ describe('useCourseDetail', () => {
       act(() => {
         result.current.handleAccessCourse();
       });
-      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course');
+      expect(mockPush).toHaveBeenCalledWith(
+        '/platform/test-tenant/course-content/course-123/course',
+      );
     });
 
     it('opens /course in new tab when in iframe and course is default', () => {
@@ -171,7 +175,10 @@ describe('useCourseDetail', () => {
       act(() => {
         result.current.handleAccessCourse();
       });
-      expect(openSpy).toHaveBeenCalledWith('/course-content/course-123/course', '_blank');
+      expect(openSpy).toHaveBeenCalledWith(
+        '/platform/test-tenant/course-content/course-123/course',
+        '_blank',
+      );
       openSpy.mockRestore();
     });
 
@@ -189,7 +196,9 @@ describe('useCourseDetail', () => {
       act(() => {
         result.current.handleAccessCourse();
       });
-      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/agent');
+      expect(mockPush).toHaveBeenCalledWith(
+        '/platform/test-tenant/course-content/course-123/agent',
+      );
     });
 
     it('routes to /course when agent_content_mode is null', async () => {
@@ -206,7 +215,9 @@ describe('useCourseDetail', () => {
       act(() => {
         result.current.handleAccessCourse();
       });
-      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course');
+      expect(mockPush).toHaveBeenCalledWith(
+        '/platform/test-tenant/course-content/course-123/course',
+      );
     });
   });
 
@@ -347,7 +358,9 @@ describe('useCourseDetail', () => {
       act(() => {
         result.current.handleOpenLesson('lesson-1');
       });
-      expect(mockPush).toHaveBeenCalledWith('/course-content/course-123/course?unit_id=lesson-1');
+      expect(mockPush).toHaveBeenCalledWith(
+        '/platform/test-tenant/course-content/course-123/course?unit_id=lesson-1',
+      );
     });
 
     it('does not navigate when lessonId is null', () => {
@@ -366,7 +379,7 @@ describe('useCourseDetail', () => {
         result.current.handleOpenLesson('lesson-1');
       });
       expect(openSpy).toHaveBeenCalledWith(
-        '/course-content/course-123/course?unit_id=lesson-1',
+        '/platform/test-tenant/course-content/course-123/course?unit_id=lesson-1',
         '_blank',
       );
       openSpy.mockRestore();

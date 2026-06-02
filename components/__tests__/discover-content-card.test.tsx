@@ -68,7 +68,7 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Course').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/courses/course-123');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/course-123');
   });
 
   it('opens pathway modal when pathway content is clicked', () => {
@@ -103,7 +103,7 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Program').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/programs/program-123');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/programs/program-123');
   });
 
   it('displays content type badge', () => {

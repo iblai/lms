@@ -35,6 +35,7 @@ vi.mock('@/utils/localstorage', () => ({
   useUserTenants: () => ({
     saveUserTenants: vi.fn(),
   }),
+  saveUserTokens: vi.fn(),
 }));
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
@@ -44,6 +45,8 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
   TenantProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="tenant-provider">{children}</div>
   ),
+  isLoggedIn: vi.fn(() => true),
+  setAccessCheckResponse: vi.fn(() => ({ type: 'auth/setAccessCheckResponse' })),
 }));
 
 vi.mock('@/utils/helpers', () => ({

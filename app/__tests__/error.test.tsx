@@ -25,7 +25,7 @@ describe('Error boundary', () => {
   it('redirects to /error/500', () => {
     const error = new Error('Test error');
     render(<ErrorBoundary error={error} reset={() => {}} />);
-    expect(mockReplace).toHaveBeenCalledWith('/test-tenant/error/500');
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/500');
   });
 
   it('logs the error to console', () => {

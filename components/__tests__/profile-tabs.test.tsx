@@ -11,7 +11,7 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-const mockPathname = vi.fn(() => '/profile');
+const mockPathname = vi.fn(() => '/platform/test-tenant/profile');
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ tenant: 'test-tenant' }),
@@ -23,7 +23,7 @@ import { ProfileTabs } from '../profile-tabs';
 describe('ProfileTabs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPathname.mockReturnValue('/profile');
+    mockPathname.mockReturnValue('/platform/test-tenant/profile');
   });
 
   it('renders without crashing', () => {
@@ -48,21 +48,21 @@ describe('ProfileTabs', () => {
   });
 
   it('marks Activity tab as active when on /profile', () => {
-    mockPathname.mockReturnValue('/profile');
+    mockPathname.mockReturnValue('/platform/test-tenant/profile');
     render(<ProfileTabs />);
     const activityLink = screen.getByText('Activity');
     expect(activityLink.className).toContain('border-[var(--primary)]');
   });
 
   it('marks Skills tab as active when on /profile/skills', () => {
-    mockPathname.mockReturnValue('/profile/skills');
+    mockPathname.mockReturnValue('/platform/test-tenant/profile/skills');
     render(<ProfileTabs />);
     const skillsLink = screen.getByText('Skills');
     expect(skillsLink.className).toContain('border-[var(--primary)]');
   });
 
   it('does not mark Activity as active on sub-paths', () => {
-    mockPathname.mockReturnValue('/profile/skills');
+    mockPathname.mockReturnValue('/platform/test-tenant/profile/skills');
     render(<ProfileTabs />);
     const activityLink = screen.getByText('Activity');
     expect(activityLink.className).toContain('border-transparent');
@@ -70,23 +70,38 @@ describe('ProfileTabs', () => {
 
   it('renders correct hrefs for each tab', () => {
     render(<ProfileTabs />);
-    expect(screen.getByText('Activity').closest('a')).toHaveAttribute('href', '/profile');
-    expect(screen.getByText('Skills').closest('a')).toHaveAttribute('href', '/profile/skills');
+    expect(screen.getByText('Activity').closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile',
+    );
+    expect(screen.getByText('Skills').closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile/skills',
+    );
     expect(screen.getByText('Credentials').closest('a')).toHaveAttribute(
       'href',
-      '/profile/credentials',
+      '/platform/test-tenant/profile/credentials',
     );
-    expect(screen.getByText('Pathways').closest('a')).toHaveAttribute('href', '/profile/pathways');
-    expect(screen.getByText('Programs').closest('a')).toHaveAttribute('href', '/profile/programs');
-    expect(screen.getByText('Courses').closest('a')).toHaveAttribute('href', '/profile/courses');
+    expect(screen.getByText('Pathways').closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile/pathways',
+    );
+    expect(screen.getByText('Programs').closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile/programs',
+    );
+    expect(screen.getByText('Courses').closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile/courses',
+    );
     expect(screen.getByText('Public Profile').closest('a')).toHaveAttribute(
       'href',
-      '/profile/public',
+      '/platform/test-tenant/profile/public',
     );
   });
 
   it('marks Courses tab as active on /profile/courses sub-path', () => {
-    mockPathname.mockReturnValue('/profile/courses/123');
+    mockPathname.mockReturnValue('/platform/test-tenant/profile/courses/123');
     render(<ProfileTabs />);
     const coursesLink = screen.getByText('Courses');
     expect(coursesLink.className).toContain('border-[var(--primary)]');

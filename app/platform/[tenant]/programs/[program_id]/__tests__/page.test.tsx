@@ -13,6 +13,7 @@ const mockParams = vi.hoisted(() => ({ program_id: 'prog-1' }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   useParams: () => mockParams,
+  useSearchParams: () => ({ get: vi.fn(() => null) }),
 }));
 
 vi.mock('sonner', () => ({
@@ -28,6 +29,7 @@ vi.mock('react-redux', () => ({
 }));
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
+  isLoggedIn: vi.fn(() => true),
   setAccessCheckResponse: vi.fn((payload) => ({ type: 'setAccessCheckResponse', payload })),
   setDisplayMonetizationCheckoutModal: vi.fn((payload) => ({
     type: 'setDisplayMonetizationCheckoutModal',
@@ -56,6 +58,7 @@ vi.mock('@/utils/helpers', () => ({
   getRandomCourseImage: vi.fn(() => '/random.png'),
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
+  handleNotLoggedInAction: vi.fn(),
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -70,9 +73,12 @@ const isAdminState = vi.hoisted(() => ({ value: true }));
 const currentTenantState = vi.hoisted(() => ({
   value: { key: 'main', enable_monetization: true } as any,
 }));
+const canMonetizeState = vi.hoisted(() => ({ value: true }));
 vi.mock('@/utils/localstorage', () => ({
   useIsAdmin: () => isAdminState.value,
   useCurrentTenant: () => ({ currentTenant: currentTenantState.value }),
+  useUserTenants: () => ({ userTenants: [{ key: 'main' }] }),
+  canMonetize: vi.fn(() => canMonetizeState.value),
 }));
 
 const mockHandleSearch = vi.fn();
@@ -261,7 +267,7 @@ describe('ProgramDetailPage', () => {
     mockHandleSearch.mockResolvedValue({ data: { results: [] } });
     render(<ProgramDetailPage />);
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
     });
   });
 
@@ -269,7 +275,7 @@ describe('ProgramDetailPage', () => {
     mockHandleSearch.mockRejectedValue(new Error('boom'));
     render(<ProgramDetailPage />);
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
     });
   });
 
@@ -304,7 +310,7 @@ describe('ProgramDetailPage', () => {
     await renderPage();
     await waitFor(() => expect(screen.getByTestId('course-card-0')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('course-card-0'));
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/courses/cid-1');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/cid-1');
   });
 
   it('opens the course when Enter/Space is pressed on a card', async () => {
@@ -312,7 +318,7 @@ describe('ProgramDetailPage', () => {
     await renderPage();
     await waitFor(() => expect(screen.getByTestId('course-card-0')).toBeInTheDocument());
     fireEvent.keyDown(screen.getByTestId('course-card-0'), { key: 'Enter' });
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/courses/cid-1');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/cid-1');
   });
 
   it('shows the empty box when programDetail has no courses', async () => {

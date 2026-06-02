@@ -75,7 +75,7 @@ describe('CredentialsListBox', () => {
   it('renders the Add Credential link', () => {
     render(<CredentialsListBox credentials={mockCredentials} />);
     const addLink = screen.getByLabelText('Add Credential');
-    expect(addLink).toHaveAttribute('href', '/test-tenant/discover');
+    expect(addLink).toHaveAttribute('href', '/platform/test-tenant/discover');
   });
 
   it('renders the Add Credential tooltip text', () => {

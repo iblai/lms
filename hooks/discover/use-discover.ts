@@ -1,4 +1,4 @@
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
 import { usePersonnalizedCatalog } from '../search/use-personnalized-catalog';
 import { useEffect, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';

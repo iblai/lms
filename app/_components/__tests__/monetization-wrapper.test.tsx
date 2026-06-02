@@ -119,7 +119,7 @@ describe('MonetizationWrapper', () => {
     );
     render(<MonetizationWrapper />);
     fireEvent.click(screen.getByTestId('paywall-close'));
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/error/402');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/402');
     expect(mockDispatch).toHaveBeenCalled();
   });
 

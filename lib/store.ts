@@ -8,12 +8,7 @@ import { PlatformSlice } from '@/services/platform';
 import { CourseMetadataSlice } from '@/services/course-metadata';
 import { CatalogSlice } from '@/services/catalog';
 // @ts-ignore
-import {
-  skillsMiddleware,
-  skillsReducer,
-  authApiSlice,
-  AuthApiSlice,
-} from '@iblai/iblai-js/data-layer';
+import { skillsMiddleware, skillsReducer, authApiSlice } from '@iblai/iblai-js/data-layer';
 // @ts-ignore
 import { monetizationSlice } from '@iblai/iblai-js/web-utils';
 import { CareerSlice } from '@/services/career';

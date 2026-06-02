@@ -42,7 +42,7 @@ export type PersonnalizedCatalogSearchParams = {
   updateFacet?: string;
 };
 
-export const usePersonnalizedCatalog = ({ isLoggedIn = true }: { isLoggedIn?: boolean }) => {
+export const usePersonnalizedCatalog = ({ isLoggedIn = true }: { isLoggedIn?: boolean } = {}) => {
   const [getPersonnalizedSearch, { isLoading, isError }] = useLazyGetPersonnalizedSearchQuery();
 
   const [getCatalogSearch, { isLoading: isLoadingCatalog, isError: isErrorCatalog }] =

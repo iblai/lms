@@ -60,6 +60,10 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
   NotificationDropdown: () => <div data-testid="notification-dropdown">Notifications</div>,
 }));
 
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  isLoggedIn: vi.fn(() => true),
+}));
+
 vi.mock('react-responsive', () => ({
   useMediaQuery: vi.fn(({ minWidth, maxWidth }: any) => {
     if (minWidth === 915 && !maxWidth) return true; // isDesktop

@@ -21,7 +21,7 @@ import {
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
-import { isLoggedIn } from '@iblai/web-utils';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 interface PathwayDetailModalProps {
   pathway: PathwayEnrollmentPlus;
   onClose: () => void;

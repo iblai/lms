@@ -25,7 +25,7 @@ describe('GlobalError boundary', () => {
   it('redirects to /error/500', () => {
     const error = new Error('Root layout error');
     render(<GlobalError error={error} reset={() => {}} />);
-    expect(mockReplace).toHaveBeenCalledWith('/test-tenant/error/500');
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/500');
   });
 
   it('logs the error to console', () => {

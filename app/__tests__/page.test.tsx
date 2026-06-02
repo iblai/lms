@@ -24,7 +24,7 @@ describe('RootRedirect', () => {
   it('redirects to /{tenant} when a tenant is set', () => {
     vi.mocked(getTenant).mockReturnValue('test-tenant');
     render(<RootRedirect />);
-    expect(mockReplace).toHaveBeenCalledWith('/test-tenant');
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant');
     expect(redirectToAuthSpa).not.toHaveBeenCalled();
   });
 

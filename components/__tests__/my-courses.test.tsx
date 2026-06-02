@@ -104,7 +104,10 @@ describe('MyCourses', () => {
   it('renders "See More" link to /profile/courses', () => {
     render(<MyCourses />);
     const seeMoreLink = screen.getByText('See More');
-    expect(seeMoreLink.closest('a')).toHaveAttribute('href', '/test-tenant/profile/courses');
+    expect(seeMoreLink.closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile/courses',
+    );
   });
 
   it('renders courses grid with correct aria-label', () => {

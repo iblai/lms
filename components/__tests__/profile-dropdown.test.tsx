@@ -39,7 +39,7 @@ describe('ProfileDropdown', () => {
   it('renders Profile link', () => {
     render(<ProfileDropdown {...defaultProps} />);
     const profileLink = screen.getByText('Profile').closest('a');
-    expect(profileLink).toHaveAttribute('href', '/test-tenant/profile');
+    expect(profileLink).toHaveAttribute('href', '/platform/test-tenant/profile');
   });
 
   it('renders Account button', () => {

@@ -3,10 +3,15 @@ import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 const mockGetPersonnalizedSearch = vi.fn();
+const mockGetCatalogSearch = vi.fn();
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   useLazyGetPersonnalizedSearchQuery: vi.fn(() => [
     mockGetPersonnalizedSearch,
+    { isLoading: false, isError: false },
+  ]),
+  useLazyGetCatalogSearchQuery: vi.fn(() => [
+    mockGetCatalogSearch,
     { isLoading: false, isError: false },
   ]),
 }));

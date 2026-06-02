@@ -134,7 +134,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/home');
   });
 
   it('redirects to /home when startPageEnabled is false', () => {
@@ -147,7 +147,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/home');
   });
 
   it('redirects to /home when enable_start_screen_display is false', () => {
@@ -159,7 +159,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/home');
   });
 
   it('redirects to /home when metadata is null', () => {
@@ -171,7 +171,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/home');
   });
 
   it('redirects to /start when reported skills error has status 400', () => {
@@ -183,7 +183,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/start');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/start');
   });
 
   it('redirects to /home when reported skills error has non-400 status', () => {
@@ -195,7 +195,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/home');
   });
 
   it('redirects to /home when no error and skills not loading', () => {
@@ -207,7 +207,7 @@ describe('Home page', () => {
 
     render(<Home />);
 
-    expect(mockRedirect).toHaveBeenCalledWith('/test-tenant/home');
+    expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant/home');
   });
 
   it('does not redirect when metadata is loading', () => {

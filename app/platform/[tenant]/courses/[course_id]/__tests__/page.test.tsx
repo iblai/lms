@@ -11,7 +11,11 @@ vi.mock('next/image', () => ({
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
-  useParams: vi.fn(() => ({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' })),
+  useParams: vi.fn(() => ({
+    course_id: 'course-v1%3Atest%2Bcourse%2B2024',
+    tenant: 'test-tenant',
+  })),
+  useSearchParams: vi.fn(() => ({ get: vi.fn(() => null) })),
 }));
 
 // Mock helpers

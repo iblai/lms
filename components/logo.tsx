@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { config } from '@/lib/config';
 import { useEffect, useState } from 'react';
-import { getTenant } from '@/utils/helpers';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 

@@ -23,6 +23,8 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
     type: 'setDisplayMonetizationCheckoutModal',
     payload,
   }),
+  isLoggedIn: vi.fn(() => true),
+  useUserTenants: vi.fn(() => ({ userTenants: [] })),
 }));
 
 const mockDispatch = vi.fn();

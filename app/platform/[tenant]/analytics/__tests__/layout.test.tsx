@@ -99,7 +99,7 @@ describe('AnalyticsLayoutWrapper', () => {
   });
 
   it('fetches groups with the Reports read action on the data reports page', () => {
-    mockUsePathname.mockReturnValue('/test-tenant/analytics/reports');
+    mockUsePathname.mockReturnValue('/platform/test-tenant/analytics/reports');
     render(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -123,7 +123,7 @@ describe('AnalyticsLayoutWrapper', () => {
       requiredAction: 'Ibl.Analytics/Core/read',
     });
 
-    mockUsePathname.mockReturnValue('/test-tenant/analytics/reports');
+    mockUsePathname.mockReturnValue('/platform/test-tenant/analytics/reports');
     rerender(
       <AnalyticsLayoutWrapper>
         <span>content</span>
@@ -137,7 +137,7 @@ describe('AnalyticsLayoutWrapper', () => {
 
   it('does not fetch groups when there is no tenant key', () => {
     mockGetTenant.mockReturnValue('');
-    mockUseParams.mockReturnValue({});
+    mockUseParams.mockReturnValue({ tenant: '' });
     render(
       <AnalyticsLayoutWrapper>
         <span>content</span>

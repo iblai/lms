@@ -36,6 +36,7 @@ const mockTenantMetadata = vi.hoisted(() => ({
 }));
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => mockTenantMetadata),
+  isLoggedIn: vi.fn(() => true),
 }));
 
 // use-debounce — execute synchronously so effects can be observed in tests

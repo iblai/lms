@@ -296,7 +296,7 @@ describe('ProgramsPage', () => {
     const programCard = screen.getByTestId('program-card');
     fireEvent.click(programCard);
 
-    expect(mockPush).toHaveBeenCalledWith('/test-tenant/programs/prog-1');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/programs/prog-1');
   });
 
   it('switches tabs and resets state', () => {
