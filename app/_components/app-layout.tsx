@@ -60,10 +60,17 @@ export default function AppLayout({ children }: { children: any }) {
     return <DefaultPageLayout>{children}</DefaultPageLayout>;
   }
 
-  // After the tenant segment, the next path piece identifies the active page
-  // (`/main/home` → "home"). Fallback to the first segment for legacy paths.
+  // After the `/platform/{tenant}/` prefix, the next path piece identifies the
+  // active page (`/platform/main/home` → "home"). Fallback to the first
+  // segment for legacy paths.
   const segments = pathname.split('/').filter(Boolean);
-  const activePage = (tenant && segments[0] === tenant ? segments[1] : segments[0]) || 'home';
+  const tenantIdx =
+    segments[0] === 'platform' && tenant && segments[1] === tenant
+      ? 2
+      : tenant && segments[0] === tenant
+        ? 1
+        : 0;
+  const activePage = segments[tenantIdx] || 'home';
 
   return (
     <DefaultPageLayout>

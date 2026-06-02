@@ -47,6 +47,7 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
   ),
   isLoggedIn: vi.fn(() => true),
   setAccessCheckResponse: vi.fn(() => ({ type: 'auth/setAccessCheckResponse' })),
+  useCurrentTenant: () => ({ saveCurrentTenant: vi.fn() }),
 }));
 
 vi.mock('@/utils/helpers', () => ({
