@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.35.0](https://github.com/iblai/skillsai/compare/skills-v0.34.0...skills-v0.35.0) (2026-05-29)
+
+### Bug Fixes
+
+* autoplay icon based also  on enable_course_voice_autoplay tenant metadata > test coverage ([07772de](https://github.com/iblai/skillsai/commit/07772dee2945fac4ac3f6150d29c71e424cc3e0d))
+* autoplay icon based also on on enable_course_voice_autoplay tenant metadata flag ([decc746](https://github.com/iblai/skillsai/commit/decc7469d555817ee95dd55fa66a9801b014ce9b))
+* autoplay icon based on agent_autoplay settings flag on studio ([be3b8dd](https://github.com/iblai/skillsai/commit/be3b8dd1746b9109d7d197a8422a0ed42ad2a6bd))
+* autoplay icon based on agent_autoplay settings flag on studio > test coverage ([fbe1edc](https://github.com/iblai/skillsai/commit/fbe1edc1344c2a06d5bfdfc1875bb9a3c18ff0bd))
+
+## [0.34.0](https://github.com/iblai/skillsai/compare/skills-v0.33.0...skills-v0.34.0) (2026-05-28)
+
+### Features
+
+* agent autoplay feature ([23480af](https://github.com/iblai/skillsai/commit/23480afaeaf9e7818d0928caf46a453a53416b77))
+
+## [0.33.0](https://github.com/iblai/skillsai/compare/skills-v0.32.0...skills-v0.33.0) (2026-05-26)
+
+### Features
+
+* **ci:** add update-gate job to pr-gate workflow ([502742b](https://github.com/iblai/skillsai/commit/502742be92d1394d9283c104baa2519b9998376d))
+
+## [0.32.0](https://github.com/iblai/skillsai/compare/skills-v0.31.0...skills-v0.32.0) (2026-05-22)
+
+### Bug Fixes
+
+* .env.von added to .gitignore ([0447115](https://github.com/iblai/skillsai/commit/0447115ecf3a3a9fd4c2f7350fb38e9a5a085914))
+* vont requirement env flags shouldn't conflict with existing envs ([734737e](https://github.com/iblai/skillsai/commit/734737e8804a862d4943d61ff0bb652ad6e4778e))
+
+## [0.31.0](https://github.com/iblai/skillsai/compare/skills-v0.30.0...skills-v0.31.0) (2026-05-21)
+
+### Features
+
+* memory enabled on profile component ([56d3064](https://github.com/iblai/skillsai/commit/56d3064a46d30f8a287486644dc7a2a8399c5c48))
+* update overall UI to match VON requirements with env flags ([7bbcf58](https://github.com/iblai/skillsai/commit/7bbcf58d5fc2b7343929a33154d83db98f0614dd))
+* update overall UI to match VON requirements with env flags > test coverage ([6acaba6](https://github.com/iblai/skillsai/commit/6acaba6d6595a7cc7d58e6b8c477e9f72a7c2794))
+
+### Bug Fixes
+
+* lint issue fixed ([e20cc44](https://github.com/iblai/skillsai/commit/e20cc449ee8020ed15a3a8a326e4531ec388cd44))
+
+### Chores
+
+* iblai-js version bump & pnpm lock update ([396200a](https://github.com/iblai/skillsai/commit/396200abd055a468c6042a705e9618febeec6607))
+
 ## [0.30.0](https://github.com/iblai/skillsai/compare/skills-v0.29.0...skills-v0.30.0) (2026-05-18)
 
 ### Features

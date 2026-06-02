@@ -82,6 +82,26 @@ export function CourseAgentChat() {
     return () => window.removeEventListener('mentor:unit-switched', handleUnitSwitched);
   }, []);
 
+  useEffect(() => {
+    const handleAutoplayChanged = (event: Event) => {
+      const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail?.enabled;
+      if (typeof enabled !== 'boolean') return;
+      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
+        'iframe',
+      ) as HTMLIFrameElement | null;
+      iframe?.contentWindow?.postMessage(
+        {
+          type: enabled
+            ? 'MENTOR:ENABLE_AUTOPLAY_LAST_AI_MESSAGE'
+            : 'MENTOR:DISABLE_AUTOPLAY_LAST_AI_MESSAGE',
+        },
+        '*',
+      );
+    };
+    window.addEventListener('mentor:autoplay-changed', handleAutoplayChanged);
+    return () => window.removeEventListener('mentor:autoplay-changed', handleAutoplayChanged);
+  }, []);
+
   //TODO mutation observer to be removed once we able to have a READY postmessage from the iframe
   useEffect(() => {
     if (!mentorInUse) return;

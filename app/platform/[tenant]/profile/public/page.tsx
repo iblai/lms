@@ -202,6 +202,7 @@ export default function PublicProfilePage() {
           currentPlatformBaseDomain={config.settings.platformBaseDomain()}
           rbacPermissions={rbacPermissions}
           onAccountDeleted={() => onAccountDeleted()}
+          enableMemoryTab={true}
         />
       )}
     </>

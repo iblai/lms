@@ -97,6 +97,7 @@ export const UserProfileButton = () => {
       onAccountDeleted={() => {
         onAccountDeleted();
       }}
+      enableMemoryTab={true}
     />
   );
 };

@@ -43,6 +43,8 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="chevron-right">&gt;</span>,
   ListTree: () => <span data-testid="list-tree">ListTree</span>,
   MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
+  CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
+  CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
 }));
 
 // Mock helpers
@@ -145,13 +147,18 @@ vi.mock('@/components/course-lesson-navigator', () => ({
 
 // Mock Switch / Popover so the toggle is predictably rendered in jsdom
 vi.mock('@/components/ui/switch', () => ({
-  Switch: ({ checked, onCheckedChange, 'aria-label': ariaLabel }: any) => (
+  Switch: ({
+    checked,
+    onCheckedChange,
+    'aria-label': ariaLabel,
+    'data-testid': dataTestId,
+  }: any) => (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-label={ariaLabel}
-      data-testid="agent-mode-switch"
+      data-testid={dataTestId ?? 'agent-mode-switch'}
       onClick={() => onCheckedChange(!checked)}
     />
   ),
@@ -169,11 +176,16 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
 }));
 
 // Mock web-utils — layout dispatches setAdvancedDisplayMonetizationCheckoutModal
+// and reads the tenant `enable_course_voice_autoplay` flag via useTenantMetadata.
+const mockTenantMetadata = vi.hoisted(() => ({
+  current: { enable_course_voice_autoplay: true } as Record<string, unknown>,
+}));
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   setAdvancedDisplayMonetizationCheckoutModal: (payload: unknown) => ({
     type: 'setAdvancedDisplayMonetizationCheckoutModal',
     payload,
   }),
+  useTenantMetadata: vi.fn(() => ({ metadata: mockTenantMetadata.current })),
 }));
 
 // Mock react-redux — layout calls useDispatch + useSelector(selectMentorSpinnerHidden)
@@ -220,6 +232,7 @@ describe('CourseContentLayout', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -1135,6 +1148,310 @@ describe('CourseContentLayout', () => {
       // After click, every rendered switch should reflect the new checked state.
       const updatedSwitches = screen.getAllByTestId('agent-mode-switch');
       updatedSwitches.forEach((s) => expect(s).toHaveAttribute('aria-checked', 'true'));
+    });
+  });
+
+  describe('agent autoplay toggle', () => {
+    const renderWithCourse = (course: any) => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course,
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      return render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+    };
+
+    it('hides the autoplay toggle when course.agent_autoplay is false', () => {
+      renderWithCourse({ agent_autoplay: false });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when course.agent_autoplay is null', () => {
+      renderWithCourse({ agent_autoplay: null });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when course.agent_autoplay is missing', () => {
+      renderWithCourse({});
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when course is null (still loading)', () => {
+      renderWithCourse(null);
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle for truthy-but-not-true values (e.g. 1)', () => {
+      renderWithCourse({ agent_autoplay: 1 });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when tenant enable_course_voice_autoplay is false (course flag on)', () => {
+      mockTenantMetadata.current = { enable_course_voice_autoplay: false };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle when tenant enable_course_voice_autoplay is missing', () => {
+      mockTenantMetadata.current = {};
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle for tenant truthy-but-not-true values (e.g. "true")', () => {
+      mockTenantMetadata.current = { enable_course_voice_autoplay: 'true' };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('shows the autoplay toggle only when BOTH course.agent_autoplay AND tenant flag are true', () => {
+      mockTenantMetadata.current = { enable_course_voice_autoplay: true };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.getByTestId('agent-autoplay-toggle')).toBeInTheDocument();
+    });
+
+    it('shows the autoplay toggle (defaults to off, play icon visible)', () => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_autoplay: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const toggle = screen.getByTestId('agent-autoplay-toggle');
+      expect(toggle).toBeInTheDocument();
+      expect(toggle).toHaveAttribute('aria-checked', 'false');
+      // When off, CirclePlay is visible (in desktop button and popover row).
+      expect(screen.getAllByTestId('circle-play').length).toBeGreaterThan(0);
+      expect(screen.queryByTestId('circle-pause')).not.toBeInTheDocument();
+    });
+
+    it('flips to the pause icon and fires a toast when clicked on', async () => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_autoplay: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      const { toast } = await import('sonner');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const toggle = screen.getByTestId('agent-autoplay-toggle');
+      expect(toggle).toHaveAttribute('aria-checked', 'false');
+
+      fireEvent.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-checked', 'true');
+      // When on, CirclePause is visible (in desktop button and popover row).
+      expect(screen.getAllByTestId('circle-pause').length).toBeGreaterThan(0);
+      expect(toast.success).toHaveBeenCalledWith('Autoplay turned on');
+
+      fireEvent.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-checked', 'false');
+      expect(toast.success).toHaveBeenCalledWith('Autoplay turned off');
+    });
+
+    it('renders the autoplay row inside the mobile popover when agent_autoplay is true', () => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_autoplay: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // Mobile 3-dot trigger renders even when only autoplay is visible.
+      expect(screen.getAllByTestId('more-vertical').length).toBeGreaterThan(0);
+
+      // Popover content includes the Autoplay label + its own switch.
+      const popover = screen.getByTestId('agent-mode-popover');
+      expect(popover).toHaveTextContent('Autoplay');
+      expect(screen.getByTestId('agent-autoplay-popover-switch')).toHaveAttribute(
+        'aria-checked',
+        'false',
+      );
+    });
+
+    it('dispatches mentor:autoplay-changed with the new state when the desktop button is clicked', () => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_autoplay: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const toggle = screen.getByTestId('agent-autoplay-toggle');
+
+      // First click: off -> on, expect enabled=true.
+      fireEvent.click(toggle);
+      let autoplayEvent = dispatchSpy.mock.calls
+        .map(([e]) => e as Event)
+        .find((e) => e.type === 'mentor:autoplay-changed') as
+        | CustomEvent<{ enabled: boolean }>
+        | undefined;
+      expect(autoplayEvent).toBeDefined();
+      expect(autoplayEvent!.detail).toEqual({ enabled: true });
+
+      dispatchSpy.mockClear();
+
+      // Second click: on -> off, expect enabled=false.
+      fireEvent.click(toggle);
+      autoplayEvent = dispatchSpy.mock.calls
+        .map(([e]) => e as Event)
+        .find((e) => e.type === 'mentor:autoplay-changed') as
+        | CustomEvent<{ enabled: boolean }>
+        | undefined;
+      expect(autoplayEvent).toBeDefined();
+      expect(autoplayEvent!.detail).toEqual({ enabled: false });
+    });
+
+    it('dispatches mentor:autoplay-changed when the popover switch is clicked', () => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_autoplay: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      fireEvent.click(screen.getByTestId('agent-autoplay-popover-switch'));
+
+      const autoplayEvent = dispatchSpy.mock.calls
+        .map(([e]) => e as Event)
+        .find((e) => e.type === 'mentor:autoplay-changed') as
+        | CustomEvent<{ enabled: boolean }>
+        | undefined;
+      expect(autoplayEvent).toBeDefined();
+      expect(autoplayEvent!.detail).toEqual({ enabled: true });
+    });
+
+    it('keeps the popover autoplay switch and the desktop button in sync', () => {
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_autoplay: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      const desktopToggle = screen.getByTestId('agent-autoplay-toggle');
+      const popoverSwitch = screen.getByTestId('agent-autoplay-popover-switch');
+
+      expect(desktopToggle).toHaveAttribute('aria-checked', 'false');
+      expect(popoverSwitch).toHaveAttribute('aria-checked', 'false');
+
+      fireEvent.click(popoverSwitch);
+
+      expect(desktopToggle).toHaveAttribute('aria-checked', 'true');
+      expect(popoverSwitch).toHaveAttribute('aria-checked', 'true');
     });
   });
 });

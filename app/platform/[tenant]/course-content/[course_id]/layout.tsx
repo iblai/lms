@@ -3,7 +3,7 @@
 import type React from 'react';
 import { use, useEffect, useRef, useState } from 'react';
 
-import { ChevronRight, ListTree, MoreVertical } from 'lucide-react';
+import { ChevronRight, CirclePause, CirclePlay, ListTree, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -25,7 +25,10 @@ import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { setAdvancedDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
+import {
+  setAdvancedDisplayMonetizationCheckoutModal,
+  useTenantMetadata,
+} from '@iblai/iblai-js/web-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 import { config } from '@/lib/config';
@@ -50,6 +53,7 @@ export default function CourseContentLayout({
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
+  const { metadata } = useTenantMetadata({ org: getTenant() });
   const {
     handleFetchCourseInfo,
     handleFetchCourseSyllabus,
@@ -116,6 +120,16 @@ export default function CourseContentLayout({
   const [currentUnitID, setCurrentUnitID] = useState<string | null>(null);
   const [refresher, setRefresher] = useState<Date | null>(null);
   const [agentMode, setAgentMode] = useState<AgentMode>('learning');
+  const [agentAutoplayOn, setAgentAutoplayOn] = useState(false);
+  const setAgentAutoplay = (enabled: boolean) => {
+    setAgentAutoplayOn(enabled);
+    toast.success(enabled ? 'Autoplay turned on' : 'Autoplay turned off');
+    window.dispatchEvent(new CustomEvent('mentor:autoplay-changed', { detail: { enabled } }));
+  };
+
+  // enable_course_voice_autoplay tenant metadata flag and agent_autoplay flag from the course settings on studio to allow this feature
+  const autoplayToggleVisible =
+    course?.agent_autoplay === true && metadata?.enable_course_voice_autoplay === true;
 
   const { data: courseBlockDetails } = useGetCourseBlockDetailsQuery(
     { blockId: currentUnitID || '', username: getUserName() },
@@ -352,73 +366,126 @@ export default function CourseContentLayout({
                     )}
                   </div>
                   <div className="flex items-center gap-3 pr-4">
+                    {autoplayToggleVisible && (
+                      <button
+                        type="button"
+                        onClick={() => setAgentAutoplay(!agentAutoplayOn)}
+                        role="switch"
+                        aria-checked={agentAutoplayOn}
+                        aria-label={
+                          agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
+                        }
+                        title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
+                        data-testid="agent-autoplay-toggle"
+                        className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
+                          agentAutoplayOn
+                            ? 'text-amber-600 hover:text-amber-700'
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        {agentAutoplayOn ? (
+                          <CirclePause className="h-5 w-5" />
+                        ) : (
+                          <CirclePlay className="h-5 w-5" />
+                        )}
+                      </button>
+                    )}
                     {assessmentToggleVisible && (
-                      <>
-                        <div
-                          className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
-                          role="group"
-                          aria-label="Agent display mode"
+                      <div
+                        className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
+                        role="group"
+                        aria-label="Agent display mode"
+                      >
+                        <span
+                          className={agentMode === 'learning' ? 'font-medium text-amber-600' : ''}
                         >
-                          <span
-                            className={agentMode === 'learning' ? 'font-medium text-amber-600' : ''}
-                          >
-                            Learn
-                          </span>
-                          <Switch
-                            checked={agentMode === 'assessment'}
-                            onCheckedChange={(checked) =>
-                              setAgentMode(checked ? 'assessment' : 'learning')
-                            }
-                            aria-label="Toggle assessment mode"
-                            className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                          />
-                          <span
-                            className={
-                              agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
-                            }
-                          >
-                            Assess
-                          </span>
-                        </div>
-                        <Popover>
-                          <PopoverTrigger
-                            className="rounded p-1 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none md:hidden"
-                            aria-label="Agent display mode"
-                          >
-                            <MoreVertical className="h-5 w-5" />
-                          </PopoverTrigger>
-                          <PopoverContent align="end" className="w-auto p-3">
-                            <div
-                              className="flex items-center gap-2 text-xs text-gray-600"
-                              role="group"
-                              aria-label="Agent display mode"
-                            >
-                              <span
-                                className={
-                                  agentMode === 'learning' ? 'font-medium text-amber-600' : ''
-                                }
+                          Learn
+                        </span>
+                        <Switch
+                          checked={agentMode === 'assessment'}
+                          onCheckedChange={(checked) =>
+                            setAgentMode(checked ? 'assessment' : 'learning')
+                          }
+                          aria-label="Toggle assessment mode"
+                          className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                        />
+                        <span
+                          className={agentMode === 'assessment' ? 'font-medium text-amber-600' : ''}
+                        >
+                          Assess
+                        </span>
+                      </div>
+                    )}
+                    {(assessmentToggleVisible || autoplayToggleVisible) && (
+                      <Popover>
+                        <PopoverTrigger
+                          className="rounded p-1 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none md:hidden"
+                          aria-label="Agent display options"
+                        >
+                          <MoreVertical className="h-5 w-5" />
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-auto p-3">
+                          <div className="flex flex-col gap-3">
+                            {autoplayToggleVisible && (
+                              <div
+                                className="flex items-center justify-between gap-3 text-xs text-gray-600"
+                                role="group"
+                                aria-label="Agent autoplay"
                               >
-                                Learn
-                              </span>
-                              <Switch
-                                checked={agentMode === 'assessment'}
-                                onCheckedChange={(checked) =>
-                                  setAgentMode(checked ? 'assessment' : 'learning')
-                                }
-                                aria-label="Toggle assessment mode"
-                                className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                              />
-                              <span
-                                className={
-                                  agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
-                                }
+                                <span className="flex items-center gap-2">
+                                  {agentAutoplayOn ? (
+                                    <CirclePause className="h-4 w-4 text-amber-600" />
+                                  ) : (
+                                    <CirclePlay className="h-4 w-4 text-gray-500" />
+                                  )}
+                                  <span
+                                    className={agentAutoplayOn ? 'font-medium text-amber-600' : ''}
+                                  >
+                                    Autoplay
+                                  </span>
+                                </span>
+                                <Switch
+                                  checked={agentAutoplayOn}
+                                  onCheckedChange={(checked) => setAgentAutoplay(checked)}
+                                  aria-label="Toggle agent autoplay"
+                                  data-testid="agent-autoplay-popover-switch"
+                                  className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                                />
+                              </div>
+                            )}
+                            {assessmentToggleVisible && (
+                              <div
+                                className="flex items-center gap-2 text-xs text-gray-600"
+                                role="group"
+                                aria-label="Agent display mode"
                               >
-                                Assess
-                              </span>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </>
+                                <span
+                                  className={
+                                    agentMode === 'learning' ? 'font-medium text-amber-600' : ''
+                                  }
+                                >
+                                  Learn
+                                </span>
+                                <Switch
+                                  checked={agentMode === 'assessment'}
+                                  onCheckedChange={(checked) =>
+                                    setAgentMode(checked ? 'assessment' : 'learning')
+                                  }
+                                  aria-label="Toggle assessment mode"
+                                  className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                                />
+                                <span
+                                  className={
+                                    agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                                  }
+                                >
+                                  Assess
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                     <CourseLessonNavigator />
                   </div>

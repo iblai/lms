@@ -268,6 +268,84 @@ describe('CourseAgentChat', () => {
     expect(removeSpy).toHaveBeenCalledWith('mentor:unit-switched', expect.any(Function));
   });
 
+  it('forwards mentor:autoplay-changed (enabled=true) as MENTOR:ENABLE_AUTOPLAY_LAST_AI_MESSAGE', async () => {
+    const { container } = renderWithContext();
+    const mentorEl = await waitFor(() => {
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
+      expect(el).toBeInTheDocument();
+      return el!;
+    });
+
+    const postMessage = vi.fn();
+    const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+    Object.defineProperty(mentorEl, 'shadowRoot', {
+      value: {
+        querySelector: vi.fn((selector: string) => (selector === 'iframe' ? iframe : null)),
+      },
+      configurable: true,
+    });
+
+    window.dispatchEvent(new CustomEvent('mentor:autoplay-changed', { detail: { enabled: true } }));
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: 'MENTOR:ENABLE_AUTOPLAY_LAST_AI_MESSAGE' },
+      '*',
+    );
+  });
+
+  it('forwards mentor:autoplay-changed (enabled=false) as MENTOR:DISABLE_AUTOPLAY_LAST_AI_MESSAGE', async () => {
+    const { container } = renderWithContext();
+    const mentorEl = await waitFor(() => {
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
+      expect(el).toBeInTheDocument();
+      return el!;
+    });
+
+    const postMessage = vi.fn();
+    const iframe = { contentWindow: { postMessage } } as unknown as HTMLIFrameElement;
+    Object.defineProperty(mentorEl, 'shadowRoot', {
+      value: {
+        querySelector: vi.fn((selector: string) => (selector === 'iframe' ? iframe : null)),
+      },
+      configurable: true,
+    });
+
+    window.dispatchEvent(
+      new CustomEvent('mentor:autoplay-changed', { detail: { enabled: false } }),
+    );
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: 'MENTOR:DISABLE_AUTOPLAY_LAST_AI_MESSAGE' },
+      '*',
+    );
+  });
+
+  it('ignores mentor:autoplay-changed events with a non-boolean enabled flag', async () => {
+    const { container } = renderWithContext();
+    const mentorEl = await waitFor(() => {
+      const el = container.querySelector('agent-ai') as HTMLElement | null;
+      expect(el).toBeInTheDocument();
+      return el!;
+    });
+
+    const querySelector = vi.fn();
+    Object.defineProperty(mentorEl, 'shadowRoot', {
+      value: { querySelector },
+      configurable: true,
+    });
+
+    window.dispatchEvent(new CustomEvent('mentor:autoplay-changed', { detail: {} }));
+
+    expect(querySelector).not.toHaveBeenCalled();
+  });
+
+  it('removes the mentor:autoplay-changed listener on unmount', async () => {
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+    const { unmount } = renderWithContext();
+    unmount();
+    expect(removeSpy).toHaveBeenCalledWith('mentor:autoplay-changed', expect.any(Function));
+  });
+
   it('dispatches setMentorSpinnerHidden(true) once the spinner is hidden and resets on unmount', async () => {
     const { setMentorSpinnerHidden } = await import('@/features/mentor');
     const { container, unmount } = renderWithContext();

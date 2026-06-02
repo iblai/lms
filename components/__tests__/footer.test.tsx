@@ -40,6 +40,7 @@ vi.mock('@/lib/config', () => ({
       footerMenus: vi.fn(() => ''),
       footerMenusEnabled: vi.fn(() => false),
       copyright: vi.fn(() => '(c) 2024 TestCorp'),
+      staticCopyrightEnabled: vi.fn(() => false),
     },
     urls: {
       dm: vi.fn(() => 'https://dm.example.com'),

@@ -24,6 +24,15 @@ const env = {
   NEXT_PUBLIC_ENABLE_RBAC: process.env.NEXT_PUBLIC_ENABLE_RBAC,
   NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
   NEXT_PUBLIC_MAIN_PLATFORM_KEY: process.env.NEXT_PUBLIC_MAIN_PLATFORM_KEY,
+  NEXT_PUBLIC_HIDE_DISCOVER_TAB: process.env.NEXT_PUBLIC_HIDE_DISCOVER_TAB,
+  NEXT_PUBLIC_ADDITIONAL_LEFT_HEADER_MENU_ITEMS:
+    process.env.NEXT_PUBLIC_ADDITIONAL_LEFT_HEADER_MENU_ITEMS,
+  NEXT_PUBLIC_ADDITIONAL_RIGHT_HEADER_MENU_ITEMS:
+    process.env.NEXT_PUBLIC_ADDITIONAL_RIGHT_HEADER_MENU_ITEMS,
+  NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU:
+    process.env.NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU,
+  NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU: process.env.NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU,
+  NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT: process.env.NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT,
 };
 
 const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
@@ -66,5 +75,15 @@ export const config = {
     enableRBAC: () => getEnv('NEXT_PUBLIC_ENABLE_RBAC', 'false') === 'true',
     supportEmail: () => getEnv('NEXT_PUBLIC_SUPPORT_EMAIL', 'support@ibl.ai'),
     mainPlatformKey: () => getEnv('NEXT_PUBLIC_MAIN_PLATFORM_KEY', 'main'),
+    hideDiscoverTab: () => getEnv('NEXT_PUBLIC_HIDE_DISCOVER_TAB', 'false') === 'true',
+    additionalLeftHeaderMenuItems: () =>
+      getEnv('NEXT_PUBLIC_ADDITIONAL_LEFT_HEADER_MENU_ITEMS', ''),
+    additionalRightHeaderMenuItems: () =>
+      getEnv('NEXT_PUBLIC_ADDITIONAL_RIGHT_HEADER_MENU_ITEMS', ''),
+    aiAnalyticsHeaderMenuEnabled: () =>
+      getEnv('NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU', 'true') !== 'false',
+    studioHeaderMenuEnabled: () =>
+      getEnv('NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU', 'true') !== 'false',
+    staticCopyrightEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT', 'false') === 'true',
   },
 };
