@@ -26,6 +26,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   coverage-bot:
     name: E2E Coverage Bot
