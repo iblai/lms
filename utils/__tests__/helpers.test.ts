@@ -627,8 +627,8 @@ describe('helpers utility functions', () => {
       const originalAppendChild = document.head.appendChild.bind(document.head);
       const originalRemoveChild = document.head.removeChild.bind(document.head);
 
-      document.head.appendChild = vi.fn(originalAppendChild);
-      document.head.removeChild = vi.fn(originalRemoveChild);
+      document.head.appendChild = vi.fn(originalAppendChild) as typeof document.head.appendChild;
+      document.head.removeChild = vi.fn(originalRemoveChild) as typeof document.head.removeChild;
 
       inBrowserPrint(mockDiv);
 

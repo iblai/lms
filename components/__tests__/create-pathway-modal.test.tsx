@@ -513,18 +513,17 @@ describe('CreatePathwayModal', () => {
       // Mock FileReader
       const originalFileReader = window.FileReader;
       // @ts-ignore — override constructor for the duration of the test
-      window.FileReader = vi.fn(function (this: any) {
-        const self = this;
-        self.result = 'data:image/jpeg;base64,fake';
-        self.onload = null;
-        self.readAsDataURL = vi.fn(() => {
+      window.FileReader = class MockFileReader {
+        result = 'data:image/jpeg;base64,fake';
+        onload: ((e: any) => void) | null = null;
+        readAsDataURL = vi.fn(() => {
           setTimeout(() => {
-            if (self.onload) {
-              self.onload({ target: { result: self.result } });
+            if (this.onload) {
+              this.onload({ target: { result: this.result } });
             }
           }, 0);
         });
-      }) as any;
+      } as any;
 
       await act(async () => {
         capturedInput.onchange({ target: mockTarget });
