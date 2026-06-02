@@ -53,7 +53,7 @@ export default function CourseContentLayout({
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
-  const { metadata } = useTenantMetadata({ org: getTenant() });
+  const { metadata } = useTenantMetadata({ org: tenant });
   const {
     handleFetchCourseInfo,
     handleFetchCourseSyllabus,
