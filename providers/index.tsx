@@ -2,12 +2,17 @@
 
 import { useDispatch } from 'react-redux';
 // @ts-ignore
-import { AccessCheckResponse, initializeDataLayer } from '@iblai/iblai-js/data-layer';
+import {
+  AccessCheckResponse,
+  initializeDataLayer,
+  TokenResponse,
+} from '@iblai/iblai-js/data-layer';
 import { useEffect, useState, useMemo } from 'react';
 import { config } from '@/lib/config';
 import {
   handleTenantSwitch,
   LocalStorageService,
+  saveUserTokens,
   useCurrentTenant,
   useUserTenants,
 } from '@/utils/localstorage';
@@ -17,7 +22,7 @@ import {
   setAccessCheckResponse,
   TenantProvider,
 } from '@iblai/iblai-js/web-utils';
-import { getTenant, getUserName, hasNonExpiredAuthToken, redirectToAuthSpa } from '@/utils/helpers';
+import { getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
 import { Spinner } from '@/components/spinner';
@@ -46,15 +51,10 @@ export default function Providers({
   const router = useRouter();
   const { tenant: requestedTenant } = useParams<{ tenant: string }>();
   const [ready, setReady] = useState(false);
-  const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
   const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
-  console.log('[REQUESTED TENANT UPDATE]: ', { requestedTenant });
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
-
-  console.log('################### [Providers] isSsoLoginRoute', isSsoLoginRoute);
-  console.log('################### [Providers] isVersionRoute', isVersionRoute);
 
   const loadDataLayer = () => {
     initializeDataLayer(
@@ -148,8 +148,13 @@ export default function Providers({
         skip={isSsoLoginRoute || isVersionRoute}
         currentTenant={tenant || ''}
         requestedTenant={requestedTenant || ''}
-        saveCurrentTenant={saveCurrentTenant}
+        saveCurrentTenant={(currentTenant) => {
+          console.log('[SAVING USER TOKENS]', currentTenant);
+        }}
         saveUserTenants={saveUserTenants}
+        saveUserTokens={(tokens) => {
+          saveUserTokens(tokens as TokenResponse);
+        }}
         handleTenantSwitch={(tenant, saveRedirect) => handleTenantSwitch(tenant, saveRedirect)}
         username={getUserName() || ''}
         onAuthFailure={(reason) => {

@@ -6,6 +6,7 @@ export const LOCALSTORAGE_KEYS = {
   REDIRECT_PATH: 'redirect-path',
   AUTH_TOKEN: 'axd_token',
   TOKEN_EXPIRY: 'axd_token_expires',
+  DM_TOKEN_EXPIRY: 'dm_token_expires',
   EDX_TOKEN_KEY: 'edx_jwt_token',
   DM_TOKEN_KEY: 'dm_token',
   AXD_TOKEN_KEY: 'axd_token',

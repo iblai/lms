@@ -37,6 +37,7 @@ import {
   isLoggedIn,
   setAccessCheckResponse,
   setDisplayMonetizationCheckoutModal,
+  Tenant,
 } from '@iblai/iblai-js/web-utils';
 
 import { DefaultEmptyBox } from '@/components/default-empty-box';
@@ -55,7 +56,7 @@ import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/
 import { CustomProgramEnrollmentPlus } from '@/types/program';
 import { getRandomCourseImage, getUserName, handleNotLoggedInAction } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
-import { useCurrentTenant, useIsAdmin } from '@/utils/localstorage';
+import { canMonetize, useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
 
 interface ProgramSettingsForm {
   subject: string;
@@ -217,6 +218,7 @@ export default function ProgramDetailPage() {
   const dispatch = useDispatch();
   const isAdmin = useIsAdmin();
   const { currentTenant } = useCurrentTenant();
+  const { userTenants } = useUserTenants();
   const userIsLoggedIn = isLoggedIn();
 
   const { handleSearch } = usePersonnalizedCatalog({ isLoggedIn: userIsLoggedIn });
@@ -390,7 +392,7 @@ export default function ProgramDetailPage() {
   };
 
   const handleCheckMonetizationAccess = async (programKey: string) => {
-    if (!currentTenant?.enable_monetization) {
+    if (!canMonetize(currentTenant as Tenant, userTenants as Tenant[])) {
       setHasMonetizationAccess(true);
       setMonetizationChecked(true);
       return;

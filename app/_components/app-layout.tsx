@@ -7,13 +7,13 @@ import { ChatButton, useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
 import { NavigationDrawer } from '@/components/navigation-drawer';
-import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 import { MonetizationWrapper } from './monetization-wrapper';
-import { useCurrentTenant } from '@/utils/localstorage';
+import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
 
 function DefaultPageLayout({ children }: { children: any }) {
   return (
@@ -30,6 +30,7 @@ export default function AppLayout({ children }: { children: any }) {
   const username = getUserName();
   const userIsLoggedIn = isLoggedIn();
   const { currentTenant } = useCurrentTenant();
+  const { userTenants } = useUserTenants();
   const { data: userMetadata, isLoading: isUserMetadataLoading } = useGetUserMetadataQuery(
     {
       params: { username },
@@ -76,7 +77,7 @@ export default function AppLayout({ children }: { children: any }) {
           />
         </div>
         <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        {currentTenant?.enable_monetization && <MonetizationWrapper />}
+        {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && <MonetizationWrapper />}
         <div className="flex h-full flex-col items-start md:flex-row">
           <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
             {children}

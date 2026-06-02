@@ -1,5 +1,5 @@
 // @ts-ignore
-import { StorageService } from '@iblai/iblai-js/data-layer';
+import { StorageService, TokenResponse } from '@iblai/iblai-js/data-layer';
 import { z } from 'zod';
 import { userDataSchema, tenantSchema } from '@/types/storage';
 import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
@@ -83,6 +83,13 @@ export function useUserData() {
   return validationResult.data;
 }
 
+export function saveUserTokens(tokenResponse: TokenResponse) {
+  setLocalStorageItem(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY, tokenResponse.axd_token.token);
+  setLocalStorageItem(LOCALSTORAGE_KEYS.TOKEN_EXPIRY, tokenResponse.axd_token.expires);
+  setLocalStorageItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY, tokenResponse.dm_token.token);
+  setLocalStorageItem(LOCALSTORAGE_KEYS.DM_TOKEN_EXPIRY, tokenResponse.dm_token.expires);
+}
+
 export function useUsername() {
   const userData = useUserData();
 
@@ -127,6 +134,24 @@ export function useGetAllTenants() {
   return validationResult.data;
 }
 
+export const canMonetize = (currentTenant: Tenant, allTenants: Tenant[]) => {
+  if (!Boolean(currentTenant?.enable_monetization)) {
+    const tenant = allTenants.find((tenant) => tenant.key === currentTenant.key);
+    if (!tenant) {
+      return false;
+    }
+    return tenant.enable_monetization;
+  }
+  return currentTenant.enable_monetization;
+};
+
+export const handleSaveCurrentTenant = (currentTenant: Tenant) => {
+  const currentPath = `${window.location.pathname}${window.location.search}`;
+  console.log('################### [handleSaveCurrentTenant] currentPath', currentPath);
+  localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
+  localStorage.setItem(LOCALSTORAGE_KEYS.CURRENT_TENANT, JSON.stringify(currentTenant));
+};
+
 export const handleTenantSwitch = async (
   tenant: string,
   saveRedirect = false,
@@ -157,7 +182,7 @@ export const handleTenantSwitch = async (
   localStorage.setItem('tenant', tenant);
   if (saveRedirect) {
     // Restore the redirect path after setting tenant
-    localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_TO, currentPath);
+    localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
   }
   await new Promise((resolve) => setTimeout(resolve, 100));
   window.location.href = `${url}?${param}`;

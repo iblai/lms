@@ -27,10 +27,12 @@ import {
   isLoggedIn,
   setAccessCheckResponse,
   setDisplayMonetizationCheckoutModal,
+  Tenant,
+  useUserTenants,
 } from '@iblai/iblai-js/web-utils';
 
 import { useDispatch } from 'react-redux';
-import { useCurrentTenant } from '@/utils/localstorage';
+import { canMonetize, useCurrentTenant } from '@/utils/localstorage';
 import { useTenantParam } from '../use-tenant-param';
 
 export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
@@ -46,6 +48,7 @@ export const useCourseDetail = (rawCourseId: string) => {
   const dispatch = useDispatch();
   const tenant = useTenantParam();
   const { currentTenant } = useCurrentTenant();
+  const { userTenants } = useUserTenants();
   // Some auth-SPA redirects send the user back with `+` characters in the course
   // id decoded to spaces (which the browser shows as %20). Normalize back to `+`
   // so all internal lookups use the canonical course id format.
@@ -191,7 +194,8 @@ export const useCourseDetail = (rawCourseId: string) => {
   const handleCheckCourseMonetizationAccess = async (
     onComplete: (result: { hasAccess: boolean }) => void,
   ) => {
-    if (!currentTenant?.enable_monetization) {
+    console.log('[CURRENT TENANT MONETIZATION]', { currentTenant });
+    if (!canMonetize(currentTenant as Tenant, userTenants as Tenant[])) {
       onComplete({ hasAccess: true });
       return;
     }
@@ -321,7 +325,7 @@ export const useCourseDetail = (rawCourseId: string) => {
     if (_.isEmpty(course)) return;
     handleFetchCourseEligibilityInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [course]);
+  }, [course?.course_key]);
 
   const handleFetchCourseInfo = async () => {
     setCourseInfoLoadingState('loading');
