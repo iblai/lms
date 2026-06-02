@@ -13,7 +13,6 @@ import {
   handleTenantSwitch,
   LocalStorageService,
   saveUserTokens,
-  useCurrentTenant,
   useUserTenants,
 } from '@/utils/localstorage';
 import {
