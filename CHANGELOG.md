@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.36.1](https://github.com/iblai/lms/compare/skills-v0.36.0...skills-v0.36.1) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** patch basic-ftp CRLF injection vulnerability ([a76075c](https://github.com/iblai/lms/commit/a76075c729b19f8cd8e14cfcaaa0ac057fe416e1)), closes [#71](https://github.com/iblai/lms/issues/71)
+
 ## [0.36.0](https://github.com/iblai/lms/compare/skills-v0.35.0...skills-v0.36.0) (2026-06-02)
 
 ### Features
