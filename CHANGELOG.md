@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.36.8](https://github.com/iblai/lms/compare/skills-v0.36.7...skills-v0.36.8) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** bump postcss override to 8.5.15 ([aefd22a](https://github.com/iblai/lms/commit/aefd22af803fc6ebdd4981edb501832ab0e06b1e))
+
+### Chores
+
+* update pnpm-lock.yaml ([7fcfcc3](https://github.com/iblai/lms/commit/7fcfcc3038e10c4fea06746427166678eceab85d))
+
 ## [0.36.7](https://github.com/iblai/lms/compare/skills-v0.36.6...skills-v0.36.7) (2026-06-03)
 
 ### Bug Fixes
