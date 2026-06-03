@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.36.7](https://github.com/iblai/lms/compare/skills-v0.36.6...skills-v0.36.7) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add @hono/node-server override for serveStatic bypass ([7f3bd5c](https://github.com/iblai/lms/commit/7f3bd5cef66587807aa9976595d6c7564d514049))
+* **security:** add postcss and hono/node-server overrides ([96dd1db](https://github.com/iblai/lms/commit/96dd1dbde892945a59bce55570acd09b4edb13f2))
+
 ## [0.36.6](https://github.com/iblai/lms/compare/skills-v0.36.5...skills-v0.36.6) (2026-06-03)
 
 ### Bug Fixes
