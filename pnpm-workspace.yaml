@@ -1,7 +1,10 @@
 overrides:
-  basic-ftp: 5.2.1
+  basic-ftp: 5.3.1
   axios: 1.16.0
-  hono: 4.12.16
+  hono: 4.12.23
   dompurify: 3.4.0
+  devalue: 5.8.1
   qs: 6.15.2
   prismjs: 1.30.0
+  fast-uri: 3.1.2
+  ip-address: 10.1.1
