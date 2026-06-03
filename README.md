@@ -145,7 +145,7 @@ pnpm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your IBL.ai platform URLs and feature flags — see [Configuration › Environment Variables](#environment-variables) for the full reference.
+Edit `.env.local` with your ibl.ai platform URLs and feature flags — see [Configuration › Environment Variables](#environment-variables) for the full reference.
 
 ### 4. Start the dev server
 
@@ -287,7 +287,7 @@ lms/
 ### Data Flow
 
 ```
-User → React Components → Custom Hooks → Redux (RTK Query) → IBL.ai API
+User → React Components → Custom Hooks → Redux (RTK Query) → ibl.ai API
                                               ↓
                                         @iblai/iblai-js SDK
                                         ├── /data-layer  (API slices, reducers)
@@ -371,9 +371,9 @@ Feature flags are set via `NEXT_PUBLIC_*` environment variables and control whic
 
 ---
 
-## IBL.ai Platform
+## ibl.ai Platform
 
-LMS is built on the [IBL.ai](https://ibl.ai) platform. To use this app, you need access to an IBL.ai backend instance which provides:
+LMS is built on the [ibl.ai](https://ibl.ai) platform. To use this app, you need access to an ibl.ai backend instance which provides:
 
 - **Skills & Course API** — course catalog, enrollment, progress tracking, and skill management
 - **EdX LMS** — course content delivery, grading, and certificate issuance
@@ -403,12 +403,12 @@ Before pushing, review [`AGENTS.md`](AGENTS.md) and the skill files under [`.cla
 - [Tauri 2](https://tauri.app) — desktop & mobile shell
 - [Redux Toolkit](https://redux-toolkit.js.org) — state management
 - [Vitest](https://vitest.dev) + [Playwright](https://playwright.dev) — unit & e2e testing
-- [@iblai/iblai-js](https://www.npmjs.com/package/@iblai/iblai-js) — IBL.ai SDK
+- [@iblai/iblai-js](https://www.npmjs.com/package/@iblai/iblai-js) — ibl.ai SDK
 
 ---
 
 <div align="center">
 
-Made with care by the [IBL.ai](https://ibl.ai) team
+Made with care by the [ibl.ai](https://ibl.ai) team
 
 </div>
