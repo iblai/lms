@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.36.6](https://github.com/iblai/lms/compare/skills-v0.36.5...skills-v0.36.6) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add brace-expansion override ([3cd2d84](https://github.com/iblai/lms/commit/3cd2d84be19cfaf3a2de185b39d9d2dac6b9d7a6))
+
 ## [0.36.5](https://github.com/iblai/lms/compare/skills-v0.36.4...skills-v0.36.5) (2026-06-03)
 
 ### Bug Fixes
