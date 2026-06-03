@@ -1,5 +1,3 @@
-import { config } from '@/lib/config';
-
 // Server-safe default app information for skillsAI
 const DEFAULT_APP_INFORMATION = {
   metaTitle: 'skillsAI',
@@ -68,7 +66,7 @@ interface CustomDomainsResponse {
  */
 async function fetchTenantMetadata(tenantKey: string): Promise<TenantMetadata | null> {
   try {
-    const baseUrl = config.urls.dm();
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/dm`;
     const url = `${baseUrl}/api/core/orgs/${tenantKey}/metadata/`;
 
     const response = await fetch(url, {
@@ -92,7 +90,7 @@ async function fetchTenantMetadata(tenantKey: string): Promise<TenantMetadata | 
  */
 async function fetchCustomDomainMetadata(domain: string): Promise<AppWebConfig | null> {
   try {
-    const baseUrl = config.urls.dm();
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/dm`;
     const response = await fetch(
       `${baseUrl}/api/custom-domains?domain=${encodeURIComponent(domain)}`,
       {
@@ -241,7 +239,7 @@ export async function fetchPublicPlatformMembership(
 ): Promise<{ platform_key: string; allow_self_linking: boolean } | null> {
   if (!tenantKey) return null;
   try {
-    const baseUrl = config.urls.dm();
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/dm`;
     const url = `${baseUrl}/api/core/users/platforms/config/public/?platform_key=${encodeURIComponent(
       tenantKey,
     )}`;
