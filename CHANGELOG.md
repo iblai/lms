@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.36.2](https://github.com/iblai/lms/compare/skills-v0.36.1...skills-v0.36.2) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add axios override to pin at 1.15.2 ([0b69a34](https://github.com/iblai/lms/commit/0b69a343f093d29cb4ad7f54f75bbf23b72a684f))
+
 ## [0.36.1](https://github.com/iblai/lms/compare/skills-v0.36.0...skills-v0.36.1) (2026-06-03)
 
 ### Bug Fixes
