@@ -161,10 +161,13 @@ export default async function RootLayout({
   // RTK query / loading spinner. Pathname is forwarded by middleware.ts.
   const headersList = await headers();
   const pathname = headersList.get('x-pathname');
+  console.log('[PATHNAME]: ', pathname);
   const tenantFromPath = extractTenantFromPathname(pathname);
+  console.log('[TENANT FROM PATH]: ', tenantFromPath);
   const platformMembership = tenantFromPath
     ? await fetchPublicPlatformMembership(tenantFromPath)
     : null;
+  console.log('[PLATFORM MEMBERSHIP]: ', platformMembership);
   const allowSelfLinking = Boolean(platformMembership?.allow_self_linking);
 
   return (
