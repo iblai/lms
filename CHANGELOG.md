@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.36.3](https://github.com/iblai/lms/compare/skills-v0.36.2...skills-v0.36.3) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add overrides for hono, dompurify, and qs ([03fede2](https://github.com/iblai/lms/commit/03fede23f22020ae479508a8fe09813451c22709))
+* **security:** update axios, hono, prismjs overrides and bump next ([225f3cc](https://github.com/iblai/lms/commit/225f3ccd33ca7a10a30b01e13a4d5fe68069f17a))
+
 ## [0.36.2](https://github.com/iblai/lms/compare/skills-v0.36.1...skills-v0.36.2) (2026-06-03)
 
 ### Bug Fixes
