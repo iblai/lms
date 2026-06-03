@@ -14,7 +14,7 @@
 
 [Features](#features) • [Quick Start](#quick-start) • [Deployment](#deployment) • [Architecture](#architecture) • [Configuration](#configuration) • [Contributing](#contributing)
 
-_Deployed at [skills.ibl.ai](https://skills.ibl.ai)_
+_Deployed at [lms.ibl.ai](https://lms.ibl.ai)_
 
 </div>
 
