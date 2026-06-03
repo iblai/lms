@@ -1,5 +1,5 @@
 # Stage 0: Base
-FROM node:20 AS base
+FROM node:26 AS base
 WORKDIR /app
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -31,7 +31,7 @@ RUN if [ -n "$APP_VERSION" ]; then \
 RUN pnpm run build
 
 # Stage 2: Runner
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 
 # Install Node 25.3.0 (download official musl binary for Alpine)
