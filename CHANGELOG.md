@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.36.9](https://github.com/iblai/lms/compare/skills-v0.36.8...skills-v0.36.9) (2026-06-03)
+
+### Chores
+
+* change IBL.ai to ibl.ai ([c9de727](https://github.com/iblai/lms/commit/c9de727074e2e141155ad7daa023d8ec2feedb91))
+* update deployment url to https://lms.ibl.ai ([1ebec17](https://github.com/iblai/lms/commit/1ebec176965f58d55c49488620e7f7e7c218f1b2))
+* update documentation ([b79596d](https://github.com/iblai/lms/commit/b79596df3036b29eeacade7785f0f0934b6fdc43))
+
 ## [0.36.8](https://github.com/iblai/lms/compare/skills-v0.36.7...skills-v0.36.8) (2026-06-03)
 
 ### Bug Fixes
