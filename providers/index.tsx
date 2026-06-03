@@ -108,6 +108,10 @@ export default function Providers({
     // Discover / course-about / program-about pages are only public when the
     // tenant has self-linking enabled. Otherwise they fall through to the
     // standard auth gate.
+
+    console.log('[ALLOW SELF LINKING]: ', allowSelfLinking);
+    console.log('[USER IS LOGGED IN]: ', userIsLoggedIn);
+
     if (allowSelfLinking && !userIsLoggedIn) {
       map.set(new RegExp('^/platform/[^/]+/discover(/|$)'), async () => false);
       map.set(new RegExp('^/platform/[^/]+/courses/[^/]+/?$'), async () => false);
