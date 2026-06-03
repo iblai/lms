@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.36.4](https://github.com/iblai/lms/compare/skills-v0.36.3...skills-v0.36.4) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** update cargo deps for rand, bytes, and reqwest ([c7cbc2c](https://github.com/iblai/lms/commit/c7cbc2caa90f2daea51e13cd559aa1cbc890ee20))
+
 ## [0.36.3](https://github.com/iblai/lms/compare/skills-v0.36.2...skills-v0.36.3) (2026-06-03)
 
 ### Bug Fixes
