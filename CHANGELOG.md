@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.36.5](https://github.com/iblai/lms/compare/skills-v0.36.4...skills-v0.36.5) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** update overrides for basic-ftp, hono, devalue, fast-uri, ip-address ([2b403d2](https://github.com/iblai/lms/commit/2b403d20a4432a15c25097dad3cf5a683c351689))
+
 ## [0.36.4](https://github.com/iblai/lms/compare/skills-v0.36.3...skills-v0.36.4) (2026-06-03)
 
 ### Bug Fixes
