@@ -10,4 +10,5 @@ overrides:
   ip-address: 10.1.1
   brace-expansion: 5.0.6
   postcss: 8.5.10
-  hono/node-server: 1.19.13
+  ws: 8.20.1
+  '@hono/node-server': 1.19.13
