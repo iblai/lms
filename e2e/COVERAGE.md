@@ -29,7 +29,7 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 2: Onboarding — First-Time User (5 checkpoints) — `journeys/02-onboarding-first-time-user.spec.ts`
 
-**Source files:** `app/start/page.tsx`, `app/home/page.tsx`
+**Source files:** `app/start/page.tsx`, `app/home/page.tsx`, `app/platform/[tenant]/start/page.tsx`, `app/platform/[tenant]/home/page.tsx`
 
 - [x] First-time user is directed to the /start onboarding page after authentication
 - [x] Onboarding page displays welcome content and interest selection UI

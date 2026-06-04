@@ -36,7 +36,7 @@
       "id": "onboarding-first-time-user",
       "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
-      "sourceFiles": ["app/start/page.tsx", "app/home/page.tsx"],
+      "sourceFiles": ["app/start/page.tsx", "app/home/page.tsx", "app/platform/[tenant]/start/page.tsx", "app/platform/[tenant]/home/page.tsx"],
       "checkpoints": [
         {
           "id": "onb-01",
@@ -71,6 +71,7 @@
       "spec": "03-home-dashboard.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
+        "app/platform/[tenant]/home/page.tsx",
         "components/profile-sidebar.tsx",
         "components/suggested-courses.tsx",
         "components/my-courses.tsx"
@@ -122,7 +123,7 @@
       "id": "course-about-and-configuration",
       "name": "Course About & Configuration",
       "spec": "04-course-about-and-configuration.spec.ts",
-      "sourceFiles": ["app/courses/[course_id]/page.tsx", "components/course-access-guard.tsx"],
+      "sourceFiles": ["app/courses/[course_id]/page.tsx", "app/platform/[tenant]/courses/[course_id]/page.tsx", "components/course-access-guard.tsx"],
       "checkpoints": [
         {
           "id": "course-01",
@@ -194,6 +195,14 @@
         "app/course-content/[course_id]/instructor/page.tsx",
         "app/course-content/[course_id]/bookmarks/page.tsx",
         "app/course-content/[course_id]/layout.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/course/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/agent/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/progress/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/dates/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/discussion/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/instructor/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/bookmarks/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
         "components/course-lesson-navigator.tsx",
         "components/course-agent-chat.tsx",
         "components/course-access-guard.tsx",
@@ -321,7 +330,9 @@
       "spec": "06-profile-activity.spec.ts",
       "sourceFiles": [
         "app/profile/public/page.tsx",
+        "app/platform/[tenant]/profile/public/page.tsx",
         "app/profile/layout.tsx",
+        "app/platform/[tenant]/profile/layout.tsx",
         "components/profile-tabs.tsx"
       ],
       "checkpoints": [
@@ -359,6 +370,7 @@
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
+        "app/platform/[tenant]/profile/skills/page.tsx",
         "components/skill-box.tsx",
         "components/default-empty-box.tsx"
       ],
@@ -647,7 +659,9 @@
       "spec": "16-analytics-overview.spec.ts",
       "sourceFiles": [
         "app/analytics/page.tsx",
+        "app/platform/[tenant]/analytics/page.tsx",
         "app/analytics/layout.tsx",
+        "app/platform/[tenant]/analytics/layout.tsx",
         "app/loading.tsx",
         "components/analytics-sidebar.tsx",
         "components/spinner.tsx"
