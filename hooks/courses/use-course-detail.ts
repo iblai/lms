@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCourseMetadata } from '@/hooks/courses/use-course-metadata';
 import {
   CourseCompletion,
@@ -8,7 +8,7 @@ import {
   CourseProgress,
 } from '@/types/courses';
 import _ from 'lodash';
-import { getTenant, getUserName, inIframe } from '@/utils/helpers';
+import { getTenant, getUserName, handleNotLoggedInAction, inIframe } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import dayjs from 'dayjs';
 import {
@@ -24,12 +24,16 @@ import {
   useLazyCheckAccessQuery,
 } from '@iblai/iblai-js/data-layer';
 import {
+  isLoggedIn,
   setAccessCheckResponse,
   setDisplayMonetizationCheckoutModal,
+  Tenant,
+  useUserTenants,
 } from '@iblai/iblai-js/web-utils';
 
 import { useDispatch } from 'react-redux';
-import { useCurrentTenant } from '@/utils/localstorage';
+import { canMonetize, useCurrentTenant } from '@/utils/localstorage';
+import { useTenantParam } from '../use-tenant-param';
 
 export type CourseInfoLoadingState = 'not-started' | 'loading' | 'successful' | 'failure';
 
@@ -39,10 +43,28 @@ interface CourseEligibility {
   disabled?: boolean;
 }
 
-export const useCourseDetail = (courseId: string) => {
+export const useCourseDetail = (rawCourseId: string) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const tenant = useTenantParam();
   const { currentTenant } = useCurrentTenant();
+  const { userTenants } = useUserTenants();
+  // Some auth-SPA redirects send the user back with `+` characters in the course
+  // id decoded to spaces (which the browser shows as %20). Normalize back to `+`
+  // so all internal lookups use the canonical course id format.
+  const courseId = rawCourseId.replace(/ /g, '+');
+
+  useEffect(() => {
+    if (courseId === rawCourseId || typeof window === 'undefined') return;
+    const updatedPathname = window.location.pathname.replace(/%20/g, '+');
+    if (updatedPathname !== window.location.pathname) {
+      window.history.replaceState(
+        null,
+        '',
+        `${updatedPathname}${window.location.search}${window.location.hash}`,
+      );
+    }
+  }, [rawCourseId, courseId]);
   const ACCESS_COURSE_LABEL = 'Access Course';
   const ENROLL_NOW_LABEL = 'Enroll Now';
   const REQUEST_ACCESS_LABEL = 'Request Access';
@@ -76,10 +98,27 @@ export const useCourseDetail = (courseId: string) => {
   );
   const [courseOutlineLoading, setCourseOutlineLoading] = useState(false);
   const [courseEligibilityLoading, setCourseEligibilityLoading] = useState(false);
+  // Flips to `true` the first time `handleFetchCourseEligibilityInfo` settles.
+  // `courseEligibilityLoading` alone isn't sufficient — it's `false` both before
+  // the fetch starts and after it finishes, so consumers (e.g. the `trigger_cta`
+  // auto-click) need a positive "has-fetched" signal to avoid acting on the
+  // initial default eligibility.
+  const [courseEligibilityFetched, setCourseEligibilityFetched] = useState(false);
   const [courseButtonActionLoading, setCourseButtonActionLoading] = useState(false);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
   const [courseCompletion, setCourseCompletion] = useState<CourseCompletion | null>(null);
   const [courseGradingPolicyActive, setCourseGradingPolicyActive] = useState(false);
+
+  const userLoggedIn = isLoggedIn();
+
+  const triggerNotLoggedInAction = () => handleNotLoggedInAction(tenant);
+
+  const applyEligibility = (eligibility: CourseEligibility) => {
+    setCourseEligibility({
+      ...eligibility,
+      btn_action: userLoggedIn ? eligibility.btn_action : triggerNotLoggedInAction,
+    });
+  };
 
   const handleRequestAccess = () => {
     console.log('Request Access');
@@ -91,7 +130,7 @@ export const useCourseDetail = (courseId: string) => {
 
   const handleAccessCourse = () => {
     const defaultTab = course?.agent_content_mode === true ? 'agent' : 'course';
-    const url = `/course-content/${courseId}/${defaultTab}`;
+    const url = `/platform/${tenant}/course-content/${courseId}/${defaultTab}`;
     if (inIframe()) {
       window.open(url, '_blank');
     } else {
@@ -145,7 +184,7 @@ export const useCourseDetail = (courseId: string) => {
   };
   const [courseEligibility, setCourseEligibility] = useState<CourseEligibility>({
     btn_label: ENROLL_NOW_LABEL,
-    btn_action: handleEnrollToCourse,
+    btn_action: userLoggedIn ? handleEnrollToCourse : triggerNotLoggedInAction,
   });
 
   const handleOpenMonetizationCheckoutModal = () => {
@@ -155,7 +194,7 @@ export const useCourseDetail = (courseId: string) => {
   const handleCheckCourseMonetizationAccess = async (
     onComplete: (result: { hasAccess: boolean }) => void,
   ) => {
-    if (!currentTenant?.enable_monetization) {
+    if (!canMonetize(currentTenant as Tenant, userTenants as Tenant[])) {
       onComplete({ hasAccess: true });
       return;
     }
@@ -175,6 +214,7 @@ export const useCourseDetail = (courseId: string) => {
 
   const handleFetchCourseEligibilityInfo = async () => {
     setCourseEligibilityLoading(true);
+    setCourseEligibilityFetched(false);
     // Monetization access supersedes other eligibility rules — if the user
     // doesn't have monetization access, show Purchase Now and stop.
     let hasMonetizationAccess = true;
@@ -182,11 +222,12 @@ export const useCourseDetail = (courseId: string) => {
       hasMonetizationAccess = result.hasAccess;
     });
     if (!hasMonetizationAccess) {
-      setCourseEligibility({
+      applyEligibility({
         btn_label: PURCHASE_NOW_LABEL,
         btn_action: () => handleOpenMonetizationCheckoutModal(),
       });
       setCourseEligibilityLoading(false);
+      setCourseEligibilityFetched(true);
       return;
     }
 
@@ -201,12 +242,12 @@ export const useCourseDetail = (courseId: string) => {
       const coursePrice = course?.course_price;
       if (config.settings.courseEligibilityEnabled()) {
         if (isNotMainTenant && isEnrolled && enrollmentStarted && isEligible) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: ACCESS_COURSE_LABEL,
             btn_action: handleAccessCourse,
           });
         } else if (isNotMainTenant && enrollmentStarted && !isEligible) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: REQUEST_ACCESS_LABEL,
             btn_action: handleRequestAccess,
           });
@@ -217,7 +258,7 @@ export const useCourseDetail = (courseId: string) => {
           canEnroll &&
           !isEnrolled
         ) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: ENROLL_NOW_COURSE_STARTING_SOON_LABEL,
             btn_action: handleSelfEnrollToCourse,
           });
@@ -227,49 +268,64 @@ export const useCourseDetail = (courseId: string) => {
           !isEligible &&
           course?.platform_key === 'main'
         ) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: REQUEST_ACCESS_COURSE_STARTING_SOON_LABEL,
             btn_action: handleRequestAccess,
           });
         } else if (isNotMainTenant && enrollmentStarted && isEligible && !isEnrolled && canEnroll) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: ENROLL_NOW_LABEL,
             btn_action: handleSelfEnrollToCourse,
           });
         }
       } else {
         if (isEnrolled) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: ACCESS_COURSE_LABEL,
             btn_action: handleAccessCourse,
           });
         } else if (invitationOnly) {
-          setCourseEligibility({
+          applyEligibility({
             disabled: true,
             btn_label: INVITATION_ONLY_LABEL,
             btn_action: () => {},
           });
         } else if (coursePrice && coursePrice !== 'Free' && parseInt(coursePrice) !== 0) {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: BUY_NOW_LABEL,
             btn_action: handleCreateCheckoutSession,
           });
         } else {
-          setCourseEligibility({
+          applyEligibility({
             btn_label: ENROLL_NOW_LABEL,
             btn_action: handleEnrollToCourse,
           });
         }
       }
       setCourseEligibilityLoading(false);
+      setCourseEligibilityFetched(true);
     } else {
-      setCourseEligibility({
+      applyEligibility({
         btn_label: ENROLL_NOW_LABEL,
         btn_action: handleEnrollToCourse,
       });
       setCourseEligibilityLoading(false);
+      setCourseEligibilityFetched(true);
     }
   };
+
+  // Once the course metadata is loaded, automatically resolve eligibility +
+  // monetization-access internally. The page used to call
+  // `handleFetchCourseEligibilityInfo` itself after `course` arrived — moving
+  // it here keeps the responsibility (and the `applyEligibility` state
+  // machine) entirely inside the hook so consumers don't have to remember to
+  // wire it up.
+  useEffect(() => {
+    if (_.isEmpty(course)) return;
+    handleFetchCourseEligibilityInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course?.course_key]);
+
   const handleFetchCourseInfo = async () => {
     setCourseInfoLoadingState('loading');
     try {
@@ -317,7 +373,7 @@ export const useCourseDetail = (courseId: string) => {
       lessonId &&
       (checkEligibility ? courseEligibility.btn_label === ACCESS_COURSE_LABEL : true)
     ) {
-      const URL = `/course-content/${courseId}/${targetTab}?unit_id=${lessonId}`;
+      const URL = `/platform/${tenant}/course-content/${courseId}/${targetTab}?unit_id=${lessonId}`;
       if (inIframe()) {
         window.open(URL, '_blank');
       } else {
@@ -380,12 +436,14 @@ export const useCourseDetail = (courseId: string) => {
     courseEligibility,
     courseOutlineLoading,
     courseEligibilityLoading,
+    courseEligibilityFetched,
     courseButtonActionLoading,
     isCourseProgressLoading,
     isCourseCompletionLoading,
     courseProgress,
     courseCompletion,
     courseGradingPolicyActive,
+    userLoggedIn,
     ACCESS_COURSE_LABEL,
     ENROLL_NOW_LABEL,
     REQUEST_ACCESS_LABEL,

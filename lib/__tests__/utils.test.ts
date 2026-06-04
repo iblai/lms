@@ -423,6 +423,22 @@ describe('utils', () => {
       // Should not include Content-Type when isJson is false
       expect(mockHeaders.set).not.toHaveBeenCalledWith('Content-Type', 'application/json');
     });
+
+    it('prepareHeaders deletes the Authorization header when noAuth is true', async () => {
+      mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
+
+      await iblFetchBaseQuery({ url: '/test', service: SERVICES.DM, noAuth: true }, mockApi, {});
+
+      const mockHeaders = new Map<string, string>();
+      mockHeaders.set = vi.fn();
+      mockHeaders.delete = vi.fn();
+
+      capturedFetchBaseQueryConfig.prepareHeaders(mockHeaders);
+
+      // Authorization is set first, then removed because noAuth is true
+      expect(mockHeaders.set).toHaveBeenCalledWith('Authorization', 'Token test-dm-token');
+      expect(mockHeaders.delete).toHaveBeenCalledWith('Authorization');
+    });
   });
 
   describe('isTauriApp', () => {

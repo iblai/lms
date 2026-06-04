@@ -1,16 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 23: Edit Profile Dialog', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 

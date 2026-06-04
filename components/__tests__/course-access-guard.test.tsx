@@ -6,6 +6,7 @@ const mockPush = vi.fn();
 const mockReplace = vi.fn();
 const mockPathname = { current: '/course-content/course-v1:test+course+2024/course' };
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush, replace: mockReplace }),
   usePathname: () => mockPathname.current,
 }));
@@ -128,9 +129,12 @@ describe('CourseAccessGuard', () => {
     });
   });
 
-  describe('unauthorized tenant', () => {
-    it('redirects to /error/403 when platform_key is not present in user tenants', () => {
-      vi.mocked(getTenants).mockReturnValue([{ key: 'tenant-a' }, { key: 'tenant-b' }] as any);
+  describe('mismatched platform_key', () => {
+    // Tenant authorization is now resolved upstream by the `/platform/[tenant]`
+    // routing, so the guard no longer gates on `platform_key` vs the active
+    // tenant: a loaded course always renders its children without redirecting
+    // to an error page or dispatching a requested-tenant change.
+    it('renders children even when platform_key differs from the active tenant', () => {
       render(
         <CourseAccessGuard
           course={{ platform_key: 'other-tenant' } as any}
@@ -139,12 +143,10 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
-      expect(mockDispatch).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
     });
 
-    it('dispatches updateRequestedTenant with the matching tenant key when platform_key is in user tenants', () => {
-      vi.mocked(getTenants).mockReturnValue([{ key: 'tenant-a' }, { key: 'other-tenant' }] as any);
+    it('does not redirect or dispatch when platform_key differs from the active tenant', () => {
       render(
         <CourseAccessGuard
           course={{ platform_key: 'other-tenant' } as any}
@@ -153,24 +155,9 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'tenant/updateRequestedTenant',
-        payload: 'other-tenant',
-      });
       expect(mockPush).not.toHaveBeenCalled();
-    });
-
-    it('shows spinner instead of children when tenant is unauthorized', () => {
-      render(
-        <CourseAccessGuard
-          course={{ platform_key: 'other-tenant' } as any}
-          courseInfoLoadingState="successful"
-        >
-          <div>content</div>
-        </CourseAccessGuard>,
-      );
-      expect(screen.queryByText('content')).not.toBeInTheDocument();
-      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockDispatch).not.toHaveBeenCalled();
     });
   });
 
@@ -181,7 +168,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/404');
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/404');
     });
 
     it('shows spinner instead of children when course is null', () => {
@@ -260,7 +247,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -297,7 +284,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 

@@ -77,6 +77,7 @@ export interface CourseEdxData {
   certificates_display_behavior: string;
   entrance_exam_minimum_score_pct: string;
   video_thumbnail_image_asset_path: string;
+  course_key: string;
   invitation_only?: boolean;
   catalog_visibility?: string;
   course_outline?: OutlineNode[];

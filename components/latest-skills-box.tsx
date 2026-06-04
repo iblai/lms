@@ -1,9 +1,11 @@
 import { Plus } from 'lucide-react';
 import { Skill } from '@/types/skills';
 import { useRouter } from 'next/navigation';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export const LatestSkillsBox = ({ skills, onClose }: { skills: Skill[]; onClose?: () => void }) => {
   const router = useRouter();
+  const tenant = useTenantParam();
 
   return (
     <div className="mb-4 rounded-md border border-[var(--sidebar-border)] p-4">
@@ -15,7 +17,7 @@ export const LatestSkillsBox = ({ skills, onClose }: { skills: Skill[]; onClose?
           className="group relative rounded-sm p-1 text-[var(--text-light)] hover:bg-[var(--sidebar-hover-bg)]"
           onClick={() => {
             if (onClose) onClose();
-            router.push('/profile/skills');
+            router.push(`/platform/${tenant}/profile/skills`);
           }}
           aria-label="Add Skill"
         >

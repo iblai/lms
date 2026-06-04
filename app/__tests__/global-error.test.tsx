@@ -4,9 +4,14 @@ import { render } from '@testing-library/react';
 const mockReplace = vi.fn();
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: vi.fn(() => ({
     replace: mockReplace,
   })),
+}));
+
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
 }));
 
 import GlobalError from '../global-error';
@@ -20,7 +25,7 @@ describe('GlobalError boundary', () => {
   it('redirects to /error/500', () => {
     const error = new Error('Root layout error');
     render(<GlobalError error={error} reset={() => {}} />);
-    expect(mockReplace).toHaveBeenCalledWith('/error/500');
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/500');
   });
 
   it('logs the error to console', () => {

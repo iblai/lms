@@ -6,13 +6,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Logo } from './logo';
 import { UserProfileButton } from './header/profile/user-profile-button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  getTenant,
-  getUserName,
-  isRecommendedTabHidden,
-  parseMarkdownLinks,
-} from '@/utils/helpers';
+import { getUserName, isRecommendedTabHidden, parseMarkdownLinks } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useMediaQuery } from 'react-responsive';
@@ -26,8 +23,10 @@ interface NavBarProps {
 }
 
 export function NavBar({ activePage, onMenuClick }: NavBarProps) {
+  const tenant = useTenantParam();
+  const isUserLoggedIn = isLoggedIn();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
-    platform_key: getTenant(),
+    platform_key: tenant,
   });
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,7 +52,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
 
   const handleViewNotifications = useCallback(
     (notificationId?: string) => {
-      router.push(`/notifications/${notificationId ?? ''}`);
+      router.push(`/platform/${tenant}/notifications/${notificationId ?? ''}`);
     },
     [router],
   );
@@ -64,7 +63,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
       url.searchParams.set('q', encodeURIComponent(searchQuery));
       router.push(url.pathname + url.search);
     } else {
-      router.push(`/discover?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/platform/${tenant}/discover?q=${encodeURIComponent(searchQuery)}`);
     }
   };
   const shouldShowNavLinks = () => {
@@ -93,7 +92,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           {shouldShowNavLinks() && (
             <nav className="ml-8 hidden h-full items-center space-x-6 md:flex">
               <Link
-                href="/home"
+                href={`/platform/${tenant}/home`}
                 className={`text-sm font-medium ${
                   activePage === 'home'
                     ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -103,7 +102,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 Home
               </Link>
               <Link
-                href="/profile"
+                href={`/platform/${tenant}/profile`}
                 className={`text-sm font-medium ${
                   activePage === 'profile'
                     ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -114,7 +113,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               </Link>
               {!isRecommendedTabHidden() && (
                 <Link
-                  href="/recommended"
+                  href={`/platform/${tenant}/recommended`}
                   className={`text-sm font-medium ${
                     activePage === 'recommended'
                       ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -126,7 +125,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               )}
               {!hideDiscoverTab && (
                 <Link
-                  href="/discover"
+                  href={`/platform/${tenant}/discover`}
                   className={`text-sm font-medium ${
                     activePage === 'discover' && !activePage.startsWith('course')
                       ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
@@ -233,11 +232,11 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               </Link>
             )}
           {!(isTabletRange && searchVisible) && aiAnalyticsHeaderMenuEnabled && (
-            <WithPermissions rbacResource={`/platforms/${getTenant()}/#can_view_analytics`}>
+            <WithPermissions rbacResource={`/platforms/${tenant}/#can_view_analytics`}>
               {({ hasPermission }) =>
                 hasPermission && (
                   <Link
-                    href="/analytics"
+                    href={`/platform/${tenant}/analytics`}
                     className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
                   >
                     AI Analytics
@@ -259,16 +258,19 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
               </Link>
             ))}
           {/* Notification Bell */}
-          <NotificationDropdown
-            org={getTenant()}
-            userId={getUserName()}
-            isAdmin={departmentMemberCheck?.is_platform_admin}
-            onViewNotifications={handleViewNotifications}
-          />
-
-          <div className="relative">
-            <UserProfileButton />
-          </div>
+          {isUserLoggedIn && (
+            <NotificationDropdown
+              org={tenant}
+              userId={getUserName()}
+              isAdmin={departmentMemberCheck?.is_platform_admin}
+              onViewNotifications={handleViewNotifications}
+            />
+          )}
+          {isUserLoggedIn && (
+            <div className="relative">
+              <UserProfileButton />
+            </div>
+          )}
         </div>
       </div>
     </header>

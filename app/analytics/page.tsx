@@ -1,12 +1,5 @@
-'use client';
+import { TenantRedirect } from '@/components/tenant-redirect';
 
-import { getTenant } from '@/utils/helpers';
-import { AnalyticsOverview, useAnalyticsSettings } from '@iblai/iblai-js/web-containers';
-
-export default function AnalyticsPage() {
-  const { usergroupIds } = useAnalyticsSettings();
-
-  // For Skills app, we'll use the analytics overview component
-  // without mentor-specific parameters
-  return <AnalyticsOverview tenantKey={getTenant()} mentorId={''} usergroupIds={usergroupIds} />;
+export default function Page() {
+  return <TenantRedirect />;
 }

@@ -1,17 +1,13 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 /**
  * Helper: Navigate to the first course about page from /home.
  * Returns the course heading text or null if no courses exist.
  */
 async function navigateToCourseAbout(page: Page): Promise<string | null> {
-  await page.goto(`${SKILL_HOST}/home`, {
-    timeout: 120000,
-  });
+  await gotoTenantPage(page, 'home', { timeout: 120000 });
   await waitForAppShell(page);
 
   const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
@@ -53,9 +49,7 @@ test.describe('Journey 04: Course About & Configuration', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120000 });
     await waitForAppShell(page);
   });
 

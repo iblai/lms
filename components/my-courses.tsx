@@ -7,7 +7,9 @@ import { SkeletonMultiplier } from './skeleton-multiplier';
 import { DefaultEmptyBox } from './default-empty-box';
 import { CourseBox } from './course-box';
 import Link from 'next/link';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 export function MyCourses() {
+  const tenant = useTenantParam();
   const {
     userCourses: courses,
     isLoadingUserCourses: loading,
@@ -26,7 +28,7 @@ export function MyCourses() {
             My Courses
           </h3>
           <Link
-            href="/profile/courses"
+            href={`/platform/${tenant}/profile/courses`}
             className="flex items-center gap-1 rounded-md px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 sm:text-sm"
           >
             See More

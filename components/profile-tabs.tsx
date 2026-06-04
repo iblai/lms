@@ -1,12 +1,14 @@
 'use client';
 
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 export function ProfileTabs() {
   const pathname = usePathname();
-  const baseProfilePath = '/profile';
+  const tenant = useTenantParam();
+  const baseProfilePath = `/platform/${tenant}/profile`;
 
   const tabs = [
     { name: 'Activity', href: `${baseProfilePath}` },

@@ -1,13 +1,5 @@
-'use client';
+import { TenantRedirect } from '@/components/tenant-redirect';
 
-import { useEffect, useContext } from 'react';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
-export default function CourseTab() {
-  const { setActiveTab } = useContext(EdxIframeContext);
-  useEffect(() => {
-    setActiveTab('course');
-  }, []);
-
-  return <EdxIframe />;
+export default function Page() {
+  return <TenantRedirect />;
 }

@@ -1,14 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 17: Analytics Users', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Admin gate: check if AI Analytics link is visible
@@ -87,12 +85,25 @@ test.describe('Journey 17: Analytics Users', () => {
     await expect(lastActiveHeader).toBeVisible({ timeout: 120_000 });
     logger.info('Table columns User Email, Username, Messages, Last Active are visible');
 
-    // Check pagination controls
+    // The user details table settles into one of two terminal states: a
+    // "No data available" empty message, or pagination controls once rows have
+    // loaded. Assert that either one is present (whichever appears first)
+    // instead of waiting on a single state.
+    const noDataAvailable = page
+      .getByLabel('User Details chart card')
+      .getByText('No data available');
     const firstPage = page.getByRole('button', { name: 'Go to first page' });
-    const prevPage = page.getByRole('button', { name: 'Go to previous page' });
-    await expect(firstPage).toBeVisible({ timeout: 120_000 });
-    await expect(prevPage).toBeVisible({ timeout: 120_000 });
-    logger.info('Pagination controls are visible');
+
+    await expect(noDataAvailable.or(firstPage).first()).toBeVisible({ timeout: 60_000 });
+
+    if (await noDataAvailable.isVisible().catch(() => false)) {
+      logger.info('User details table shows "No data available" empty state');
+    } else {
+      const prevPage = page.getByRole('button', { name: 'Go to previous page' });
+      await expect(firstPage).toBeVisible({ timeout: 60_000 });
+      await expect(prevPage).toBeVisible({ timeout: 60_000 });
+      logger.info('Pagination controls are visible');
+    }
   });
 
   test('CP-4: Time filter buttons work', async ({ page }) => {

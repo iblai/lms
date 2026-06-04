@@ -5,6 +5,7 @@ import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 // Mock dependencies
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush }),
 }));
 
@@ -22,6 +23,8 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
     type: 'setDisplayMonetizationCheckoutModal',
     payload,
   }),
+  isLoggedIn: vi.fn(() => true),
+  useUserTenants: vi.fn(() => ({ userTenants: [] })),
 }));
 
 const mockDispatch = vi.fn();

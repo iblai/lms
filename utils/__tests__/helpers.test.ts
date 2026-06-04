@@ -38,6 +38,14 @@ vi.mock(import('@iblai/iblai-js/web-utils'), async (importOriginal) => {
   };
 });
 
+// Mock sonner toast
+const mockToastInfo = vi.fn();
+vi.mock('sonner', () => ({
+  toast: {
+    info: (...args: any[]) => mockToastInfo(...args),
+  },
+}));
+
 // Import after mocking
 import {
   isJSON,
@@ -64,6 +72,7 @@ import {
   getParentDomain,
   clearCookies,
   handleLogout,
+  handleNotLoggedInAction,
   onAccountDeleted,
   parseMarkdownLinks,
   inBrowserPrint,
@@ -588,6 +597,62 @@ describe('helpers utility functions', () => {
       Object.defineProperty(window, 'top', { value: window, configurable: true });
       handleLogout();
       expect(locationHref).toContain('redirect-to=');
+    });
+
+    it('uses alternateTenant over the stored tenant', () => {
+      Object.defineProperty(window, 'self', { value: window, configurable: true });
+      Object.defineProperty(window, 'top', { value: window, configurable: true });
+      handleLogout('https://redirect.example.com', undefined, 'alt-tenant');
+      expect(locationHref).toContain('tenant=alt-tenant');
+      expect(localStorage.getItem('tenant')).toBe('alt-tenant');
+    });
+
+    it('appends the enforce-login flag when enforceLogin is true', () => {
+      Object.defineProperty(window, 'self', { value: window, configurable: true });
+      Object.defineProperty(window, 'top', { value: window, configurable: true });
+      handleLogout('https://redirect.example.com', undefined, undefined, true);
+      expect(locationHref).toContain('enforce-login=1');
+    });
+
+    it('omits the enforce-login flag by default', () => {
+      Object.defineProperty(window, 'self', { value: window, configurable: true });
+      Object.defineProperty(window, 'top', { value: window, configurable: true });
+      handleLogout('https://redirect.example.com');
+      expect(locationHref).not.toContain('enforce-login');
+    });
+  });
+
+  describe('handleNotLoggedInAction', () => {
+    beforeEach(() => {
+      mockToastInfo.mockClear();
+      window.localStorage.clear();
+    });
+
+    it('shows an info toast prompting login', () => {
+      window.location.href = 'https://skills.example.com/platform/acme/home';
+      handleNotLoggedInAction('acme');
+      expect(mockToastInfo).toHaveBeenCalledWith('Please login to access this resource');
+    });
+
+    it('persists the current path with trigger_cta and defers the login redirect', () => {
+      vi.useFakeTimers();
+      window.location.href = 'https://skills.example.com/platform/acme/courses/c1?x=1';
+
+      handleNotLoggedInAction('acme');
+
+      // Path saved for the auth SPA to return to, stamped with trigger_cta.
+      expect(window.localStorage.getItem('redirect-path')).toBe(
+        '/platform/acme/courses/c1?x=1&trigger_cta=1',
+      );
+      // Redirect is deferred — not fired synchronously.
+      expect(locationHref).toBe('https://skills.example.com/platform/acme/courses/c1?x=1');
+
+      vi.advanceTimersByTime(2000);
+
+      expect(locationHref).toBe(
+        'https://auth.example.com/login?redirect-to=https://skills.example.com&tenant=acme',
+      );
+      vi.useRealTimers();
     });
   });
 

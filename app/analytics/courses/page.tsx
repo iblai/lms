@@ -1,8 +1,5 @@
-'use client';
+import { TenantRedirect } from '@/components/tenant-redirect';
 
-import { getTenant } from '@/utils/helpers';
-import { AnalyticsCourses } from '@iblai/iblai-js/web-containers';
-
-export default function CoursesPage() {
-  return <AnalyticsCourses tenantKey={getTenant()} mentorId={''} basePath="/analytics" />;
+export default function Page() {
+  return <TenantRedirect />;
 }

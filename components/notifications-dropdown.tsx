@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getTenant, getTimeAgo, getUserName } from '@/utils/helpers';
+import { getTimeAgo, getUserName } from '@/utils/helpers';
 import { useLazyGetNotificationsQuery } from '@/services/notifications';
 import { SkeletonMultiplier } from './skeleton-multiplier';
 import { SkeletonNotificationMiniBox } from './skeleton-notification-mini-box';
 import { DefaultEmptyBox } from './default-empty-box';
 import { Notification } from '@/types/notifications';
 import { UserAvatar } from './header/profile/user-avatar';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export function NotificationsDropdown() {
+  const tenant = useTenantParam();
   const [getNotifications, { isLoading, isError }] = useLazyGetNotificationsQuery();
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -18,7 +20,7 @@ export function NotificationsDropdown() {
   const handleFetchNotifications = async () => {
     try {
       const response = await getNotifications({
-        platform_key: getTenant(),
+        platform_key: tenant,
         username: getUserName(),
       });
       if (isError) {

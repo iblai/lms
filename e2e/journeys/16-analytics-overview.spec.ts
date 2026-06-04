@@ -1,14 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 16: Analytics Overview', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Admin gate: check if AI Analytics link is visible in the nav
