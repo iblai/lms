@@ -101,6 +101,8 @@ const EXCLUDED_PATTERNS = [
   /^app\/platform\/\[tenant\]\/recommended\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/reports\/\[tenantKey\]\/\[reportName\]\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/start\/page\.tsx$/,
+  // Legacy non-tenant-scoped route — redirect stub, no standalone journey
+  /^app\/analytics\/monetization\/page\.tsx$/,
 ];
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
