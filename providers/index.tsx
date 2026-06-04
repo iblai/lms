@@ -17,7 +17,6 @@ import {
 } from '@/utils/localstorage';
 import {
   AuthProvider,
-  isLoggedIn,
   setAccessCheckResponse,
   TenantProvider,
   useCurrentTenant,
@@ -33,15 +32,7 @@ declare global {
   }
 }
 
-export default function Providers({
-  children,
-  allowSelfLinking = false,
-}: {
-  children: React.ReactNode;
-  // Resolved server-side in `app/layout.tsx` via `fetchPublicPlatformMembership`.
-  // Gates the unauthenticated route patterns in the middleware map below.
-  allowSelfLinking?: boolean;
-}) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [tenant, setTenant] = useState('');
   useEffect(() => {
@@ -53,7 +44,6 @@ export default function Providers({
   const [ready, setReady] = useState(false);
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
-  const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
 
@@ -91,10 +81,6 @@ export default function Providers({
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    setUserIsLoggedIn(isLoggedIn());
-  }, []);
-
   const middleware = useMemo(() => {
     const map = new Map();
 
@@ -105,21 +91,22 @@ export default function Providers({
     // allow user to go to version page without auth
     map.set(new RegExp('^\/version'), async () => false);
 
-    // Discover / course-about / program-about pages are only public when the
-    // tenant has self-linking enabled. Otherwise they fall through to the
-    // standard auth gate.
+    // Discover / course-about / program-about let everyone past the root auth
+    // gate. The actual anonymous-access decision (does the tenant allow
+    // self-linking?) is made at the URL-route level via `SelfLinkingGuard`,
+    // so these never need the server-resolved flag here. Both the canonical
+    // tenant-scoped paths and their legacy non-prefixed aliases (which redirect
+    // to the canonical URL) are allowed through.
+    map.set(new RegExp('^/discover(/|$)'), async () => false);
+    map.set(new RegExp('^/courses/[^/]+/?$'), async () => false);
+    map.set(new RegExp('^/programs/[^/]+/?$'), async () => false);
 
-    console.log('[ALLOW SELF LINKING]: ', allowSelfLinking);
-    console.log('[USER IS LOGGED IN]: ', userIsLoggedIn);
-
-    if (allowSelfLinking && !userIsLoggedIn) {
-      map.set(new RegExp('^/platform/[^/]+/discover(/|$)'), async () => false);
-      map.set(new RegExp('^/platform/[^/]+/courses/[^/]+/?$'), async () => false);
-      map.set(new RegExp('^/platform/[^/]+/programs/[^/]+/?$'), async () => false);
-    }
+    map.set(new RegExp('^/platform/[^/]+/discover(/|$)'), async () => false);
+    map.set(new RegExp('^/platform/[^/]+/courses/[^/]+/?$'), async () => false);
+    map.set(new RegExp('^/platform/[^/]+/programs/[^/]+/?$'), async () => false);
 
     return map;
-  }, [allowSelfLinking, userIsLoggedIn]);
+  }, []);
 
   const spinnerFallback = (
     <div className="flex h-dvh w-screen items-center justify-center">

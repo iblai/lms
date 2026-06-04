@@ -33,6 +33,10 @@ vi.mock('@/components/course-access-guard', () => ({
   ),
 }));
 
+vi.mock('@/components/self-linking-guard', () => ({
+  SelfLinkingGuard: ({ children }: any) => <>{children}</>,
+}));
+
 import CourseLayout from '../layout';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 

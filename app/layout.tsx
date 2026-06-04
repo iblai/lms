@@ -9,8 +9,6 @@ import Script from 'next/script';
 import {
   fetchAppMetadata,
   extractTenantFromCookies,
-  extractTenantFromPathname,
-  fetchPublicPlatformMembership,
   isDevelopment,
   logEnvironmentInfo,
 } from '@/lib/utils/server-metadata';
@@ -156,26 +154,12 @@ export default async function RootLayout({
     logEnvironmentInfo();
   }
 
-  // Resolve `allow_self_linking` server-side so `Providers` can build the
-  // unauthenticated-route middleware map on first render — no client-side
-  // RTK query / loading spinner. Pathname is forwarded by middleware.ts.
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname');
-  console.log('[PATHNAME]: ', pathname);
-  const tenantFromPath = extractTenantFromPathname(pathname);
-  console.log('[TENANT FROM PATH]: ', tenantFromPath);
-  const platformMembership = tenantFromPath
-    ? await fetchPublicPlatformMembership(tenantFromPath)
-    : null;
-  console.log('[PLATFORM MEMBERSHIP]: ', platformMembership);
-  const allowSelfLinking = Boolean(platformMembership?.allow_self_linking);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${openSans.className} flex h-screen flex-col overflow-hidden`}>
         <Script src="/env.js" strategy="afterInteractive" />
         <StoreProvider>
-          <Providers allowSelfLinking={allowSelfLinking}>
+          <Providers>
             <ClientLayout>{children}</ClientLayout>
           </Providers>
         </StoreProvider>

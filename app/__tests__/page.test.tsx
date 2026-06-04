@@ -6,6 +6,7 @@ const mockReplace = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mockReplace }),
+  usePathname: () => '/',
 }));
 
 vi.mock('@/utils/helpers', () => ({

@@ -4,6 +4,7 @@ import type React from 'react';
 import { use, useEffect } from 'react';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { CourseAccessGuard } from '@/components/course-access-guard';
+import { SelfLinkingGuard } from '@/components/self-linking-guard';
 
 export default function CourseLayout({
   children,
@@ -21,8 +22,10 @@ export default function CourseLayout({
   }, [courseId]);
 
   return (
-    <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>
-      {children}
-    </CourseAccessGuard>
+    <SelfLinkingGuard>
+      <CourseAccessGuard course={course} courseInfoLoadingState={courseInfoLoadingState}>
+        {children}
+      </CourseAccessGuard>
+    </SelfLinkingGuard>
   );
 }

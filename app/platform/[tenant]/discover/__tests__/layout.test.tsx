@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
+vi.mock('@/components/self-linking-guard', () => ({
+  SelfLinkingGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 import DiscoverLayout from '../layout';
 
 describe('DiscoverLayout', () => {

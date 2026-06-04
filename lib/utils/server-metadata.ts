@@ -219,41 +219,6 @@ export function extractTenantFromCookies(cookieString: string | null): string | 
   return null;
 }
 
-/**
- * Extracts the tenant from a `/platform/<tenant>/...` pathname. Returns null
- * for routes that aren't tenant-scoped (e.g. /sso-login, /version, /).
- */
-export function extractTenantFromPathname(pathname: string | null): string | null {
-  if (!pathname) return null;
-  const segments = pathname.split('/').filter(Boolean);
-  if (segments[0] !== 'platform') return null;
-  return segments[1] || null;
-}
-
-/**
- * Server-side fetch of the public platform-membership config. Mirrors the
- * `useGetPublicPlatformMembershipQuery` RTK endpoint (path + skipAuth) so the
- * result can be passed down to client `Providers` without an extra
- * client-side roundtrip.
- */
-export async function fetchPublicPlatformMembership(
-  tenantKey: string,
-): Promise<{ platform_key: string; allow_self_linking: boolean } | null> {
-  if (!tenantKey) return null;
-  try {
-    const baseUrl = config.urls.dm();
-    const url = `${baseUrl}/api/core/users/platforms/config/public/?platform_key=${encodeURIComponent(
-      tenantKey,
-    )}`;
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) return null;
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch public platform membership:', error);
-    return null;
-  }
-}
-
 // Check if we're in a development environment
 export const isDevelopment = process.env.NODE_ENV === 'development';
 
