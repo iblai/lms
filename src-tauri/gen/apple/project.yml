@@ -10,7 +10,7 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: IBL Skills
+      PRODUCT_NAME: SkillsAI
       PRODUCT_BUNDLE_IDENTIFIER: ai.ibl.skills
 targetTemplates:
   app:
@@ -72,6 +72,8 @@ targets:
     dependencies:
       - framework: libapp.a
         embed: false
+      - sdk: AuthenticationServices.framework
+      - sdk: SafariServices.framework
       - sdk: CoreGraphics.framework
       - sdk: Metal.framework
       - sdk: MetalKit.framework

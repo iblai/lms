@@ -1,5 +1,90 @@
 # Changelog
 
+## [0.36.9](https://github.com/iblai/lms/compare/skills-v0.36.8...skills-v0.36.9) (2026-06-03)
+
+### Chores
+
+* change IBL.ai to ibl.ai ([c9de727](https://github.com/iblai/lms/commit/c9de727074e2e141155ad7daa023d8ec2feedb91))
+* update deployment url to https://lms.ibl.ai ([1ebec17](https://github.com/iblai/lms/commit/1ebec176965f58d55c49488620e7f7e7c218f1b2))
+* update documentation ([b79596d](https://github.com/iblai/lms/commit/b79596df3036b29eeacade7785f0f0934b6fdc43))
+
+## [0.36.8](https://github.com/iblai/lms/compare/skills-v0.36.7...skills-v0.36.8) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** bump postcss override to 8.5.15 ([aefd22a](https://github.com/iblai/lms/commit/aefd22af803fc6ebdd4981edb501832ab0e06b1e))
+
+### Chores
+
+* update pnpm-lock.yaml ([7fcfcc3](https://github.com/iblai/lms/commit/7fcfcc3038e10c4fea06746427166678eceab85d))
+
+## [0.36.7](https://github.com/iblai/lms/compare/skills-v0.36.6...skills-v0.36.7) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add @hono/node-server override for serveStatic bypass ([7f3bd5c](https://github.com/iblai/lms/commit/7f3bd5cef66587807aa9976595d6c7564d514049))
+* **security:** add postcss and hono/node-server overrides ([96dd1db](https://github.com/iblai/lms/commit/96dd1dbde892945a59bce55570acd09b4edb13f2))
+
+## [0.36.6](https://github.com/iblai/lms/compare/skills-v0.36.5...skills-v0.36.6) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add brace-expansion override ([3cd2d84](https://github.com/iblai/lms/commit/3cd2d84be19cfaf3a2de185b39d9d2dac6b9d7a6))
+
+## [0.36.5](https://github.com/iblai/lms/compare/skills-v0.36.4...skills-v0.36.5) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** update overrides for basic-ftp, hono, devalue, fast-uri, ip-address ([2b403d2](https://github.com/iblai/lms/commit/2b403d20a4432a15c25097dad3cf5a683c351689))
+
+## [0.36.4](https://github.com/iblai/lms/compare/skills-v0.36.3...skills-v0.36.4) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** update cargo deps for rand, bytes, and reqwest ([c7cbc2c](https://github.com/iblai/lms/commit/c7cbc2caa90f2daea51e13cd559aa1cbc890ee20))
+
+## [0.36.3](https://github.com/iblai/lms/compare/skills-v0.36.2...skills-v0.36.3) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add overrides for hono, dompurify, and qs ([03fede2](https://github.com/iblai/lms/commit/03fede23f22020ae479508a8fe09813451c22709))
+* **security:** update axios, hono, prismjs overrides and bump next ([225f3cc](https://github.com/iblai/lms/commit/225f3ccd33ca7a10a30b01e13a4d5fe68069f17a))
+
+## [0.36.2](https://github.com/iblai/lms/compare/skills-v0.36.1...skills-v0.36.2) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** add axios override to pin at 1.15.2 ([0b69a34](https://github.com/iblai/lms/commit/0b69a343f093d29cb4ad7f54f75bbf23b72a684f))
+
+## [0.36.1](https://github.com/iblai/lms/compare/skills-v0.36.0...skills-v0.36.1) (2026-06-03)
+
+### Bug Fixes
+
+* **security:** patch basic-ftp CRLF injection vulnerability ([a76075c](https://github.com/iblai/lms/commit/a76075c729b19f8cd8e14cfcaaa0ac057fe416e1)), closes [#71](https://github.com/iblai/lms/issues/71)
+
+## [0.36.0](https://github.com/iblai/lms/compare/skills-v0.35.0...skills-v0.36.0) (2026-06-02)
+
+### Features
+
+* **tauri:** add oauth popup, bump to v1.0.6, rename identifier ([d1a594e](https://github.com/iblai/lms/commit/d1a594e1efc79e39d6c7f1bc316cac4270c4091e))
+
+### Bug Fixes
+
+* **security:** add permissions to workflows missing them ([fb8e2f1](https://github.com/iblai/lms/commit/fb8e2f17818c824de15f9e07f6c7dc187d2fc1fd))
+* **security:** update vite and lodash to patch vulnerabilities ([8b8933f](https://github.com/iblai/lms/commit/8b8933f38857e4b61dfb8b045ad65a4915c2d956))
+* **tests:** fix 18 failing tests across 3 test files ([b0d9625](https://github.com/iblai/lms/commit/b0d9625f728df10d1f90e6dee0144e7f0f28664b))
+* **tests:** fix lint/typecheck errors and add missing test coverage ([4cbba5b](https://github.com/iblai/lms/commit/4cbba5bf05fd7d04b7540b3555e8ade0d67825a0))
+* **tests:** resolve lint error and typecheck failures ([0bd8a74](https://github.com/iblai/lms/commit/0bd8a74139b9ebf21aab26196ff1bb1d4e92433f))
+* **tests:** update redirectToAuthSpa mock to use importOriginal ([2d4011a](https://github.com/iblai/lms/commit/2d4011a216424cf1282a627e5cdf2553459f3985))
+
+### Chores
+
+* bump iblai-js to 1.17.0 ([c31d557](https://github.com/iblai/lms/commit/c31d557eba831bd8de5d62a468d523410c820ab7))
+
+### CI
+
+* **docker:** flip run-name 'Build skills' → 'Build lms' ([2def577](https://github.com/iblai/lms/commit/2def5774dfdabe8789618062a761e452fd36b7cb)), closes [iblai/iblai-cli-ops#1985](https://github.com/iblai/iblai-cli-ops/issues/1985) [iblai/iblai-prod-images#154](https://github.com/iblai/iblai-prod-images/issues/154)
+
 ## [0.35.0](https://github.com/iblai/skillsai/compare/skills-v0.34.0...skills-v0.35.0) (2026-05-29)
 
 ### Bug Fixes

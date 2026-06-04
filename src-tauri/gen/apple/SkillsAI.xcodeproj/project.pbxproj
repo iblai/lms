@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,10 +11,12 @@
 		04FC26258073EAAD655AAEF0 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE134258DFA4913468E7D1F5 /* WebKit.framework */; };
 		15DFEED5497872A7B40A4AAA /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D1F7660C1C5732A7A371ECA /* MetalKit.framework */; };
 		37D8B33924D30638837EEA66 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5759D068E362F584E7C0E9B /* Security.framework */; };
+		4EC5533F558711927A8565FF /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFFFD37A65807B7498CEFB8B /* SafariServices.framework */; };
 		7A626DF64D63C45B986DF5B9 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8131D65BAC18A5221EE0F758 /* libapp.a */; };
 		8ADFFCA9A8070E6623AD1ACE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2048940EE274EF3C84A797D /* CoreGraphics.framework */; };
 		9EC341189C022DE33ACC0EEE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 654ABF7E36FD58625E49083D /* UIKit.framework */; };
 		A68593F0271C61931B36966E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6731066F4F869CD4B0E27684 /* LaunchScreen.storyboard */; };
+		C461170936C2AB63505667AF /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7EF8F2AED81FB3BE648308F /* AuthenticationServices.framework */; };
 		C52CD6572D39F530740877C1 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FF6E090C9BF99BAC870579E1 /* Metal.framework */; };
 		CB31CB5E3A9C0B1BA9E2C0BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E84EC55DB732FE97B4A23CF /* Assets.xcassets */; };
 		D11FCA2EC1E2F1C2BF76AD72 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 374C501405A154EF752D90C6 /* assets */; };
@@ -22,26 +24,29 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0CEDE3A7B9E28124E6228359 /* offline_server.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = offline_server.rs; sourceTree = "<group>"; };
+		0CEDE3A7B9E28124E6228359 /* offline_server.rs */ = {isa = PBXFileReference; path = offline_server.rs; sourceTree = "<group>"; };
 		2D1F7660C1C5732A7A371ECA /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		2E84EC55DB732FE97B4A23CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		3743A0E27EFE4FB60A3E2825 /* model_manager.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = model_manager.rs; sourceTree = "<group>"; };
+		3743A0E27EFE4FB60A3E2825 /* model_manager.rs */ = {isa = PBXFileReference; path = model_manager.rs; sourceTree = "<group>"; };
 		374C501405A154EF752D90C6 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
 		39702C6F337BA6671BCCC370 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		39C095BEA43CEA54FE2B63CA /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		4AEF7DA2603DDE0A6463EB1C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		55D1679E7EAAAB8F445EFC3E /* ollama_installer.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = ollama_installer.rs; sourceTree = "<group>"; };
+		55D1679E7EAAAB8F445EFC3E /* ollama_installer.rs */ = {isa = PBXFileReference; path = ollama_installer.rs; sourceTree = "<group>"; };
 		654ABF7E36FD58625E49083D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		6731066F4F869CD4B0E27684 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8131D65BAC18A5221EE0F758 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
-		8242B37F40161247CDBCF1CF /* web_cache.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = web_cache.rs; sourceTree = "<group>"; };
-		88C15C7C1B43A0B4CF50948D /* IBL Skills.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "IBL Skills.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8242B37F40161247CDBCF1CF /* web_cache.rs */ = {isa = PBXFileReference; path = web_cache.rs; sourceTree = "<group>"; };
+		88C15C7C1B43A0B4CF50948D /* SkillsAI_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SkillsAI_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9003339B6A988908F8E06277 /* SkillsAI_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SkillsAI_iOS.entitlements; sourceTree = "<group>"; };
-		A37D7A86490387652A0022D7 /* main.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.rs; sourceTree = "<group>"; };
+		A37D7A86490387652A0022D7 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
 		A5759D068E362F584E7C0E9B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		DD1C55170B5B0C791741738C /* lib.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = lib.rs; sourceTree = "<group>"; };
+		A6593FF2A7D6BDEE9D789F91 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		DD1C55170B5B0C791741738C /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
 		E2048940EE274EF3C84A797D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		E7EF8F2AED81FB3BE648308F /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		EBE3AA8BB90076C520409F34 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		EFFFD37A65807B7498CEFB8B /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
 		FE134258DFA4913468E7D1F5 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		FF6E090C9BF99BAC870579E1 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -52,6 +57,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				7A626DF64D63C45B986DF5B9 /* libapp.a in Frameworks */,
+				C461170936C2AB63505667AF /* AuthenticationServices.framework in Frameworks */,
+				4EC5533F558711927A8565FF /* SafariServices.framework in Frameworks */,
 				8ADFFCA9A8070E6623AD1ACE /* CoreGraphics.framework in Frameworks */,
 				C52CD6572D39F530740877C1 /* Metal.framework in Frameworks */,
 				15DFEED5497872A7B40A4AAA /* MetalKit.framework in Frameworks */,
@@ -65,6 +72,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		005839A9721227623B5ED700 /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				BDC99E4CD77BB2480A1A764F /* release */,
+			);
+			path = arm64;
+			sourceTree = "<group>";
+		};
 		02A7E681AFCD4E66AD37CBBD /* Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -131,6 +146,7 @@
 		954C8165C649A4CDD30C5018 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
+				005839A9721227623B5ED700 /* arm64 */,
 			);
 			path = Externals;
 			sourceTree = "<group>";
@@ -138,11 +154,13 @@
 		9A00D886AD6FD667C59A3E1B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E7EF8F2AED81FB3BE648308F /* AuthenticationServices.framework */,
 				E2048940EE274EF3C84A797D /* CoreGraphics.framework */,
 				8131D65BAC18A5221EE0F758 /* libapp.a */,
 				FF6E090C9BF99BAC870579E1 /* Metal.framework */,
 				2D1F7660C1C5732A7A371ECA /* MetalKit.framework */,
 				4AEF7DA2603DDE0A6463EB1C /* QuartzCore.framework */,
+				EFFFD37A65807B7498CEFB8B /* SafariServices.framework */,
 				A5759D068E362F584E7C0E9B /* Security.framework */,
 				654ABF7E36FD58625E49083D /* UIKit.framework */,
 				FE134258DFA4913468E7D1F5 /* WebKit.framework */,
@@ -150,12 +168,27 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		BDC99E4CD77BB2480A1A764F /* release */ = {
+			isa = PBXGroup;
+			children = (
+				A6593FF2A7D6BDEE9D789F91 /* libapp.a */,
+			);
+			path = release;
+			sourceTree = "<group>";
+		};
 		E9E4504F8F1DACDF516A0D45 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				88C15C7C1B43A0B4CF50948D /* IBL Skills.app */,
+				88C15C7C1B43A0B4CF50948D /* SkillsAI_iOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		"TEMP_92427147-546F-4248-AB5B-3C4690912AD7" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -178,7 +211,7 @@
 			packageProductDependencies = (
 			);
 			productName = SkillsAI_iOS;
-			productReference = 88C15C7C1B43A0B4CF50948D /* IBL Skills.app */;
+			productReference = 88C15C7C1B43A0B4CF50948D /* SkillsAI_iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -189,9 +222,10 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 3F73BF86CB3630D18E03925C /* Build configuration list for PBXProject "SkillsAI" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -200,6 +234,8 @@
 			);
 			mainGroup = 329044D52993AF1686385D43;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E9E4504F8F1DACDF516A0D45 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -241,7 +277,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ -f \"$HOME/.cargo/env\" ]; then\n  . \"$HOME/.cargo/env\"\nfi\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\ncargo tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}\n";
+			shellScript = "cargo tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -380,11 +416,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = arm64;
+				ARCHS = (
+					arm64,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SkillsAI_iOS/SkillsAI_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = L4FWRM8W5Z;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -396,25 +433,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skills;
-				PRODUCT_NAME = "IBL Skills";
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skillsai;
+				PRODUCT_NAME = "SkillsAI";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = arm64;
+				DEVELOPMENT_TEAM = "L4FWRM8W5Z";
 			};
 			name = debug;
 		};
@@ -422,11 +448,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = arm64;
+				ARCHS = (
+					arm64,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SkillsAI_iOS/SkillsAI_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = L4FWRM8W5Z;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -438,25 +465,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
-				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
-					"$(SDKROOT)/usr/lib/swift",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skills;
-				PRODUCT_NAME = "IBL Skills";
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = ai.ibl.skillsai;
+				PRODUCT_NAME = "SkillsAI";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = arm64;
+				DEVELOPMENT_TEAM = "L4FWRM8W5Z";
 			};
 			name = release;
 		};
