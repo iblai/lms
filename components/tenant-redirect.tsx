@@ -29,7 +29,15 @@ export function TenantRedirect() {
     // client-only) to keep flows like `?trigger_cta=1` intact.
     const suffix = pathname === '/' ? '' : pathname;
     const { search, hash } = window.location;
-    router.replace(`/platform/${tenant}${suffix}${search}${hash}`);
+    const target = `/platform/${tenant}${suffix}${search}${hash}`;
+    try {
+      router.replace(target);
+    } catch (error) {
+      // If the client-side navigation fails for any reason, fall back to a
+      // hard navigation so the visitor still reaches the canonical URL.
+      console.error('[TenantRedirect] router.replace failed:', error);
+      window.location.replace(target);
+    }
   }, [router, pathname]);
 
   return (

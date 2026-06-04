@@ -147,7 +147,6 @@ export const canMonetize = (currentTenant: Tenant, allTenants: Tenant[]) => {
 
 export const handleSaveCurrentTenant = (currentTenant: Tenant) => {
   const currentPath = `${window.location.pathname}${window.location.search}`;
-  console.log('################### [handleSaveCurrentTenant] currentPath', currentPath);
   localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
   localStorage.setItem(LOCALSTORAGE_KEYS.CURRENT_TENANT, JSON.stringify(currentTenant));
 };
@@ -161,7 +160,6 @@ export const handleTenantSwitch = async (
   clearCurrentTenantCookie();
   // Preserve the current path before clearing localStorage
   const currentPath = `${window.location.pathname}${window.location.search}`;
-  console.log('################### [handleTenantSwitch] currentPath', currentPath);
   // Get JWT token before clearing localStorage
   const jwtToken = localStorage.getItem('edx_jwt_token');
   localStorage.clear();

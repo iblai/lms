@@ -38,7 +38,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setTenant(getTenant());
   }, []);
-  console.log('[PATHNAME UPDATE]: ', { pathname });
   const router = useRouter();
   const { tenant: requestedTenant } = useParams<{ tenant: string }>();
   const [ready, setReady] = useState(false);
@@ -142,7 +141,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         requestedTenant={requestedTenant || ''}
         saveCurrentTenant={(currentTenant) => {
           saveCurrentTenant(currentTenant);
-          console.log('[SAVING USER TOKENS]', currentTenant);
         }}
         saveUserTenants={saveUserTenants}
         saveUserTokens={(tokens) => {

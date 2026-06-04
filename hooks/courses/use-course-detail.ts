@@ -194,7 +194,6 @@ export const useCourseDetail = (rawCourseId: string) => {
   const handleCheckCourseMonetizationAccess = async (
     onComplete: (result: { hasAccess: boolean }) => void,
   ) => {
-    console.log('[CURRENT TENANT MONETIZATION]', { currentTenant });
     if (!canMonetize(currentTenant as Tenant, userTenants as Tenant[])) {
       onComplete({ hasAccess: true });
       return;

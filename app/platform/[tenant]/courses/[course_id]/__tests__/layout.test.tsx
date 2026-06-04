@@ -12,12 +12,18 @@ vi.mock('react', async () => {
   };
 });
 
-const mockHandleFetchCourseInfo = vi.fn();
-vi.mock('@/hooks/courses/use-course-detail', () => ({
-  useCourseDetail: vi.fn(() => ({
+// The provider now owns the fetch; the layout just wires it up. The mock
+// renders children and exposes the `courseId` prop it was given so we can
+// assert the layout decoded the param correctly.
+vi.mock('@/hooks/courses/course-detail-context', () => ({
+  CourseDetailProvider: vi.fn(({ courseId, children }: any) => (
+    <div data-testid="course-detail-provider" data-course-id={courseId}>
+      {children}
+    </div>
+  )),
+  useCourseDetailContext: vi.fn(() => ({
     course: { platform_key: 'test-tenant', display_name: 'Test Course' },
     courseInfoLoadingState: 'successful',
-    handleFetchCourseInfo: mockHandleFetchCourseInfo,
   })),
 }));
 
@@ -38,17 +44,19 @@ vi.mock('@/components/self-linking-guard', () => ({
 }));
 
 import CourseLayout from '../layout';
-import { useCourseDetail } from '@/hooks/courses/use-course-detail';
+import {
+  CourseDetailProvider,
+  useCourseDetailContext,
+} from '@/hooks/courses/course-detail-context';
 
 describe('CourseLayout', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       course: { platform_key: 'test-tenant', display_name: 'Test Course' } as any,
       courseInfoLoadingState: 'successful',
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
     } as any);
   });
 
@@ -70,7 +78,7 @@ describe('CourseLayout', () => {
     expect(screen.getByTestId('page-content')).toBeInTheDocument();
   });
 
-  it('passes course to CourseAccessGuard', () => {
+  it('passes course from context to CourseAccessGuard', () => {
     render(
       <CourseLayout params={defaultParams}>
         <div>children</div>
@@ -82,11 +90,10 @@ describe('CourseLayout', () => {
     );
   });
 
-  it('passes loading state to CourseAccessGuard', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
+  it('passes loading state from context to CourseAccessGuard', () => {
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       course: null,
       courseInfoLoadingState: 'loading',
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
     } as any);
 
     render(
@@ -100,21 +107,25 @@ describe('CourseLayout', () => {
     );
   });
 
-  it('calls handleFetchCourseInfo on mount', () => {
+  it('wraps the subtree in CourseDetailProvider so course data is fetched once', () => {
     render(
       <CourseLayout params={defaultParams}>
         <div>children</div>
       </CourseLayout>,
     );
-    expect(mockHandleFetchCourseInfo).toHaveBeenCalled();
+    expect(vi.mocked(CourseDetailProvider)).toHaveBeenCalled();
+    expect(screen.getByTestId('course-detail-provider')).toBeInTheDocument();
   });
 
-  it('decodes course_id from params before passing to useCourseDetail', () => {
+  it('decodes course_id from params before passing to CourseDetailProvider', () => {
     render(
       <CourseLayout params={defaultParams}>
         <div>children</div>
       </CourseLayout>,
     );
-    expect(vi.mocked(useCourseDetail)).toHaveBeenCalledWith('course-v1:test+course+2024');
+    expect(screen.getByTestId('course-detail-provider')).toHaveAttribute(
+      'data-course-id',
+      'course-v1:test+course+2024',
+    );
   });
 });

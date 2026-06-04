@@ -62,14 +62,14 @@ vi.mock('@/services/core', () => ({
   })),
 }));
 
-// Mock useCourseDetail
+// Mock useCourseDetailContext
 const mockHandleFetchCourseInfo = vi.fn();
 const mockHandleFetchCourseSyllabus = vi.fn();
 const mockHandleFetchCourseEligibilityInfo = vi.fn();
 const mockHandleOpenLesson = vi.fn();
 
-vi.mock('@/hooks/courses/use-course-detail', () => ({
-  useCourseDetail: vi.fn(() => ({
+vi.mock('@/hooks/courses/course-detail-context', () => ({
+  useCourseDetailContext: vi.fn(() => ({
     handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
     handleFetchCourseInfo: mockHandleFetchCourseInfo,
     handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -117,7 +117,7 @@ vi.mock('../_components/configuration-tab', () => ({
 }));
 
 import CourseDetailsPage from '../page';
-import { useCourseDetail } from '@/hooks/courses/use-course-detail';
+import { useCourseDetailContext } from '@/hooks/courses/course-detail-context';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useChatState } from '@/components/chat-button';
 
@@ -127,7 +127,7 @@ describe('CourseDetailsPage', () => {
   });
 
   it('shows loading spinner when loading', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -147,7 +147,7 @@ describe('CourseDetailsPage', () => {
   });
 
   it('shows empty state when no course data', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -177,7 +177,7 @@ describe('CourseDetailsPage', () => {
       duration: '4 weeks',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -208,7 +208,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -236,7 +236,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -267,7 +267,7 @@ describe('CourseDetailsPage', () => {
       learning_info: [{ title: 'Info 1' }],
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -299,7 +299,7 @@ describe('CourseDetailsPage', () => {
       instructor_info: { instructors: [{ name: 'John Doe' }] },
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -334,7 +334,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -369,7 +369,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -398,7 +398,7 @@ describe('CourseDetailsPage', () => {
     };
 
     const mockCourseDetail = () =>
-      vi.mocked(useCourseDetail).mockReturnValue({
+      vi.mocked(useCourseDetailContext).mockReturnValue({
         handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
         handleFetchCourseInfo: mockHandleFetchCourseInfo,
         handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -476,7 +476,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -505,7 +505,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -541,7 +541,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -561,12 +561,6 @@ describe('CourseDetailsPage', () => {
     expect(enrollButton).toBeDisabled();
   });
 
-  it('calls handleFetchCourseInfo on mount', () => {
-    render(<CourseDetailsPage />);
-
-    expect(mockHandleFetchCourseInfo).toHaveBeenCalled();
-  });
-
   it('handles image error with fallback', () => {
     const mockCourse = {
       display_name: 'Test Course',
@@ -576,7 +570,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -599,7 +593,7 @@ describe('CourseDetailsPage', () => {
   });
 
   it('shows loading spinner when state is not-started', () => {
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -627,7 +621,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -669,7 +663,7 @@ describe('CourseDetailsPage', () => {
       mentor_hidden: false,
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -710,7 +704,7 @@ describe('CourseDetailsPage', () => {
       mentor_hidden: true,
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -738,7 +732,7 @@ describe('CourseDetailsPage', () => {
       start_date: '2024-01-01',
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -768,7 +762,7 @@ describe('CourseDetailsPage', () => {
       learning_info: [],
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -797,7 +791,7 @@ describe('CourseDetailsPage', () => {
       instructor_info: { instructors: [] },
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -826,7 +820,7 @@ describe('CourseDetailsPage', () => {
       duration: undefined,
     };
 
-    vi.mocked(useCourseDetail).mockReturnValue({
+    vi.mocked(useCourseDetailContext).mockReturnValue({
       handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,

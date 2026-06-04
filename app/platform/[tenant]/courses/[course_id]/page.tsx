@@ -11,7 +11,7 @@ import { config } from '@/lib/config';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { SkeletonCourseAccessBtn } from '@/components/skeleton-course-access-btn';
-import { useCourseDetail } from '@/hooks/courses/use-course-detail';
+import { useCourseDetailContext } from '@/hooks/courses/course-detail-context';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useTenantParam } from '@/hooks/use-tenant-param';
@@ -35,7 +35,6 @@ export default function CourseDetailsPage() {
   });
 
   const {
-    handleFetchCourseInfo,
     handleFetchCourseSyllabus,
     handleOpenLesson,
     course,
@@ -47,7 +46,7 @@ export default function CourseDetailsPage() {
     courseButtonActionLoading,
     courseInfoLoadingState,
     userLoggedIn,
-  } = useCourseDetail(courseId);
+  } = useCourseDetailContext();
 
   const [randomCourseImage] = useState(() => getRandomCourseImage());
 
@@ -87,12 +86,8 @@ export default function CourseDetailsPage() {
     courseEligibility,
   ]);
 
-  useEffect(() => {
-    if (!_.isEmpty(courseId)) {
-      handleFetchCourseInfo();
-    }
-  }, [courseId]);
-
+  // Course info is fetched once by `CourseDetailProvider` in the layout; the
+  // page only reacts to the resulting `course` to wire up the mentor + syllabus.
   useEffect(() => {
     if (!_.isEmpty(course)) {
       if (!course?.mentor_hidden) {
