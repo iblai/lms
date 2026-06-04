@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { useEffect } from 'react';
+// @ts-ignore
 import { useGetPublicPlatformMembershipQuery } from '@iblai/iblai-js/data-layer';
 import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '@/hooks/use-tenant-param';
