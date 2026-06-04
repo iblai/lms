@@ -61,4 +61,26 @@ describe('TenantRedirect', () => {
     expect(redirectToAuthSpa).toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
   });
+
+  it('falls back to a hard navigation when router.replace throws', () => {
+    vi.mocked(getTenant).mockReturnValue('test-tenant');
+    mockPathname = '/courses/abc';
+    const mockLocationReplace = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, search: '', hash: '', replace: mockLocationReplace },
+      writable: true,
+      configurable: true,
+    });
+    mockReplace.mockImplementationOnce(() => {
+      throw new Error('navigation failed');
+    });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(<TenantRedirect />);
+
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/courses/abc');
+    expect(mockLocationReplace).toHaveBeenCalledWith('/platform/test-tenant/courses/abc');
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
 });
