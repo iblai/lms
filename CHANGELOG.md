@@ -1,5 +1,90 @@
 # Changelog
 
+## [0.37.0](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-04)
+
+### Features
+
+* app pages restructuring with tenant key on the url ([40fb440](https://github.com/iblai/lms/commit/40fb4402552de19c47c798cea6f7b91f4c327362))
+* app pages restructuring with tenant key on the url ([8874fbd](https://github.com/iblai/lms/commit/8874fbdc6f6debd4bba4585355b516cfa79917a3))
+* app pages restructuring with tenant key on the url ([483e324](https://github.com/iblai/lms/commit/483e32409aacc044f089d731e73f8732c404b51e))
+* app pages restructuring with tenant key on the url ([f9bc28f](https://github.com/iblai/lms/commit/f9bc28fbe4976f85cfa3ebb76529d0adac67414c))
+* app pages restructuring with tenant key on the url > test coverage ([b8aed7d](https://github.com/iblai/lms/commit/b8aed7d61c3b4ef8fa3c666ad8eee3a0dd2cac29))
+* app pages restructuring with tenant key on the url > test coverage ([0c67d6e](https://github.com/iblai/lms/commit/0c67d6e86ee5ec0b78a50a6a29119d99cd637de6))
+* app pages restructuring with tenant key on the url > test coverage ([eb703fb](https://github.com/iblai/lms/commit/eb703fb3bdc29f9d5376796c636ad3a5cfc80838))
+
+### Chores
+
+* **e2e:** update coverage for tenant-based route restructuring [skip ci] ([fab7d74](https://github.com/iblai/lms/commit/fab7d74baa3a696aea844e2c2fbe9576781c02ec))
+
+## [0.35.0-patch-6](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-04)
+
+### Chores
+
+* patched package version 0.35.0-patch-6 ([2b00816](https://github.com/iblai/lms/commit/2b008169b63597b645ea40251514a71ca0bb22d3))
+
+## [0.35.0-patch-5](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-04)
+
+### Features
+
+* legacy routes for backward compatibility implemented & self linking on catalog pages ([baf611a](https://github.com/iblai/lms/commit/baf611ab95d276be2e27729989907eb7abff6e05))
+
+### Chores
+
+* patched package version 0.35.0-patch-5 ([5a7861f](https://github.com/iblai/lms/commit/5a7861f8a36ba31e1030db5f28ee305565664c06))
+
+## [0.35.0-patch-4](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-03)
+
+### Chores
+
+* patched package version 0.35.0-patch-4 ([85e3cd4](https://github.com/iblai/lms/commit/85e3cd446b0a476b26662d2566ee83a8886533d2))
+
+## [0.35.0-patch-3](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-03)
+
+### Bug Fixes
+
+* production test environment  redirecting to auth on public registration page troubleshooting ([9b54b93](https://github.com/iblai/lms/commit/9b54b936e7d6b5bcfe9dcc2b703d1a51013f5181))
+
+### Chores
+
+* patched package version 0.35.0-patch-3 ([69d0485](https://github.com/iblai/lms/commit/69d0485709ff554b32de7d2442d886626bf23ed2))
+
+## [0.35.0-patch-2](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-03)
+
+### Features
+
+* replaced dm URL with direct env ([82aeab7](https://github.com/iblai/lms/commit/82aeab7601c2f637323bcedf3fc1973a29245d75))
+
+### Chores
+
+* patched package version 0.35.0-patch-2 ([5c56ff6](https://github.com/iblai/lms/commit/5c56ff677c57cd831f55073e6ac90f7c6ea4c5cf))
+
+## [0.35.0-patch-1](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-02)
+
+### Features
+
+* app pages restructuring with platform path before tenant key on the url ([b710250](https://github.com/iblai/lms/commit/b710250dc2191aa63a83a07f1f70a9ef10b20e35))
+* app pages restructuring with tenant key on the url ([0c2e04b](https://github.com/iblai/lms/commit/0c2e04b8a2186ae3231f8778715b880b92e11c85))
+* app pages restructuring with tenant key on the url ([b84d056](https://github.com/iblai/lms/commit/b84d056fd050be294a077c741dcc310f5e068ca1))
+* app pages restructuring with tenant key on the url ([fd50e99](https://github.com/iblai/lms/commit/fd50e995c9ed7a17a3c4417c48127fba0f4ca06a))
+* app pages restructuring with tenant key on the url ([502bd3d](https://github.com/iblai/lms/commit/502bd3d238d6232be8f9fbd2b7e5ef16a9ec1e4f))
+* app pages restructuring with tenant key on the url ([8d5dac1](https://github.com/iblai/lms/commit/8d5dac1b17c728d96e429d665d64686c743fcae6))
+* app pages restructuring with tenant key on the url ([e8ed40c](https://github.com/iblai/lms/commit/e8ed40cf8f02586ec47ea222082591a4db3a8252))
+* app pages restructuring with tenant key on the url ([cd7f2bf](https://github.com/iblai/lms/commit/cd7f2bf6b13b8660ab4e22beb9876ae08ee886b2))
+* app pages restructuring with tenant key on the url ([0eef2e2](https://github.com/iblai/lms/commit/0eef2e261e01fcd2a1b01f5715a9e58628101c81))
+* app pages restructuring with tenant key on the url > moved pages excluded from journey ([6eb488e](https://github.com/iblai/lms/commit/6eb488eded3d0bfe7ef045957cf585bd2af21b6f))
+* app pages restructuring with tenant key on the url > test coverage ([2756a56](https://github.com/iblai/lms/commit/2756a569a7308ba9de2aba9f4b5b4335b6d2102e))
+* app pages restructuring with tenant key on the url > test coverage ([5a1ccc3](https://github.com/iblai/lms/commit/5a1ccc3a979ab99b0224a04017e5f6acaecc63e5))
+* app pages restructuring with tenant key on the url > test coverage ([72eed0d](https://github.com/iblai/lms/commit/72eed0d55fd455513ea76ef3abb251d0bef2671a))
+* app pages restructuring with tenant key on the url > test coverage ([9eccb81](https://github.com/iblai/lms/commit/9eccb816c4042c8fff11f3bf8d35891019595b40))
+* app pages restructuring with tenant key on the url on progress ([7032bc4](https://github.com/iblai/lms/commit/7032bc4b74c1038002158c0683d82d4a51243fe0))
+* existing pages should auto redirect to new routes ([6652c8b](https://github.com/iblai/lms/commit/6652c8b95c960cce061080bba9622f71444b314d))
+* tenant provider update RE requested tenant ([7a801a4](https://github.com/iblai/lms/commit/7a801a480dfd2dde986e293320ec5c4a1f8f4e06))
+* useGetPublicPlatformMembershipQuery called server side ([5c602d9](https://github.com/iblai/lms/commit/5c602d957b8a649067dec85508b409fefc852b03))
+
+### Chores
+
+* patched package version 0.35.0-patch-1 ([527938b](https://github.com/iblai/lms/commit/527938b91a9868d9952682ec07ec2b7dbca1bdc8))
+
 ## [0.36.9](https://github.com/iblai/lms/compare/skills-v0.36.8...skills-v0.36.9) (2026-06-03)
 
 ### Chores
