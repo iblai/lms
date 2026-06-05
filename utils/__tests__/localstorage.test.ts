@@ -48,8 +48,10 @@ vi.mock('@/constants/storage', () => ({
     TENANT: 'tenant',
     TENANTS: 'tenants',
     REDIRECT_TO: 'redirect-to',
+    REDIRECT_PATH: 'redirect-path',
     AUTH_TOKEN: 'axd_token',
     TOKEN_EXPIRY: 'axd_token_expires',
+    DM_TOKEN_EXPIRY: 'dm_token_expires',
     EDX_TOKEN_KEY: 'edx_jwt_token',
     DM_TOKEN_KEY: 'dm_token',
     AXD_TOKEN_KEY: 'axd_token',
@@ -80,6 +82,9 @@ import {
   useIsAdmin,
   useGetAllTenants,
   handleTenantSwitch,
+  saveUserTokens,
+  canMonetize,
+  handleSaveCurrentTenant,
 } from '../localstorage';
 
 describe('LocalStorageService', () => {
@@ -414,12 +419,15 @@ describe('handleTenantSwitch', () => {
 
   it('saves redirect when saveRedirect is true', async () => {
     await handleTenantSwitch('test-tenant', true);
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('redirect-to', '/dashboard?tab=overview');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'redirect-path',
+      '/dashboard?tab=overview',
+    );
   }, 10000);
 
   it('does not save redirect when saveRedirect is false', async () => {
     await handleTenantSwitch('test-tenant', false);
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('redirect-to', expect.any(String));
+    expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('redirect-path', expect.any(String));
   }, 10000);
 
   it('updates window.location.href to auth URL', async () => {
@@ -427,4 +435,82 @@ describe('handleTenantSwitch', () => {
     expect(window.location.href).toContain('https://auth.example.com');
     expect(window.location.href).toContain('new-tenant');
   }, 10000);
+});
+
+describe('saveUserTokens', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const tokenResponse = {
+    axd_token: { token: 'axd-tok', expires: 'axd-exp' },
+    dm_token: { token: 'dm-tok', expires: 'dm-exp' },
+  } as any;
+
+  it('persists both axd and dm tokens with their expiries', () => {
+    saveUserTokens(tokenResponse);
+
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('axd_token', JSON.stringify('axd-tok'));
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'axd_token_expires',
+      JSON.stringify('axd-exp'),
+    );
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dm_token', JSON.stringify('dm-tok'));
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'dm_token_expires',
+      JSON.stringify('dm-exp'),
+    );
+  });
+
+  it('writes exactly four keys', () => {
+    saveUserTokens(tokenResponse);
+    expect(mockLocalStorage.setItem).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('canMonetize', () => {
+  it('returns the current tenant flag when it is already enabled', () => {
+    const current = { key: 't1', enable_monetization: true } as any;
+    expect(canMonetize(current, [])).toBe(true);
+  });
+
+  it('falls back to the matching tenant in the list when current flag is falsy', () => {
+    const current = { key: 't1', enable_monetization: false } as any;
+    const all = [{ key: 't1', enable_monetization: true }] as any;
+    expect(canMonetize(current, all)).toBe(true);
+  });
+
+  it('returns false when no matching tenant is found in the list', () => {
+    const current = { key: 't1', enable_monetization: false } as any;
+    const all = [{ key: 'other', enable_monetization: true }] as any;
+    expect(canMonetize(current, all)).toBe(false);
+  });
+
+  it('returns the matched tenant flag (false) when it is also disabled', () => {
+    const current = { key: 't1', enable_monetization: false } as any;
+    const all = [{ key: 't1', enable_monetization: false }] as any;
+    expect(canMonetize(current, all)).toBe(false);
+  });
+});
+
+describe('handleSaveCurrentTenant', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/platform/acme/home', search: '?q=1' },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it('persists the current path and serialized tenant', () => {
+    const tenant = { key: 'acme', org: 'acme-org' } as any;
+    handleSaveCurrentTenant(tenant);
+
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'redirect-path',
+      '/platform/acme/home?q=1',
+    );
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('current_tenant', JSON.stringify(tenant));
+  });
 });

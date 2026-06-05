@@ -1,8 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
+import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
 import { waitForPageLoad } from '@iblai/iblai-js/playwright';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
 /**
  * Journey 24: Mobile View
@@ -10,9 +8,7 @@ const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
  */
 
 async function navigateToCourseContent(page: Page) {
-  await page.goto(`${SKILL_HOST}/home`, {
-    timeout: 120_000,
-  });
+  await gotoTenantPage(page, 'home', { timeout: 120_000 });
   await waitForAppShell(page);
 
   const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
@@ -46,9 +42,7 @@ test.describe('Journey 24: Mobile View', () => {
   test('CP-1: Navigation drawer appears on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
 
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // On mobile, navigation should be behind a hamburger menu or drawer toggle
@@ -220,9 +214,7 @@ test.describe('Journey 24: Mobile View', () => {
     ];
 
     for (const { path, name } of pages) {
-      await page.goto(`${SKILL_HOST}${path}`, {
-        timeout: 120_000,
-      });
+      await gotoTenantPage(page, path.replace(/^\//, ''), { timeout: 120_000 });
       await waitForAppShell(page);
 
       // Wait for app root to render children

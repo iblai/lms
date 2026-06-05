@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { createContext, useContext } from 'react';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import '@iblai/agent-ai';
 import React from 'react';
@@ -13,6 +13,7 @@ import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 // Create a context to share the chat state with other components
 export const ChatContext = createContext<{
@@ -38,9 +39,10 @@ interface ChatButtonProps {
 }
 
 export function ChatButton({ isMobile = false }: ChatButtonProps) {
+  const tenant = useTenantParam();
+  const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
   const { isOpen, setIsOpen, courseMentor, mentorSidebarHidden } = useChatState();
   const [alreadyOpened, setAlreadyOpened] = useState(false);
-  const tenant = getTenant();
   const username = getUserName();
   const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({
     org: tenant,
@@ -76,41 +78,21 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
     try {
       const response = await getMentors({
         org: tenant,
-        username: username,
-        orderBy: 'recently_accessed_at',
-        limit: 10,
-      }).unwrap();
-      // Step 3.1 - if there are recently accessed mentors, use the first one
-      if (!_.isEmpty(response?.results)) {
-        const mentor =
-          (response?.results.find((item: any) => item?.metadata?.default) || response?.results[0])
-            ?.unique_id || null;
-        if (!mentor) {
-          throw new Error('No mentors found');
-        }
-        setMentorInUse(mentor);
-        return;
+        username: getUserName(),
+        query: DEFAULT_MENTOR_NAME,
+      });
+      if (_.isEmpty(response?.data?.results)) {
+        throw new Error('No mentors found');
       }
-      // Step 3.2 - if no recent mentors, get featured mentors
-      const featuredMentorsResult = await getMentors({
-        org: tenant,
-        username: username,
-        featured: true,
-        limit: 10,
-      }).unwrap();
-      if (!_.isEmpty(featuredMentorsResult?.results)) {
-        const mentor =
-          (
-            featuredMentorsResult?.results.find((item: any) => item?.metadata?.default) ||
-            featuredMentorsResult?.results[0]
-          )?.unique_id || null;
-        if (!mentor) {
-          throw new Error('No mentors found');
-        }
-        setMentorInUse(mentor);
-        return;
+      const mentor =
+        (
+          response?.data?.results.find((item: any) => item?.metadata?.default) ||
+          response?.data?.results[0]
+        )?.unique_id || null;
+      if (!mentor) {
+        throw new Error('No mentors found');
       }
-      throw new Error('No mentors found');
+      setMentorInUse(mentor);
     } catch {
       handleOpen(false);
       setMentorInUse(null);
@@ -181,7 +163,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
                 mentorUrl: config.urls.mentor(),
                 authUrl: config.urls.auth(),
                 lmsUrl: config.urls.lms(),
-                tenant: getTenant(),
+                tenant: tenant,
                 mentor: mentorInUse,
                 contextOrigins: `${config.urls.lms()}`,
                 authRelyOnHost: true,
@@ -249,7 +231,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
               mentorUrl: config.urls.mentor(),
               authUrl: config.urls.auth(),
               lmsUrl: config.urls.lms(),
-              tenant: getTenant(),
+              tenant: tenant,
               mentor: mentorInUse,
               contextOrigins: `${config.urls.lms()}`,
               authRelyOnHost: true,

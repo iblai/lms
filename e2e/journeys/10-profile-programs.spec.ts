@@ -1,16 +1,12 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 /**
  * Helper: Navigate to the Programs page and wait for it to load.
  */
 async function navigateToProgramsPage(page: Page): Promise<void> {
-  await page.goto(`${SKILL_HOST}/profile/programs`, {
-    timeout: 120000,
-  });
+  await gotoTenantPage(page, 'profile/programs', { timeout: 120000 });
   await waitForAppShell(page);
 
   // Wait for the My programs button to confirm page is ready
@@ -85,9 +81,7 @@ test.describe('Journey 10: Profile Programs', () => {
   test.setTimeout(200000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120000 });
     await waitForAppShell(page);
     await navigateToProgramsPage(page);
   });

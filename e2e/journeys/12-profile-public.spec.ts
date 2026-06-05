@@ -1,13 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 12: Profile Public', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/public`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'profile/public', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 

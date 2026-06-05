@@ -6,7 +6,10 @@ on:
       - 'v*'
       - 'skills-v*'
 
-run-name: 'Build skills ${{ github.ref_name }}'
+run-name: 'Build lms ${{ github.ref_name }}'
+
+permissions:
+  contents: read
 
 jobs:
   prepare:

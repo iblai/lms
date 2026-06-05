@@ -19,11 +19,23 @@ export function isTauriApp(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 }
 
+/**
+ * Check if we're being served from the offline server (localhost:3456)
+ * This is the most reliable way to detect offline mode, as it works even before
+ * Tauri initialization scripts run or localStorage is restored
+ */
+export function isOfflineServerOrigin(): boolean {
+  if (typeof window === 'undefined') return false;
+  const origin = window.location.origin;
+  return origin === 'http://127.0.0.1:3456' || origin === 'http://localhost:3456';
+}
+
 export interface CustomQueryArgs extends Omit<FetchArgs, 'url'> {
   url: string;
   service: SERVICES;
   includeCredentials?: boolean;
   isJson?: boolean;
+  noAuth?: boolean;
 }
 
 export type ExtendedFetchBaseQueryError = FetchBaseQueryError & {
@@ -74,7 +86,7 @@ function getHeaders(service: SERVICES) {
   }
 }
 
-const baseQuery = (service: SERVICES, isJson = true) =>
+const baseQuery = (service: SERVICES, isJson = true, noAuth = false) =>
   fetchBaseQuery({
     baseUrl: getServiceUrl(service),
     credentials: 'omit',
@@ -90,6 +102,10 @@ const baseQuery = (service: SERVICES, isJson = true) =>
         headers.set(key, value);
       });
 
+      if (noAuth) {
+        headers.delete('Authorization');
+      }
+
       return headers;
     },
   });
@@ -102,7 +118,7 @@ export const iblFetchBaseQuery: BaseQueryFn<
   FetchBaseQueryMeta
 > = async (args, api, extraOptions) => {
   try {
-    const result = await baseQuery(args.service, args.isJson)(args, api, extraOptions);
+    const result = await baseQuery(args.service, args.isJson, args.noAuth)(args, api, extraOptions);
     if (result.error) {
       const errorData = result.error.data;
       const errorMessage =

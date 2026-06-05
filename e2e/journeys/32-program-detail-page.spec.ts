@@ -1,8 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
 
 /**
  * Wait for the new /programs/[program_id] page to finish loading.
@@ -19,7 +17,7 @@ async function waitForProgramPage(page: Page): Promise<void> {
 }
 
 async function openFirstProfileProgram(page: Page): Promise<boolean> {
-  await page.goto(`${SKILL_HOST}/profile/programs`, { timeout: 120_000 });
+  await gotoTenantPage(page, 'profile/programs', { timeout: 120_000 });
   await waitForAppShell(page);
 
   const card = page.getByTestId('program-card').first();
@@ -46,7 +44,7 @@ test.describe('Journey 32: Program Detail Page', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
@@ -61,7 +59,7 @@ test.describe('Journey 32: Program Detail Page', () => {
   });
 
   test('CP-2: Opens program page from discover program card', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'discover', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const allCards = page.getByTestId('discover-content-card');
@@ -266,7 +264,7 @@ test.describe('Journey 32: Program Detail Page', () => {
 
   test('CP-10: Direct navigation to /programs/[id] renders the page', async ({ page }) => {
     // First navigate via profile to discover a real program id we can revisit
-    await page.goto(`${SKILL_HOST}/profile/programs`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'profile/programs', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const card = page.getByTestId('program-card').first();
@@ -280,7 +278,7 @@ test.describe('Journey 32: Program Detail Page', () => {
     await waitForProgramPage(page);
 
     // Now hit the URL directly in a fresh navigation
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
     await page.goto(url, { timeout: 120_000 });
     await waitForAppShell(page);

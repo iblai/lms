@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 /**
  * Journey 29: Accessibility WCAG 2.1 AA
@@ -13,9 +11,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   test.setTimeout(200000);
 
   test('CP-1: Home page passes axe-core scan', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // library and cannot be fixed in our source code.
@@ -30,9 +26,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-2: Discover page passes axe-core scan', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/discover`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'discover', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
@@ -46,9 +40,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-3: Profile page passes axe-core scan', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'profile', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
@@ -63,9 +55,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
 
   test('CP-4: Course about page passes axe-core scan', async ({ page }) => {
     // Navigate to home and click into a course
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
@@ -93,9 +83,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
     // Navigate to analytics — admin only
     const analyticsLink = page.getByRole('link', { name: /ai analytics/i });
 
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const isAnalyticsVisible = await page
@@ -109,9 +97,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
       return;
     }
 
-    await page.goto(`${SKILL_HOST}/analytics`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'analytics', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
@@ -120,9 +106,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-6: Edit Profile dialog has proper ARIA attributes', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Open profile dialog
@@ -150,9 +134,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-7: Program modal has dialog role', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/programs`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'profile/programs', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Find a program card and click it to open a modal
@@ -193,9 +175,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-8: Notification dropdown has ARIA attributes', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const navbar = page.getByRole('banner');
@@ -242,9 +222,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-9: Interactive elements have accessible names', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Check that all visible buttons have accessible names
@@ -283,9 +261,7 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-10: No images without alt text', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Find all visible images and check for alt attributes

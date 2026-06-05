@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from './logo';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { getTenant } from '@/utils/helpers';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { config } from '@/lib/config';
 
 interface NavigationDrawerProps {
@@ -15,36 +15,37 @@ interface NavigationDrawerProps {
 
 export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   const pathname = usePathname();
+  const tenant = useTenantParam();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
-    platform_key: getTenant(),
+    platform_key: tenant,
   });
 
   const navigationItems = [
     {
       name: 'Home',
-      href: '/home',
+      href: `/platform/${tenant}/home`,
       icon: Home,
     },
     {
       name: 'Profile',
-      href: '/profile',
+      href: `/platform/${tenant}/profile`,
       icon: User,
     },
     {
       name: 'Recommended',
-      href: '/recommended',
+      href: `/platform/${tenant}/recommended`,
       icon: BookOpen,
     },
     {
       name: 'Discover',
-      href: '/discover',
+      href: `/platform/${tenant}/discover`,
       icon: Search,
     },
     ...(((departmentMemberCheck?.is_platform_admin ||
       departmentMemberCheck?.is_department_admin) && [
       {
         name: 'AI Analytics',
-        href: '/analytics',
+        href: `/platform/${tenant}/analytics`,
         icon: BarChart3,
       },
     ]) ||

@@ -1,19 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 11: Profile Courses', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 
   test('CP-1: courses page loads with enrolled courses or empty state', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'profile/courses', { timeout: 60_000 });
     await waitForAppShell(page);
 
     // CourseBox renders as <Link href="/courses/..."> — use that plus empty state text.
@@ -34,7 +32,7 @@ test.describe('Journey 11: Profile Courses', () => {
   });
 
   test('CP-2: course cards show name and progress', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'profile/courses', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const courseCard = page.locator('a[href*="/courses/"]').first();
@@ -55,7 +53,7 @@ test.describe('Journey 11: Profile Courses', () => {
   });
 
   test('CP-3: click course navigates to course about page', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'profile/courses', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const courseCard = page.locator('a[href*="/courses/"]').first();
@@ -78,7 +76,7 @@ test.describe('Journey 11: Profile Courses', () => {
   });
 
   test('CP-4: pagination or load more shows additional courses', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/profile/courses`, { timeout: 60_000 });
+    await gotoTenantPage(page, 'profile/courses', { timeout: 60_000 });
     await waitForAppShell(page);
 
     const courseCard = page.locator('a[href*="/courses/"]').first();

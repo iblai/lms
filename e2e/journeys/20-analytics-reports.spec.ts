@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 import { navigateToDataReports } from '../utils/data-reports-helpers';
 
 import {
@@ -15,8 +15,6 @@ import {
   shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor,
 } from '@iblai/iblai-js/playwright';
 import { shouldDisableOtherDownloadButtonsWhileGeneratingReport } from '@iblai/iblai-js/playwright';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
 const REPORT_CARDS = [
   {
@@ -43,7 +41,7 @@ test.describe('Journey 20: Analytics Reports', () => {
   test.setTimeout(200_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Admin gate: check if AI Analytics link is visible

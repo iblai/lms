@@ -6,6 +6,7 @@ import React from 'react';
 const mockPush = vi.fn();
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: vi.fn(() => ({ push: mockPush })),
 }));
 
@@ -33,7 +34,7 @@ describe('LatestSkillsBox', () => {
     render(<LatestSkillsBox skills={[]} />);
     const addButton = screen.getByLabelText('Add Skill');
     fireEvent.click(addButton);
-    expect(mockPush).toHaveBeenCalledWith('/profile/skills');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/profile/skills');
   });
 
   it('calls onClose when add button is clicked and onClose is provided', () => {
@@ -42,7 +43,7 @@ describe('LatestSkillsBox', () => {
     const addButton = screen.getByLabelText('Add Skill');
     fireEvent.click(addButton);
     expect(onClose).toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith('/profile/skills');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/profile/skills');
   });
 
   it('does not call onClose when not provided', () => {
@@ -50,7 +51,7 @@ describe('LatestSkillsBox', () => {
     const addButton = screen.getByLabelText('Add Skill');
     fireEvent.click(addButton);
     // Should not throw
-    expect(mockPush).toHaveBeenCalledWith('/profile/skills');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/profile/skills');
   });
 
   it('renders the add skill tooltip', () => {

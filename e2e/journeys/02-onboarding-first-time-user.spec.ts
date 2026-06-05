@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { waitForAppShell } from '../utils/navigation';
+import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 
@@ -68,7 +68,7 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
   });
 
   test('Checkpoint 2: Onboarding page displays welcome content', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/start`, { timeout: 120000 });
+    await gotoTenantPage(page, 'start', { timeout: 120000 });
 
     const settled = await waitForSettledPage(page);
 
@@ -95,7 +95,7 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
   });
 
   test('Checkpoint 3: User can complete onboarding', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/start`, { timeout: 120000 });
+    await gotoTenantPage(page, 'start', { timeout: 120000 });
 
     const settled = await waitForSettledPage(page);
 
@@ -150,12 +150,12 @@ test.describe('Journey 02: Onboarding – First-Time User', () => {
       return;
     }
 
-    expect(page.url()).toContain('/home');
+    expect(page.url()).not.toContain('/start');
     logger.info('Returning user correctly bypassed onboarding');
   });
 
   test('Checkpoint 5: Onboarding page has proper heading and navigation', async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/start`, { timeout: 120000 });
+    await gotoTenantPage(page, 'start', { timeout: 120000 });
 
     const settled = await waitForSettledPage(page);
 

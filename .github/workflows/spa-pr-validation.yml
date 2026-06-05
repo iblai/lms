@@ -10,6 +10,9 @@ on:
 
 run-name: 'Skills Test Validation (dispatch) — PR #${{ inputs.pr-number }}'
 
+permissions:
+  contents: read
+
 concurrency:
   group: pr-validation-skills-${{ github.event.pull_request.number }}
   cancel-in-progress: false

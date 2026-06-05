@@ -118,6 +118,11 @@ vi.mock('@/services/studio', () => ({
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   skillsMiddleware: [createMockMiddleware()],
   skillsReducer: { skillsData: (state = {}) => state },
+  authApiSlice: {
+    reducerPath: 'authApiSlice',
+    reducer: (state = {}) => state,
+    middleware: createMockMiddleware(),
+  },
 }));
 
 describe('store', () => {

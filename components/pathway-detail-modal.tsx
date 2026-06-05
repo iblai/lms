@@ -7,6 +7,7 @@ import { config } from '@/lib/config';
 import { useEffect, useState } from 'react';
 import { DefaultEmptyBox } from './default-empty-box';
 import { useRouter } from 'next/navigation';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import {
   // @ts-ignore
   useLazyGetPathwayCompletionQuery,
@@ -20,6 +21,7 @@ import {
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 interface PathwayDetailModalProps {
   pathway: PathwayEnrollmentPlus;
   onClose: () => void;
@@ -34,7 +36,9 @@ export function PathwayDetailModal({
   const [randomImage] = useState(() => getRandomCourseImage());
   const [paths, setPaths] = useState<any[]>([]);
   const router = useRouter();
-  const { handleSearch } = usePersonnalizedCatalog();
+  const tenant = useTenantParam();
+  const userLoggedIn = isLoggedIn();
+  const { handleSearch } = usePersonnalizedCatalog({ isLoggedIn: userLoggedIn });
   const [getUserEnrolledPathways, { isLoading: isEnrollmentLoading }] =
     useLazyGetUserEnrolledPathwaysQuery();
   const [
@@ -46,7 +50,7 @@ export function PathwayDetailModal({
   const [getPathwayList] = useLazyGetPathwayListQuery();
   const handleCourseClick = (course: any) => {
     if (course?.item_type === 'course') {
-      router.push(`/courses/${course.course_id}`);
+      router.push(`/platform/${tenant}/courses/${course.course_id}`);
     } else {
       window.open(course?.url, '_blank');
     }

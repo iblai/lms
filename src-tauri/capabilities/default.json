@@ -1,8 +1,17 @@
 {
   "$schema": "https://schema.tauri.app/config/2/capability",
   "identifier": "default",
-  "description": "Default capabilities for the IBL Skills app",
+  "description": "Default capabilities for the SkillsAI app",
   "windows": ["main"],
+  "local": true,
+  "remote": {
+    "urls": [
+      "https://*.iblai.app/*",
+      "https://*.iblai.org/*",
+      "http://127.0.0.1:*/*",
+      "http://localhost:*/*"
+    ]
+  },
   "permissions": [
     "core:default",
     "core:event:default",
@@ -10,6 +19,27 @@
     "core:event:allow-unlisten",
     "core:event:allow-emit",
     "core:event:allow-emit-to",
-    "core:path:default"
+    "core:path:default",
+    "core:app:default",
+    "core:window:default",
+    "core:webview:default",
+    "shell:allow-open",
+    "allow-open-external-url",
+    "allow-navigate-to",
+    "allow-navigate-back",
+    "allow-get-os-type",
+    "allow-get-last-skills-route",
+    "allow-save-last-skills-route",
+    "allow-check-network-status",
+    "allow-is-offline-server-ready",
+    "allow-get-offline-server-url",
+    "allow-save-offline-context",
+    "allow-get-offline-context",
+    "allow-set-cache-online-status",
+    "allow-clear-web-cache",
+    "allow-get-web-cache-stats",
+    "allow-precache-app",
+    "allow-cache-api-response",
+    "allow-get-cached-api-response"
   ]
 }

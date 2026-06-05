@@ -11,6 +11,14 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
+}));
+
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
+}));
+
 const mockUseUserCourses = vi.fn(() => ({
   userCourses: [] as { course_id: string }[],
   isLoadingUserCourses: false,
@@ -96,7 +104,10 @@ describe('MyCourses', () => {
   it('renders "See More" link to /profile/courses', () => {
     render(<MyCourses />);
     const seeMoreLink = screen.getByText('See More');
-    expect(seeMoreLink.closest('a')).toHaveAttribute('href', '/profile/courses');
+    expect(seeMoreLink.closest('a')).toHaveAttribute(
+      'href',
+      '/platform/test-tenant/profile/courses',
+    );
   });
 
   it('renders courses grid with correct aria-label', () => {

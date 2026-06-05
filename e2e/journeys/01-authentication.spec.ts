@@ -189,11 +189,15 @@ test.describe('Journey 01: Authentication', () => {
       return;
     }
 
-    await page.goto(`${SKILL_HOST}/home`, {
+    // A protected tenant-scoped page. There is no authenticated tenant in this
+    // fresh context, so we hit a representative platform route directly — the
+    // auth gate should still redirect us away to the auth host / login.
+    const protectedPath = `${SKILL_HOST}/`;
+    await page.goto(protectedPath, {
       timeout: 120000,
     });
 
-    // Should redirect away from /home to auth
+    // Should redirect away from the protected page to auth
     await page.waitForURL(
       (url) =>
         url.href.includes(AUTH_HOST) || url.href.includes('/login') || url.href.includes('/auth'),
@@ -201,6 +205,6 @@ test.describe('Journey 01: Authentication', () => {
     );
 
     const redirectedUrl = page.url();
-    expect(redirectedUrl).not.toContain(`${SKILL_HOST}/home`);
+    expect(redirectedUrl).not.toContain(protectedPath);
   });
 });

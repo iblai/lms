@@ -320,6 +320,67 @@ describe('ChatButton', () => {
     });
     expect(setIsOpen).not.toHaveBeenCalled();
   });
+
+  // Earlier tests leak an isLoading/isFetching return value (clearAllMocks does
+  // not reset implementations), so the loaded, non-fetching query is set here.
+  const setLoadedQuery = async () => {
+    // @ts-ignore
+    const { useLazyGetMentorsQuery } = await import('@iblai/iblai-js/data-layer');
+    vi.mocked(useLazyGetMentorsQuery).mockReturnValue([
+      mockGetMentors,
+      { isLoading: false, isFetching: false },
+    ] as any);
+  };
+
+  it('renders an empty fragment when the sidebar is hidden and no mentor resolves', async () => {
+    await setLoadedQuery();
+    const contextValue = { ...defaultContextValue, mentorSidebarHidden: true };
+    const { container } = renderWithContext(<ChatButton />, contextValue);
+    // No loader (metadata is loaded) and no mentor button — just an empty fragment.
+    expect(container.querySelector('.animate-spin')).not.toBeInTheDocument();
+    expect(container.querySelector('button')).not.toBeInTheDocument();
+  });
+
+  it('opens the desktop chat and shows the agent element', async () => {
+    await setLoadedQuery();
+    // A course mentor resolves synchronously, so mentorInUse is set on mount.
+    const contextValue = {
+      ...defaultContextValue,
+      courseMentor: 'course-mentor-id',
+      setIsOpen: vi.fn(),
+    };
+    const { container } = renderWithContext(<ChatButton />, contextValue as any);
+
+    const openBtn = await screen.findByLabelText('Open chat assistant');
+    fireEvent.click(openBtn);
+
+    expect(contextValue.setIsOpen).toHaveBeenCalledWith(true);
+    await waitFor(() => {
+      expect(container.querySelector('agent-ai')).toBeInTheDocument();
+    });
+  });
+
+  it('opens the mobile chat and shows the agent element', async () => {
+    await setLoadedQuery();
+    const contextValue = {
+      ...defaultContextValue,
+      courseMentor: 'course-mentor-id',
+      setIsOpen: vi.fn(),
+    };
+    const { container } = renderWithContext(<ChatButton isMobile />, contextValue as any);
+
+    const openBtn = await waitFor(() => {
+      const btn = container.querySelector('button');
+      expect(btn).toBeInTheDocument();
+      return btn as HTMLButtonElement;
+    });
+    fireEvent.click(openBtn);
+
+    expect(contextValue.setIsOpen).toHaveBeenCalledWith(true);
+    await waitFor(() => {
+      expect(container.querySelector('agent-ai')).toBeInTheDocument();
+    });
+  });
 });
 
 describe('ChatButton - mentor resolution logic', () => {

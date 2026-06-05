@@ -511,27 +511,30 @@ describe('CreatePathwayModal', () => {
       const mockTarget = { files: [mockFile] };
 
       // Mock FileReader
-      const mockReaderInstance = {
-        readAsDataURL: vi.fn(),
-        onload: null as any,
-        result: 'data:image/jpeg;base64,fake',
-      };
-      const FileReaderSpy = vi
-        .spyOn(window, 'FileReader')
-        .mockImplementationOnce(() => mockReaderInstance as any);
+      const originalFileReader = window.FileReader;
+      // @ts-ignore — override constructor for the duration of the test
+      window.FileReader = class MockFileReader {
+        result = 'data:image/jpeg;base64,fake';
+        onload: ((e: any) => void) | null = null;
+        readAsDataURL = vi.fn(() => {
+          setTimeout(() => {
+            if (this.onload) {
+              this.onload({ target: { result: this.result } });
+            }
+          }, 0);
+        });
+      } as any;
 
       await act(async () => {
         capturedInput.onchange({ target: mockTarget });
       });
 
-      // Trigger the reader's onload
+      // Wait for the reader's onload to fire
       await act(async () => {
-        if (mockReaderInstance.onload) {
-          mockReaderInstance.onload({ target: { result: 'data:image/jpeg;base64,fake' } });
-        }
+        await new Promise((r) => setTimeout(r, 10));
       });
 
-      FileReaderSpy.mockRestore();
+      window.FileReader = originalFileReader;
 
       // After upload, cover image should be displayed (no longer showing upload text)
       await waitFor(() => {

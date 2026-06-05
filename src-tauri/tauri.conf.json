@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "IBL Skills",
-  "version": "1.0.0",
-  "identifier": "ai.ibl.skills",
+  "productName": "SkillsAI",
+  "version": "1.0.6",
+  "identifier": "ai.ibl.skillsai",
   "build": {
     "beforeDevCommand": "",
     "devUrl": "https://skillsai.iblai.app",
@@ -10,6 +10,7 @@
     "frontendDist": "./offline-shell"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [],
     "security": {
       "csp": null
@@ -34,11 +35,11 @@
     "macOS": {
       "minimumSystemVersion": "10.15",
       "hardenedRuntime": true,
-      "entitlements": null,
+      "entitlements": "entitlements.mac.plist",
       "exceptionDomain": null
     },
     "iOS": {
-      "developmentTeam": null
+      "developmentTeam": "L4FWRM8W5Z"
     }
   },
   "plugins": {
@@ -46,14 +47,9 @@
       "open": true
     },
     "deep-link": {
-      "mobile": [
-        {
-          "host": "iblai-skills"
-        },
-        {
-          "host": "ai.ibl.skills"
-        }
-      ]
+      "desktop": {
+        "schemes": ["iblai-skills", "ai.ibl.skills"]
+      }
     }
   }
 }

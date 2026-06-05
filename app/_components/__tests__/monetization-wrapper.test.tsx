@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: () => ({ push: mockPush }),
 }));
 
@@ -118,7 +119,7 @@ describe('MonetizationWrapper', () => {
     );
     render(<MonetizationWrapper />);
     fireEvent.click(screen.getByTestId('paywall-close'));
-    expect(mockPush).toHaveBeenCalledWith('/error/402');
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/402');
     expect(mockDispatch).toHaveBeenCalled();
   });
 
