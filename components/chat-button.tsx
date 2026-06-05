@@ -43,7 +43,6 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
   const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
   const { isOpen, setIsOpen, courseMentor, mentorSidebarHidden } = useChatState();
   const [alreadyOpened, setAlreadyOpened] = useState(false);
-  const username = getUserName();
   const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({
     org: tenant,
   });
