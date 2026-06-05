@@ -16,7 +16,9 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Copy package manifests from repo root (deps live here, not in e2e/)
-COPY package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml holds the `overrides` config; without it a frozen
+# install fails with ERR_PNPM_LOCKFILE_CONFIG_MISMATCH.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install dependencies (skip optional like electron, skip postinstall scripts)
 RUN pnpm install --frozen-lockfile --ignore-scripts --no-optional
