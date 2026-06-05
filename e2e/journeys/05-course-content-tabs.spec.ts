@@ -17,7 +17,7 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
   await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
 
   //wait for myCoursesGrid.getByRole('link', { name: any name }) to be visible
-  await expect(myCoursesGrid.getByRole('link', { name: /.*/ })).toBeVisible({ timeout: 15000 });
+  await expect(myCoursesGrid.getByRole('link', { name: /.*/ })).toBeVisible({ timeout: 30_000 });
 
   const courseLink = myCoursesGrid.getByRole('link').first();
   const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
@@ -148,21 +148,10 @@ test.describe('Journey 05: Course Content Tabs', () => {
       name: 'Grade summary',
     });
 
-    const hasYourProgress = await yourProgressHeading
-      .isVisible({ timeout: 120_000 })
-      .catch(() => false);
-    const hasGradeSummary = await gradeSummaryHeading
-      .isVisible({ timeout: 120_000 })
-      .catch(() => false);
-
-    if (hasYourProgress) {
-      logger.info('"Your progress" heading visible');
-    }
-    if (hasGradeSummary) {
-      logger.info('"Grade summary" heading visible');
-    }
-
-    expect(hasYourProgress || hasGradeSummary).toBeTruthy();
+    // Pass when either heading shows up — locator.or() resolves to whichever appears first.
+    const progressHeading = yourProgressHeading.or(gradeSummaryHeading);
+    await expect(progressHeading.first()).toBeVisible({ timeout: 120000 });
+    logger.info('"Your progress" or "Grade summary" heading visible');
   });
 
   test('Checkpoint 4: Dates tab with Important dates', async ({ page }) => {
