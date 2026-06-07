@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.37.1](https://github.com/iblai/lms/compare/skills-v0.37.0...skills-v0.37.1) (2026-06-07)
+
+### Chores
+
+* add iblai-mentor scheme to redirectToAuthSpa from sdk ([1a31125](https://github.com/iblai/lms/commit/1a31125956d2a66aa3538ea5180b296c55edc706))
+
 ## [0.37.0](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-04)
 
 ### Features
