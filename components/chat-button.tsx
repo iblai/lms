@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { createContext, useContext } from 'react';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import '@iblai/agent-ai';
 import React from 'react';
@@ -13,6 +13,7 @@ import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import _ from 'lodash';
 import { toast } from 'sonner';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 // Create a context to share the chat state with other components
 export const ChatContext = createContext<{
@@ -38,11 +39,12 @@ interface ChatButtonProps {
 }
 
 export function ChatButton({ isMobile = false }: ChatButtonProps) {
+  const tenant = useTenantParam();
   const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
   const { isOpen, setIsOpen, courseMentor, mentorSidebarHidden } = useChatState();
   const [alreadyOpened, setAlreadyOpened] = useState(false);
   const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
 
   const handleOpen = (open: boolean) => {
@@ -69,7 +71,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
     }
     try {
       const response = await getMentors({
-        org: getTenant(),
+        org: tenant,
         username: getUserName(),
         query: DEFAULT_MENTOR_NAME,
       });
@@ -155,7 +157,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
                 mentorUrl: config.urls.mentor(),
                 authUrl: config.urls.auth(),
                 lmsUrl: config.urls.lms(),
-                tenant: getTenant(),
+                tenant: tenant,
                 mentor: mentorInUse,
                 contextOrigins: `${config.urls.lms()}`,
                 authRelyOnHost: true,
@@ -223,7 +225,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
               mentorUrl: config.urls.mentor(),
               authUrl: config.urls.auth(),
               lmsUrl: config.urls.lms(),
-              tenant: getTenant(),
+              tenant: tenant,
               mentor: mentorInUse,
               contextOrigins: `${config.urls.lms()}`,
               authRelyOnHost: true,

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppShell, navigateToAccountComponent } from '../utils/navigation';
+import { waitForAppShell, navigateToAccountComponent, gotoTenantPage } from '../utils/navigation';
 import {
   locatePaywallConfig,
   paywallSearchInput,
@@ -8,13 +8,11 @@ import {
   fillCustomItem,
 } from '../utils/monetization-helpers';
 
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
-
 test.describe('Journey 31: Monetization — Paywall Config Wizard', () => {
   test.setTimeout(180_000);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${SKILL_HOST}/home`, { timeout: 120_000 });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
   });
 

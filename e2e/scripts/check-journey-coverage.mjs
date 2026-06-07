@@ -65,6 +65,44 @@ const EXCLUDED_PATTERNS = [
   /^app\/page\.tsx$/,
   // SSO pages — auth redirect targets
   /\/sso-login-complete\//,
+  // Tenant-scoped app pages excluded from e2e journey coverage
+  /^app\/platform\/\[tenant\]\/analytics\/courses\/\[courseId\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/courses\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/financial\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/monetization\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/programs\/\[programId\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/programs\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/reports\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/topics\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/transcripts\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/users\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/agent\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/bookmarks\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/course\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/dates\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/discussion\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/instructor\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/course-content\/\[course_id\]\/progress\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/courses\/\[course_id\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/discover\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/home\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/notifications\/\[notificationId\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/notifications\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/courses\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/credentials\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/pathways\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/programs\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/public\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/profile\/skills\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/programs\/\[program_id\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/recommended\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/reports\/\[tenantKey\]\/\[reportName\]\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/start\/page\.tsx$/,
+  // Legacy non-tenant-scoped route — redirect stub, no standalone journey
+  /^app\/analytics\/monetization\/page\.tsx$/,
 ];
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
@@ -92,10 +130,9 @@ function loadCoverage() {
 
 function loadBaseCoverage(baseBranch) {
   try {
-    const json = execSync(
-      `git show ${baseBranch}:e2e/coverage.json 2>/dev/null`,
-      { encoding: 'utf8' },
-    );
+    const json = execSync(`git show ${baseBranch}:e2e/coverage.json 2>/dev/null`, {
+      encoding: 'utf8',
+    });
     return JSON.parse(json);
   } catch {
     return null;
@@ -130,17 +167,15 @@ function validateSpecFiles(coverage) {
 
 function getChangedFiles(baseBranch) {
   try {
-    const diff = execSync(
-      `git diff --name-only ${baseBranch}...HEAD -- app/ components/`,
-      { encoding: 'utf8' },
-    ).trim();
+    const diff = execSync(`git diff --name-only ${baseBranch}...HEAD -- app/ components/`, {
+      encoding: 'utf8',
+    }).trim();
     return diff ? diff.split('\n') : [];
   } catch {
     try {
-      const diff = execSync(
-        `git diff --name-only HEAD~1 -- app/ components/`,
-        { encoding: 'utf8' },
-      ).trim();
+      const diff = execSync(`git diff --name-only HEAD~1 -- app/ components/`, {
+        encoding: 'utf8',
+      }).trim();
       return diff ? diff.split('\n') : [];
     } catch {
       return [];
@@ -153,9 +188,7 @@ function getAllAppPages() {
     const result = execSync(`find ${APP_DIR} -name "page.tsx" -type f`, {
       encoding: 'utf8',
     }).trim();
-    return result
-      ? result.split('\n').map((f) => relative(REPO_ROOT, f))
-      : [];
+    return result ? result.split('\n').map((f) => relative(REPO_ROOT, f)) : [];
   } catch {
     return [];
   }
@@ -195,9 +228,7 @@ function main() {
   const missingSpecs = validateSpecFiles(coverage);
   if (missingSpecs.length > 0) {
     for (const { journey, spec } of missingSpecs) {
-      err(
-        `Journey "${journey}" references spec "${spec}" which does not exist in e2e/journeys/`,
-      );
+      err(`Journey "${journey}" references spec "${spec}" which does not exist in e2e/journeys/`);
     }
     process.exit(1);
   }
@@ -237,9 +268,7 @@ function main() {
         exitCode = 1;
       }
     } else {
-      warn(
-        `Could not load base coverage from ${baseBranch} — skipping regression check`,
-      );
+      warn(`Could not load base coverage from ${baseBranch} — skipping regression check`);
     }
     console.log('');
   }
@@ -313,17 +342,11 @@ function main() {
     for (const r of newRoutes) err(`  ${r}`);
     console.log('');
     err('Action required:');
-    err(
-      '  1. Add the route to a journey in e2e/coverage.json (sourceFiles array)',
-    );
-    err(
-      '  2. Add test(s) for it in the relevant e2e/journeys/NN-*.spec.ts file',
-    );
+    err('  1. Add the route to a journey in e2e/coverage.json (sourceFiles array)');
+    err('  2. Add test(s) for it in the relevant e2e/journeys/NN-*.spec.ts file');
     err('  3. Add a checkpoint entry in e2e/COVERAGE.md');
     err('');
-    err(
-      'If intentionally excluded, add a pattern to EXCLUDED_PATTERNS in this script.',
-    );
+    err('If intentionally excluded, add a pattern to EXCLUDED_PATTERNS in this script.');
     exitCode = 1;
   }
 

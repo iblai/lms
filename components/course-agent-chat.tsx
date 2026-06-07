@@ -10,14 +10,16 @@ import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import '@iblai/agent-ai';
 import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
 import { setMentorSpinnerHidden } from '@/features/mentor';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export function CourseAgentChat() {
   const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
+  const tenant = useTenantParam();
   const { courseMentor } = useChatState();
-  const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({ org: getTenant() });
+  const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({ org: tenant });
   const [getMentors, { isLoading, isFetching }] = useLazyGetMentorsQuery();
   const [mentorInUse, setMentorInUse] = useState<string | null>(null);
   const [spinnerHidden, setSpinnerHidden] = useState(false);
@@ -45,7 +47,7 @@ export function CourseAgentChat() {
       }
       try {
         const response = await getMentors({
-          org: getTenant(),
+          org: tenant,
           username: getUserName(),
           query: DEFAULT_MENTOR_NAME,
         });
@@ -171,7 +173,7 @@ export function CourseAgentChat() {
         mentorUrl: config.urls.mentor(),
         authUrl: config.urls.auth(),
         lmsUrl: config.urls.lms(),
-        tenant: getTenant(),
+        tenant: tenant,
         mentor: mentorInUse,
         contextOrigins: `${config.urls.lms()}`,
         authRelyOnHost: true,

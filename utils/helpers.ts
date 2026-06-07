@@ -4,6 +4,7 @@ import { LOCALSTORAGE_KEYS } from '../constants/storage';
 import { getLocalStorageItem } from './localstorage';
 import { QUERY_PARAMS } from '@/constants/global';
 import { MarkdownMenuItem } from '@/types/utils';
+import { toast } from 'sonner';
 import {
   isTauriOfflineMode,
   LOCAL_STORAGE_KEYS,
@@ -207,6 +208,28 @@ export function getTimeAgo(createdAt: string) {
   }
 }
 
+/**
+ * Notify an anonymous visitor that login is required, persist the current
+ * in-app path so the auth SPA can route them back, then redirect to the login
+ * page. The `redirect-to` query param is intentionally the *origin* only —
+ * the auth SPA reads the saved `REDIRECT_PATH` from localStorage to land on
+ * the original page once authentication succeeds.
+ */
+export function handleNotLoggedInAction(tenant: string) {
+  toast.info('Please login to access this resource');
+  if (typeof window === 'undefined') return;
+  // Stamp `?trigger_cta=1` onto the persisted redirect path so the destination
+  // page (course about / program about) can auto-click the CTA button after
+  // the user lands back here post-authentication.
+  const url = new URL(window.location.href);
+  url.searchParams.set('trigger_cta', '1');
+  const currentPath = `${url.pathname}${url.search}${url.hash}`;
+  window.localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
+  setTimeout(() => {
+    window.location.href = `${config.urls.auth()}/login?redirect-to=${window.location.origin}&tenant=${tenant}`;
+  }, 2000);
+}
+
 export async function redirectToAuthSpa(
   redirectTo?: string,
   platformKey?: string,
@@ -360,8 +383,13 @@ export const onAccountDeleted = () => {
   }, 3000);
 };
 
-export const handleLogout = (redirectUrl = window.location.origin, callback?: () => void) => {
-  const tenant = getTenant();
+export const handleLogout = (
+  redirectUrl = window.location.origin,
+  callback?: () => void,
+  alternateTenant?: string,
+  enforceLogin?: boolean,
+) => {
+  const tenant = alternateTenant ?? getTenant();
   _suppressAuthRedirect = true;
   window.localStorage.clear();
   window.localStorage.setItem(LOCALSTORAGE_KEYS.TENANT, tenant ?? '');
@@ -370,7 +398,7 @@ export const handleLogout = (redirectUrl = window.location.origin, callback?: ()
   callback?.();
 
   if (!isInIframe()) {
-    window.location.href = `${config.urls.auth()}/logout?redirect-to=${redirectUrl}${tenant ? '&tenant=' + tenant : ''}`;
+    window.location.href = `${config.urls.auth()}/logout?redirect-to=${redirectUrl}${tenant ? '&tenant=' + tenant : ''}${enforceLogin ? '&enforce-login=1' : ''}`;
     // Set logout timestamp cookie to trigger logout on other SPAs
     setCookieForAuth('ibl_logout_timestamp', Date.now().toString());
     setTimeout(() => {

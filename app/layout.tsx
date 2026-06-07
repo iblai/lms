@@ -144,7 +144,7 @@ export const viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -153,6 +153,7 @@ export default function RootLayout({
   if (isDevelopment) {
     logEnvironmentInfo();
   }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${openSans.className} flex h-screen flex-col overflow-hidden`}>

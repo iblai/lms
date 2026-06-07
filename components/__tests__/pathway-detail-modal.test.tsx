@@ -40,6 +40,7 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: vi.fn(() => ({ push: vi.fn() })),
 }));
 

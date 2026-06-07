@@ -1,12 +1,5 @@
-'use client';
+import { TenantRedirect } from '@/components/tenant-redirect';
 
-import { getTenant } from '@/utils/helpers';
-import { AnalyticsMonetizationStats, useAnalyticsSettings } from '@iblai/iblai-js/web-containers';
-
-export default function MonetizationPage() {
-  const { usergroupIds } = useAnalyticsSettings();
-
-  return (
-    <AnalyticsMonetizationStats tenantKey={getTenant()} mentorId={''} usergroupIds={usergroupIds} />
-  );
+export default function Page() {
+  return <TenantRedirect />;
 }

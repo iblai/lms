@@ -16,11 +16,12 @@ export const CourseMetadataSlice = createApi({
   reducerPath: 'CourseMetadataSlice',
   baseQuery: iblFetchBaseQuery,
   endpoints: (builder) => ({
-    getCourseMetaData: builder.query<CourseEdxData, { courseKey: string }>({
-      query: ({ courseKey }) => ({
+    getCourseMetaData: builder.query<CourseEdxData, { courseKey: string; noAuth?: boolean }>({
+      query: ({ courseKey, noAuth = false }) => ({
         url: `/api/ibl/v1/course_metadata?course_key=${encodeURIComponent(courseKey)}`,
         service: SERVICES.LMS,
         includeCredentials: true,
+        noAuth,
       }),
     }),
     getCourseCompletionOutlines: builder.query<CourseOutlineResponse, { courseKey: string }>({

@@ -3,10 +3,12 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { DiscoverContentCardProps } from '../types/discover';
 import { useRouter } from 'next/navigation';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 import { PathwayDetailModal } from './pathway-detail-modal';
 
 export function DiscoverContentCard({ content }: { content: DiscoverContentCardProps }) {
   const router = useRouter();
+  const tenant = useTenantParam();
   const [randomImage] = useState(() => getRandomCourseImage());
   const [selectedPathway, setSelectedPathway] = useState<any>(null);
   const handleContentClick = () => {
@@ -15,10 +17,10 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
         setSelectedPathway(content);
         break;
       case 'program':
-        router.push(`/programs/${content.id}`);
+        router.push(`/platform/${tenant}/programs/${content.id}`);
         break;
       default:
-        router.push(`/courses/${content.id}`);
+        router.push(`/platform/${tenant}/courses/${content.id}`);
         break;
     }
   };

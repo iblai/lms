@@ -12,7 +12,8 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
-  usePathname: vi.fn(() => '/home'),
+  useParams: () => ({ tenant: 'test-tenant' }),
+  usePathname: vi.fn(() => '/platform/test-tenant/home'),
 }));
 
 vi.mock('@/utils/helpers', () => ({

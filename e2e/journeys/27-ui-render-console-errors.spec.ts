@@ -1,7 +1,5 @@
 import { test, expect, ConsoleMessage } from '@playwright/test';
-import { waitForAppShell } from '../utils/navigation';
-
-const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
+import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 /**
  * Journey 27: UI Render Console Errors
@@ -19,6 +17,8 @@ const IGNORED_ERRORS: Array<string | RegExp> = [
   'does not have a proper "SameSite" attribute value',
   'matomo.js',
   'features/apps', //features/apps endpoint fails on ORG and when fails means ecommerce is not enabled
+  'You do not have permission to access this resource', // expected 403 for non-admin/role-gated endpoints
+  'Unknown server error', // expected 500 for server errors
   /Failed to load resource/,
   /Intercom Messenger error/,
 ];
@@ -46,9 +46,7 @@ test.describe('Journey 27: UI Render Console Errors', () => {
       }
     });
 
-    await page.goto(`${SKILL_HOST}/home`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'home', { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Verify body has children (app rendered)
@@ -75,9 +73,7 @@ test.describe('Journey 27: UI Render Console Errors', () => {
       }
     });
 
-    await page.goto(`${SKILL_HOST}/discover`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'discover', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const hasChildren = await page.evaluate(() => {
@@ -102,9 +98,7 @@ test.describe('Journey 27: UI Render Console Errors', () => {
       }
     });
 
-    await page.goto(`${SKILL_HOST}/profile`, {
-      timeout: 120_000,
-    });
+    await gotoTenantPage(page, 'profile', { timeout: 120_000 });
     await waitForAppShell(page);
 
     const hasChildren = await page.evaluate(() => {

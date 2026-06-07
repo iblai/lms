@@ -7,6 +7,7 @@ const mockPush = vi.fn();
 const mockSearchParams = new URLSearchParams();
 
 vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: vi.fn(() => ({ push: mockPush })),
   useSearchParams: vi.fn(() => mockSearchParams),
 }));
@@ -57,6 +58,10 @@ vi.mock('../header/profile/user-profile-button', () => ({
 
 vi.mock('@iblai/iblai-js/web-containers', () => ({
   NotificationDropdown: () => <div data-testid="notification-dropdown">Notifications</div>,
+}));
+
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  isLoggedIn: vi.fn(() => true),
 }));
 
 vi.mock('react-responsive', () => ({

@@ -38,7 +38,7 @@ describe('SsoLoginComplete page', () => {
     expect(getByTestId('current-tenant-key')).toHaveTextContent('current_tenant');
     expect(getByTestId('user-data-key')).toHaveTextContent('userData');
     expect(getByTestId('tenants-key')).toHaveTextContent('tenants');
-    expect(getByTestId('redirect-path-key')).toHaveTextContent('redirect-to');
+    expect(getByTestId('redirect-path-key')).toHaveTextContent('redirect-path');
     expect(getByTestId('default-redirect-path')).toHaveTextContent('/');
   });
 

@@ -11,6 +11,14 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
+}));
+
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
+}));
+
 import { ProfileDropdown } from '../profile-dropdown';
 
 describe('ProfileDropdown', () => {
@@ -31,7 +39,7 @@ describe('ProfileDropdown', () => {
   it('renders Profile link', () => {
     render(<ProfileDropdown {...defaultProps} />);
     const profileLink = screen.getByText('Profile').closest('a');
-    expect(profileLink).toHaveAttribute('href', '/profile');
+    expect(profileLink).toHaveAttribute('href', '/platform/test-tenant/profile');
   });
 
   it('renders Account button', () => {

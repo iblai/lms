@@ -4,8 +4,10 @@ import {
   useLazyGetCourseMetaDataQuery,
 } from '@/services/course-metadata';
 import { CourseEligibilityResponse } from '@/types/courses';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 
 export const useCourseMetadata = () => {
+  const userLoggedIn = isLoggedIn();
   const [getCourseMetaData, { isLoading, isError }] = useLazyGetCourseMetaDataQuery();
 
   const [
@@ -17,7 +19,10 @@ export const useCourseMetadata = () => {
 
   const handleFetchCourseMetaData = async (courseKey: string) => {
     try {
-      const { data: courseMetaData } = await getCourseMetaData({ courseKey }, true);
+      const { data: courseMetaData } = await getCourseMetaData(
+        { courseKey, noAuth: !userLoggedIn },
+        true,
+      );
       return courseMetaData;
     } catch (error) {
       return {};

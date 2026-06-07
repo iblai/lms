@@ -1,4 +1,4 @@
-import { getTenant, getUserName } from '@/utils/helpers';
+import { getUserName } from '@/utils/helpers';
 import { usePersonnalizedCatalog } from '../search/use-personnalized-catalog';
 import { useEffect, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';
@@ -8,13 +8,18 @@ import { config } from '@/lib/config';
 import { DiscoverContent } from '@/types/discover';
 import { DiscoverContentCardProps } from '@/types/discover';
 import { useRouter } from 'next/navigation';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { useTenantParam } from '../use-tenant-param';
 export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const router = useRouter();
+  const tenant = useTenantParam();
+  const isUserLoggedIn = isLoggedIn();
   const { metadata } = useTenantMetadata({
-    org: getTenant(),
+    org: tenant,
   });
-  const { handleSearch, isError, pagination } = usePersonnalizedCatalog();
+  const { handleSearch, isError, pagination } = usePersonnalizedCatalog({
+    isLoggedIn: isUserLoggedIn,
+  });
 
   const [facets, setFacets] = useState<CourseFacet[]>([]);
   const [filteredFacets, setFilteredFacets] = useState<CourseFacet[]>([]);
@@ -72,13 +77,13 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
         ? handleSearch({
             username: getUserName(),
             returnFacet: true,
-            ...(!metadata?.skills_include_community_courses && { tenant: getTenant() }),
+            ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
           })
         : handleSearch({
             username: getUserName(),
             limit,
             offset: (page - 1) * limit,
-            ...(!metadata?.skills_include_community_courses && { tenant: getTenant() }),
+            ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
             ...(!_.isEmpty(selectedFacets?.q) && {
               query: selectedFacets?.q[0],
             }),
