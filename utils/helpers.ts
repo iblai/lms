@@ -234,7 +234,7 @@ export async function redirectToAuthSpa(
     isOffline: () => isOfflineServerOrigin() || (isTauriApp() && isTauriOfflineMode()),
     preserveTokenKey: 'edx_jwt_token',
     isNativeApp: () => isTauriApp(),
-    scheme: 'iblai-skills://',
+    scheme: 'iblai-skills',
   });
 }
 
