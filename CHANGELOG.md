@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.39.0](https://github.com/iblai/lms/compare/skills-v0.38.1...skills-v0.39.0) (2026-06-08)
+
+### Features
+
+* **tauri:** rename app to Agentic LMS, fix hasNonExpiredAuthToken ([1d6ecf3](https://github.com/iblai/lms/commit/1d6ecf3df347b718638d5caea06aa3cf43db3019))
+
 ## [0.38.1](https://github.com/iblai/lms/compare/skills-v0.38.0...skills-v0.38.1) (2026-06-08)
 
 ### Chores
