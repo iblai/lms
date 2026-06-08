@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.38.1](https://github.com/iblai/lms/compare/skills-v0.38.0...skills-v0.38.1) (2026-06-08)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.17.19 ([cd9949b](https://github.com/iblai/lms/commit/cd9949bb075f2c5ce6906ab9a0871fad802b4806))
+
 ## [0.38.0](https://github.com/iblai/lms/compare/skills-v0.37.3...skills-v0.38.0) (2026-06-08)
 
 ### Features
