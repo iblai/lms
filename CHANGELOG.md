@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.38.0](https://github.com/iblai/lms/compare/skills-v0.37.3...skills-v0.38.0) (2026-06-08)
+
+### Features
+
+* **tauri:** load skillsai.iblai.app in prod builds ([f36ad2a](https://github.com/iblai/lms/commit/f36ad2a3589cac25d8c2092f002bace89cb578f3))
+
 ## [0.37.3](https://github.com/iblai/lms/compare/skills-v0.37.2...skills-v0.37.3) (2026-06-08)
 
 ### Chores
