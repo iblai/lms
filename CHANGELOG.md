@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.37.3](https://github.com/iblai/lms/compare/skills-v0.37.2...skills-v0.37.3) (2026-06-08)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.17.17 ([21c438a](https://github.com/iblai/lms/commit/21c438a30aedcdafde18a382da0d3dc0a534e2d7))
+
+### CI
+
+* remove stale workflows and skip CI for external PRs ([e686897](https://github.com/iblai/lms/commit/e6868975eb7d352c310d7e8273039c77b787901f))
+
 ## [0.37.2](https://github.com/iblai/lms/compare/skills-v0.37.1...skills-v0.37.2) (2026-06-08)
 
 ## [0.37.1](https://github.com/iblai/lms/compare/skills-v0.37.0...skills-v0.37.1) (2026-06-07)
