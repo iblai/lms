@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.37.2](https://github.com/iblai/lms/compare/skills-v0.37.1...skills-v0.37.2) (2026-06-08)
+
 ## [0.37.1](https://github.com/iblai/lms/compare/skills-v0.37.0...skills-v0.37.1) (2026-06-07)
 
 ### Chores
