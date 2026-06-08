@@ -9,7 +9,7 @@ import {
   onAccountDeleted,
   getUserEmail,
 } from '@/utils/helpers';
-import { Tenant } from '@iblai/iblai-js/web-utils';
+import { Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
 import { useAppSelector, useAppDispatch } from '@/lib/hooks';
@@ -21,6 +21,7 @@ export const UserProfileButton = () => {
   const tenantKey = getTenant();
   const { currentTenant, saveCurrentTenant } = useCurrentTenant();
   const { userTenants = [], saveUserTenants } = useUserTenants();
+  const { metadata } = useTenantMetadata({ org: tenantKey });
   const isAdmin = useIsAdmin();
   const rbackPermissions = useAppSelector(selectRbacPermissions);
   const dispatch = useAppDispatch();
@@ -98,6 +99,9 @@ export const UserProfileButton = () => {
         onAccountDeleted();
       }}
       enableMemoryTab={true}
+      defaultSupportPhone={
+        metadata?.support_phone_number || config.settings.defaultSupportPhoneNumber()
+      }
     />
   );
 };
