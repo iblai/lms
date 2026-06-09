@@ -257,18 +257,18 @@ export async function redirectToAuthSpa(
     isOffline: () => isOfflineServerOrigin() || (isTauriApp() && isTauriOfflineMode()),
     preserveTokenKey: 'edx_jwt_token',
     isNativeApp: () => isTauriApp(),
-    scheme: 'iblai-skills://',
+    scheme: 'iblai-skills',
   });
 }
 
 export function hasNonExpiredAuthToken() {
-  const token = getLocalStorageItem(LOCALSTORAGE_KEYS.AUTH_TOKEN);
+  const token = window.localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
   if (!token) {
     console.log('################### [hasNonExpiredAuthToken] axd token is not defined', token);
-    return true;
+    return false;
   }
 
-  const tokenExpiry = getLocalStorageItem(LOCALSTORAGE_KEYS.TOKEN_EXPIRY);
+  const tokenExpiry = window.localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN_EXPIRY);
   if (!tokenExpiry) {
     console.log(
       '################### [hasNonExpiredAuthToken] axd token expiry is not defined',

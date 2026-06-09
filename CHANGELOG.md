@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.39.0](https://github.com/iblai/lms/compare/skills-v0.38.1...skills-v0.39.0) (2026-06-08)
+
+### Features
+
+* **tauri:** rename app to Agentic LMS, fix hasNonExpiredAuthToken ([1d6ecf3](https://github.com/iblai/lms/commit/1d6ecf3df347b718638d5caea06aa3cf43db3019))
+
+## [0.38.1](https://github.com/iblai/lms/compare/skills-v0.38.0...skills-v0.38.1) (2026-06-08)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.17.19 ([cd9949b](https://github.com/iblai/lms/commit/cd9949bb075f2c5ce6906ab9a0871fad802b4806))
+
+## [0.38.0](https://github.com/iblai/lms/compare/skills-v0.37.3...skills-v0.38.0) (2026-06-08)
+
+### Features
+
+* **tauri:** load skillsai.iblai.app in prod builds ([f36ad2a](https://github.com/iblai/lms/commit/f36ad2a3589cac25d8c2092f002bace89cb578f3))
+
+## [0.37.3](https://github.com/iblai/lms/compare/skills-v0.37.2...skills-v0.37.3) (2026-06-08)
+
+### Chores
+
+* bump @iblai/iblai-js to 1.17.17 ([21c438a](https://github.com/iblai/lms/commit/21c438a30aedcdafde18a382da0d3dc0a534e2d7))
+
+### CI
+
+* remove stale workflows and skip CI for external PRs ([e686897](https://github.com/iblai/lms/commit/e6868975eb7d352c310d7e8273039c77b787901f))
+
+## [0.37.2](https://github.com/iblai/lms/compare/skills-v0.37.1...skills-v0.37.2) (2026-06-08)
+
+## [0.37.1](https://github.com/iblai/lms/compare/skills-v0.37.0...skills-v0.37.1) (2026-06-07)
+
+### Chores
+
+* add iblai-mentor scheme to redirectToAuthSpa from sdk ([1a31125](https://github.com/iblai/lms/commit/1a31125956d2a66aa3538ea5180b296c55edc706))
+
 ## [0.37.0](https://github.com/iblai/lms/compare/skills-v0.36.9...skills-v0.37.0) (2026-06-04)
 
 ### Features
