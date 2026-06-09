@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.39.1]
+
+- iblai-js package version bump to 1.17.20
+- agent-ai package version bump to 2.6.1
+
 ## [0.39.0](https://github.com/iblai/lms/compare/skills-v0.38.1...skills-v0.39.0) (2026-06-08)
 
 ### Features
