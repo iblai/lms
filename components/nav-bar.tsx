@@ -96,37 +96,41 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           {/* Navigation Links */}
           {shouldShowNavLinks() && (
             <nav className="ml-8 hidden h-full items-center space-x-6 md:flex">
-              <Link
-                href={`/platform/${tenant}/home`}
-                className={`text-sm font-medium ${
-                  activePage === 'home'
-                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                    : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } flex h-full items-center`}
-              >
-                Home
-              </Link>
-              <Link
-                href={`/platform/${tenant}/profile`}
-                className={`text-sm font-medium ${
-                  activePage === 'profile'
-                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                    : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } flex h-full items-center`}
-              >
-                Profile
-              </Link>
-              {!isRecommendedTabHidden() && (
-                <Link
-                  href={`/platform/${tenant}/recommended`}
-                  className={`text-sm font-medium ${
-                    activePage === 'recommended'
-                      ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                      : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                  } flex h-full items-center`}
-                >
-                  Recommended
-                </Link>
+              {isUserLoggedIn && (
+                <>
+                  <Link
+                    href={`/platform/${tenant}/home`}
+                    className={`text-sm font-medium ${
+                      activePage === 'home'
+                        ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                        : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                    } flex h-full items-center`}
+                  >
+                    Home
+                  </Link>
+                  <Link
+                    href={`/platform/${tenant}/profile`}
+                    className={`text-sm font-medium ${
+                      activePage === 'profile'
+                        ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                        : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                    } flex h-full items-center`}
+                  >
+                    Profile
+                  </Link>
+                  {!isRecommendedTabHidden() && (
+                    <Link
+                      href={`/platform/${tenant}/recommended`}
+                      className={`text-sm font-medium ${
+                        activePage === 'recommended'
+                          ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                          : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                      } flex h-full items-center`}
+                    >
+                      Recommended
+                    </Link>
+                  )}
+                </>
               )}
               {!hideDiscoverTab && (
                 <Link

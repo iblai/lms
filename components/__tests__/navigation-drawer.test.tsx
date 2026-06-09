@@ -26,6 +26,10 @@ vi.mock('@/services/core', () => ({
   })),
 }));
 
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  isLoggedIn: vi.fn(() => true),
+}));
+
 vi.mock('../logo', () => ({
   Logo: () => <div data-testid="logo">Logo</div>,
 }));
@@ -38,8 +42,10 @@ describe('NavigationDrawer', () => {
     onClose: vi.fn(),
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+    vi.mocked(isLoggedIn).mockReturnValue(true);
   });
 
   it('renders without crashing when open', () => {
@@ -52,6 +58,17 @@ describe('NavigationDrawer', () => {
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('Recommended')).toBeInTheDocument();
+    expect(screen.getByText('Discover')).toBeInTheDocument();
+  });
+
+  it('hides Home, Profile and Recommended when not logged in', async () => {
+    const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+    vi.mocked(isLoggedIn).mockReturnValue(false);
+    render(<NavigationDrawer {...defaultProps} />);
+    expect(screen.queryByText('Home')).not.toBeInTheDocument();
+    expect(screen.queryByText('Profile')).not.toBeInTheDocument();
+    expect(screen.queryByText('Recommended')).not.toBeInTheDocument();
+    // Discover stays available to logged-out users
     expect(screen.getByText('Discover')).toBeInTheDocument();
   });
 

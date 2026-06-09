@@ -166,6 +166,15 @@ describe('NavBar', () => {
       expect(screen.getByRole('button', { name: 'Sign Up' })).toBeInTheDocument();
     });
 
+    it('hides Home, Profile and Recommended links', () => {
+      render(<NavBar {...defaultProps} />);
+      expect(screen.queryByText('Home')).not.toBeInTheDocument();
+      expect(screen.queryByText('Profile')).not.toBeInTheDocument();
+      expect(screen.queryByText('Recommended')).not.toBeInTheDocument();
+      // Discover stays available to logged-out users
+      expect(screen.getByText('Discover')).toBeInTheDocument();
+    });
+
     it('does not render notification dropdown or profile button', () => {
       render(<NavBar {...defaultProps} />);
       expect(screen.queryByTestId('notification-dropdown')).not.toBeInTheDocument();
