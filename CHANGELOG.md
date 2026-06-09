@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.39.2](https://github.com/iblai/lms/compare/skills-v0.39.1...skills-v0.39.2) (2026-06-09)
+
+### Chores
+
+* release 0.39.1 ([2b450e5](https://github.com/iblai/lms/commit/2b450e543c4ca46f2bc5ca6ab6d3dbeb8da720ff))
+
 ## [0.39.1]
 
 - iblai-js package version bump to 1.17.20
