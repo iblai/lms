@@ -64,6 +64,7 @@ import {
   isRecommendedTabHidden,
   getTimeAgo,
   redirectToAuthSpa,
+  redirectToAuthSpaJoinTenant,
   hasNonExpiredAuthToken,
   isInIframe,
   deleteCookie,
@@ -436,6 +437,64 @@ describe('helpers utility functions', () => {
 
       expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
         expect.objectContaining({ redirectTo: '/custom/path' }),
+      );
+    });
+  });
+
+  describe('redirectToAuthSpaJoinTenant', () => {
+    beforeEach(() => {
+      Object.defineProperty(window.location, 'href', {
+        get: () => locationHref,
+        set: (value: string) => {
+          locationHref = value;
+        },
+        configurable: true,
+      });
+      locationHref = 'https://skills.example.com/dashboard';
+    });
+
+    it('should redirect to the join URL using the provided tenant key', () => {
+      redirectToAuthSpaJoinTenant('my-tenant');
+
+      expect(window.location.href).toBe(
+        'https://auth.example.com/join?tenant=my-tenant&redirect-to=' +
+          encodeURIComponent('https://skills.example.com/dashboard'),
+      );
+      expect(sdkRedirectToAuthSpa).not.toHaveBeenCalled();
+    });
+
+    it('should use the provided redirect URL as redirect-to', () => {
+      redirectToAuthSpaJoinTenant('my-tenant', 'https://skills.example.com/courses');
+
+      expect(window.location.href).toBe(
+        'https://auth.example.com/join?tenant=my-tenant&redirect-to=' +
+          encodeURIComponent('https://skills.example.com/courses'),
+      );
+    });
+
+    it('should encode tenant keys with special characters', () => {
+      redirectToAuthSpaJoinTenant('tenant with spaces');
+
+      expect(window.location.href).toContain('tenant=tenant%20with%20spaces');
+    });
+
+    it('should fall back to getTenant when no tenant key is provided', () => {
+      // localstorage mock resolves the `tenant` key to 'test-tenant'
+      redirectToAuthSpaJoinTenant();
+
+      expect(window.location.href).toContain('https://auth.example.com/join?tenant=test-tenant');
+    });
+
+    it('should fall back to redirectToAuthSpa when no tenant can be resolved', () => {
+      vi.mocked(getLocalStorageItem).mockReturnValue(null);
+
+      redirectToAuthSpaJoinTenant(undefined, '/some/path', true);
+
+      // No join redirect happened
+      expect(window.location.href).toBe('https://skills.example.com/dashboard');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledTimes(1);
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({ redirectTo: '/some/path', forceRedirect: true }),
       );
     });
   });
