@@ -10,7 +10,6 @@ import {
   getUserName,
   isRecommendedTabHidden,
   parseMarkdownLinks,
-  redirectToAuthSpa,
   redirectToAuthSpaJoinTenant,
 } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
