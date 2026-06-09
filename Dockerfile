@@ -7,8 +7,9 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Install Node 25.3.0 via n
 RUN npm install -g n && n 25.3.0 && hash -r
 
-# Enable Corepack and activate pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable Corepack and activate pnpm (pinned to the repo's packageManager for
+# reproducible, lockfile-compatible installs)
+RUN corepack enable && corepack prepare pnpm@10.11.1 --activate
 
 # Copy package manifests first (for layer caching)
 COPY package.json .
@@ -40,8 +41,11 @@ RUN apk add --no-cache libstdc++ \
     && wget -qO- https://unofficial-builds.nodejs.org/download/release/v25.3.0/node-v25.3.0-linux-x64-musl.tar.gz | tar xz -C /usr/local --strip-components=1 \
     && node --version
 
-# Enable Corepack and activate pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# No package manager needed at runtime — the app is started directly via the
+# `next` binary from node_modules (see CMD). This avoids corepack downloading
+# pnpm over the network in the runner stage, which fails consistently on this
+# unofficial musl Node build (undici terminates the registry TLS connection
+# mid-download).
 
 # Copy built app artifacts
 COPY --from=builder /app/.next .next
@@ -59,4 +63,4 @@ RUN chmod +x ./entrypoint.sh
 EXPOSE 5000
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["pnpm", "exec", "next", "start", "-p", "5000"]
+CMD ["./node_modules/.bin/next", "start", "-p", "5000"]
