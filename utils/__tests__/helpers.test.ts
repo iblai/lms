@@ -500,36 +500,33 @@ describe('helpers utility functions', () => {
   });
 
   describe('hasNonExpiredAuthToken', () => {
-    it('should return true when token is not defined', () => {
-      vi.mocked(getLocalStorageItem).mockReturnValue(null);
-      expect(hasNonExpiredAuthToken()).toBe(true);
+    it('should return false when token is not defined', () => {
+      localStorage.clear();
+      expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token expiry is not defined', () => {
-      vi.mocked(getLocalStorageItem).mockReturnValueOnce('valid-token').mockReturnValueOnce(null);
+      localStorage.setItem('axd_token', 'valid-token');
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false when token is expired', () => {
       const pastDate = new Date(Date.now() - 1000).toISOString();
-      vi.mocked(getLocalStorageItem)
-        .mockReturnValueOnce('valid-token')
-        .mockReturnValueOnce(pastDate);
+      localStorage.setItem('axd_token', 'valid-token');
+      localStorage.setItem('axd_token_expires', pastDate);
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token is not expired', () => {
       const futureDate = new Date(Date.now() + 1000 * 60 * 60).toISOString();
-      vi.mocked(getLocalStorageItem)
-        .mockReturnValueOnce('valid-token')
-        .mockReturnValueOnce(futureDate);
+      localStorage.setItem('axd_token', 'valid-token');
+      localStorage.setItem('axd_token_expires', futureDate);
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false for invalid date', () => {
-      vi.mocked(getLocalStorageItem)
-        .mockReturnValueOnce('valid-token')
-        .mockReturnValueOnce('invalid-date');
+      localStorage.setItem('axd_token', 'valid-token');
+      localStorage.setItem('axd_token_expires', 'invalid-date');
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
   });
