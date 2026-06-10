@@ -22,6 +22,8 @@ const {
 
 // Mutable state for per-test config control
 let mockEnableGravatarOnProfilePic = 'true';
+let mockDefaultSupportPhoneNumber = '(571) 293-0242';
+let mockTenantMetadata: { support_phone_number?: string } | undefined = undefined;
 
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
@@ -59,6 +61,7 @@ vi.mock('@/lib/config', () => ({
       enableRBAC: () => false,
       enableGravatarOnProfilePic: () => mockEnableGravatarOnProfilePic,
       mainPlatformKey: () => 'main',
+      defaultSupportPhoneNumber: () => mockDefaultSupportPhoneNumber,
     },
     urls: {
       auth: () => 'https://auth.example.com',
@@ -89,6 +92,7 @@ vi.mock('@/features/rbac', () => ({
 // Mock web-utils
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   Tenant: {},
+  useTenantMetadata: () => ({ metadata: mockTenantMetadata }),
 }));
 
 // Mock UserProfileDropdown
@@ -107,6 +111,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="enable-gravatar-on-profile-pic">
         {String(props.enableGravatarOnProfilePic)}
       </span>
+      <span data-testid="default-support-phone">{String(props.defaultSupportPhone)}</span>
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
@@ -143,6 +148,8 @@ describe('UserProfileButton', () => {
     vi.clearAllMocks();
     mockIsAdmin = true; // Reset to admin by default
     mockEnableGravatarOnProfilePic = 'true'; // Reset to gravatar enabled by default
+    mockDefaultSupportPhoneNumber = '(571) 293-0242'; // Reset to config default
+    mockTenantMetadata = undefined; // Reset to no tenant metadata
   });
 
   describe('rendering', () => {
@@ -306,6 +313,39 @@ describe('UserProfileButton', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('enable-gravatar-on-profile-pic')).toHaveTextContent('true');
+    });
+  });
+
+  describe('defaultSupportPhone', () => {
+    it('uses the tenant metadata support phone number when available', () => {
+      mockTenantMetadata = { support_phone_number: '(800) 555-0199' };
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(800) 555-0199');
+    });
+
+    it('falls back to the config default when metadata is unavailable', () => {
+      mockTenantMetadata = undefined;
+      mockDefaultSupportPhoneNumber = '(571) 293-0242';
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(571) 293-0242');
+    });
+
+    it('falls back to the config default when metadata has no support phone number', () => {
+      mockTenantMetadata = {};
+      mockDefaultSupportPhoneNumber = '(555) 123-4567';
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(555) 123-4567');
+    });
+
+    it('prefers the metadata phone number over the config default', () => {
+      mockTenantMetadata = { support_phone_number: '(111) 222-3333' };
+      mockDefaultSupportPhoneNumber = '(999) 888-7777';
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(111) 222-3333');
     });
   });
 });

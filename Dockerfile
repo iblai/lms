@@ -4,8 +4,10 @@ WORKDIR /app
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Install Node 25.3.0 via n
-RUN npm install -g n && n 25.3.0 && hash -r
+# Install Node 25.3.0 (download official binary; the `n` npm package was
+# replaced by a security-holding placeholder and no longer works)
+RUN wget -qO- https://nodejs.org/dist/v25.3.0/node-v25.3.0-linux-x64.tar.gz | tar xz -C /usr/local --strip-components=1 \
+    && node --version
 
 # Enable Corepack and activate pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
