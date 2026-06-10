@@ -33,6 +33,7 @@ const env = {
     process.env.NEXT_PUBLIC_ENABLE_AI_ANALYTICS_HEADER_MENU,
   NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU: process.env.NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU,
   NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT: process.env.NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT,
+  NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER: process.env.NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER,
 };
 
 const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
@@ -85,5 +86,7 @@ export const config = {
     studioHeaderMenuEnabled: () =>
       getEnv('NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU', 'true') !== 'false',
     staticCopyrightEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT', 'false') === 'true',
+    defaultSupportPhoneNumber: () =>
+      getEnv('NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER', '(571) 293-0242'),
   },
 };

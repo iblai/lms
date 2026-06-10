@@ -441,36 +441,42 @@ describe('helpers utility functions', () => {
   });
 
   describe('hasNonExpiredAuthToken', () => {
-    it('should return true when token is not defined', () => {
-      vi.mocked(getLocalStorageItem).mockReturnValue(null);
-      expect(hasNonExpiredAuthToken()).toBe(true);
+    // hasNonExpiredAuthToken reads directly from window.localStorage, using
+    // the SDK's LOCAL_STORAGE_KEYS ('axd_token' / 'axd_token_expires').
+    const AUTH_TOKEN_KEY = 'axd_token';
+    const TOKEN_EXPIRY_KEY = 'axd_token_expires';
+
+    it('should return false when token is not defined', () => {
+      window.localStorage.clear();
+      expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token expiry is not defined', () => {
-      vi.mocked(getLocalStorageItem).mockReturnValueOnce('valid-token').mockReturnValueOnce(null);
+      window.localStorage.clear();
+      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false when token is expired', () => {
+      window.localStorage.clear();
       const pastDate = new Date(Date.now() - 1000).toISOString();
-      vi.mocked(getLocalStorageItem)
-        .mockReturnValueOnce('valid-token')
-        .mockReturnValueOnce(pastDate);
+      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
+      window.localStorage.setItem(TOKEN_EXPIRY_KEY, pastDate);
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token is not expired', () => {
+      window.localStorage.clear();
       const futureDate = new Date(Date.now() + 1000 * 60 * 60).toISOString();
-      vi.mocked(getLocalStorageItem)
-        .mockReturnValueOnce('valid-token')
-        .mockReturnValueOnce(futureDate);
+      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
+      window.localStorage.setItem(TOKEN_EXPIRY_KEY, futureDate);
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false for invalid date', () => {
-      vi.mocked(getLocalStorageItem)
-        .mockReturnValueOnce('valid-token')
-        .mockReturnValueOnce('invalid-date');
+      window.localStorage.clear();
+      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
+      window.localStorage.setItem(TOKEN_EXPIRY_KEY, 'invalid-date');
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
   });
