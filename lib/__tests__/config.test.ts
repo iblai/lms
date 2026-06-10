@@ -459,6 +459,20 @@ describe('config module', () => {
       const { config } = await import('../config');
       expect(config.settings.staticCopyrightEnabled()).toBe(true);
     });
+
+    it('returns defaultSupportPhoneNumber with default when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER;
+
+      const { config } = await import('../config');
+      expect(config.settings.defaultSupportPhoneNumber()).toBe('(571) 293-0242');
+    });
+
+    it('returns defaultSupportPhoneNumber when configured', async () => {
+      processEnv.NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER = '(555) 123-4567';
+
+      const { config } = await import('../config');
+      expect(config.settings.defaultSupportPhoneNumber()).toBe('(555) 123-4567');
+    });
   });
 
   describe('config.urls (additional)', () => {

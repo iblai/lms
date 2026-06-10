@@ -511,6 +511,7 @@ describe('helpers utility functions', () => {
     });
 
     it('should return false when token is expired', () => {
+      window.localStorage.clear();
       const pastDate = new Date(Date.now() - 1000).toISOString();
       localStorage.setItem('axd_token', 'valid-token');
       localStorage.setItem('axd_token_expires', pastDate);
@@ -518,6 +519,7 @@ describe('helpers utility functions', () => {
     });
 
     it('should return true when token is not expired', () => {
+      window.localStorage.clear();
       const futureDate = new Date(Date.now() + 1000 * 60 * 60).toISOString();
       localStorage.setItem('axd_token', 'valid-token');
       localStorage.setItem('axd_token_expires', futureDate);

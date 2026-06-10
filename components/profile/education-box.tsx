@@ -70,7 +70,7 @@ export const EducationBox = () => {
                     : `${dayjs(_education.start_date).format('YYYY')} - ${
                         _education.end_date ? dayjs(_education.end_date).format('YYYY') : 'Present'
                       }`}
-                  | Grade: {_education.grade}
+                  {_education.grade && <span>| Grade: {_education.grade}</span>}
                 </div>
                 {_education.description && (
                   <p className="mt-2 text-gray-600">{_education.description}</p>
