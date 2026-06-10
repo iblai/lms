@@ -15,3 +15,4 @@ export const AuthGuard = ({ children, fallback }: AuthGuardProps) => {
 
   return children;
 };
+// smoke: verify vendored reusable workflows resolve (do not merge)
