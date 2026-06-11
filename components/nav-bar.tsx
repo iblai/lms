@@ -9,12 +9,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserName, isRecommendedTabHidden, parseMarkdownLinks } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
-import { isLoggedIn } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useMediaQuery } from 'react-responsive';
 import { WithPermissions } from '@/hoc';
 import { config } from '@/lib/config';
+import { isDiscoverEnabled } from '@/utils/discover-visibility';
 
 interface NavBarProps {
   sidebarOpen: boolean;
@@ -36,7 +37,13 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchVisible, setSearchVisible] = useState(false);
 
-  const hideDiscoverTab = config.settings.hideDiscoverTab();
+  const { metadata } = useTenantMetadata({ org: tenant });
+  // Discover (menu item + search bar) is gated by both the config flag and the
+  // tenant's `enable_discover_page` metadata; the config flag supersedes it.
+  const discoverEnabled = isDiscoverEnabled({
+    hideDiscoverTab: config.settings.hideDiscoverTab(),
+    enableDiscoverPage: metadata?.enable_discover_page,
+  });
   const aiAnalyticsHeaderMenuEnabled = config.settings.aiAnalyticsHeaderMenuEnabled();
   const studioHeaderMenuEnabled = config.settings.studioHeaderMenuEnabled();
   const additionalLeftHeaderMenuItems = parseMarkdownLinks(
@@ -123,7 +130,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                   Recommended
                 </Link>
               )}
-              {!hideDiscoverTab && (
+              {discoverEnabled && (
                 <Link
                   href={`/platform/${tenant}/discover`}
                   className={`text-sm font-medium ${
@@ -151,72 +158,74 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleFormSubmit();
-            }}
-          >
-            <>
-              {/* Updated Search Bar */}
-              {isDesktop && (
-                <div className="relative" style={{ width: 'clamp(12rem, 20vw, 16rem)' }}>
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-                    <Search className="h-4 w-4 text-[var(--text-light)]" />
+          {discoverEnabled && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleFormSubmit();
+              }}
+            >
+              <>
+                {/* Updated Search Bar */}
+                {isDesktop && (
+                  <div className="relative" style={{ width: 'clamp(12rem, 20vw, 16rem)' }}>
+                    <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                      <Search className="h-4 w-4 text-[var(--text-light)]" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              )}
+                )}
 
-              {/* Search Icon/Bar for tablet range (915px - 760px) and mobile (≤ 760px) */}
-              {(isTabletRange || isMobile) && (
-                <>
-                  {!searchVisible ? (
-                    <button
-                      onClick={() => setSearchVisible(!searchVisible)}
-                      className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
-                      aria-label="Open search"
-                    >
-                      <Search className="h-5 w-5" />
-                    </button>
-                  ) : (
-                    <div className="flex flex-1 items-center space-x-2">
-                      <div className="relative flex-1">
-                        <div
-                          onClick={() => handleFormSubmit()}
-                          className="pointer-events-none absolute inset-y-0 left-3 flex items-center"
-                        >
-                          <Search className="h-4 w-4 text-[var(--text-light)]" />
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="Search"
-                          className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                          autoFocus
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
+                {/* Search Icon/Bar for tablet range (915px - 760px) and mobile (≤ 760px) */}
+                {(isTabletRange || isMobile) && (
+                  <>
+                    {!searchVisible ? (
                       <button
                         onClick={() => setSearchVisible(!searchVisible)}
                         className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
-                        aria-label="Close search"
+                        aria-label="Open search"
                       >
-                        <X className="h-5 w-5" />
+                        <Search className="h-5 w-5" />
                       </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          </form>
+                    ) : (
+                      <div className="flex flex-1 items-center space-x-2">
+                        <div className="relative flex-1">
+                          <div
+                            onClick={() => handleFormSubmit()}
+                            className="pointer-events-none absolute inset-y-0 left-3 flex items-center"
+                          >
+                            <Search className="h-4 w-4 text-[var(--text-light)]" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Search"
+                            className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
+                            autoFocus
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                          />
+                        </div>
+                        <button
+                          onClick={() => setSearchVisible(!searchVisible)}
+                          className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
+                          aria-label="Close search"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            </form>
+          )}
 
           {/* AI Analytics Button */}
           {!(isTabletRange && searchVisible) &&

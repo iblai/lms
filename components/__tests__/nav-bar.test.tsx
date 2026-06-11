@@ -62,6 +62,7 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: vi.fn(() => true),
+  useTenantMetadata: vi.fn(() => ({ metadata: {}, isLoading: false, isError: false })),
 }));
 
 vi.mock('react-responsive', () => ({
@@ -76,6 +77,8 @@ vi.mock('@/hoc', () => ({
 }));
 
 import { NavBar } from '../nav-bar';
+import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { config } from '@/lib/config';
 
 describe('NavBar', () => {
   const defaultProps = {
@@ -86,6 +89,12 @@ describe('NavBar', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(false);
+    vi.mocked(useTenantMetadata).mockReturnValue({
+      metadata: {},
+      isLoading: false,
+      isError: false,
+    } as any);
   });
 
   it('renders without crashing', () => {
@@ -148,5 +157,45 @@ describe('NavBar', () => {
     const form = input.closest('form')!;
     fireEvent.submit(form);
     expect(mockPush).toHaveBeenCalled();
+  });
+
+  it('hides the Discover link and search bar when hideDiscoverTab is true', () => {
+    vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(true);
+    render(<NavBar {...defaultProps} />);
+    expect(screen.queryByText('Discover')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Search')).not.toBeInTheDocument();
+  });
+
+  it('hides the Discover link and search bar when enable_discover_page is false', () => {
+    vi.mocked(useTenantMetadata).mockReturnValue({
+      metadata: { enable_discover_page: false },
+      isLoading: false,
+      isError: false,
+    } as any);
+    render(<NavBar {...defaultProps} />);
+    expect(screen.queryByText('Discover')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Search')).not.toBeInTheDocument();
+  });
+
+  it('shows Discover when enable_discover_page is null/undefined (truthy default)', () => {
+    vi.mocked(useTenantMetadata).mockReturnValue({
+      metadata: { enable_discover_page: null },
+      isLoading: false,
+      isError: false,
+    } as any);
+    render(<NavBar {...defaultProps} />);
+    expect(screen.getByText('Discover')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
+  });
+
+  it('hideDiscoverTab supersedes enable_discover_page', () => {
+    vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(true);
+    vi.mocked(useTenantMetadata).mockReturnValue({
+      metadata: { enable_discover_page: true },
+      isLoading: false,
+      isError: false,
+    } as any);
+    render(<NavBar {...defaultProps} />);
+    expect(screen.queryByText('Discover')).not.toBeInTheDocument();
   });
 });

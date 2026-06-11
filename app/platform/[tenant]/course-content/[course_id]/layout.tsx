@@ -33,6 +33,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 import { config } from '@/lib/config';
 import { selectMentorSpinnerHidden } from '@/features/mentor';
+import {
+  canViewContentModeAudience,
+  isAgentContentModeOn,
+  isCourseContentModeOn,
+  WATCHER_RBAC_RESOURCE,
+} from '@/utils/course-content-mode';
+import { selectRbacPermissions } from '@/features/rbac';
+import { checkRbacPermission } from '@/hoc';
 
 export default function CourseContentLayout({
   children,
@@ -42,9 +50,20 @@ export default function CourseContentLayout({
   params: Promise<{ course_id: string }>;
 }) {
   const tenant = useTenantParam();
-  const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
+  const {
+    data: departmentMemberCheck,
+    isSuccess: departmentMemberCheckSuccess,
+    isError: departmentMemberCheckError,
+  } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
+  const isAdmin = departmentMemberCheck?.is_platform_admin === true;
+  const isAdminResolved = departmentMemberCheckSuccess || departmentMemberCheckError;
+  const rbacPermissions = useSelector(selectRbacPermissions);
+  const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
+  console.log('rbacPermissions', rbacPermissions);
+  console.log('isWatcher', isWatcher);
+  const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
   const searchParams = useSearchParams();
@@ -212,15 +231,23 @@ export default function CourseContentLayout({
     handleOpenLesson(lessonId, false, currentTab === 'agent' ? 'agent' : 'course');
   };
 
-  const agentTabVisible = !course || course.agent_content_mode === true;
+  const agentTabVisible =
+    !course ||
+    (isAgentContentModeOn(course) &&
+      canViewContentModeAudience(course.agent_content_mode_audience, contentModeViewer));
   const courseTabVisible =
-    !course || course.course_content_mode !== false || course.agent_content_mode === false;
+    !course ||
+    (isCourseContentModeOn(course) &&
+      canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
   return (
     <CourseAccessGuard
       course={course}
       courseInfoLoadingState={courseInfoLoadingState}
       currentTab={currentTab}
+      isAdmin={isAdmin}
+      isWatcher={isWatcher}
+      isAdminResolved={isAdminResolved}
     >
       <CourseOutlineContext.Provider
         value={{

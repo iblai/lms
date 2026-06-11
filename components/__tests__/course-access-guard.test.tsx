@@ -364,4 +364,210 @@ describe('CourseAccessGuard', () => {
       expect(screen.getByText('content')).toBeInTheDocument();
     });
   });
+
+  describe('content-mode audience access', () => {
+    it('redirects non-admin to /error/403 on agent tab when agent audience is admins-only', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['admins'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.queryByText('content')).not.toBeInTheDocument();
+    });
+
+    it('redirects non-admin to /error/403 (not sibling) even when course tab is accessible', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['admins'],
+              course_content_mode: true,
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('renders agent tab for admin when agent audience is admins-only', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['admins'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={true}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('redirects non-admin to /error/403 on course tab when course audience is admins-only', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              course_content_mode: true,
+              course_content_mode_audience: ['admins'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="course"
+          isAdmin={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('renders for non-admin when audience is empty (defaults to learners)', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: [],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('renders for non-admin when audience includes learners alongside admins', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['admins', 'learners'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+    });
+
+    it('renders watchers-only agent tab for a watcher and 403s a non-watcher', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      const { rerender } = render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['watchers'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+          isWatcher={true}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.getByText('content')).toBeInTheDocument();
+
+      rerender(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['watchers'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+          isWatcher={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+    });
+
+    it('waits (spinner) and does not redirect while the admin check is unresolved', () => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/agent';
+      render(
+        <CourseAccessGuard
+          course={
+            {
+              platform_key: 'test-tenant',
+              agent_content_mode: true,
+              agent_content_mode_audience: ['admins'],
+            } as any
+          }
+          courseInfoLoadingState="successful"
+          currentTab="agent"
+          isAdmin={false}
+          isAdminResolved={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.queryByText('content')).not.toBeInTheDocument();
+      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+  });
 });
