@@ -90,6 +90,8 @@ export interface CourseEdxData {
   agent_content_mode?: boolean | null;
   course_content_mode?: boolean | null;
   agent_autoplay?: boolean | null;
+  agent_content_mode_audience?: ('learners' | 'watchers' | 'admins')[];
+  course_content_mode_audience?: ('learners' | 'watchers' | 'admins')[];
 }
 
 export interface Course {

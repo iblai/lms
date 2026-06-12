@@ -20,14 +20,26 @@ vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  useTenantMetadata: vi.fn(() => ({ metadata: {}, isLoading: false, isError: false })),
+  isLoggedIn: vi.fn(() => true),
+}));
+
+vi.mock('@/lib/config', () => ({
+  config: {
+    settings: {
+      hideDiscoverTab: vi.fn(() => false),
+    },
+    urls: {
+      studioUrl: vi.fn(() => 'https://studio.example.com'),
+    },
+  },
+}));
+
 vi.mock('@/services/core', () => ({
   useGetDepartmentMemberCheckQuery: vi.fn(() => ({
     data: { is_platform_admin: false, is_department_admin: false },
   })),
-}));
-
-vi.mock('@iblai/iblai-js/web-utils', () => ({
-  isLoggedIn: vi.fn(() => true),
 }));
 
 vi.mock('../logo', () => ({
@@ -35,6 +47,8 @@ vi.mock('../logo', () => ({
 }));
 
 import { NavigationDrawer } from '../navigation-drawer';
+import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { config } from '@/lib/config';
 
 describe('NavigationDrawer', () => {
   const defaultProps = {
@@ -46,6 +60,12 @@ describe('NavigationDrawer', () => {
     vi.clearAllMocks();
     const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
     vi.mocked(isLoggedIn).mockReturnValue(true);
+    vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(false);
+    vi.mocked(useTenantMetadata).mockReturnValue({
+      metadata: {},
+      isLoading: false,
+      isError: false,
+    } as any);
   });
 
   it('renders without crashing when open', () => {
@@ -70,6 +90,22 @@ describe('NavigationDrawer', () => {
     expect(screen.queryByText('Recommended')).not.toBeInTheDocument();
     // Discover stays available to logged-out users
     expect(screen.getByText('Discover')).toBeInTheDocument();
+  });
+
+  it('hides Discover when hideDiscoverTab is true', () => {
+    vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(true);
+    render(<NavigationDrawer {...defaultProps} />);
+    expect(screen.queryByText('Discover')).not.toBeInTheDocument();
+  });
+
+  it('hides Discover when enable_discover_page is false', () => {
+    vi.mocked(useTenantMetadata).mockReturnValue({
+      metadata: { enable_discover_page: false },
+      isLoading: false,
+      isError: false,
+    } as any);
+    render(<NavigationDrawer {...defaultProps} />);
+    expect(screen.queryByText('Discover')).not.toBeInTheDocument();
   });
 
   it('does not render AI Analytics when user is not admin', () => {

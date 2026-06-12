@@ -188,16 +188,28 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => ({ metadata: mockTenantMetadata.current })),
 }));
 
-// Mock react-redux — layout calls useDispatch + useSelector(selectMentorSpinnerHidden)
+// Mock react-redux — layout calls useDispatch + useSelector(selectMentorSpinnerHidden | selectRbacPermissions)
 const mockDispatch = vi.fn();
 const mentorState = vi.hoisted(() => ({ spinnerHidden: false }));
+const rbacState = vi.hoisted(() => ({ rbacPermissions: {} as Record<string, unknown> }));
 vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
-  useSelector: (selector: (state: any) => any) => selector({ mentor: mentorState }),
+  useSelector: (selector: (state: any) => any) =>
+    selector({ mentor: mentorState, rbac: rbacState }),
 }));
 
 vi.mock('@/features/mentor', () => ({
   selectMentorSpinnerHidden: (state: any) => state.mentor.spinnerHidden,
+}));
+
+vi.mock('@/features/rbac', () => ({
+  selectRbacPermissions: (state: any) => state.rbac.rbacPermissions,
+}));
+
+// Mock checkRbacPermission — layout uses it to derive the watcher audience
+const mockCheckRbacPermission = vi.hoisted(() => vi.fn(() => false));
+vi.mock('@/hoc', () => ({
+  checkRbacPermission: mockCheckRbacPermission,
 }));
 
 // Mock config — layout reads studioUrl for the Authoring tab
@@ -233,6 +245,7 @@ describe('CourseContentLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
+    mockCheckRbacPermission.mockReturnValue(false);
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -415,6 +428,167 @@ describe('CourseContentLayout', () => {
     );
     expect(screen.queryByText('Agent')).not.toBeInTheDocument();
     expect(screen.getByText('Course')).toBeInTheDocument();
+  });
+
+  it('hides Agent tab for non-admin when agent_content_mode_audience is admins-only', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false },
+    } as any);
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+      course: {
+        agent_content_mode: true,
+        course_content_mode: true,
+        agent_content_mode_audience: ['admins'],
+      },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
+  });
+
+  it('shows Agent tab for admin when agent_content_mode_audience is admins-only', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: true },
+    } as any);
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+      course: {
+        agent_content_mode: true,
+        course_content_mode: true,
+        agent_content_mode_audience: ['admins'],
+      },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+  });
+
+  it('hides Course tab for non-admin when course_content_mode_audience is admins-only', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false },
+    } as any);
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+      course: {
+        agent_content_mode: true,
+        course_content_mode: true,
+        course_content_mode_audience: ['admins'],
+      },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Course')).not.toBeInTheDocument();
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+  });
+
+  it('hides Agent tab from a non-watcher when agent_content_mode_audience is watchers-only', () => {
+    mockCheckRbacPermission.mockReturnValue(false);
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false },
+    } as any);
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+      course: {
+        agent_content_mode: true,
+        course_content_mode: true,
+        agent_content_mode_audience: ['watchers'],
+      },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
+  });
+
+  it('shows Agent tab to a watcher (RBAC granted) when agent_content_mode_audience is watchers-only', () => {
+    mockCheckRbacPermission.mockReturnValue(true);
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false },
+    } as any);
+    vi.mocked(useCourseDetail).mockReturnValue({
+      handleFetchCourseInfo: mockHandleFetchCourseInfo,
+      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+      handleOpenLesson: mockHandleOpenLesson,
+      handleFetchCourseProgress: mockHandleFetchCourseProgress,
+      handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+      handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+      course: {
+        agent_content_mode: true,
+        course_content_mode: true,
+        agent_content_mode_audience: ['watchers'],
+      },
+      courseInfoLoadingState: 'successful',
+      courseOutline: null,
+      courseOutlineLoading: false,
+      courseCompletion: null,
+      courseGradingPolicyActive: false,
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(mockCheckRbacPermission).toHaveBeenCalledWith({}, '/watchedgroups/#list');
   });
 
   it('hides Instructor tab when user is not platform admin', () => {

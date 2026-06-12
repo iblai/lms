@@ -6,7 +6,9 @@ import { usePathname } from 'next/navigation';
 import { Logo } from './logo';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
+import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 
 interface NavigationDrawerProps {
@@ -20,6 +22,11 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   const isUserLoggedIn = isLoggedIn();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
+  });
+  const { metadata } = useTenantMetadata({ org: tenant });
+  const discoverEnabled = isDiscoverEnabled({
+    hideDiscoverTab: config.settings.hideDiscoverTab(),
+    enableDiscoverPage: metadata?.enable_discover_page,
   });
 
   const navigationItems = [
@@ -42,11 +49,15 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
           },
         ]
       : []),
-    {
-      name: 'Discover',
-      href: `/platform/${tenant}/discover`,
-      icon: Search,
-    },
+    ...(discoverEnabled
+      ? [
+          {
+            name: 'Discover',
+            href: `/platform/${tenant}/discover`,
+            icon: Search,
+          },
+        ]
+      : []),
     ...(((departmentMemberCheck?.is_platform_admin ||
       departmentMemberCheck?.is_department_admin) && [
       {
