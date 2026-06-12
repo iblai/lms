@@ -22,6 +22,7 @@ vi.mock('@/utils/helpers', () => ({
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => ({ metadata: {}, isLoading: false, isError: false })),
+  isLoggedIn: vi.fn(() => true),
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -39,10 +40,6 @@ vi.mock('@/services/core', () => ({
   useGetDepartmentMemberCheckQuery: vi.fn(() => ({
     data: { is_platform_admin: false, is_department_admin: false },
   })),
-}));
-
-vi.mock('@iblai/iblai-js/web-utils', () => ({
-  isLoggedIn: vi.fn(() => true),
 }));
 
 vi.mock('../logo', () => ({
