@@ -61,8 +61,6 @@ export default function CourseContentLayout({
   const isAdminResolved = departmentMemberCheckSuccess || departmentMemberCheckError;
   const rbacPermissions = useSelector(selectRbacPermissions);
   const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
-  console.log('rbacPermissions', rbacPermissions);
-  console.log('isWatcher', isWatcher);
   const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);

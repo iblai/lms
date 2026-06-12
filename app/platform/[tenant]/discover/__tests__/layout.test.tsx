@@ -6,6 +6,10 @@ vi.mock('@/components/self-linking-guard', () => ({
   SelfLinkingGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock('@/components/discover-access-guard', () => ({
+  DiscoverAccessGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 import DiscoverLayout from '../layout';
 
 describe('DiscoverLayout', () => {
