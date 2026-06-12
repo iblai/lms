@@ -261,6 +261,30 @@ export async function redirectToAuthSpa(
   });
 }
 
+export function redirectToAuthSpaJoinTenant(
+  tenantKey?: string,
+  redirectUrl?: string,
+  explicitUserAction = false,
+) {
+  const resolvedTenant = tenantKey || getTenant() || '';
+
+  if (!resolvedTenant) {
+    console.log('[auth-redirect] Missing tenant key for join', {
+      tenantKey,
+      redirectUrl,
+    });
+    redirectToAuthSpa(redirectUrl, undefined, undefined, true, explicitUserAction);
+    return;
+  }
+
+  const targetUrl = redirectUrl ?? window.location.href;
+  const joinUrl = `${config.urls.auth()}/join?tenant=${encodeURIComponent(resolvedTenant)}&redirect-to=${encodeURIComponent(
+    targetUrl,
+  )}`;
+
+  window.location.href = joinUrl;
+}
+
 export function hasNonExpiredAuthToken() {
   const token = window.localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
   if (!token) {

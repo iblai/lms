@@ -6,7 +6,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Logo } from './logo';
 import { UserProfileButton } from './header/profile/user-profile-button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getUserName, isRecommendedTabHidden, parseMarkdownLinks } from '@/utils/helpers';
+import {
+  getUserName,
+  isRecommendedTabHidden,
+  parseMarkdownLinks,
+  redirectToAuthSpaJoinTenant,
+} from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
 import { isLoggedIn } from '@iblai/iblai-js/web-utils';
@@ -91,37 +96,41 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           {/* Navigation Links */}
           {shouldShowNavLinks() && (
             <nav className="ml-8 hidden h-full items-center space-x-6 md:flex">
-              <Link
-                href={`/platform/${tenant}/home`}
-                className={`text-sm font-medium ${
-                  activePage === 'home'
-                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                    : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } flex h-full items-center`}
-              >
-                Home
-              </Link>
-              <Link
-                href={`/platform/${tenant}/profile`}
-                className={`text-sm font-medium ${
-                  activePage === 'profile'
-                    ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                    : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                } flex h-full items-center`}
-              >
-                Profile
-              </Link>
-              {!isRecommendedTabHidden() && (
-                <Link
-                  href={`/platform/${tenant}/recommended`}
-                  className={`text-sm font-medium ${
-                    activePage === 'recommended'
-                      ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                      : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                  } flex h-full items-center`}
-                >
-                  Recommended
-                </Link>
+              {isUserLoggedIn && (
+                <>
+                  <Link
+                    href={`/platform/${tenant}/home`}
+                    className={`text-sm font-medium ${
+                      activePage === 'home'
+                        ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                        : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                    } flex h-full items-center`}
+                  >
+                    Home
+                  </Link>
+                  <Link
+                    href={`/platform/${tenant}/profile`}
+                    className={`text-sm font-medium ${
+                      activePage === 'profile'
+                        ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                        : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                    } flex h-full items-center`}
+                  >
+                    Profile
+                  </Link>
+                  {!isRecommendedTabHidden() && (
+                    <Link
+                      href={`/platform/${tenant}/recommended`}
+                      className={`text-sm font-medium ${
+                        activePage === 'recommended'
+                          ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
+                          : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
+                      } flex h-full items-center`}
+                    >
+                      Recommended
+                    </Link>
+                  )}
+                </>
               )}
               {!hideDiscoverTab && (
                 <Link
@@ -257,6 +266,26 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
                 {menu.label}
               </Link>
             ))}
+          {/* Auth Buttons (logged out) */}
+          {!isUserLoggedIn && (
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => redirectToAuthSpaJoinTenant(tenant, undefined, true)}
+                className="rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium whitespace-nowrap text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => redirectToAuthSpaJoinTenant(tenant, undefined, true)}
+                className="rounded-sm border border-[var(--border)] bg-transparent px-4 py-2 text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
+
           {/* Notification Bell */}
           {isUserLoggedIn && (
             <NotificationDropdown
