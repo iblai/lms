@@ -64,6 +64,7 @@ import {
   isRecommendedTabHidden,
   getTimeAgo,
   redirectToAuthSpa,
+  redirectToAuthSpaJoinTenant,
   hasNonExpiredAuthToken,
   isInIframe,
   deleteCookie,
@@ -440,43 +441,94 @@ describe('helpers utility functions', () => {
     });
   });
 
-  describe('hasNonExpiredAuthToken', () => {
-    // hasNonExpiredAuthToken reads directly from window.localStorage, using
-    // the SDK's LOCAL_STORAGE_KEYS ('axd_token' / 'axd_token_expires').
-    const AUTH_TOKEN_KEY = 'axd_token';
-    const TOKEN_EXPIRY_KEY = 'axd_token_expires';
+  describe('redirectToAuthSpaJoinTenant', () => {
+    beforeEach(() => {
+      Object.defineProperty(window.location, 'href', {
+        get: () => locationHref,
+        set: (value: string) => {
+          locationHref = value;
+        },
+        configurable: true,
+      });
+      locationHref = 'https://skills.example.com/dashboard';
+    });
 
+    it('should redirect to the join URL using the provided tenant key', () => {
+      redirectToAuthSpaJoinTenant('my-tenant');
+
+      expect(window.location.href).toBe(
+        'https://auth.example.com/join?tenant=my-tenant&redirect-to=' +
+          encodeURIComponent('https://skills.example.com/dashboard'),
+      );
+      expect(sdkRedirectToAuthSpa).not.toHaveBeenCalled();
+    });
+
+    it('should use the provided redirect URL as redirect-to', () => {
+      redirectToAuthSpaJoinTenant('my-tenant', 'https://skills.example.com/courses');
+
+      expect(window.location.href).toBe(
+        'https://auth.example.com/join?tenant=my-tenant&redirect-to=' +
+          encodeURIComponent('https://skills.example.com/courses'),
+      );
+    });
+
+    it('should encode tenant keys with special characters', () => {
+      redirectToAuthSpaJoinTenant('tenant with spaces');
+
+      expect(window.location.href).toContain('tenant=tenant%20with%20spaces');
+    });
+
+    it('should fall back to getTenant when no tenant key is provided', () => {
+      // localstorage mock resolves the `tenant` key to 'test-tenant'
+      redirectToAuthSpaJoinTenant();
+
+      expect(window.location.href).toContain('https://auth.example.com/join?tenant=test-tenant');
+    });
+
+    it('should fall back to redirectToAuthSpa when no tenant can be resolved', () => {
+      vi.mocked(getLocalStorageItem).mockReturnValue(null);
+
+      redirectToAuthSpaJoinTenant(undefined, '/some/path', true);
+
+      // No join redirect happened
+      expect(window.location.href).toBe('https://skills.example.com/dashboard');
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledTimes(1);
+      expect(sdkRedirectToAuthSpa).toHaveBeenCalledWith(
+        expect.objectContaining({ redirectTo: '/some/path', forceRedirect: true }),
+      );
+    });
+  });
+
+  describe('hasNonExpiredAuthToken', () => {
     it('should return false when token is not defined', () => {
-      window.localStorage.clear();
+      localStorage.clear();
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token expiry is not defined', () => {
-      window.localStorage.clear();
-      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
+      localStorage.setItem('axd_token', 'valid-token');
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false when token is expired', () => {
       window.localStorage.clear();
       const pastDate = new Date(Date.now() - 1000).toISOString();
-      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
-      window.localStorage.setItem(TOKEN_EXPIRY_KEY, pastDate);
+      localStorage.setItem('axd_token', 'valid-token');
+      localStorage.setItem('axd_token_expires', pastDate);
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token is not expired', () => {
       window.localStorage.clear();
       const futureDate = new Date(Date.now() + 1000 * 60 * 60).toISOString();
-      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
-      window.localStorage.setItem(TOKEN_EXPIRY_KEY, futureDate);
+      localStorage.setItem('axd_token', 'valid-token');
+      localStorage.setItem('axd_token_expires', futureDate);
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false for invalid date', () => {
-      window.localStorage.clear();
-      window.localStorage.setItem(AUTH_TOKEN_KEY, 'valid-token');
-      window.localStorage.setItem(TOKEN_EXPIRY_KEY, 'invalid-date');
+      localStorage.setItem('axd_token', 'valid-token');
+      localStorage.setItem('axd_token_expires', 'invalid-date');
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
   });

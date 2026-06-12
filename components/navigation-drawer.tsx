@@ -9,6 +9,7 @@ import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface NavigationDrawerProps {
 export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   const pathname = usePathname();
   const tenant = useTenantParam();
+  const isUserLoggedIn = isLoggedIn();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
@@ -28,21 +30,25 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   });
 
   const navigationItems = [
-    {
-      name: 'Home',
-      href: `/platform/${tenant}/home`,
-      icon: Home,
-    },
-    {
-      name: 'Profile',
-      href: `/platform/${tenant}/profile`,
-      icon: User,
-    },
-    {
-      name: 'Recommended',
-      href: `/platform/${tenant}/recommended`,
-      icon: BookOpen,
-    },
+    ...(isUserLoggedIn
+      ? [
+          {
+            name: 'Home',
+            href: `/platform/${tenant}/home`,
+            icon: Home,
+          },
+          {
+            name: 'Profile',
+            href: `/platform/${tenant}/profile`,
+            icon: User,
+          },
+          {
+            name: 'Recommended',
+            href: `/platform/${tenant}/recommended`,
+            icon: BookOpen,
+          },
+        ]
+      : []),
     ...(discoverEnabled
       ? [
           {

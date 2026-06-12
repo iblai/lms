@@ -25,6 +25,8 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: vi.fn(() => 'test-user'),
   isRecommendedTabHidden: vi.fn(() => false),
   parseMarkdownLinks: vi.fn(() => []),
+  redirectToAuthSpa: vi.fn(),
+  redirectToAuthSpaJoinTenant: vi.fn(),
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -87,8 +89,10 @@ describe('NavBar', () => {
     onMenuClick: vi.fn(),
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+    vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(false);
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadata: {},
@@ -157,6 +161,54 @@ describe('NavBar', () => {
     const form = input.closest('form')!;
     fireEvent.submit(form);
     expect(mockPush).toHaveBeenCalled();
+  });
+
+  describe('when logged out', () => {
+    beforeEach(async () => {
+      const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+      vi.mocked(isLoggedIn).mockReturnValue(false);
+    });
+
+    it('renders Log In and Sign Up buttons', () => {
+      render(<NavBar {...defaultProps} />);
+      expect(screen.getByRole('button', { name: 'Log In' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Sign Up' })).toBeInTheDocument();
+    });
+
+    it('hides Home, Profile and Recommended links', () => {
+      render(<NavBar {...defaultProps} />);
+      expect(screen.queryByText('Home')).not.toBeInTheDocument();
+      expect(screen.queryByText('Profile')).not.toBeInTheDocument();
+      expect(screen.queryByText('Recommended')).not.toBeInTheDocument();
+      // Discover stays available to logged-out users
+      expect(screen.getByText('Discover')).toBeInTheDocument();
+    });
+
+    it('does not render notification dropdown or profile button', () => {
+      render(<NavBar {...defaultProps} />);
+      expect(screen.queryByTestId('notification-dropdown')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('user-profile-button')).not.toBeInTheDocument();
+    });
+
+    it('triggers the join-tenant redirect when Log In is clicked', async () => {
+      const { redirectToAuthSpaJoinTenant } = await import('@/utils/helpers');
+      render(<NavBar {...defaultProps} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Log In' }));
+      expect(redirectToAuthSpaJoinTenant).toHaveBeenCalledWith('test-tenant', undefined, true);
+    });
+
+    it('triggers the join-tenant redirect when Sign Up is clicked', async () => {
+      const { redirectToAuthSpaJoinTenant } = await import('@/utils/helpers');
+      render(<NavBar {...defaultProps} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+      expect(redirectToAuthSpaJoinTenant).toHaveBeenCalledWith('test-tenant', undefined, true);
+    });
+  });
+
+  it('does not render Log In / Sign Up buttons when logged in', () => {
+    render(<NavBar {...defaultProps} />);
+    expect(screen.queryByRole('button', { name: 'Log In' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sign Up' })).not.toBeInTheDocument();
   });
 
   it('hides the Discover link and search bar when hideDiscoverTab is true', () => {
