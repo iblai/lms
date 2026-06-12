@@ -8,7 +8,12 @@ import { PlatformSlice } from '@/services/platform';
 import { CourseMetadataSlice } from '@/services/course-metadata';
 import { CatalogSlice } from '@/services/catalog';
 // @ts-ignore
-import { skillsMiddleware, skillsReducer, authApiSlice } from '@iblai/iblai-js/data-layer';
+import {
+  skillsMiddleware,
+  skillsReducer,
+  authApiSlice,
+  auditLogsApiSlice,
+} from '@iblai/iblai-js/data-layer';
 // @ts-ignore
 import { monetizationSlice } from '@iblai/iblai-js/web-utils';
 import { CareerSlice } from '@/services/career';
@@ -39,6 +44,7 @@ export const store = configureStore({
     [StudioSlice.reducerPath]: StudioSlice.reducer,
     monetization: monetizationSlice.reducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
+    [auditLogsApiSlice.reducerPath]: auditLogsApiSlice.reducer,
     ...skillsReducer,
   },
   middleware: (getDefaultMiddleware) => {
@@ -57,6 +63,7 @@ export const store = configureStore({
       CoreSlice.middleware,
       StudioSlice.middleware,
       authApiSlice.middleware,
+      auditLogsApiSlice.middleware,
       ...skillsMiddleware,
     ];
     return getDefaultMiddleware().concat(additionalMiddleware);
