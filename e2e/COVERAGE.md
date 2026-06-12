@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-06-02 | 237 checkpoints | 31 journeys | 100% covered
+> Last updated: 2026-06-12 | 225 checkpoints | 32 journeys | 100% covered
 
 ## How This Works
 
@@ -452,6 +452,16 @@ When adding a new page or modifying an existing user flow:
 - [x] Clicking a course card on the program page navigates to `/courses/[course_id]`
 - [x] CTA button shows "Enroll Now" or "Purchase Now" for non-enrolled or paywalled users _(state-dependent)_
 - [x] Direct navigation to `/programs/[program_id]` renders the page
+
+---
+
+## Journey 33: Analytics Audit (3 checkpoints) — `journeys/33-analytics-audit.spec.ts`
+
+**Source files:** `app/analytics/audit/page.tsx`, `app/platform/[tenant]/analytics/audit/page.tsx`
+
+- [x] Audit tab routes to /analytics/audit and the audit log view renders _(admin only)_
+- [x] Audit log filters (user search, action filter) are visible
+- [x] Audit log table (USER/ACTION/TIME) or empty state is visible
 
 ---
 
