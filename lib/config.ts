@@ -87,6 +87,6 @@ export const config = {
       getEnv('NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU', 'true') !== 'false',
     staticCopyrightEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT', 'false') === 'true',
     defaultSupportPhoneNumber: () =>
-      getEnv('NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER', '(571) 293-0242'),
+      getEnv('NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER', '(571) 293-0242') || '(571) 293-0242',
   },
 };
