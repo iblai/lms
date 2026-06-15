@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.40.0](https://github.com/iblai/lms/compare/skills-v0.39.1...skills-v0.40.0) (2026-06-15)
+
+### Features
+
+* course metadata content mode target implementation on progress ([1086db3](https://github.com/iblai/lms/commit/1086db3eecb73c3eecd659b04e23734c5951c44d))
+* course metadata content mode target implementation on progress ([1048037](https://github.com/iblai/lms/commit/1048037c7408d3928605cc664179cf8df855f796))
+* course metadata content mode target implementation on progress > test coverage ([6c6e6eb](https://github.com/iblai/lms/commit/6c6e6ebb95a0c5d89174128a7238c44fee7bd00a))
+* course metadata content mode target implementation on progress > test coverage ([d058264](https://github.com/iblai/lms/commit/d058264eba780591a6644016fd6ee937ca03f4eb))
+* default sidebar agent load logic should use same as agentai ([46dd56c](https://github.com/iblai/lms/commit/46dd56ca0c454a89cf99bac930823b1cce87739e))
+* default sidebar agent load logic should use same as agentai > test coverage ([0d577f4](https://github.com/iblai/lms/commit/0d577f48c4b46901c2000b5c2f6f66ddedc659b2))
+* dockerfile reverted ([5139c58](https://github.com/iblai/lms/commit/5139c58cff440842d01567278c41f00d6d33af6f))
+* dockerfile updated ([42cdfc8](https://github.com/iblai/lms/commit/42cdfc8011c69065da8ed8ea3f97ac1069c73e73))
+* hide home, discover, recommended pages when not logged in ([a5d4989](https://github.com/iblai/lms/commit/a5d4989f6ba6075ea8e5790e9822606c8f4fd287))
+* login and signup buttons on public catalog in ([93936dc](https://github.com/iblai/lms/commit/93936dc77f341273f90cad8451e40c658aab2f03))
+* login and signup buttons on public catalog in ([e0ce38a](https://github.com/iblai/lms/commit/e0ce38a91fa9090a7964c4fd839a286dfb11205a))
+* login and signup buttons on public catalog in > test coverage ([51e613b](https://github.com/iblai/lms/commit/51e613be00894c761e500b0171e67bdf8bf872f1))
+* login and signup buttons on public catalog in > test coverage ([787a4a6](https://github.com/iblai/lms/commit/787a4a6f30546d0219037a2a700fc39ed1966065))
+* support phone implementation ([07297df](https://github.com/iblai/lms/commit/07297df5b8afae8d4bcabfe4d2137f0b736a5ae7))
+* support phone implementation > test coverage ([df28859](https://github.com/iblai/lms/commit/df2885913321e9eb3bf214f769763be241e78b9c))
+* support phone implementation > test coverage ([f3ddc99](https://github.com/iblai/lms/commit/f3ddc99944a4ad588fe6ebdcd65ae80586fcb4ba))
+
+### Bug Fixes
+
+* added pnpm-workspace.yaml to copy step on dockerfile ([171147a](https://github.com/iblai/lms/commit/171147acbfef0ad313a13856f18af5a6cfdb8300))
+* failing playwright test fixed ([a370755](https://github.com/iblai/lms/commit/a370755c1623ebb3d6fbac2ea484b0cf1fece2c8))
+* grade info shouldn't appear on education info when not set ([5c9d12e](https://github.com/iblai/lms/commit/5c9d12e48033bf3790bb6dfbd320a532752d6ea9))
+* grade info shouldn't appear on education info when not set > test coverage ([1caf763](https://github.com/iblai/lms/commit/1caf7630236431999cce918f27c10b0f16bc1454))
+* **skills:** audit page for analytics ([af2278f](https://github.com/iblai/lms/commit/af2278f3cc0071eb5874be13206f57184b05db93))
+
+### CI
+
+* vendor iblai-web-ops reusable workflows to restore PR E2E and release builds ([868e391](https://github.com/iblai/lms/commit/868e39173097a600a9c56e7d386d8977ae6c1b94)), closes [#240](https://github.com/iblai/lms/issues/240)
+
 ## [0.39.2](https://github.com/iblai/lms/compare/skills-v0.39.1...skills-v0.39.2) (2026-06-09)
 
 ### Chores
