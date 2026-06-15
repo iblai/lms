@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-06-02",
+  "lastUpdated": "2026-06-12",
   "summary": {
-    "totalCheckpoints": 222,
-    "coveredCheckpoints": 222,
+    "totalCheckpoints": 225,
+    "coveredCheckpoints": 225,
     "percent": 100,
-    "totalJourneys": 31
+    "totalJourneys": 32
   },
   "journeys": [
     {
@@ -36,7 +36,12 @@
       "id": "onboarding-first-time-user",
       "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
-      "sourceFiles": ["app/start/page.tsx", "app/home/page.tsx", "app/platform/[tenant]/start/page.tsx", "app/platform/[tenant]/home/page.tsx"],
+      "sourceFiles": [
+        "app/start/page.tsx",
+        "app/home/page.tsx",
+        "app/platform/[tenant]/start/page.tsx",
+        "app/platform/[tenant]/home/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "onb-01",
@@ -123,7 +128,11 @@
       "id": "course-about-and-configuration",
       "name": "Course About & Configuration",
       "spec": "04-course-about-and-configuration.spec.ts",
-      "sourceFiles": ["app/courses/[course_id]/page.tsx", "app/platform/[tenant]/courses/[course_id]/page.tsx", "components/course-access-guard.tsx"],
+      "sourceFiles": [
+        "app/courses/[course_id]/page.tsx",
+        "app/platform/[tenant]/courses/[course_id]/page.tsx",
+        "components/course-access-guard.tsx"
+      ],
       "checkpoints": [
         {
           "id": "course-01",
@@ -1169,6 +1178,32 @@
         {
           "id": "pdp-10",
           "description": "Direct navigation to /programs/[id] renders the page",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "analytics-audit",
+      "name": "Analytics Audit",
+      "spec": "33-analytics-audit.spec.ts",
+      "sourceFiles": [
+        "app/analytics/audit/page.tsx",
+        "app/platform/[tenant]/analytics/audit/page.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "aud-01",
+          "description": "Audit tab routes to /analytics/audit and the audit log view renders",
+          "status": "covered"
+        },
+        {
+          "id": "aud-02",
+          "description": "Audit log filters (user search, action filter) are visible",
+          "status": "covered"
+        },
+        {
+          "id": "aud-03",
+          "description": "Audit log table (USER/ACTION/TIME) or empty state is visible",
           "status": "covered"
         }
       ]

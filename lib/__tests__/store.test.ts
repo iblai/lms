@@ -123,6 +123,11 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
     reducer: (state = {}) => state,
     middleware: createMockMiddleware(),
   },
+  auditLogsApiSlice: {
+    reducerPath: 'auditLogsApiSlice',
+    reducer: (state = {}) => state,
+    middleware: createMockMiddleware(),
+  },
 }));
 
 describe('store', () => {
@@ -158,6 +163,7 @@ describe('store', () => {
     expect(state).toHaveProperty('CoreSlice');
     expect(state).toHaveProperty('rbacSlice');
     expect(state).toHaveProperty('StudioSlice');
+    expect(state).toHaveProperty('auditLogsApiSlice');
   });
 
   it('includes skillsReducer from data-layer', async () => {
