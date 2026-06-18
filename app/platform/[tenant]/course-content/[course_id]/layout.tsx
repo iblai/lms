@@ -14,7 +14,7 @@ import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context'
 import { getUserId, getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
-import { CourseOutline } from '@/components/course-outline';
+import { CourseOutlineSidebar } from '@/components/course-outline-sidebar';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
@@ -286,17 +286,8 @@ export default function CourseContentLayout({
           }}
         >
           <main className="flex flex-1 overflow-hidden">
-            {/* Course sidebar */}
-            <div
-              className="hidden w-72 overflow-y-auto border-r border-gray-200 pl-4 md:block"
-              style={{ scrollbarWidth: 'none', height: 'calc(100% - 60px)' }}
-            >
-              <div className="border-b border-gray-200 p-4">
-                <h2 className="font-semibold text-gray-800">{course?.display_name}</h2>
-              </div>
-
-              <CourseOutline />
-            </div>
+            {/* Course sidebar (collapsible on tablet / small screens) */}
+            <CourseOutlineSidebar />
 
             {/* Main content area */}
             <div className="flex flex-1 flex-col overflow-hidden">
@@ -518,7 +509,7 @@ export default function CourseContentLayout({
                 <div className="flex items-center bg-gray-50 px-4 py-2">
                   <button
                     onClick={() => setCourseOutlineDrawerOpen(true)} // Open the new course outline drawer
-                    className="mr-2 -ml-2 p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset xl:hidden" // Updated here
+                    className="mr-2 -ml-2 p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:hidden" // Mobile only; tablet/laptop use the inline collapsible sidebar
                     aria-label="Open course outline"
                   >
                     <ListTree className="h-5 w-5" /> {/* Changed icon to ListTree */}
