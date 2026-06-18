@@ -128,6 +128,13 @@ vi.mock('@/components/course-outline', () => ({
   CourseOutline: () => <div data-testid="course-outline">CourseOutline</div>,
 }));
 
+// Mock CourseOutlineSidebar — the collapsible-sidebar internals (rail, hint
+// popover, media queries) are exercised in its own test; here we only need to
+// confirm the layout mounts it.
+vi.mock('@/components/course-outline-sidebar', () => ({
+  CourseOutlineSidebar: () => <div data-testid="course-outline-sidebar">CourseOutlineSidebar</div>,
+}));
+
 // Mock CourseOutlineDrawer
 vi.mock('@/components/course-outline-drawer', () => ({
   CourseOutlineDrawer: () => <div data-testid="course-outline-drawer">CourseOutlineDrawer</div>,
@@ -284,13 +291,13 @@ describe('CourseContentLayout', () => {
     expect(screen.getByTestId('course-outline-drawer')).toBeInTheDocument();
   });
 
-  it('renders CourseOutline in sidebar', () => {
+  it('renders CourseOutlineSidebar', () => {
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByTestId('course-outline')).toBeInTheDocument();
+    expect(screen.getByTestId('course-outline-sidebar')).toBeInTheDocument();
   });
 
   it('renders course navigation tabs (Agent, Course, Progress, Dates, Discussion)', () => {

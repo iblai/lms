@@ -81,7 +81,7 @@ test.describe('Journey 33: Analytics Audit', () => {
     }
 
     logger.info('CP-2: checking user search and action filters');
-    const userSearch = page.getByRole('button', { name: 'Search for User' });
+    const userSearch = page.getByRole('combobox', { name: 'Search for User' });
     const actionFilter = page.getByText('All Actions');
 
     const hasUserSearch = await userSearch.isVisible({ timeout: 120_000 }).catch(() => false);
