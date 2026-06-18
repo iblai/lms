@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.41.0](https://github.com/iblai/lms/compare/skills-v0.40.1...skills-v0.41.0) (2026-06-18)
+
+### Features
+
+* outline collapsible on tablet and small pc screens ([c906903](https://github.com/iblai/lms/commit/c906903a53896ce61324df443e1d2ae7072f3b7d))
+* outline should appear uncollapse and no longer have the tooltips ([bcbfe79](https://github.com/iblai/lms/commit/bcbfe79a165b3604917809f08600303ce4605a9f))
+
+### Bug Fixes
+
+* **ci:** pin coverage-bot to claude-sonnet-4-6 ([e0d284a](https://github.com/iblai/lms/commit/e0d284a519dea30d849bd0dfd9d6d8a962ac3ee5))
+* failing audit playwright test fixed ([596d504](https://github.com/iblai/lms/commit/596d50470d8cf70fb7a57e1d300b2ab55429f0ee))
+
+### CI
+
+* add .dockerignore to keep docs/agent/VCS files out of the build ([1e51b69](https://github.com/iblai/lms/commit/1e51b699e210e787e2773c201589c02fa25bfee8))
+
 ## [0.40.1](https://github.com/iblai/lms/compare/skills-v0.40.0...skills-v0.40.1) (2026-06-15)
 
 ### Chores
