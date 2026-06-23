@@ -1,5 +1,6 @@
 import { Footer } from '@/components/footer';
 import { NavBar } from '@/components/nav-bar';
+import { AppSidebar } from '@/components/app-sidebar';
 import { isNonAuthPathname } from '@/constants/global';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -85,7 +86,8 @@ export default function AppLayout({ children }: { children: any }) {
         </div>
         <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && <MonetizationWrapper />}
-        <div className="flex h-full flex-col items-start md:flex-row">
+        <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
+          {userIsLoggedIn && <AppSidebar />}
           <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
             {children}
             <Footer />
