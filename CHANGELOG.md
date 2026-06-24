@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.42.0](https://github.com/iblai/lms/compare/skills-v0.41.0...skills-v0.42.0) (2026-06-24)
+
+### Features
+
+* **android:** add SSO deep-link support and align Android package id ([7fc7c7a](https://github.com/iblai/lms/commit/7fc7c7afe786cc160e72e3ad01088d8502deef4f))
+
 ## [0.41.0](https://github.com/iblai/lms/compare/skills-v0.40.1...skills-v0.41.0) (2026-06-18)
 
 ### Features
