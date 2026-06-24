@@ -65,3 +65,11 @@ e2e/playwright/.auth
 
 # tauri builds
 *.pkg
+*.aab
+*.apk
+*.apk.idsig
+
+# android signing
+*.jks
+*.keystore
+key.properties
