@@ -55,7 +55,7 @@ export const CourseOutlineSidebar = () => {
       {/* Collapsed rail — md (768px) and up, while collapsed */}
       <div
         className={`${railClass} w-12 flex-shrink-0 flex-col items-center border-r border-gray-200 pt-2`}
-        style={{ height: 'calc(100% - 60px)' }}
+        //style={{ height: 'calc(100% - 60px)' }}
         data-testid="course-outline-rail"
       >
         <button
@@ -73,7 +73,7 @@ export const CourseOutlineSidebar = () => {
       {/* Expanded outline — full sidebar */}
       <div
         className={`${fullClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200 pl-4`}
-        style={{ scrollbarWidth: 'none', height: 'calc(100% - 60px)' }}
+        style={{ scrollbarWidth: 'none' }}
         data-testid="course-outline-sidebar"
       >
         <div className="flex items-center justify-between border-b border-gray-200 p-4">
