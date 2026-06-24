@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.42.1](https://github.com/iblai/lms/compare/skills-v0.42.0...skills-v0.42.1) (2026-06-24)
+
+### Bug Fixes
+
+* ai analytics buttons now visible to view analytics & watcher rbac permissions ([db098cc](https://github.com/iblai/lms/commit/db098cc1e549351da9c342e2b4c33c217e670d9d))
+* ai analytics buttons now visible to view analytics & watcher rbac permissions > test coverage ([f708160](https://github.com/iblai/lms/commit/f708160a16a42fed398314d560be1db97305e571))
+* analytics layout height update restructuring ([ed6c4b1](https://github.com/iblai/lms/commit/ed6c4b17d0be99aec2da6ca038354d93667638ce))
+* analytics layout height update restructuring ([5271a47](https://github.com/iblai/lms/commit/5271a47cac0e72cf75496f576ddc1072a73bd992))
+* analytics layout height update restructuring > test coverage ([15f849b](https://github.com/iblai/lms/commit/15f849bd158353b2d976d14ec9225977bcbe1f5c))
+
+### Chores
+
+* bumped iblai-js version to 1.20.10 ([ed80f53](https://github.com/iblai/lms/commit/ed80f53e26ed4e1bf2243c18cd0359d8de4aaf7d))
+
 ## [0.42.0](https://github.com/iblai/lms/compare/skills-v0.41.0...skills-v0.42.0) (2026-06-24)
 
 ### Features
