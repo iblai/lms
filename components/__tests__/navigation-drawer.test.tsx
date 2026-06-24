@@ -42,6 +42,25 @@ vi.mock('@/services/core', () => ({
   })),
 }));
 
+// Controllable RBAC mock. The drawer derives both `isWatcher`
+// (`/watchedgroups/#list`) and `canViewAnalytics`
+// (`/platforms/<tenant>/#can_view_analytics`) via checkRbacPermission.
+const mockCheckRbacPermission = vi.hoisted(() =>
+  vi.fn((_perms: object, _resource: string): boolean => false),
+);
+
+vi.mock('@/hoc', () => ({
+  checkRbacPermission: mockCheckRbacPermission,
+}));
+
+vi.mock('@/lib/hooks', () => ({
+  useAppSelector: vi.fn(() => ({})),
+}));
+
+vi.mock('@/features/rbac', () => ({
+  selectRbacPermissions: vi.fn(() => ({})),
+}));
+
 vi.mock('../logo', () => ({
   Logo: () => <div data-testid="logo">Logo</div>,
 }));
@@ -58,6 +77,7 @@ describe('NavigationDrawer', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockCheckRbacPermission.mockReturnValue(false);
     const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
     vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(false);
@@ -108,27 +128,36 @@ describe('NavigationDrawer', () => {
     expect(screen.queryByText('Discover')).not.toBeInTheDocument();
   });
 
-  it('does not render AI Analytics when user is not admin', () => {
+  it('does not render AI Analytics when user lacks can_view_analytics and is not a watcher', () => {
+    mockCheckRbacPermission.mockReturnValue(false);
     render(<NavigationDrawer {...defaultProps} />);
     expect(screen.queryByText('AI Analytics')).not.toBeInTheDocument();
   });
 
-  it('renders AI Analytics when user is platform admin', async () => {
-    const { useGetDepartmentMemberCheckQuery } = await import('@/services/core');
-    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-      data: { is_platform_admin: true, is_department_admin: false },
-    } as any);
+  it('renders AI Analytics when user has the can_view_analytics permission', () => {
+    mockCheckRbacPermission.mockImplementation((_perms: object, resource: string) =>
+      resource.includes('can_view_analytics'),
+    );
     render(<NavigationDrawer {...defaultProps} />);
     expect(screen.getByText('AI Analytics')).toBeInTheDocument();
   });
 
-  it('renders AI Analytics when user is department admin', async () => {
-    const { useGetDepartmentMemberCheckQuery } = await import('@/services/core');
-    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-      data: { is_platform_admin: false, is_department_admin: true },
-    } as any);
+  it('renders AI Analytics when user has the watcher (watchedgroup) permission', () => {
+    mockCheckRbacPermission.mockImplementation(
+      (_perms: object, resource: string) => resource === '/watchedgroups/#list',
+    );
     render(<NavigationDrawer {...defaultProps} />);
     expect(screen.getByText('AI Analytics')).toBeInTheDocument();
+  });
+
+  it('does not render AI Analytics for an admin lacking can_view_analytics and watcher permission', async () => {
+    const { useGetDepartmentMemberCheckQuery } = await import('@/services/core');
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: true, is_department_admin: true },
+    } as any);
+    mockCheckRbacPermission.mockReturnValue(false);
+    render(<NavigationDrawer {...defaultProps} />);
+    expect(screen.queryByText('AI Analytics')).not.toBeInTheDocument();
   });
 
   it('shows backdrop when open', () => {
