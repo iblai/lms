@@ -10,6 +10,10 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { isLoggedIn } from '@iblai/iblai-js/web-utils';
+import { useAppSelector } from '@/lib/hooks';
+import { selectRbacPermissions } from '@/features/rbac';
+import { checkRbacPermission } from '@/hoc';
+import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -28,6 +32,12 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
     hideDiscoverTab: config.settings.hideDiscoverTab(),
     enableDiscoverPage: metadata?.enable_discover_page,
   });
+  const rbacPermissions = useAppSelector(selectRbacPermissions);
+  const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
+  const canViewAnalytics = checkRbacPermission(
+    rbacPermissions,
+    `/platforms/${tenant}/#can_view_analytics`,
+  );
 
   const navigationItems = [
     ...(isUserLoggedIn
@@ -58,8 +68,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
           },
         ]
       : []),
-    ...(((departmentMemberCheck?.is_platform_admin ||
-      departmentMemberCheck?.is_department_admin) && [
+    ...(((canViewAnalytics || isWatcher) && [
       {
         name: 'AI Analytics',
         href: `/platform/${tenant}/analytics`,
