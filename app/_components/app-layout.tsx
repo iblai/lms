@@ -76,34 +76,41 @@ export default function AppLayout({ children }: { children: any }) {
   return (
     <DefaultPageLayout>
       <div className="flex h-screen flex-col overflow-hidden bg-white">
-        {/* Make the NavBar sticky at the top */}
-        <div className="sticky top-0 z-40 w-full">
-          <NavBar
-            sidebarOpen={sidebarOpen}
-            activePage={activePage}
-            onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-          />
-        </div>
-        <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && <MonetizationWrapper />}
-        <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
+        {/* Main part: left sidebar + inner main content (navbar lives inside) */}
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           {userIsLoggedIn && <AppSidebar />}
-          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
-            {children}
-            <Footer />
-          </div>
-          {config.settings.mentorEnabled() &&
-            userIsLoggedIn &&
-            metadataLoaded &&
-            isMentorAIEnabled() &&
-            !isUserMetadataLoading &&
-            userMetadata?.enable_sidebar_ai_mentor_display !== false &&
-            !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
-              <div className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}>
-                <ChatButton isMobile={isMobile} />
-              </div>
+          <div className="flex min-h-0 w-full flex-1 flex-col">
+            <div className="z-40 w-full shrink-0">
+              <NavBar
+                sidebarOpen={sidebarOpen}
+                activePage={activePage}
+                onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+              />
+            </div>
+            <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && (
+              <MonetizationWrapper />
             )}
+            <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
+              <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
+                {children}
+              </div>
+              {config.settings.mentorEnabled() &&
+                userIsLoggedIn &&
+                metadataLoaded &&
+                isMentorAIEnabled() &&
+                !isUserMetadataLoading &&
+                userMetadata?.enable_sidebar_ai_mentor_display !== false &&
+                !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
+                  <div className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}>
+                    <ChatButton isMobile={isMobile} />
+                  </div>
+                )}
+            </div>
+          </div>
         </div>
+        {/* Footer: bottom section (fixed full-width bar) */}
+        <Footer />
       </div>
     </DefaultPageLayout>
   );

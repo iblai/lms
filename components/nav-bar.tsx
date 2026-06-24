@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Menu, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Logo } from './logo';
 import { UserProfileButton } from './header/profile/user-profile-button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -96,9 +95,6 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           >
             <Menu className="h-6 w-6" />
           </button>
-
-          {/* Replace direct Image with Logo component */}
-          <Logo variant="small" />
 
           {/* Navigation Links */}
           {shouldShowNavLinks() && (

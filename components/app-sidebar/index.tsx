@@ -9,18 +9,13 @@ import {
   ChevronRight,
   CircleUser,
   Coins,
-  Folder,
-  Globe2,
   KeyRound,
   Library,
   LineChart,
   Loader2,
   Mail,
-  MessageSquare,
   Settings,
-  SquarePen,
   Users,
-  Workflow,
 } from 'lucide-react';
 import {
   Admin,
@@ -30,10 +25,11 @@ import {
   InviteUserDialog,
   MonetizationTab,
 } from '@iblai/iblai-js/web-containers';
-import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, Tenant } from '@iblai/iblai-js/web-utils';
 
 import { cn } from '@/lib/utils';
 import { config } from '@/lib/config';
+import { Logo } from '@/components/logo';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -43,7 +39,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useChatState } from '@/components/chat-button';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useAppSelector } from '@/lib/hooks';
@@ -55,7 +50,6 @@ import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstor
 const NAV_MUTED = '#5f5f61';
 const FLYOUT_TITLE_COLOR = '#646676';
 const FLYOUT_ITEM_COLOR = '#1f1f20';
-const NAV_DISABLED_COLOR = '#a0a0a5';
 const NAV_ACTIVE_BG_OPEN =
   'data-[state=open]:bg-[#cfe8fa]/40 data-[state=open]:hover:bg-[#cfe8fa]/50';
 const SIDEBAR_COOKIE = 'skills-sidebar:state';
@@ -69,9 +63,8 @@ type NavIcon = React.ComponentType<{
 type NavMenuItem = {
   id: string;
   label: string;
-  href?: string;
+  href: string;
   exact?: boolean;
-  disabled?: boolean;
 };
 
 type NavMenuConfig = {
@@ -112,20 +105,10 @@ function SidebarCollapsedLabelFlyout({
   );
 }
 
-function SidebarNavDivider({ collapsed }: { collapsed: boolean }) {
-  return (
-    <div
-      role="separator"
-      aria-hidden
-      className={cn('h-px shrink-0 bg-[#e9e9ea]', collapsed ? 'my-1.5 w-6' : 'my-2 w-full')}
-    />
-  );
-}
-
-function useActivePath(href: string | undefined, exact?: boolean) {
+function useActivePath(href: string, exact?: boolean) {
   const pathname = usePathname();
   return React.useMemo(() => {
-    if (!pathname || !href) return false;
+    if (!pathname) return false;
     const target = href.split('?')[0];
     const normalizedHref = target.endsWith('/') ? target.slice(0, -1) : target;
     const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
@@ -134,18 +117,10 @@ function useActivePath(href: string | undefined, exact?: boolean) {
   }, [href, pathname, exact]);
 }
 
-function CollapsibleSubNavItem({ label, href, exact, disabled }: NavMenuItem) {
+function CollapsibleSubNavItem({ label, href, exact }: NavMenuItem) {
   const router = useRouter();
-  const active = useActivePath(href, exact) && !disabled;
+  const active = useActivePath(href, exact);
   const [isPending, startTransition] = React.useTransition();
-
-  if (disabled) {
-    return (
-      <span className="flex w-full min-w-0 cursor-default items-center gap-2 rounded-md px-2 py-2 text-left text-[14px] font-normal text-[#a0a0a5] italic">
-        <span className="min-w-0 flex-1 truncate">{label}</span>
-      </span>
-    );
-  }
 
   return (
     <button
@@ -157,7 +132,7 @@ function CollapsibleSubNavItem({ label, href, exact, disabled }: NavMenuItem) {
         active ? 'bg-[#eef6fc] text-[#1e40af]' : 'text-[#4a5568] hover:bg-[#f4f4f4]',
         isPending && 'opacity-70',
       )}
-      onClick={() => href && startTransition(() => router.push(href))}
+      onClick={() => startTransition(() => router.push(href))}
     >
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {isPending && (
@@ -206,29 +181,18 @@ function CollapsedNavFlyout({
           </span>
         </div>
         <ul className="m-0 min-h-0 list-none space-y-0 overflow-y-auto p-0 pr-1">
-          {items.map((item) =>
-            item.disabled ? (
-              <li key={item.id}>
-                <span
-                  className="flex w-full cursor-default rounded-md px-1.5 py-1.5 text-left text-[14px] leading-snug font-medium italic"
-                  style={{ color: NAV_DISABLED_COLOR }}
-                >
-                  {item.label}
-                </span>
-              </li>
-            ) : (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => item.href && router.push(item.href)}
-                  className="flex w-full cursor-pointer rounded-md px-1.5 py-1.5 text-left text-[14px] leading-snug font-medium transition-colors hover:bg-[#f4f4f4]"
-                  style={{ color: FLYOUT_ITEM_COLOR }}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ),
-          )}
+          {items.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => router.push(item.href)}
+                className="flex w-full cursor-pointer rounded-md px-1.5 py-1.5 text-left text-[14px] leading-snug font-medium transition-colors hover:bg-[#f4f4f4]"
+                style={{ color: FLYOUT_ITEM_COLOR }}
+              >
+                {item.label}
+              </button>
+            </li>
+          ))}
         </ul>
       </HoverCardContent>
     </HoverCard>
@@ -295,72 +259,6 @@ function SidebarNavCollapsibleSection({
   );
 }
 
-function SidebarDisabledItem({
-  collapsed,
-  label,
-  icon: Icon,
-}: {
-  collapsed: boolean;
-  label: string;
-  icon: NavIcon;
-}) {
-  if (collapsed) {
-    return (
-      <SidebarCollapsedLabelFlyout label={label}>
-        <span
-          aria-disabled
-          className="inline-flex size-8 shrink-0 cursor-default items-center justify-center rounded-[8px]"
-        >
-          <Icon
-            className="size-4 shrink-0"
-            style={{ color: NAV_DISABLED_COLOR }}
-            strokeWidth={1.5}
-          />
-        </span>
-      </SidebarCollapsedLabelFlyout>
-    );
-  }
-
-  return (
-    <span
-      aria-disabled
-      className="flex h-9 w-full min-w-0 cursor-default items-center gap-2 rounded-md px-2 text-left text-[14px] font-normal italic"
-      style={{ color: NAV_DISABLED_COLOR }}
-    >
-      <Icon className="size-4 shrink-0" style={{ color: NAV_DISABLED_COLOR }} strokeWidth={1.5} />
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-    </span>
-  );
-}
-
-function NewChatButton({ collapsed, onClick }: { collapsed: boolean; onClick: () => void }) {
-  if (collapsed) {
-    return (
-      <SidebarCollapsedLabelFlyout label="New Chat">
-        <button
-          type="button"
-          onClick={onClick}
-          aria-label="New chat"
-          className="text-foreground inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[8px] border border-[#e0e0e2] bg-white transition-colors hover:bg-[#f8f8f9]"
-        >
-          <SquarePen className="size-4 shrink-0" strokeWidth={1.5} />
-        </button>
-      </SidebarCollapsedLabelFlyout>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex h-9 w-full cursor-pointer items-center justify-start gap-2 rounded-[8px] border border-[#e0e0e2] bg-white px-2 text-[14px] font-normal text-[#687482] antialiased transition-colors hover:bg-[#f8f8f9] active:bg-[#f2f2f3]"
-    >
-      <SquarePen className="size-4 shrink-0" strokeWidth={1.5} aria-hidden />
-      <span>New Chat</span>
-    </button>
-  );
-}
-
 const COLLAPSE_ICON = (
   <svg
     width={20}
@@ -385,8 +283,6 @@ export function AppSidebar() {
   const { currentTenant } = useCurrentTenant();
   const { userTenants } = useUserTenants();
   const rbacPermissions = useAppSelector(selectRbacPermissions);
-  const { setIsOpen } = useChatState();
-  const { isMentorAIEnabled } = useTenantMetadata({ org: tenant });
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery(
     { platform_key: tenant },
     { skip: !tenant },
@@ -430,7 +326,6 @@ export function AppSidebar() {
       items: [
         { id: 'catalog-new-course', label: 'New Course', href: `/platform/${tenant}/discover` },
         { id: 'catalog-my-catalog', label: 'My Catalog', href: `${profileBase}/courses` },
-        { id: 'catalog-explore', label: 'Explore', disabled: true },
       ],
     }),
     [tenant, profileBase],
@@ -449,33 +344,6 @@ export function AppSidebar() {
       ],
     }),
     [profileBase],
-  );
-
-  const agentsMenu = React.useMemo<NavMenuConfig>(
-    () => ({
-      id: 'agents',
-      label: 'Agents',
-      icon: Globe2,
-      items: [
-        { id: 'agents-new', label: 'New Agent', disabled: true },
-        { id: 'agents-my', label: 'My Agents', disabled: true },
-        { id: 'agents-explore', label: 'Explore', disabled: true },
-      ],
-    }),
-    [],
-  );
-
-  const workflowsMenu = React.useMemo<NavMenuConfig>(
-    () => ({
-      id: 'workflows',
-      label: 'Workflows',
-      icon: Workflow,
-      items: [
-        { id: 'workflows-new', label: 'New Workflow', disabled: true },
-        { id: 'workflows-my', label: 'My Workflows', disabled: true },
-      ],
-    }),
-    [],
   );
 
   const analyticsMenu = React.useMemo<NavMenuConfig>(() => {
@@ -497,8 +365,6 @@ export function AppSidebar() {
       ],
     };
   }, [tenant]);
-
-  const chatAllowed = config.settings.mentorEnabled() && Boolean(isMentorAIEnabled?.());
 
   const analyticsAllowed =
     config.settings.aiAnalyticsHeaderMenuEnabled() &&
@@ -553,20 +419,10 @@ export function AppSidebar() {
     setOpenSection(id);
   };
 
-  const openChat = () => setIsOpen(true);
-
   if (!isLoggedIn()) return null;
 
   const sections = (collapsed: boolean) => (
     <>
-      {chatAllowed && <NewChatButton collapsed={collapsed} onClick={openChat} />}
-      <SidebarNavCollapsibleSection
-        collapsed={collapsed}
-        menu={agentsMenu}
-        open={openSection === 'agents'}
-        onOpenChange={handleSectionChange('agents')}
-        onCollapsedIconClick={() => expandToSection('agents')}
-      />
       <SidebarNavCollapsibleSection
         collapsed={collapsed}
         menu={catalogMenu}
@@ -576,21 +432,11 @@ export function AppSidebar() {
       />
       <SidebarNavCollapsibleSection
         collapsed={collapsed}
-        menu={workflowsMenu}
-        open={openSection === 'workflows'}
-        onOpenChange={handleSectionChange('workflows')}
-        onCollapsedIconClick={() => expandToSection('workflows')}
-      />
-      <SidebarNavDivider collapsed={collapsed} />
-      <SidebarNavCollapsibleSection
-        collapsed={collapsed}
         menu={profileMenu}
         open={openSection === 'profile'}
         onOpenChange={handleSectionChange('profile')}
         onCollapsedIconClick={() => expandToSection('profile')}
       />
-      <SidebarDisabledItem collapsed={collapsed} label="Chats" icon={MessageSquare} />
-      <SidebarDisabledItem collapsed={collapsed} label="Projects" icon={Folder} />
       {analyticsAllowed && (
         <SidebarNavCollapsibleSection
           collapsed={collapsed}
@@ -614,28 +460,26 @@ export function AppSidebar() {
       >
         <div
           className={cn(
-            'shrink-0',
-            railCollapsed ? 'px-2 pt-[18px] pb-[25px]' : 'px-[10px] py-[10px]',
+            'flex h-16 shrink-0 items-center border-b border-[#e9e9ea] font-sans md:h-20',
+            railCollapsed ? 'flex-col justify-center gap-2 px-2' : 'gap-2 px-3',
           )}
         >
-          <div
-            className={cn(
-              'flex items-center font-sans',
-              railCollapsed ? 'justify-center px-0' : 'justify-end px-1',
-            )}
-          >
-            <SidebarCollapsedLabelFlyout label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}>
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md font-sans text-[#7d7e82] transition-colors hover:bg-[#f0f0f0]"
-                aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
-                aria-expanded={expanded}
-              >
-                {COLLAPSE_ICON}
-              </button>
-            </SidebarCollapsedLabelFlyout>
+          <div className={cn('flex items-center', !railCollapsed && 'min-w-0 flex-1')}>
+            <Logo
+              className={cn('w-auto max-w-full object-contain', railCollapsed ? 'h-7' : 'h-9')}
+            />
           </div>
+          <SidebarCollapsedLabelFlyout label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md font-sans text-[#7d7e82] transition-colors hover:bg-[#f0f0f0]"
+              aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-expanded={expanded}
+            >
+              {COLLAPSE_ICON}
+            </button>
+          </SidebarCollapsedLabelFlyout>
         </div>
 
         {railCollapsed ? (

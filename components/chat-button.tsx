@@ -118,12 +118,6 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
     handleFetchMentors();
   }, [metadataLoaded, courseMentor, mentorSidebarHidden]);
 
-  // Mount the chat panel whenever it becomes open, regardless of whether the
-  // open was triggered here or externally (e.g. the sidebar's New Chat).
-  useEffect(() => {
-    if (isOpen) setAlreadyOpened(true);
-  }, [isOpen]);
-
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // Check if the message contains the expected close format
