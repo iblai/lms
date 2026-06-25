@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.42.2](https://github.com/iblai/lms/compare/skills-v0.42.1...skills-v0.42.2) (2026-06-25)
+
+### Chores
+
+* updates to lib.rs ([aa40667](https://github.com/iblai/lms/commit/aa406673176c5d60373e55b156005e89e58789f6))
+
 ## [0.42.1](https://github.com/iblai/lms/compare/skills-v0.42.0...skills-v0.42.1) (2026-06-24)
 
 ### Bug Fixes
