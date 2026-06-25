@@ -18,9 +18,12 @@ import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useMediaQuery } from 'react-responsive';
-import { WithPermissions } from '@/hoc';
+import { checkRbacPermission, WithPermissions } from '@/hoc';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+import { useAppSelector } from '@/lib/hooks';
+import { selectRbacPermissions } from '@/features/rbac';
+import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 
 interface NavBarProps {
   sidebarOpen: boolean;
@@ -34,6 +37,8 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
+  const rbacPermissions = useAppSelector(selectRbacPermissions);
+  const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isDesktop = useMediaQuery({ minWidth: 915 });
@@ -252,7 +257,7 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
           {!(isTabletRange && searchVisible) && aiAnalyticsHeaderMenuEnabled && (
             <WithPermissions rbacResource={`/platforms/${tenant}/#can_view_analytics`}>
               {({ hasPermission }) =>
-                hasPermission && (
+                (hasPermission || isWatcher) && (
                   <Link
                     href={`/platform/${tenant}/analytics`}
                     className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"

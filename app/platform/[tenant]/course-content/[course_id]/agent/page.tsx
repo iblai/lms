@@ -26,7 +26,7 @@ export default function AgentTab() {
     <div
       className={cn(
         'flex w-full flex-col p-6',
-        activeTab === 'agent' ? 'h-[calc(100vh-100px-62px-42px)]' : 'h-[calc(100vh-100px-62px)]',
+        activeTab === 'agent' ? 'h-[calc(100vh-100px-62px-43px)]' : 'h-[calc(100vh-100px-62px)]',
       )}
     >
       <div className={cn(assessmentMode ? 'min-h-0 flex-1' : 'hidden')}>

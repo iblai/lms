@@ -74,11 +74,27 @@ vi.mock('react-responsive', () => ({
   }),
 }));
 
+// Controllable RBAC mocks. `WithPermissions` supplies `hasPermission`
+// (the `can_view_analytics` resource); `checkRbacPermission` backs the
+// `isWatcher` (`/watchedgroups/#list`) derivation.
+const mockHasPermission = vi.hoisted(() => ({ value: false }));
+const mockCheckRbacPermission = vi.hoisted(() => vi.fn(() => false));
+
 vi.mock('@/hoc', () => ({
-  WithPermissions: ({ children }: any) => children({ hasPermission: false }),
+  WithPermissions: ({ children }: any) => children({ hasPermission: mockHasPermission.value }),
+  checkRbacPermission: mockCheckRbacPermission,
+}));
+
+vi.mock('@/lib/hooks', () => ({
+  useAppSelector: vi.fn(() => ({})),
+}));
+
+vi.mock('@/features/rbac', () => ({
+  selectRbacPermissions: vi.fn(() => ({})),
 }));
 
 import { NavBar } from '../nav-bar';
+import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 
@@ -91,6 +107,9 @@ describe('NavBar', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockHasPermission.value = false;
+    mockCheckRbacPermission.mockReturnValue(false);
+    vi.mocked(config.settings.aiAnalyticsHeaderMenuEnabled).mockReturnValue(true);
     const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
     vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(false);
@@ -249,5 +268,40 @@ describe('NavBar', () => {
     } as any);
     render(<NavBar {...defaultProps} />);
     expect(screen.queryByText('Discover')).not.toBeInTheDocument();
+  });
+
+  describe('AI Analytics menu item', () => {
+    it('hides AI Analytics when the user lacks can_view_analytics and is not a watcher', () => {
+      mockHasPermission.value = false;
+      mockCheckRbacPermission.mockReturnValue(false);
+      render(<NavBar {...defaultProps} />);
+      expect(screen.queryByText('AI Analytics')).not.toBeInTheDocument();
+    });
+
+    it('shows AI Analytics when the user has the can_view_analytics permission', () => {
+      mockHasPermission.value = true;
+      mockCheckRbacPermission.mockReturnValue(false);
+      render(<NavBar {...defaultProps} />);
+      expect(screen.getByText('AI Analytics')).toBeInTheDocument();
+    });
+
+    it('shows AI Analytics when the user has the watcher (watchedgroup) permission', () => {
+      mockHasPermission.value = false;
+      mockCheckRbacPermission.mockReturnValue(true);
+      render(<NavBar {...defaultProps} />);
+      expect(screen.getByText('AI Analytics')).toBeInTheDocument();
+      expect(mockCheckRbacPermission).toHaveBeenCalledWith(
+        expect.anything(),
+        WATCHER_RBAC_RESOURCE,
+      );
+    });
+
+    it('hides AI Analytics when the header menu config flag is disabled, even for a watcher', () => {
+      vi.mocked(config.settings.aiAnalyticsHeaderMenuEnabled).mockReturnValue(false);
+      mockHasPermission.value = true;
+      mockCheckRbacPermission.mockReturnValue(true);
+      render(<NavBar {...defaultProps} />);
+      expect(screen.queryByText('AI Analytics')).not.toBeInTheDocument();
+    });
   });
 });

@@ -85,8 +85,11 @@ export default function AppLayout({ children }: { children: any }) {
         </div>
         <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && <MonetizationWrapper />}
-        <div className="flex h-full flex-col items-start md:flex-row">
-          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
+        <div
+          className="flex h-full flex-col items-start md:flex-row"
+          style={{ height: 'calc(100% - 125px)' }}
+        >
+          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto">
             {children}
             <Footer />
           </div>

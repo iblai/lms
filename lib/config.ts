@@ -44,12 +44,24 @@ export const getEnv = (key: keyof typeof env, fallback = ''): string => {
 
 const apiBaseUrl = () => getEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.iblai.app');
 
+const platformBaseDomain = () => getEnv('NEXT_PUBLIC_PLATFORM_BASE_DOMAIN', '.iblai.app');
+
 export const config = {
   environment: () => getEnv('NODE_ENV', 'development'),
   urls: {
     apiBase: apiBaseUrl,
-    dm: () => `${apiBaseUrl()}/dm`,
-    axd: () => `${apiBaseUrl()}/axd`,
+    dm: () => {
+      if (apiBaseUrl) {
+        return `${apiBaseUrl()}/dm`;
+      }
+      return `https://base.manager.${platformBaseDomain()}`;
+    },
+    axd: () => {
+      if (apiBaseUrl) {
+        return `${apiBaseUrl()}/axd`;
+      }
+      return `https://base.manager.${platformBaseDomain()}`;
+    },
     lms: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://lms.iblai.app'),
     legacyLmsUrl: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://lms.iblai.app'),
     studio: () => `${apiBaseUrl()}/studio`,
