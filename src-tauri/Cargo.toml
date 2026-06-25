@@ -27,6 +27,12 @@ axum = "0.8"
 tower-http = { version = "0.6", features = ["cors", "fs"] }
 mime_guess = "2.0"
 
+[target.'cfg(target_os = "windows")'.dependencies]
+# Forwards deep links (custom URI scheme callbacks) to the already-running
+# instance. The `deep-link` feature delivers the URL via the deep-link plugin's
+# `on_open_url` for both cold and warm starts.
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+
 [target.'cfg(target_os = "ios")'.dependencies]
 objc = "0.2"
 block = "0.1"

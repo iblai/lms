@@ -533,6 +533,120 @@ fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
     }
 }
 
+/// Handle an incoming deep link on Windows (custom URI scheme callback).
+///
+/// Unlike macOS/iOS (which catch the callback in-process via
+/// ASWebAuthenticationSession) Windows WebView2 cannot cancel a navigation to an
+/// unknown scheme inside the OAuth popup — it hands `iblai-skills://` to the OS.
+/// So on Windows we register the scheme with the OS and route the callback here,
+/// then navigate the main window to the SSO completion route (mirroring the
+/// mobile `handle_deep_link_url` flow) and close the now-stale OAuth popup.
+#[cfg(target_os = "windows")]
+fn handle_desktop_deep_link(app_handle: &AppHandle, raw_url: &str) {
+    println!("[ibl.ai] Windows deep link received: {}", raw_url);
+
+    let parsed = match tauri::Url::parse(raw_url) {
+        Ok(url) => url,
+        Err(e) => {
+            println!("[ibl.ai] Failed to parse deep link URL: {}", e);
+            return;
+        }
+    };
+
+    let scheme = parsed.scheme();
+    let host = parsed.host_str().unwrap_or("");
+    let path = parsed.path();
+    println!("[ibl.ai] Parsed deep link - scheme: {}, host: {}, path: {}", scheme, host, path);
+
+    let is_custom_scheme = scheme == "iblai-skills" || scheme == "ai.ibl.skills";
+    if !is_custom_scheme {
+        println!("[ibl.ai] Not a custom scheme deep link, ignoring");
+        return;
+    }
+
+    // For custom schemes the first path segment may be parsed as the host.
+    let mut final_path = parsed.path().to_string();
+    if final_path.is_empty() || final_path == "/" {
+        if !host.is_empty() {
+            final_path = format!("/{}", host);
+        }
+    }
+
+    if !final_path.starts_with("/sso-login")
+        && !final_path.starts_with("/mobile-sso-login")
+        && !final_path.starts_with("/sso-login-complete")
+    {
+        println!("[ibl.ai] Path '{}' not SSO-related, ignoring", final_path);
+        return;
+    }
+
+    // Normalize /sso-login to /sso-login-complete for all SSO callbacks.
+    let final_path = if final_path.starts_with("/sso-login") && !final_path.starts_with("/sso-login-complete") {
+        let normalized = final_path.replacen("/sso-login", "/sso-login-complete", 1);
+        println!("[ibl.ai] Normalized path: {} -> {}", final_path, normalized);
+        normalized
+    } else {
+        final_path
+    };
+
+    // Extract query params from the raw URL, fully decode them, and rebuild the
+    // target URL via JS URLSearchParams (avoids browser re-encoding).
+    let base_url = format!("{}{}", get_app_url(), final_path);
+    let raw_query = raw_url.find('?').map(|i| &raw_url[i + 1..]).unwrap_or("");
+
+    let mut params: Vec<(String, String)> = Vec::new();
+    for part in raw_query.split('&') {
+        if part.is_empty() {
+            continue;
+        }
+        let (key, value) = match part.find('=') {
+            Some(i) => (&part[..i], &part[i + 1..]),
+            None => (part, ""),
+        };
+        let mut decoded = value.to_string();
+        loop {
+            match urlencoding::decode(&decoded) {
+                Ok(d) if d != decoded => decoded = d.into_owned(),
+                _ => break,
+            }
+        }
+        let decoded_key = urlencoding::decode(key).unwrap_or_else(|_| key.into()).into_owned();
+        params.push((decoded_key, decoded));
+    }
+
+    println!(
+        "[ibl.ai] Target base URL: {}, params: {:?}",
+        base_url,
+        params.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>()
+    );
+
+    // The OAuth popup webview is now stale (it triggered the OS deep link); close it.
+    if let Some(popup) = app_handle.get_webview_window("oauth-popup") {
+        println!("[ibl.ai] Closing OAuth popup after deep link");
+        let _ = popup.close();
+    }
+
+    if let Some(window) = app_handle.get_webview_window("main") {
+        let js_base = serde_json::to_string(&base_url).unwrap_or_default();
+        let mut js_parts = vec![format!("var u = new URL({});", js_base)];
+        for (key, value) in &params {
+            let js_key = serde_json::to_string(key).unwrap_or_default();
+            let js_val = serde_json::to_string(value).unwrap_or_default();
+            js_parts.push(format!("u.searchParams.set({}, {});", js_key, js_val));
+        }
+        js_parts.push("window.location.href = u.toString();".to_string());
+        let js = js_parts.join(" ");
+
+        match window.eval(&js) {
+            Ok(_) => println!("[ibl.ai] Successfully navigated main window via deep link"),
+            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+        }
+        let _ = window.set_focus();
+    } else {
+        println!("[ibl.ai] Main window not found for deep link navigation");
+    }
+}
+
 fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
     #[cfg(target_os = "ios")]
     {
@@ -1946,11 +2060,49 @@ pub fn run() {
         }
     }
 
-    let builder = tauri::Builder::default()
+    let builder = tauri::Builder::default();
+
+    // Windows: route the OS-launched deep link (custom URI scheme callback) into
+    // the already-running instance. Must be registered BEFORE the deep-link
+    // plugin; the actual URL is delivered via `on_open_url` (see setup below).
+    #[cfg(target_os = "windows")]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.set_focus();
+        }
+    }));
+
+    let builder = builder
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             let app_url = get_app_url();
+
+            // =====================
+            // WINDOWS DEEP LINK SETUP
+            // =====================
+            // macOS/iOS catch the callback in-process via ASWebAuthenticationSession
+            // and Android via its manifest intent-filter, so this is Windows-only.
+            #[cfg(target_os = "windows")]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+
+                // Register the custom URI schemes with the OS. The installer does
+                // this for packaged builds; this call covers `tauri dev` and
+                // re-points the handler at the current executable.
+                if let Err(e) = app.deep_link().register_all() {
+                    println!("[ibl.ai] Failed to register deep link schemes: {}", e);
+                }
+
+                // Handles both cold start (app launched by the URL) and warm start
+                // (URL forwarded by the single-instance plugin's deep-link feature).
+                let deep_link_handle = app.handle().clone();
+                app.deep_link().on_open_url(move |event| {
+                    for url in event.urls() {
+                        handle_desktop_deep_link(&deep_link_handle, url.as_str());
+                    }
+                });
+            }
 
             #[cfg(any(target_os = "ios", target_os = "android"))]
             {
