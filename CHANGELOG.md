@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.43.0](https://github.com/iblai/lms/compare/skills-v0.42.2...skills-v0.43.0) (2026-06-26)
+
+### Features
+
+* enable support phone env update ([50fe84c](https://github.com/iblai/lms/commit/50fe84c3b103d91488804d5c7f76e6d45ccf11ab))
+* enable support phone env update > test coverage ([5e8b66d](https://github.com/iblai/lms/commit/5e8b66d8ffdcba6936f32278771935e8891f5421))
+* enable support phone env update > test coverage ([47cce6b](https://github.com/iblai/lms/commit/47cce6b1de46de85c438ed622a28f8459318e6c4))
+
+### Bug Fixes
+
+* enable support phone env update > playwright test update ([c6d247b](https://github.com/iblai/lms/commit/c6d247bcffcf36b2a4883605c697c1f004bfd787))
+
 ## [0.42.2](https://github.com/iblai/lms/compare/skills-v0.42.1...skills-v0.42.2) (2026-06-25)
 
 ### Chores
