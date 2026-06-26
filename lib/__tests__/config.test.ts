@@ -541,5 +541,19 @@ describe('config module', () => {
       const { config } = await import('../config');
       expect(config.urls.apiBase()).toBe('https://custom-api.example.com');
     });
+
+    it('returns studioUrl with default fallback when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_STUDIO_URL;
+
+      const { config } = await import('../config');
+      expect(config.urls.studioUrl()).toBe('https://studio.iblai.app');
+    });
+
+    it('returns studioUrl when configured', async () => {
+      processEnv.NEXT_PUBLIC_STUDIO_URL = 'https://custom-studio.example.com';
+
+      const { config } = await import('../config');
+      expect(config.urls.studioUrl()).toBe('https://custom-studio.example.com');
+    });
   });
 });
