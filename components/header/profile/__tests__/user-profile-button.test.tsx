@@ -23,6 +23,7 @@ const {
 // Mutable state for per-test config control
 let mockEnableGravatarOnProfilePic = 'true';
 let mockDefaultSupportPhoneNumber = '(571) 293-0242';
+let mockEnableSupportPhone = false;
 let mockTenantMetadata: { support_phone_number?: string } | undefined = undefined;
 
 // Mock helpers
@@ -62,6 +63,7 @@ vi.mock('@/lib/config', () => ({
       enableGravatarOnProfilePic: () => mockEnableGravatarOnProfilePic,
       mainPlatformKey: () => 'main',
       defaultSupportPhoneNumber: () => mockDefaultSupportPhoneNumber,
+      enableSupportPhone: () => mockEnableSupportPhone,
     },
     urls: {
       auth: () => 'https://auth.example.com',
@@ -112,6 +114,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         {String(props.enableGravatarOnProfilePic)}
       </span>
       <span data-testid="default-support-phone">{String(props.defaultSupportPhone)}</span>
+      <span data-testid="enable-support-phone">{String(props.enableSupportPhone)}</span>
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
@@ -149,6 +152,7 @@ describe('UserProfileButton', () => {
     mockIsAdmin = true; // Reset to admin by default
     mockEnableGravatarOnProfilePic = 'true'; // Reset to gravatar enabled by default
     mockDefaultSupportPhoneNumber = '(571) 293-0242'; // Reset to config default
+    mockEnableSupportPhone = false; // Reset to support phone disabled by default
     mockTenantMetadata = undefined; // Reset to no tenant metadata
   });
 
@@ -346,6 +350,22 @@ describe('UserProfileButton', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(111) 222-3333');
+    });
+  });
+
+  describe('enableSupportPhone', () => {
+    it('passes true to dropdown when config enables the support phone', () => {
+      mockEnableSupportPhone = true;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-support-phone')).toHaveTextContent('true');
+    });
+
+    it('passes false to dropdown when config disables the support phone', () => {
+      mockEnableSupportPhone = false;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-support-phone')).toHaveTextContent('false');
     });
   });
 });

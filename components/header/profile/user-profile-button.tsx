@@ -102,6 +102,7 @@ export const UserProfileButton = () => {
       defaultSupportPhone={
         metadata?.support_phone_number || config.settings.defaultSupportPhoneNumber()
       }
+      enableSupportPhone={config.settings.enableSupportPhone()}
     />
   );
 };

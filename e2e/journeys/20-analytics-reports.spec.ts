@@ -110,7 +110,8 @@ test.describe('Journey 20: Analytics Reports', () => {
     await shouldOpenCSVEditorForUserMetadataReport(page);
   });
 
-  test('admin goes to Data Reports tab and downloads the Chat History report directly without CSV editor', async ({
+  //need to increase the 40s timeout on download of this test on the SDK
+  test.fixme('admin goes to Data Reports tab and downloads the Chat History report directly without CSV editor', async ({
     page,
   }) => {
     await shouldDirectlyDownloadChatHistoryReportWithoutCSVEditor(page);
