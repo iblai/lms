@@ -473,6 +473,44 @@ describe('config module', () => {
       const { config } = await import('../config');
       expect(config.settings.defaultSupportPhoneNumber()).toBe('(555) 123-4567');
     });
+
+    it('returns enableSupportPhone as false by default', async () => {
+      delete processEnv.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE;
+
+      const { config } = await import('../config');
+      expect(config.settings.enableSupportPhone()).toBe(false);
+    });
+
+    it('returns enableSupportPhone as true when set to true', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE = 'true';
+
+      const { config } = await import('../config');
+      expect(config.settings.enableSupportPhone()).toBe(true);
+    });
+
+    it('returns enableSupportPhone as false when set to a non-"true" value', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE = 'false';
+
+      const { config } = await import('../config');
+      expect(config.settings.enableSupportPhone()).toBe(false);
+    });
+
+    it('returns enableSupportPhone as false for truthy-but-not-"true" values', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE = '1';
+
+      const { config } = await import('../config');
+      expect(config.settings.enableSupportPhone()).toBe(false);
+    });
+
+    it('prioritizes window.__ENV__ over process.env for enableSupportPhone', async () => {
+      processEnv.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE = 'false';
+      (window as unknown as { __ENV__: Record<string, string> }).__ENV__ = {
+        NEXT_PUBLIC_ENABLE_SUPPORT_PHONE: 'true',
+      };
+
+      const { config } = await import('../config');
+      expect(config.settings.enableSupportPhone()).toBe(true);
+    });
   });
 
   describe('config.urls (additional)', () => {
