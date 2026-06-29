@@ -321,7 +321,7 @@ describe('CourseDetailsPage', () => {
     expect(screen.getByTestId('instructor-tab')).toBeInTheDocument();
   });
 
-  it('shows configuration tab for platform admin', () => {
+  it('shows configuration tab for platform admin', async () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: true },
     } as any);
@@ -353,7 +353,8 @@ describe('CourseDetailsPage', () => {
     expect(screen.getByText('Configuration')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('Configuration'));
-    expect(screen.getByTestId('configuration-tab')).toBeInTheDocument();
+    // ConfigurationTab is lazy-loaded via next/dynamic.
+    expect(await screen.findByTestId('configuration-tab')).toBeInTheDocument();
   });
 
   it('hides configuration tab for non-admin users', () => {
