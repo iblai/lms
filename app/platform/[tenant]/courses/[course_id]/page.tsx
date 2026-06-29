@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Clock, Calendar, Globe, DollarSign } from 'lucide-react';
@@ -19,7 +20,18 @@ import { AboutTab } from './_components/about-tab';
 import { SyllabusTab } from './_components/syllabus-tab';
 import { LearningInfoTab } from './_components/learning-info-tab';
 import { InstructorTab } from './_components/instructor-tab';
-import { ConfigurationTab } from './_components/configuration-tab';
+
+// Admin-only tab; keep its Dialog/Select-heavy tree out of the learner course-details bundle.
+const ConfigurationTab = dynamic(
+  () => import('./_components/configuration-tab').then((m) => m.ConfigurationTab),
+  {
+    loading: () => (
+      <div className="flex justify-center p-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+      </div>
+    ),
+  },
+);
 
 dayjs.extend(duration);
 

@@ -1,11 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Search, Plus } from 'lucide-react';
-import { PathwayDetailModal } from '@/components/pathway-detail-modal';
-import { CreatePathwayModal } from '@/components/create-pathway-modal';
 import { useProfilePathways } from '@/hooks/profile/use-profile-pathways';
+
+const PathwayDetailModal = dynamic(() =>
+  import('@/components/pathway-detail-modal').then((m) => m.PathwayDetailModal),
+);
+
+const CreatePathwayModal = dynamic(() =>
+  import('@/components/create-pathway-modal').then((m) => m.CreatePathwayModal),
+);
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
