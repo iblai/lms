@@ -87,7 +87,7 @@ export default function AppLayout({ children }: { children: any }) {
         {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && <MonetizationWrapper />}
         <div
           className="flex h-full flex-col items-start md:flex-row"
-          style={{ height: 'calc(100% - 125px)' }}
+          style={{ height: isMobile ? 'calc(100% - 110px)' : 'calc(100% - 125px)' }}
         >
           <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto">
             {children}
