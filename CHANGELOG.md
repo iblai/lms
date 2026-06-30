@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.43.2](https://github.com/iblai/lms/compare/skills-v0.43.1...skills-v0.43.2) (2026-06-30)
+
+### Bug Fixes
+
+* spa overall optimization with lazy loading & re-rendering issues fixed ([a8b42d2](https://github.com/iblai/lms/commit/a8b42d28bd37ca8f55a88251bb37e153cf5aa3c5))
+* spa overall optimization with lazy loading & re-rendering issues fixed ([b887a09](https://github.com/iblai/lms/commit/b887a0963f77e85bd530cab5b11a16d3b9ad525f))
+* spa overall optimization with lazy loading & re-rendering issues fixed > next.config.mjs update ([f9b3673](https://github.com/iblai/lms/commit/f9b36738f75001aeca16692cab55fea92a2531a4))
+* spa overall optimization with lazy loading & re-rendering issues fixed > test coverage ([4ed8a66](https://github.com/iblai/lms/commit/4ed8a66f8cbc0837ee040e807b9edbda64c91eda))
+
 ## [0.43.1](https://github.com/iblai/lms/compare/skills-v0.43.0...skills-v0.43.1) (2026-06-29)
 
 ### Chores
