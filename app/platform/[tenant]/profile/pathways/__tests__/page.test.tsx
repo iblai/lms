@@ -188,7 +188,7 @@ describe('PathwaysPage', () => {
     expect(screen.getByText('75%')).toBeInTheDocument();
   });
 
-  it('opens pathway detail modal on click', () => {
+  it('opens pathway detail modal on click', async () => {
     vi.mocked(useProfilePathways).mockReturnValue({
       filteredPathways: [{ name: 'Pathway 1', metadata: {} }],
       isLoading: false,
@@ -202,7 +202,8 @@ describe('PathwaysPage', () => {
     render(<PathwaysPage />);
 
     fireEvent.click(screen.getByText('Pathway 1'));
-    expect(screen.getByTestId('pathway-modal')).toBeInTheDocument();
+    // PathwayDetailModal is lazy-loaded via next/dynamic.
+    expect(await screen.findByTestId('pathway-modal')).toBeInTheDocument();
   });
 
   it('closes pathway detail modal', () => {
@@ -225,11 +226,12 @@ describe('PathwaysPage', () => {
     expect(screen.queryByTestId('pathway-modal')).not.toBeInTheDocument();
   });
 
-  it('opens create pathway modal on button click', () => {
+  it('opens create pathway modal on button click', async () => {
     render(<PathwaysPage />);
 
     fireEvent.click(screen.getByText('Create Pathway'));
-    expect(screen.getByTestId('create-pathway-modal')).toBeInTheDocument();
+    // CreatePathwayModal is lazy-loaded via next/dynamic.
+    expect(await screen.findByTestId('create-pathway-modal')).toBeInTheDocument();
   });
 
   it('handles search input', () => {

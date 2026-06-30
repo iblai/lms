@@ -1,11 +1,24 @@
 'use client';
 
 import { useContext, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
-import { CourseAgentChat } from '@/components/course-agent-chat';
 import { useChatState } from '@/components/chat-button';
 import { cn } from '@/lib/utils';
+
+const CourseAgentChat = dynamic(
+  () => import('@/components/course-agent-chat').then((m) => m.CourseAgentChat),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    ),
+  },
+);
 
 export default function AgentTab() {
   const { setActiveTab, activeTab, agentMode } = useContext(EdxIframeContext);
@@ -25,8 +38,8 @@ export default function AgentTab() {
   return (
     <div
       className={cn(
-        'flex w-full flex-col p-6',
-        activeTab === 'agent' ? 'h-[calc(100vh-100px-62px-43px)]' : 'h-[calc(100vh-100px-62px)]',
+        'flex w-full flex-col px-6 pt-6 pb-0',
+        activeTab === 'agent' ? 'h-[calc(100vh-203px)]' : 'h-[calc(100vh-162px)]',
       )}
     >
       <div className={cn(assessmentMode ? 'min-h-0 flex-1' : 'hidden')}>

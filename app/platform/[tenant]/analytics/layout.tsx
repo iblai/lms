@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   AnalyticsLayout,
   AnalyticsSettingsProvider,
@@ -50,26 +50,35 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
     }
   }, [groupsData]);
 
-  const handleTabChange = (tabValue: string) => {
-    const newPath = tabValue ? `${basePath}/${tabValue}` : basePath;
-    router.push(newPath);
-  };
+  const handleTabChange = useCallback(
+    (tabValue: string) => {
+      const newPath = tabValue ? `${basePath}/${tabValue}` : basePath;
+      router.push(newPath);
+    },
+    [basePath, router],
+  );
 
-  const groupsFilterDropdown = (
-    <GroupsFilterDropdown
-      groups={groups}
-      selectedGroupIds={selectedGroupIds}
-      onSelectionChange={setSelectedGroupIds}
-      isLoading={isLoadingGroups}
-      placeholder="Filter by Groups"
-    />
+  const groupsFilterDropdown = useMemo(
+    () => (
+      <GroupsFilterDropdown
+        groups={groups}
+        selectedGroupIds={selectedGroupIds}
+        onSelectionChange={setSelectedGroupIds}
+        isLoading={isLoadingGroups}
+        placeholder="Filter by Groups"
+      />
+    ),
+    [groups, selectedGroupIds, isLoadingGroups],
+  );
+
+  const analyticsSettingsValue = useMemo(
+    () => ({ usergroupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined }),
+    [selectedGroupIds],
   );
 
   return (
     <div className="h-full overflow-auto">
-      <AnalyticsSettingsProvider
-        value={{ usergroupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined }}
-      >
+      <AnalyticsSettingsProvider value={analyticsSettingsValue}>
         <AnalyticsLayout
           currentPath={pathname}
           basePath={basePath}

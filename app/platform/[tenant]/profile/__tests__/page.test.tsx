@@ -191,7 +191,7 @@ describe('ProfilePage', () => {
     expect(screen.queryByTestId('skill-leaderboard-chart')).not.toBeInTheDocument();
   });
 
-  it('shows SkillLeaderboardChart when all conditions met', () => {
+  it('shows SkillLeaderboardChart when all conditions met', async () => {
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadataLoaded: true,
       isSkillsLeaderBoardEnabled: vi.fn(() => true),
@@ -203,7 +203,8 @@ describe('ProfilePage', () => {
 
     render(<ProfilePage />);
 
-    expect(screen.getByTestId('skill-leaderboard-chart')).toBeInTheDocument();
+    // SkillLeaderboardChart is lazy-loaded via next/dynamic (recharts).
+    expect(await screen.findByTestId('skill-leaderboard-chart')).toBeInTheDocument();
     expect(screen.getByText('Skill Leaderboard')).toBeInTheDocument();
   });
 

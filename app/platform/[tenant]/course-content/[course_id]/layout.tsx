@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { use, useEffect, useRef, useState } from 'react';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChevronRight, CirclePause, CirclePlay, ListTree, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
@@ -41,6 +41,8 @@ import {
 } from '@/utils/course-content-mode';
 import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
+import { useMediaQuery } from 'react-responsive';
+import { cn } from '@/lib/utils';
 
 export default function CourseContentLayout({
   children,
@@ -57,6 +59,7 @@ export default function CourseContentLayout({
   } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
+  const isMobile = useMediaQuery({ maxWidth: 768 });
   const isAdmin = departmentMemberCheck?.is_platform_admin === true;
   const isAdminResolved = departmentMemberCheckSuccess || departmentMemberCheckError;
   const rbacPermissions = useSelector(selectRbacPermissions);
@@ -238,6 +241,35 @@ export default function CourseContentLayout({
     (isCourseContentModeOn(course) &&
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
+  const edxIframeValue = useMemo(
+    () => ({
+      iframeUrl,
+      setIframeUrl,
+      courseOutline,
+      setActiveTab,
+      activeTab,
+      courseID: courseId,
+      currentlyInExamSubsection,
+      setCurrentlyInExamSubsection,
+      examInfo,
+      setExamInfo,
+      refresher,
+      setRefresher,
+      agentMode,
+      setAgentMode,
+    }),
+    [
+      iframeUrl,
+      courseOutline,
+      activeTab,
+      courseId,
+      currentlyInExamSubsection,
+      examInfo,
+      refresher,
+      agentMode,
+    ],
+  );
+
   return (
     <CourseAccessGuard
       course={course}
@@ -266,25 +298,7 @@ export default function CourseContentLayout({
         }}
       >
         <CourseOutlineDrawer />
-        <EdxIframeContext.Provider
-          value={{
-            iframeUrl: iframeUrl,
-            setIframeUrl: setIframeUrl,
-            courseOutline: courseOutline,
-            setActiveTab: setActiveTab,
-            activeTab: activeTab,
-            courseID: courseId,
-            currentlyInExamSubsection: currentlyInExamSubsection,
-            setCurrentlyInExamSubsection: setCurrentlyInExamSubsection,
-            examInfo: examInfo,
-            setExamInfo: setExamInfo,
-            refresher: refresher,
-            setRefresher: setRefresher,
-            agentMode: agentMode,
-            setAgentMode: setAgentMode,
-            //setCourseOutline: () => {},
-          }}
-        >
+        <EdxIframeContext.Provider value={edxIframeValue}>
           <main className="flex flex-1 overflow-hidden">
             {/* Course sidebar (collapsible on tablet / small screens) */}
             <CourseOutlineSidebar />
@@ -579,7 +593,8 @@ export default function CourseContentLayout({
               {/* Content area */}
               <div
                 /* className="flex-1 overflow-y-auto bg-amber-50 pb-[60px]" */
-                className="flex-1 overflow-hidden"
+                //no overflow hidden on mobile
+                className={cn('flex-1', isMobile ? 'overflow-y-auto' : 'overflow-hidden')}
                 style={{ scrollbarWidth: 'none' }}
               >
                 {children}

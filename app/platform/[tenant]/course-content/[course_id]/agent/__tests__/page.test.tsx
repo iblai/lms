@@ -38,9 +38,10 @@ describe('AgentTab page', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the full-width CourseAgentChat', () => {
-    const { getByTestId } = renderAgentTab();
-    expect(getByTestId('course-agent-chat')).toBeInTheDocument();
+  it('renders the full-width CourseAgentChat', async () => {
+    const { findByTestId } = renderAgentTab();
+    // CourseAgentChat is lazy-loaded via next/dynamic, so it resolves asynchronously.
+    expect(await findByTestId('course-agent-chat')).toBeInTheDocument();
   });
 
   it('hides EdxIframe and shows CourseAgentChat in learning mode', () => {
@@ -90,11 +91,11 @@ describe('AgentTab page', () => {
   it('uses full viewport height on the agent tab, shrinking when activeTab is agent', () => {
     const { container: agentContainer } = renderAgentTab('agent');
     const agentWrapper = agentContainer.firstChild as HTMLElement;
-    expect(agentWrapper.className).toContain('h-[calc(100vh-100px-62px-43px)]');
+    expect(agentWrapper.className).toContain('h-[calc(100vh-203px)]');
 
     const { container: courseContainer } = renderAgentTab('course');
     const courseWrapper = courseContainer.firstChild as HTMLElement;
-    // When not on agent tab, the extra 43px is omitted from the calc.
-    expect(courseWrapper.className).toContain('h-[calc(100vh-100px-62px)]');
+    // When not on the agent tab, the layout reserves less vertical space.
+    expect(courseWrapper.className).toContain('h-[calc(100vh-162px)]');
   });
 });

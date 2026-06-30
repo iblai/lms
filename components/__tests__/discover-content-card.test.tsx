@@ -71,7 +71,7 @@ describe('DiscoverContentCard', () => {
     expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/course-123');
   });
 
-  it('opens pathway modal when pathway content is clicked', () => {
+  it('opens pathway modal when pathway content is clicked', async () => {
     const content = {
       id: 'pathway-123',
       title: 'Test Pathway',
@@ -85,7 +85,8 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Pathway').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(screen.getByTestId('pathway-modal')).toBeInTheDocument();
+    // PathwayDetailModal is lazy-loaded via next/dynamic.
+    expect(await screen.findByTestId('pathway-modal')).toBeInTheDocument();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
