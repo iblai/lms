@@ -64,6 +64,10 @@ export default function CourseContentLayout({
   const isAdminResolved = departmentMemberCheckSuccess || departmentMemberCheckError;
   const rbacPermissions = useSelector(selectRbacPermissions);
   const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
+  const canViewAnalytics = checkRbacPermission(
+    rbacPermissions,
+    `/platforms/${tenant}/#can_view_analytics`,
+  );
   const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
@@ -422,6 +426,19 @@ export default function CourseContentLayout({
                         }`}
                       >
                         Configuration
+                      </Link>
+                    )}
+                    {canViewAnalytics && (
+                      <Link
+                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/analytics`}
+                        aria-current={activeTab === 'analytics' ? 'page' : undefined}
+                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                          activeTab === 'analytics'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Analytics
                       </Link>
                     )}
                     {departmentMemberCheck?.is_platform_admin && (
