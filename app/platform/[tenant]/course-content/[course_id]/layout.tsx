@@ -384,6 +384,46 @@ export default function CourseContentLayout({
                         Instructor
                       </Link>
                     )}
+                    {course?.learning_info && course.learning_info.length > 0 && (
+                      <Link
+                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/learning-info`}
+                        aria-current={activeTab === 'learning-info' ? 'page' : undefined}
+                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                          activeTab === 'learning-info'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Learning Info
+                      </Link>
+                    )}
+                    {course?.instructor_info?.instructors &&
+                      course.instructor_info.instructors.length > 0 && (
+                        <Link
+                          href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/instructors`}
+                          aria-current={activeTab === 'instructors' ? 'page' : undefined}
+                          className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                            activeTab === 'instructors'
+                              ? 'border-amber-500 text-amber-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          Instructors
+                        </Link>
+                      )}
+                    {departmentMemberCheck?.is_platform_admin && (
+                      <Link
+                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/configuration`}
+                        aria-current={activeTab === 'configuration' ? 'page' : undefined}
+                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                          activeTab === 'configuration'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Configuration
+                      </Link>
+                    )}
                     {departmentMemberCheck?.is_platform_admin && (
                       <a
                         href={`${config.urls.studioUrl()}/course/${courseId}`}

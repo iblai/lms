@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Clock, Calendar, Globe, DollarSign } from 'lucide-react';
 import _ from 'lodash';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
@@ -14,37 +13,13 @@ import duration from 'dayjs/plugin/duration';
 import { SkeletonCourseAccessBtn } from '@/components/skeleton-course-access-btn';
 import { useCourseDetailContext } from '@/hooks/courses/course-detail-context';
 import { useChatState } from '@/components/chat-button';
-import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { useTenantParam } from '@/hooks/use-tenant-param';
 import { AboutTab } from './_components/about-tab';
 import { SyllabusTab } from './_components/syllabus-tab';
-import { LearningInfoTab } from './_components/learning-info-tab';
-import { InstructorTab } from './_components/instructor-tab';
-
-// Admin-only tab; keep its Dialog/Select-heavy tree out of the learner course-details bundle.
-const ConfigurationTab = dynamic(
-  () => import('./_components/configuration-tab').then((m) => m.ConfigurationTab),
-  {
-    loading: () => (
-      <div className="flex justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
-      </div>
-    ),
-  },
-);
 
 dayjs.extend(duration);
 
 export default function CourseDetailsPage() {
-  const params = useParams();
-  const tenant = useTenantParam();
   const { setCourseMentor, setMentorSidebarHidden } = useChatState();
-  const courseId = decodeURIComponent(params.course_id as string);
-
-  // Fetch department member check for is_platform_admin
-  const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
-    platform_key: tenant,
-  });
 
   const {
     handleFetchCourseSyllabus,
@@ -113,9 +88,7 @@ export default function CourseDetailsPage() {
     }
   }, [course]);
 
-  const [activeTab, setActiveTab] = useState<
-    'about' | 'syllabus' | 'learning-info' | 'instructor' | 'configuration'
-  >('about');
+  const [activeTab, setActiveTab] = useState<'about' | 'syllabus'>('about');
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
   // Add a function to toggle section expansion
@@ -187,53 +160,6 @@ export default function CourseDetailsPage() {
                     >
                       Syllabus
                     </button>
-                    {course?.learning_info && course.learning_info.length > 0 && (
-                      <button
-                        onClick={() => setActiveTab('learning-info')}
-                        className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
-                          activeTab === 'learning-info'
-                            ? 'border-amber-500 text-amber-500'
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                        }`}
-                      >
-                        Learning Info
-                      </button>
-                    )}
-                    {course?.instructor_info?.instructors &&
-                      course.instructor_info.instructors.length > 0 && (
-                        <button
-                          onClick={() => setActiveTab('instructor')}
-                          className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
-                            activeTab === 'instructor'
-                              ? 'border-amber-500 text-amber-500'
-                              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                          }`}
-                        >
-                          Instructors
-                        </button>
-                      )}
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <button
-                        onClick={() => setActiveTab('configuration')}
-                        className={`shrink-0 border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap ${
-                          activeTab === 'configuration'
-                            ? 'border-amber-500 text-amber-500'
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                        }`}
-                      >
-                        Configuration
-                      </button>
-                    )}
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <a
-                        href={`${config.urls.studioUrl()}/course/${courseId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium whitespace-nowrap text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                      >
-                        Authoring
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>
@@ -252,24 +178,6 @@ export default function CourseDetailsPage() {
                       expandedSections={expandedSections}
                       toggleSection={toggleSection}
                       handleOpenLesson={handleOpenLesson}
-                    />
-                  )}
-
-                  {activeTab === 'learning-info' && <LearningInfoTab course={course} />}
-
-                  {activeTab === 'instructor' && (
-                    <InstructorTab
-                      course={course}
-                      expandedSections={expandedSections}
-                      toggleSection={toggleSection}
-                    />
-                  )}
-
-                  {activeTab === 'configuration' && departmentMemberCheck?.is_platform_admin && (
-                    <ConfigurationTab
-                      courseId={courseId}
-                      expandedSections={expandedSections}
-                      toggleSection={toggleSection}
                     />
                   )}
                 </div>
