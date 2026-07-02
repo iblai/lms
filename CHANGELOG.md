@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.44.0](https://github.com/iblai/lms/compare/skills-v0.43.2...skills-v0.44.0) (2026-07-02)
+
+### Features
+
+* admin config tab moved from course about to course content page ([f6fd680](https://github.com/iblai/lms/commit/f6fd6808af782edd02322ecbe721930155b0c39a))
+* admin config tab to course content page + analytics tab > playwright tests updates ([9065901](https://github.com/iblai/lms/commit/906590164bc73b751134b96ca7770f39aba8efb8))
+* admin config tab to course content page + analytics tab > test coverage ([30de269](https://github.com/iblai/lms/commit/30de269785faaaa787d72c9bcd89e605317df1bd))
+* analytics tab on the course content page implemented ([c345dfe](https://github.com/iblai/lms/commit/c345dfe92187ea1c1fbb52cfe685af64561b0c5c))
+
+### Chores
+
+* pnpm lock update ([121ee96](https://github.com/iblai/lms/commit/121ee96bc3a857d9064d9d25298e360717a480ec))
+
 ## [0.43.2](https://github.com/iblai/lms/compare/skills-v0.43.1...skills-v0.43.2) (2026-06-30)
 
 ### Bug Fixes
