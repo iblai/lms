@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-06-12 | 225 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-07-02 | 228 checkpoints | 32 journeys | 100% covered
 
 ## How This Works
 
@@ -54,27 +54,23 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 4: Course About & Configuration (11 checkpoints) — `journeys/04-course-about-and-configuration.spec.ts`
+## Journey 4: Course About (5 checkpoints) — `journeys/04-course-about-and-configuration.spec.ts`
 
 **Source files:** `app/courses/[course_id]/page.tsx`, `components/course-access-guard.tsx`
+
+> The admin Configuration/Learning Info/Instructors tabs and the Authoring link were moved off the about page into the course-content view; their coverage now lives in Journey 5 (`tabs-24`..`tabs-32`).
 
 - [x] Course about page loads with course title heading (h1) visible
 - [x] Course description, instructor info, and enrollment details are displayed
 - [x] "Access Course" button is visible for enrolled users and navigates to course content
 - [x] Enrollment button is shown for non-enrolled users
-- [x] Configuration tab is visible for admin users on the course about page _(admin only)_
-- [x] Configuration tab displays Credentials section with "Add Credential" button _(admin only)_
-- [x] Credential creation modal opens with required form fields and can be cancelled _(admin only)_
-- [x] Advanced Settings section expands/collapses and displays search + settings list _(admin only)_
-- [x] Advanced Settings search filters settings; clearing restores the full list _(admin only)_
-- [x] Save Changes button appears when settings are modified and saves successfully _(admin only)_
-- [x] Authoring tab links to `<studio-url>/course/<course-id>` and opens in a new tab _(admin only)_
+- [x] About page exposes only About and Syllabus tabs; Configuration/Learning Info/Instructors tabs and the Authoring link are absent, and Syllabus still switches within the page
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (23 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (32 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `services/course-metadata.ts`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `services/course-metadata.ts`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -99,6 +95,15 @@ When adding a new page or modifying an existing user flow:
 - [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
 - [x] On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch
 - [x] Authoring tab links to `<studio-url>/course/<course-id>` and opens in a new tab _(admin only)_
+- [x] Configuration tab (platform admin) navigates to `/course-content/<id>/configuration` and renders the `configuration-tab` _(admin only)_
+- [x] Configuration route displays the Credentials section (heading, "Add Credential" button, list toggle) _(admin only)_
+- [x] Credential creation modal opens with form fields and closes on cancel _(admin only)_
+- [x] Advanced Settings expands and collapses on the configuration route _(admin only)_
+- [x] Advanced Settings search filters settings and restores on clear _(admin only)_
+- [x] Save Changes button appears after modifying an advanced setting _(admin only)_
+- [x] Learning Info tab (when `course.learning_info` is non-empty) navigates to `/learning-info` and renders the "What You'll Learn" section _(skips gracefully if tab absent)_
+- [x] Instructors tab (when `course.instructor_info.instructors` is non-empty) navigates to `/instructors` and renders the instructors list _(skips gracefully if tab absent)_
+- [x] Analytics tab (gated on the `can_view_analytics` RBAC permission) navigates to `/analytics` and renders `AnalyticsCourseDetail` (enrollment stat cards + Enrolled Users table) _(permission-gated; skips gracefully if absent)_
 
 ---
 
