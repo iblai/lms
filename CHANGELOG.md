@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.46.0](https://github.com/iblai/lms/compare/skills-v0.45.0...skills-v0.46.0) (2026-07-03)
+
+### Features
+
+* agent tab fullscreen mode implemented ([6cc82ac](https://github.com/iblai/lms/commit/6cc82acf7b87b5e300315dbaf1fddbd38575fab7))
+* gradebook display gated behind env flag > test coverage ([e0caec8](https://github.com/iblai/lms/commit/e0caec8ff1ebc511f17ae5794ef230cfbcbbc866))
+* gradebook display gated behind env flag > test coverage ([39ef040](https://github.com/iblai/lms/commit/39ef04049561334718af9e19ca285597d906d5e9))
+
+### Chores
+
+* **e2e:** update coverage for agent tab fullscreen feature [skip ci] ([e231b53](https://github.com/iblai/lms/commit/e231b5375d6486ebd4244d8c3a086997c0d6bbf8))
+
 ## [0.45.0](https://github.com/iblai/lms/compare/skills-v0.44.0...skills-v0.45.0) (2026-07-03)
 
 ### Features
