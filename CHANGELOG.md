@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.45.0](https://github.com/iblai/lms/compare/skills-v0.44.0...skills-v0.45.0) (2026-07-03)
+
+### Features
+
+* gradebook display gated behind env flag ([1fc6236](https://github.com/iblai/lms/commit/1fc62362c863c8d650aec09310813a121de54ca2))
+* gradebook display gated behind env flag > iblai-js bump ([e735ff2](https://github.com/iblai/lms/commit/e735ff2f4e6f7a9051258c4fd02ba8085d8c4bed))
+* gradebook display gated behind env flag > test coverage ([1d926cb](https://github.com/iblai/lms/commit/1d926cb6788438898290382dcd40825e5d936e7c))
+
+### CI
+
+* push release image to iblai-lms-spa (replaces iblai-skills-spa-pro) ([28fca18](https://github.com/iblai/lms/commit/28fca18f940ab333e6bd1042f2e0357078167cd1))
+
 ## [0.44.0](https://github.com/iblai/lms/compare/skills-v0.43.2...skills-v0.44.0) (2026-07-02)
 
 ### Features
