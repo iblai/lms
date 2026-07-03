@@ -45,6 +45,7 @@ vi.mock('lucide-react', () => ({
   MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
   CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
   CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
+  Maximize: () => <span data-testid="maximize">Maximize</span>,
 }));
 
 // Mock helpers

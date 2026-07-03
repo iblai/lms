@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -20,14 +20,24 @@ import AgentTab from '../page';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 
 const mockSetActiveTab = vi.fn();
+const mockSetAgentFullscreen = vi.fn();
 
 const renderAgentTab = (
   activeTab: string = 'course',
   agentMode: 'learning' | 'assessment' = 'learning',
+  agentFullscreen: boolean = false,
 ) =>
   render(
     <EdxIframeContext.Provider
-      value={{ setActiveTab: mockSetActiveTab, activeTab, agentMode } as any}
+      value={
+        {
+          setActiveTab: mockSetActiveTab,
+          activeTab,
+          agentMode,
+          agentFullscreen,
+          setAgentFullscreen: mockSetAgentFullscreen,
+        } as any
+      }
     >
       <AgentTab />
     </EdxIframeContext.Provider>,
@@ -97,5 +107,26 @@ describe('AgentTab page', () => {
     const courseWrapper = courseContainer.firstChild as HTMLElement;
     // When not on the agent tab, the layout reserves less vertical space.
     expect(courseWrapper.className).toContain('h-[calc(100vh-162px)]');
+  });
+
+  it('does not render the fullscreen exit button when not in fullscreen', () => {
+    const { queryByTestId } = renderAgentTab('agent', 'learning', false);
+    expect(queryByTestId('agent-fullscreen-exit')).not.toBeInTheDocument();
+  });
+
+  it('expands to cover the viewport and shows an exit button in fullscreen', () => {
+    const { container, getByTestId } = renderAgentTab('agent', 'learning', true);
+    const wrapper = container.firstChild as HTMLElement;
+    // Fullscreen pins the container over the whole viewport instead of the calc heights.
+    expect(wrapper.className).toContain('fixed');
+    expect(wrapper.className).toContain('inset-0');
+    expect(wrapper.className).not.toContain('h-[calc(100vh-203px)]');
+    expect(getByTestId('agent-fullscreen-exit')).toBeInTheDocument();
+  });
+
+  it('exits fullscreen when the exit button is clicked', () => {
+    const { getByTestId } = renderAgentTab('agent', 'learning', true);
+    fireEvent.click(getByTestId('agent-fullscreen-exit'));
+    expect(mockSetAgentFullscreen).toHaveBeenCalledWith(false);
   });
 });

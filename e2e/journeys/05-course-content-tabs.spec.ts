@@ -1021,6 +1021,54 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Mobile viewport surfaces the toggle inside a popover');
   });
 
+  test('Checkpoint 33: Agent tab fullscreen toggle expands the chat and the floating bubble restores it', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The mentor web component should mount before we exercise fullscreen.
+    await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 60_000 });
+
+    // The fullscreen control lives in the tabs row, to the right of the autoplay icon.
+    const enterFullscreen = page.getByRole('button', { name: 'Enter fullscreen' });
+    await expect(enterFullscreen).toBeVisible({ timeout: 30_000 });
+    await enterFullscreen.click();
+
+    // Entering fullscreen surfaces the floating exit bubble; its container is the
+    // fixed inset-0 overlay that covers the layout chrome.
+    const exitFullscreen = page.getByRole('button', { name: 'Exit fullscreen' });
+    await expect(exitFullscreen).toBeVisible({ timeout: 15_000 });
+    const overlayClass = await exitFullscreen.locator('xpath=..').getAttribute('class');
+    expect(overlayClass ?? '').toContain('fixed');
+    expect(overlayClass ?? '').toContain('inset-0');
+
+    // The agent chat stays mounted inside the fullscreen overlay.
+    await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 15_000 });
+
+    // Clicking the bubble collapses the overlay and restores the enter control.
+    await exitFullscreen.click();
+    await expect(exitFullscreen).toBeHidden({ timeout: 15_000 });
+    await expect(enterFullscreen).toBeVisible({ timeout: 15_000 });
+    logger.info('Agent tab fullscreen toggle expands the chat and the floating bubble restores it');
+  });
+
   // ── Admin Configuration tab (moved here from the course about page) ──────────
   //
   // Configuration is now a course-content route (`/course-content/<id>/configuration`)
