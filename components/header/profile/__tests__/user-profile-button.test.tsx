@@ -109,6 +109,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="show-account-tab">{String(props.showAccountTab)}</span>
       <span data-testid="show-help-link">{String(props.showHelpLink)}</span>
       <span data-testid="show-learner-mode-switch">{String(props.showLearnerModeSwitch)}</span>
+      <span data-testid="show-gradebook-tab">{String(props.showGradebookTab)}</span>
       <span data-testid="current-spa">{props.currentSPA}</span>
       <span data-testid="enable-gravatar-on-profile-pic">
         {String(props.enableGravatarOnProfilePic)}
@@ -203,6 +204,19 @@ describe('UserProfileButton', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('user-is-student')).toHaveTextContent('false');
+    });
+
+    it('should show the gradebook tab', () => {
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-gradebook-tab')).toHaveTextContent('true');
+    });
+
+    it('should show the gradebook tab regardless of admin status', () => {
+      mockIsAdmin = false;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-gradebook-tab')).toHaveTextContent('true');
     });
   });
 
