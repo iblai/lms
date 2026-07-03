@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-07-02 | 228 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-07-03 | 226 checkpoints | 32 journeys | 100% covered
 
 ## How This Works
 
@@ -68,7 +68,7 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (32 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (33 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
 **Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `services/course-metadata.ts`
 
@@ -104,6 +104,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Learning Info tab (when `course.learning_info` is non-empty) navigates to `/learning-info` and renders the "What You'll Learn" section _(skips gracefully if tab absent)_
 - [x] Instructors tab (when `course.instructor_info.instructors` is non-empty) navigates to `/instructors` and renders the instructors list _(skips gracefully if tab absent)_
 - [x] Analytics tab (gated on the `can_view_analytics` RBAC permission) navigates to `/analytics` and renders `AnalyticsCourseDetail` (enrollment stat cards + Enrolled Users table) _(permission-gated; skips gracefully if absent)_
+- [x] Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout
 
 ---
 

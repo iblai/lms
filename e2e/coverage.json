@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-06-12",
+  "lastUpdated": "2026-07-03",
   "summary": {
-    "totalCheckpoints": 225,
-    "coveredCheckpoints": 225,
+    "totalCheckpoints": 226,
+    "coveredCheckpoints": 226,
     "percent": 100,
     "totalJourneys": 32
   },
@@ -348,6 +348,11 @@
         {
           "id": "tabs-32",
           "description": "Analytics tab (gated on the can_view_analytics RBAC permission) navigates to /analytics and renders AnalyticsCourseDetail (enrollment stat cards + Enrolled Users table)",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-33",
+          "description": "Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout",
           "status": "covered"
         }
       ]
