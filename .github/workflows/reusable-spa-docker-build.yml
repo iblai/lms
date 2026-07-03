@@ -70,6 +70,9 @@ jobs:
             skills)
               echo "image_name=iblai-skills-spa-pro" >> $GITHUB_OUTPUT
               ;;
+            lms)
+              echo "image_name=iblai-lms-spa" >> $GITHUB_OUTPUT
+              ;;
             auth)
               echo "image_name=iblai-auth-spa-pro" >> $GITHUB_OUTPUT
               ;;
