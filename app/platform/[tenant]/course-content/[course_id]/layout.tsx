@@ -3,7 +3,14 @@
 import type React from 'react';
 import { use, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChevronRight, CirclePause, CirclePlay, ListTree, MoreVertical } from 'lucide-react';
+import {
+  ChevronRight,
+  CirclePause,
+  CirclePlay,
+  ListTree,
+  Maximize,
+  MoreVertical,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -144,6 +151,7 @@ export default function CourseContentLayout({
   const [currentUnitID, setCurrentUnitID] = useState<string | null>(null);
   const [refresher, setRefresher] = useState<Date | null>(null);
   const [agentMode, setAgentMode] = useState<AgentMode>('learning');
+  const [agentFullscreen, setAgentFullscreen] = useState(false);
   const [agentAutoplayOn, setAgentAutoplayOn] = useState(false);
   const setAgentAutoplay = (enabled: boolean) => {
     setAgentAutoplayOn(enabled);
@@ -163,12 +171,19 @@ export default function CourseContentLayout({
     (block) => block.type === 'ibl_mentor_xblock',
   );
   const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
+  const fullscreenToggleVisible = currentTab === 'agent';
 
   useEffect(() => {
     if (!assessmentToggleVisible && agentMode !== 'learning') {
       setAgentMode('learning');
     }
   }, [assessmentToggleVisible]);
+  // Leaving the agent tab should always drop out of fullscreen.
+  useEffect(() => {
+    if (!fullscreenToggleVisible && agentFullscreen) {
+      setAgentFullscreen(false);
+    }
+  }, [fullscreenToggleVisible]);
   useEffect(() => {
     if (!_.isEmpty(courseOutline)) {
       const currentCourse = getUnitToIframe(courseOutline);
@@ -261,6 +276,8 @@ export default function CourseContentLayout({
       setRefresher,
       agentMode,
       setAgentMode,
+      agentFullscreen,
+      setAgentFullscreen,
     }),
     [
       iframeUrl,
@@ -271,6 +288,7 @@ export default function CourseContentLayout({
       examInfo,
       refresher,
       agentMode,
+      agentFullscreen,
     ],
   );
 
@@ -475,6 +493,18 @@ export default function CourseContentLayout({
                         ) : (
                           <CirclePlay className="h-5 w-5" />
                         )}
+                      </button>
+                    )}
+                    {fullscreenToggleVisible && (
+                      <button
+                        type="button"
+                        onClick={() => setAgentFullscreen(true)}
+                        aria-label="Enter fullscreen"
+                        title="Fullscreen"
+                        data-testid="agent-fullscreen-toggle"
+                        className="rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      >
+                        <Maximize className="h-5 w-5" />
                       </button>
                     )}
                     {assessmentToggleVisible && (

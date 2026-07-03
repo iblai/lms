@@ -43,6 +43,8 @@ const buildContextValue = (overrides = {}) => ({
   setRefresher: vi.fn(),
   agentMode: 'learning' as const,
   setAgentMode: vi.fn(),
+  agentFullscreen: false,
+  setAgentFullscreen: vi.fn(),
   ...overrides,
 });
 
