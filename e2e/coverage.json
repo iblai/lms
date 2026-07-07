@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-06-12",
+  "lastUpdated": "2026-07-03",
   "summary": {
-    "totalCheckpoints": 225,
-    "coveredCheckpoints": 225,
+    "totalCheckpoints": 226,
+    "coveredCheckpoints": 226,
     "percent": 100,
     "totalJourneys": 32
   },
@@ -126,7 +126,7 @@
     },
     {
       "id": "course-about-and-configuration",
-      "name": "Course About & Configuration",
+      "name": "Course About",
       "spec": "04-course-about-and-configuration.spec.ts",
       "sourceFiles": [
         "app/courses/[course_id]/page.tsx",
@@ -156,37 +156,7 @@
         },
         {
           "id": "course-05",
-          "description": "Configuration tab visible for admin users",
-          "status": "covered"
-        },
-        {
-          "id": "course-06",
-          "description": "Configuration tab displays Credentials section",
-          "status": "covered"
-        },
-        {
-          "id": "course-07",
-          "description": "Credential creation modal opens with form fields",
-          "status": "covered"
-        },
-        {
-          "id": "course-08",
-          "description": "Advanced Settings expands/collapses with search",
-          "status": "covered"
-        },
-        {
-          "id": "course-09",
-          "description": "Advanced Settings search filters settings",
-          "status": "covered"
-        },
-        {
-          "id": "course-10",
-          "description": "Save Changes button saves settings",
-          "status": "covered"
-        },
-        {
-          "id": "course-11",
-          "description": "Authoring tab (admin only) links to <studio-url>/course/<course-id> and opens in a new tab",
+          "description": "About page exposes only About and Syllabus tabs; the Configuration/Learning Info/Instructors tabs and Authoring link were moved to the course-content view (covered by tabs-24..32)",
           "status": "covered"
         }
       ]
@@ -211,6 +181,10 @@
         "app/platform/[tenant]/course-content/[course_id]/discussion/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/instructor/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/bookmarks/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/configuration/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/learning-info/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/instructors/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/analytics/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
         "components/course-lesson-navigator.tsx",
         "components/course-agent-chat.tsx",
@@ -329,6 +303,56 @@
         {
           "id": "tabs-23",
           "description": "Authoring tab (admin only) links to <studio-url>/course/<course-id> and opens in a new tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-24",
+          "description": "Configuration tab (platform admin) navigates to /course-content/<id>/configuration and renders the configuration-tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-25",
+          "description": "Configuration route displays the Credentials section (heading, Add Credential button, list toggle)",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-26",
+          "description": "Credential creation modal opens with form fields and closes on cancel",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-27",
+          "description": "Advanced Settings expands and collapses on the configuration route",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-28",
+          "description": "Advanced Settings search filters settings and restores on clear",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-29",
+          "description": "Save Changes button appears after modifying an advanced setting",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-30",
+          "description": "Learning Info tab (present when course.learning_info is non-empty) navigates to /learning-info and renders the What You'll Learn section",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-31",
+          "description": "Instructors tab (present when course.instructor_info.instructors is non-empty) navigates to /instructors and renders the instructors list",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-32",
+          "description": "Analytics tab (gated on the can_view_analytics RBAC permission) navigates to /analytics and renders AnalyticsCourseDetail (enrollment stat cards + Enrolled Users table)",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-33",
+          "description": "Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout",
           "status": "covered"
         }
       ]

@@ -20,6 +20,8 @@ export const EdxIframeContext = createContext<{
   setRefresher: (refresher: Date) => void;
   agentMode: AgentMode;
   setAgentMode: (mode: AgentMode) => void;
+  agentFullscreen: boolean;
+  setAgentFullscreen: (fullscreen: boolean) => void;
   //setCourseOutline: (outline:CourseOutlineChildNode[]) => void;
 }>({
   iframeUrl: '',
@@ -36,5 +38,7 @@ export const EdxIframeContext = createContext<{
   setRefresher: () => {},
   agentMode: 'learning',
   setAgentMode: () => {},
+  agentFullscreen: false,
+  setAgentFullscreen: () => {},
   //setCourseOutline: () => {},
 });

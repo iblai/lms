@@ -31,7 +31,7 @@ jobs:
     needs: prepare
     uses: ./.github/workflows/reusable-spa-docker-build.yml
     with:
-      app_name: skills
+      app_name: lms
       source_repo: ${{ github.repository }}
       source_ref: ${{ github.ref }}
       version: ${{ needs.prepare.outputs.version }}

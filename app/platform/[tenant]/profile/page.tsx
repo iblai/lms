@@ -1,8 +1,7 @@
 'use client';
 
-import { ProfileTimeChart } from '@/components/profile-time-chart';
+import dynamic from 'next/dynamic';
 import { ProfileInfoCards } from '@/components/profile-info-cards';
-import { SkillLeaderboardChart } from '@/components/skill-leaderboard-chart';
 import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-stats';
 import { ActivityStats } from '@/types/catalog';
 import { SkeletonActivityStatBox } from '@/components/skeleton-activity-stat-box';
@@ -11,6 +10,18 @@ import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
+
+const chartFallback = <div className="h-64 w-full animate-pulse rounded-lg bg-gray-100" />;
+
+const ProfileTimeChart = dynamic(
+  () => import('@/components/profile-time-chart').then((m) => m.ProfileTimeChart),
+  { ssr: false, loading: () => chartFallback },
+);
+
+const SkillLeaderboardChart = dynamic(
+  () => import('@/components/skill-leaderboard-chart').then((m) => m.SkillLeaderboardChart),
+  { ssr: false, loading: () => chartFallback },
+);
 
 export default function ProfilePage() {
   const tenant = useTenantParam();

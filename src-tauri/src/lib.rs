@@ -20,7 +20,7 @@ use std::sync::Arc;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use std::sync::Mutex;
 use tauri::{command, AppHandle, Emitter, Manager, WebviewWindowBuilder};
-#[cfg(any(target_os = "ios", target_os = "android", target_os = "macos"))]
+#[cfg(any(target_os = "ios", target_os = "android"))]
 use tauri::Url;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -35,12 +35,11 @@ use web_cache::WebCache;
 use {
     block::ConcreteBlock,
     objc::{class, msg_send, sel, sel_impl},
-    objc::runtime::{Class, Object, BOOL, YES},
+    objc::runtime::{Class, Object, BOOL, YES, NO},
     objc::declare::ClassDecl,
     std::ffi::{CStr, CString},
     std::ptr,
     std::sync::Once,
-    tokio::sync::oneshot,
 };
 
 // Global web cache instance (desktop only)
@@ -52,6 +51,13 @@ static LAST_SKILLS_ROUTE: std::sync::OnceLock<Arc<RwLock<Option<String>>>> = std
 
 #[cfg(any(target_os = "ios", target_os = "android"))]
 static PENDING_DEEP_LINK: std::sync::OnceLock<Mutex<Option<String>>> = std::sync::OnceLock::new();
+
+#[cfg(target_os = "macos")]
+struct JsonSessionPtr(*mut objc::runtime::Object);
+#[cfg(target_os = "macos")]
+unsafe impl Send for JsonSessionPtr {}
+#[cfg(target_os = "macos")]
+static MACOS_AUTH_SESSION: std::sync::OnceLock<std::sync::Mutex<Option<JsonSessionPtr>>> = std::sync::OnceLock::new();
 
 // File name for persisting the last route
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
@@ -75,7 +81,7 @@ fn get_app_url() -> String {
         return "https://skillsai.iblai.app".to_string();
 
         #[cfg(not(debug_assertions))]
-        return "https://skills.iblai.app".to_string();
+        return "https://skillsai.iblai.app".to_string();
     }
 }
 
@@ -355,6 +361,10 @@ fn open_with_auth_session_macos(url: &str, app_handle: &AppHandle) -> Result<(),
     println!("[ibl.ai] open_with_auth_session_macos called with URL: {}", url);
 
     unsafe {
+        // Bring app to front so the session sheet attaches to the key window
+        let ns_app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+        let _: () = msg_send![ns_app, activateIgnoringOtherApps: YES];
+
         let c_url = CString::new(url).map_err(|_| "Failed to create CString from URL".to_string())?;
         let ns_string: *mut Object =
             msg_send![class!(NSString), stringWithUTF8String: c_url.as_ptr()];
@@ -401,6 +411,16 @@ fn open_with_auth_session_macos(url: &str, app_handle: &AppHandle) -> Result<(),
                         println!("[ibl.ai] macOS ASWebAuthenticationSession error: {:?}", error_str);
                     }
                 }
+                // Release the retained session
+                let storage: Option<&std::sync::Mutex<Option<JsonSessionPtr>>> = MACOS_AUTH_SESSION.get();
+                if let Some(mtx) = storage {
+                    if let Ok(mut guard) = mtx.lock() {
+                        if let Some(JsonSessionPtr(ptr)) = guard.take() {
+                            let _: () = msg_send![ptr, release];
+                            println!("[ibl.ai] macOS auth session released");
+                        }
+                    }
+                }
             }
         });
         let block = block.copy();
@@ -434,11 +454,19 @@ fn open_with_auth_session_macos(url: &str, app_handle: &AppHandle) -> Result<(),
             }
         }
 
+        // Retain the session to prevent deallocation before completion handler fires
+        let _: () = msg_send![session, retain];
+        let session_storage = MACOS_AUTH_SESSION.get_or_init(|| std::sync::Mutex::new(None));
+        *session_storage.lock().unwrap() = Some(JsonSessionPtr(session));
+
         let started: BOOL = msg_send![session, start];
         if started == YES {
             println!("[ibl.ai] macOS ASWebAuthenticationSession started successfully");
             Ok(())
         } else {
+            // Release on failure
+            let _: () = msg_send![session, release];
+            *session_storage.lock().unwrap() = None;
             Err("Failed to start ASWebAuthenticationSession on macOS".to_string())
         }
     }
@@ -464,7 +492,18 @@ fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
 
     let is_custom_scheme = scheme == "iblai-skills" || scheme == "ai.ibl.skills";
     if !is_custom_scheme {
-        println!("[ibl.ai] Not a custom scheme callback, ignoring");
+        // ASWebAuthenticationSession on macOS may fire with the intermediate URL
+        // (e.g. https://login.iblai.app/login/mobile/complete/iblai-skills?code=...)
+        // Navigate the main webview there so login.iblai.app can complete the code exchange
+        println!("[ibl.ai] Non-custom-scheme callback: scheme={}, host={}, url={}", scheme, host, raw_url);
+        if let Some(window) = app_handle.get_webview_window("main") {
+            if let Ok(js_url) = serde_json::to_string(raw_url) {
+                let _ = window.eval(&format!(
+                    "console.log('[ibl.ai] Auth callback received:', {}); window.location.href = {};",
+                    js_url, js_url
+                ));
+            }
+        }
         return;
     }
 
@@ -533,6 +572,120 @@ fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
     }
 }
 
+/// Handle an incoming deep link on Windows (custom URI scheme callback).
+///
+/// Unlike macOS/iOS (which catch the callback in-process via
+/// ASWebAuthenticationSession) Windows WebView2 cannot cancel a navigation to an
+/// unknown scheme inside the OAuth popup — it hands `iblai-skills://` to the OS.
+/// So on Windows we register the scheme with the OS and route the callback here,
+/// then navigate the main window to the SSO completion route (mirroring the
+/// mobile `handle_deep_link_url` flow) and close the now-stale OAuth popup.
+#[cfg(target_os = "windows")]
+fn handle_desktop_deep_link(app_handle: &AppHandle, raw_url: &str) {
+    println!("[ibl.ai] Windows deep link received: {}", raw_url);
+
+    let parsed = match tauri::Url::parse(raw_url) {
+        Ok(url) => url,
+        Err(e) => {
+            println!("[ibl.ai] Failed to parse deep link URL: {}", e);
+            return;
+        }
+    };
+
+    let scheme = parsed.scheme();
+    let host = parsed.host_str().unwrap_or("");
+    let path = parsed.path();
+    println!("[ibl.ai] Parsed deep link - scheme: {}, host: {}, path: {}", scheme, host, path);
+
+    let is_custom_scheme = scheme == "iblai-skills" || scheme == "ai.ibl.skills";
+    if !is_custom_scheme {
+        println!("[ibl.ai] Not a custom scheme deep link, ignoring");
+        return;
+    }
+
+    // For custom schemes the first path segment may be parsed as the host.
+    let mut final_path = parsed.path().to_string();
+    if final_path.is_empty() || final_path == "/" {
+        if !host.is_empty() {
+            final_path = format!("/{}", host);
+        }
+    }
+
+    if !final_path.starts_with("/sso-login")
+        && !final_path.starts_with("/mobile-sso-login")
+        && !final_path.starts_with("/sso-login-complete")
+    {
+        println!("[ibl.ai] Path '{}' not SSO-related, ignoring", final_path);
+        return;
+    }
+
+    // Normalize /sso-login to /sso-login-complete for all SSO callbacks.
+    let final_path = if final_path.starts_with("/sso-login") && !final_path.starts_with("/sso-login-complete") {
+        let normalized = final_path.replacen("/sso-login", "/sso-login-complete", 1);
+        println!("[ibl.ai] Normalized path: {} -> {}", final_path, normalized);
+        normalized
+    } else {
+        final_path
+    };
+
+    // Extract query params from the raw URL, fully decode them, and rebuild the
+    // target URL via JS URLSearchParams (avoids browser re-encoding).
+    let base_url = format!("{}{}", get_app_url(), final_path);
+    let raw_query = raw_url.find('?').map(|i| &raw_url[i + 1..]).unwrap_or("");
+
+    let mut params: Vec<(String, String)> = Vec::new();
+    for part in raw_query.split('&') {
+        if part.is_empty() {
+            continue;
+        }
+        let (key, value) = match part.find('=') {
+            Some(i) => (&part[..i], &part[i + 1..]),
+            None => (part, ""),
+        };
+        let mut decoded = value.to_string();
+        loop {
+            match urlencoding::decode(&decoded) {
+                Ok(d) if d != decoded => decoded = d.into_owned(),
+                _ => break,
+            }
+        }
+        let decoded_key = urlencoding::decode(key).unwrap_or_else(|_| key.into()).into_owned();
+        params.push((decoded_key, decoded));
+    }
+
+    println!(
+        "[ibl.ai] Target base URL: {}, params: {:?}",
+        base_url,
+        params.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>()
+    );
+
+    // The OAuth popup webview is now stale (it triggered the OS deep link); close it.
+    if let Some(popup) = app_handle.get_webview_window("oauth-popup") {
+        println!("[ibl.ai] Closing OAuth popup after deep link");
+        let _ = popup.close();
+    }
+
+    if let Some(window) = app_handle.get_webview_window("main") {
+        let js_base = serde_json::to_string(&base_url).unwrap_or_default();
+        let mut js_parts = vec![format!("var u = new URL({});", js_base)];
+        for (key, value) in &params {
+            let js_key = serde_json::to_string(key).unwrap_or_default();
+            let js_val = serde_json::to_string(value).unwrap_or_default();
+            js_parts.push(format!("u.searchParams.set({}, {});", js_key, js_val));
+        }
+        js_parts.push("window.location.href = u.toString();".to_string());
+        let js = js_parts.join(" ");
+
+        match window.eval(&js) {
+            Ok(_) => println!("[ibl.ai] Successfully navigated main window via deep link"),
+            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+        }
+        let _ = window.set_focus();
+    } else {
+        println!("[ibl.ai] Main window not found for deep link navigation");
+    }
+}
+
 fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
     #[cfg(target_os = "ios")]
     {
@@ -589,12 +742,9 @@ fn open_oauth_in_popup(url: &str, app_handle: &AppHandle) -> Result<(), String> 
         let url_str = nav_url.as_str();
         println!("[OAuth Popup] Navigation to: {}", url_str);
 
-        // Check if this is a callback URL (auth completed)
-        let is_callback = url_str.contains("login.iblai.app") &&
-            (url_str.contains("/callback") ||
-             url_str.contains("code=") ||
-             url_str.contains("token=") ||
-             url_str.contains("access_token="));
+        // Check if auth completed and we're being redirected back to the app
+        let is_callback = url_str.contains("skillsai.iblai.app") ||
+            url_str.contains("skills.iblai.app");
 
         // Also check for custom scheme callbacks
         let is_custom_scheme = url_str.starts_with("iblai-skills://") ||
@@ -605,19 +755,32 @@ fn open_oauth_in_popup(url: &str, app_handle: &AppHandle) -> Result<(), String> 
 
             // Navigate the main window to the callback URL
             if let Some(main_win) = app_handle_clone.get_webview_window("main") {
-                let target_url = if is_custom_scheme {
-                    // Convert custom scheme to app URL
-                    let path = url_str
-                        .replace("iblai-skills://", "/")
-                        .replace("ai.ibl.skills://", "/");
-                    format!("{}{}", get_app_url(), path)
-                } else {
-                    url_str.to_string()
-                };
+                if let Ok(parsed) = tauri::Url::parse(url_str) {
+                    let host = parsed.host_str().unwrap_or("");
+                    let mut final_path = parsed.path().to_string();
 
-                println!("[OAuth Popup] Navigating main window to: {}", target_url);
-                let _ = main_win.eval(&format!("window.location.href = '{}';", target_url));
-                let _ = main_win.set_focus();
+                    // For custom schemes, the host might be part of the path
+                    if is_custom_scheme && (final_path.is_empty() || final_path == "/") {
+                        if !host.is_empty() {
+                            final_path = format!("/{}", host);
+                        }
+                    }
+
+                    // Construct target URL preserving raw query string
+                    let mut target_url = format!("{}{}", get_app_url(), final_path);
+                    if let Some(query) = parsed.query() {
+                        if !query.is_empty() {
+                            target_url.push('?');
+                            target_url.push_str(query);
+                        }
+                    }
+
+                    println!("[OAuth Popup] Navigating main window to: {}", target_url);
+                    if let Ok(js_url) = serde_json::to_string(&target_url) {
+                        let _ = main_win.eval(&format!("window.location.href = {};", js_url));
+                    }
+                    let _ = main_win.set_focus();
+                }
             }
 
             // Close the OAuth popup
@@ -1180,9 +1343,16 @@ async fn open_external_url(app: AppHandle, url: String) -> Result<(), String> {
             .unwrap_or_else(|_| Err("Failed to open auth session".to_string()));
     }
 
-    #[cfg(not(target_os = "ios"))]
+    #[cfg(not(any(target_os = "ios", target_os = "android")))]
     {
         open_oauth_in_popup(&url, &app)
+    }
+
+    #[cfg(target_os = "android")]
+    {
+        app.shell()
+            .open(&url, None)
+            .map_err(|e| format!("Failed to open URL: {}", e))
     }
 }
 
@@ -1946,11 +2116,49 @@ pub fn run() {
         }
     }
 
-    let builder = tauri::Builder::default()
+    let builder = tauri::Builder::default();
+
+    // Windows: route the OS-launched deep link (custom URI scheme callback) into
+    // the already-running instance. Must be registered BEFORE the deep-link
+    // plugin; the actual URL is delivered via `on_open_url` (see setup below).
+    #[cfg(target_os = "windows")]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.set_focus();
+        }
+    }));
+
+    let builder = builder
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
             let app_url = get_app_url();
+
+            // =====================
+            // WINDOWS DEEP LINK SETUP
+            // =====================
+            // macOS/iOS catch the callback in-process via ASWebAuthenticationSession
+            // and Android via its manifest intent-filter, so this is Windows-only.
+            #[cfg(target_os = "windows")]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+
+                // Register the custom URI schemes with the OS. The installer does
+                // this for packaged builds; this call covers `tauri dev` and
+                // re-points the handler at the current executable.
+                if let Err(e) = app.deep_link().register_all() {
+                    println!("[ibl.ai] Failed to register deep link schemes: {}", e);
+                }
+
+                // Handles both cold start (app launched by the URL) and warm start
+                // (URL forwarded by the single-instance plugin's deep-link feature).
+                let deep_link_handle = app.handle().clone();
+                app.deep_link().on_open_url(move |event| {
+                    for url in event.urls() {
+                        handle_desktop_deep_link(&deep_link_handle, url.as_str());
+                    }
+                });
+            }
 
             #[cfg(any(target_os = "ios", target_os = "android"))]
             {
@@ -2064,6 +2272,7 @@ pub fn run() {
                 };
 
                 let app_handle = app.handle().clone();
+                let sso_navigating = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 
                 // Create main window with appropriate URL monitoring script
                 let init_script = if is_online {
@@ -2077,7 +2286,7 @@ pub fn run() {
                     "main",
                     initial_url,
                 )
-                .title("SkillsAI")
+                .title("Agentic LMS")
                 .inner_size(1200.0, 800.0)
                 .min_inner_size(800.0, 600.0)
                 .maximized(true)
@@ -2090,9 +2299,24 @@ pub fn run() {
                         println!("[IBL Skills] [DESKTOP] OAuth URL detected, opening in popup: {}", url_str);
                         if let Err(e) = open_oauth_in_popup(url_str, &app_handle) {
                             println!("[IBL Skills] [DESKTOP] Failed to open OAuth popup: {}", e);
-                            return true; // Allow navigation as last resort
+                            return true;
                         }
-                        return false; // Prevent webview navigation in main window
+                        return false;
+                    }
+                    // Intercept cross-origin sso-login redirects to prevent
+                    // WKWebView from double-encoding percent-encoded query params
+                    let is_sso = (url_str.contains("skillsai.iblai.app") || url_str.contains("skills.iblai.app"))
+                        && (url_str.contains("/sso-login-complete") || url_str.contains("/sso-login"));
+                    if is_sso && url_str.contains("data=") {
+                        // Skip if we're already handling this (avoid infinite loop)
+                        if sso_navigating.swap(true, std::sync::atomic::Ordering::SeqCst) {
+                            println!("[IBL Skills] [DESKTOP] SSO redirect already decoded, allowing through");
+                            sso_navigating.store(false, std::sync::atomic::Ordering::SeqCst);
+                            return true;
+                        }
+                        println!("[IBL Skills] [DESKTOP] SSO redirect intercepted, decoding params");
+                        handle_auth_session_callback_sso(&app_handle, url_str);
+                        return false;
                     }
                     true
                 })
@@ -2282,156 +2506,11 @@ pub fn run() {
         return false;
     }
 
-    // CRITICAL: Intercept window.location.href assignments
-    // This is how the auth app redirects to OAuth providers
-    (function() {
-        var currentHref = window.location.href;
+    // OAuth URL interception is handled by on_navigation in Rust.
+    // Do NOT override Location.prototype.href — it causes WKWebView to
+    // double-encode percent-encoded query parameters during navigation.
 
-        // Create a proxy for location to intercept href changes
-        var locationProxy = {
-            get href() {
-                return currentHref;
-            },
-            set href(url) {
-                console.log('[IBL Skills] Intercepted location.href =', url);
-                if (isOAuthUrl(url)) {
-                    console.log('[IBL Skills] Detected OAuth redirect, opening in system browser');
-                    // Make URL absolute if relative
-                    var absoluteUrl = url;
-                    if (url.startsWith('/')) {
-                        absoluteUrl = window.location.origin + url;
-                    }
-                    openInSystemBrowser(absoluteUrl);
-                    // Don't actually navigate - we opened in external browser
-                    return;
-                }
-                // Allow normal navigation
-                currentHref = url;
-                Object.getOwnPropertyDescriptor(window, 'location').set.call(window, url);
-            },
-            get origin() { return window.location.origin; },
-            get protocol() { return window.location.protocol; },
-            get host() { return window.location.host; },
-            get hostname() { return window.location.hostname; },
-            get port() { return window.location.port; },
-            get pathname() { return window.location.pathname; },
-            get search() { return window.location.search; },
-            get hash() { return window.location.hash; },
-            assign: function(url) {
-                console.log('[IBL Skills] Intercepted location.assign()', url);
-                if (isOAuthUrl(url)) {
-                    var absoluteUrl = url.startsWith('/') ? window.location.origin + url : url;
-                    openInSystemBrowser(absoluteUrl);
-                    return;
-                }
-                window.location.assign(url);
-            },
-            replace: function(url) {
-                console.log('[IBL Skills] Intercepted location.replace()', url);
-                if (isOAuthUrl(url)) {
-                    var absoluteUrl = url.startsWith('/') ? window.location.origin + url : url;
-                    openInSystemBrowser(absoluteUrl);
-                    return;
-                }
-                window.location.replace(url);
-            },
-            reload: function() { window.location.reload(); },
-            toString: function() { return window.location.toString(); }
-        };
-
-        // Try to override window.location (may not work in all browsers)
-        try {
-            // This approach works better: intercept direct href setting via defineProperty
-            var originalLocation = window.location;
-
-            // Wrap the location object's href setter
-            var hrefDescriptor = Object.getOwnPropertyDescriptor(Location.prototype, 'href');
-            if (hrefDescriptor && hrefDescriptor.set) {
-                var originalHrefSetter = hrefDescriptor.set;
-                Object.defineProperty(Location.prototype, 'href', {
-                    get: hrefDescriptor.get,
-                    set: function(url) {
-                        console.log('[IBL Skills] Location.href setter intercepted:', url);
-                        if (isOAuthUrl(url)) {
-                            console.log('[IBL Skills] OAuth URL detected, redirecting to system browser');
-                            var absoluteUrl = url;
-                            if (url.startsWith('/')) {
-                                absoluteUrl = this.origin + url;
-                            }
-                            if (openInSystemBrowser(absoluteUrl)) {
-                                return; // Prevent WebView navigation
-                            }
-                        }
-                        // Normal navigation
-                        originalHrefSetter.call(this, url);
-                    },
-                    configurable: true,
-                    enumerable: true
-                });
-                console.log('[IBL Skills] Location.href setter intercepted successfully');
-            }
-
-            // Also intercept assign and replace
-            var originalAssign = Location.prototype.assign;
-            Location.prototype.assign = function(url) {
-                console.log('[IBL Skills] location.assign() intercepted:', url);
-                if (isOAuthUrl(url)) {
-                    var absoluteUrl = url.startsWith('/') ? this.origin + url : url;
-                    if (openInSystemBrowser(absoluteUrl)) return;
-                }
-                originalAssign.call(this, url);
-            };
-
-            var originalReplace = Location.prototype.replace;
-            Location.prototype.replace = function(url) {
-                console.log('[IBL Skills] location.replace() intercepted:', url);
-                if (isOAuthUrl(url)) {
-                    var absoluteUrl = url.startsWith('/') ? this.origin + url : url;
-                    if (openInSystemBrowser(absoluteUrl)) return;
-                }
-                originalReplace.call(this, url);
-            };
-
-        } catch (e) {
-            console.error('[IBL Skills] Failed to intercept location:', e);
-        }
-    })();
-
-    // Also intercept window.open for OAuth popups
-    var originalWindowOpen = window.open;
-    window.open = function(url, target, features) {
-        console.log('[IBL Skills] window.open() intercepted:', url);
-        if (url && isOAuthUrl(url)) {
-            var absoluteUrl = url;
-            if (url.startsWith('/')) {
-                absoluteUrl = window.location.origin + url;
-            }
-            if (openInSystemBrowser(absoluteUrl)) {
-                return null; // Return null as if popup was blocked
-            }
-        }
-        return originalWindowOpen.call(window, url, target, features);
-    };
-
-    // Click interceptor as backup for buttons that might trigger OAuth
-    document.addEventListener('click', function(e) {
-        var target = e.target;
-        var depth = 0;
-
-        while (target && depth < 10) {
-            // Check for links with OAuth URLs
-            if (target.tagName === 'A' && target.href && isOAuthUrl(target.href)) {
-                e.preventDefault();
-                e.stopPropagation();
-                openInSystemBrowser(target.href);
-                return false;
-            }
-            target = target.parentElement;
-            depth++;
-        }
-    }, true);
-
-    console.log('[IBL Skills] OAuth interceptor installed (location.href + window.open + click)');
+    console.log('[IBL Skills] OAuth interceptor ready (handled by SDK + on_navigation)');
 
     console.log('[IBL Skills] Mobile setup complete (safe area + OAuth)');
 })();

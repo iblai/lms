@@ -6,7 +6,7 @@ import { ThemeInitializer } from '@/components/theme-initializer';
 import { ChatProvider } from '@/providers/chat';
 import { Toaster } from 'sonner';
 import AppLayout from '@/app/_components/app-layout';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { isJSON } from '@iblai/iblai-js/web-utils';
 import { getTenant } from '@/utils/helpers';
@@ -16,21 +16,27 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isUserProfileOpen, setIsUserProfileOpen] = useState(false);
   const [userProfileTargetTab, setUserProfileTargetTab] = useState<string>('basic');
   const { metadata } = useTenantMetadata({ org: getTenant() });
-  const tenantAdvancedCSS = isJSON(metadata?.skills_advanced_css)
-    ? sanitizeCss(JSON.parse(metadata?.skills_advanced_css) as string)
-    : '';
+  const tenantAdvancedCSS = useMemo(
+    () =>
+      isJSON(metadata?.skills_advanced_css)
+        ? sanitizeCss(JSON.parse(metadata?.skills_advanced_css) as string)
+        : '',
+    [metadata?.skills_advanced_css],
+  );
+  const appContextValue = useMemo(
+    () => ({
+      isUserProfileOpen,
+      setIsUserProfileOpen,
+      userProfileTargetTab,
+      setUserProfileTargetTab,
+    }),
+    [isUserProfileOpen, userProfileTargetTab],
+  );
   return (
     <ThemeProvider>
       {tenantAdvancedCSS && <style>{tenantAdvancedCSS}</style>}
       <ThemeInitializer />
-      <AppContext.Provider
-        value={{
-          isUserProfileOpen,
-          setIsUserProfileOpen,
-          userProfileTargetTab,
-          setUserProfileTargetTab,
-        }}
-      >
+      <AppContext.Provider value={appContextValue}>
         <ChatProvider>
           <AppLayout>{children}</AppLayout>
         </ChatProvider>

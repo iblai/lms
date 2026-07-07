@@ -1,10 +1,14 @@
 import { getRandomCourseImage } from '@/utils/helpers';
 import Image from 'next/image';
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { DiscoverContentCardProps } from '../types/discover';
 import { useRouter } from 'next/navigation';
 import { useTenantParam } from '@/hooks/use-tenant-param';
-import { PathwayDetailModal } from './pathway-detail-modal';
+
+const PathwayDetailModal = dynamic(() =>
+  import('./pathway-detail-modal').then((m) => m.PathwayDetailModal),
+);
 
 export function DiscoverContentCard({ content }: { content: DiscoverContentCardProps }) {
   const router = useRouter();

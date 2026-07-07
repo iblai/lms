@@ -45,6 +45,7 @@ vi.mock('lucide-react', () => ({
   MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
   CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
   CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
+  Maximize: () => <span data-testid="maximize">Maximize</span>,
 }));
 
 // Mock helpers
@@ -126,6 +127,13 @@ vi.mock('@/contexts/course-outline-context', () => ({
 // Mock CourseOutline
 vi.mock('@/components/course-outline', () => ({
   CourseOutline: () => <div data-testid="course-outline">CourseOutline</div>,
+}));
+
+// Mock CourseOutlineSidebar — the collapsible-sidebar internals (rail, hint
+// popover, media queries) are exercised in its own test; here we only need to
+// confirm the layout mounts it.
+vi.mock('@/components/course-outline-sidebar', () => ({
+  CourseOutlineSidebar: () => <div data-testid="course-outline-sidebar">CourseOutlineSidebar</div>,
 }));
 
 // Mock CourseOutlineDrawer
@@ -284,13 +292,13 @@ describe('CourseContentLayout', () => {
     expect(screen.getByTestId('course-outline-drawer')).toBeInTheDocument();
   });
 
-  it('renders CourseOutline in sidebar', () => {
+  it('renders CourseOutlineSidebar', () => {
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByTestId('course-outline')).toBeInTheDocument();
+    expect(screen.getByTestId('course-outline-sidebar')).toBeInTheDocument();
   });
 
   it('renders course navigation tabs (Agent, Course, Progress, Dates, Discussion)', () => {
@@ -1626,6 +1634,92 @@ describe('CourseContentLayout', () => {
 
       expect(desktopToggle).toHaveAttribute('aria-checked', 'true');
       expect(popoverSwitch).toHaveAttribute('aria-checked', 'true');
+    });
+  });
+
+  // Tabs moved here from the course about page + the new Analytics tab.
+  describe('Course detail tabs (Learning Info / Instructors / Configuration / Analytics)', () => {
+    const courseDetailWith = (course: any) =>
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course,
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    it('shows Learning Info only when the course has learning_info', () => {
+      courseDetailWith({ learning_info: ['Understand X'] });
+      renderLayout();
+      const link = screen.getByText('Learning Info').closest('a');
+      expect(link).toHaveAttribute('href', expect.stringContaining('/learning-info'));
+    });
+
+    it('hides Learning Info when learning_info is empty', () => {
+      courseDetailWith({ learning_info: [] });
+      renderLayout();
+      expect(screen.queryByText('Learning Info')).not.toBeInTheDocument();
+    });
+
+    it('shows Instructors only when the course has instructors', () => {
+      courseDetailWith({ instructor_info: { instructors: [{ name: 'Ada' }] } });
+      renderLayout();
+      const link = screen.getByText('Instructors').closest('a');
+      expect(link).toHaveAttribute('href', expect.stringContaining('/instructors'));
+    });
+
+    it('hides Instructors when the instructors list is empty', () => {
+      courseDetailWith({ instructor_info: { instructors: [] } });
+      renderLayout();
+      expect(screen.queryByText('Instructors')).not.toBeInTheDocument();
+    });
+
+    it('shows Configuration for a platform admin', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      const link = screen.getByText('Configuration').closest('a');
+      expect(link).toHaveAttribute('href', expect.stringContaining('/configuration'));
+    });
+
+    it('hides Configuration for a non-admin user', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+      renderLayout();
+      expect(screen.queryByText('Configuration')).not.toBeInTheDocument();
+    });
+
+    it('shows Analytics only when the user has the can_view_analytics permission', () => {
+      mockCheckRbacPermission.mockImplementation(((_perms: any, resource: string) =>
+        resource.includes('can_view_analytics')) as any);
+      renderLayout();
+      const link = screen.getByText('Analytics').closest('a');
+      expect(link).toHaveAttribute('href', expect.stringContaining('/analytics'));
+    });
+
+    it('hides Analytics when the user lacks can_view_analytics (even as admin)', () => {
+      // Default mockCheckRbacPermission returns false for every resource.
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(screen.queryByText('Analytics')).not.toBeInTheDocument();
     });
   });
 });
