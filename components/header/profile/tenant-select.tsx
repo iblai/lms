@@ -4,6 +4,7 @@ import { Tenant } from '@iblai/iblai-js/web-utils';
 import _ from 'lodash';
 import { selectRbacPermissions } from '@/features/rbac';
 import { useAppSelector } from '@/lib/hooks';
+import { config } from '@/lib/config';
 
 export function TenantSelect() {
   const tenantKey = getTenant();
@@ -20,6 +21,7 @@ export function TenantSelect() {
       tenants={tenants}
       onTenantChange={handleTenantSwitch}
       rbacPermissions={rbacPermissions}
+      enableRbac={config.settings.enableRBAC()}
     />
   );
 }

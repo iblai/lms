@@ -38,16 +38,18 @@ vi.mock('@/utils/helpers', () => ({
 
 // Mock local storage hooks - default to admin
 let mockIsAdmin = true;
+const defaultUserTenants = [
+  { key: 'test-tenant', is_admin: true, org: 'test-org' },
+  { key: 'other-tenant', is_admin: false, org: 'other-org' },
+];
+let mockUserTenants: { key: string; is_admin: boolean; org: string }[] = defaultUserTenants;
 vi.mock('@/utils/localstorage', () => ({
   useCurrentTenant: () => ({
     currentTenant: { key: 'test-tenant', is_admin: true, org: 'test-org' },
     saveCurrentTenant: mockSaveCurrentTenant,
   }),
   useUserTenants: () => ({
-    userTenants: [
-      { key: 'test-tenant', is_admin: true, org: 'test-org' },
-      { key: 'other-tenant', is_admin: false, org: 'other-org' },
-    ],
+    userTenants: mockUserTenants,
     saveUserTenants: mockSaveUserTenants,
   }),
   useIsAdmin: () => mockIsAdmin,
@@ -155,6 +157,7 @@ describe('UserProfileButton', () => {
     mockDefaultSupportPhoneNumber = '(571) 293-0242'; // Reset to config default
     mockEnableSupportPhone = false; // Reset to support phone disabled by default
     mockTenantMetadata = undefined; // Reset to no tenant metadata
+    mockUserTenants = defaultUserTenants; // Reset to default tenant list
   });
 
   describe('rendering', () => {
@@ -228,11 +231,26 @@ describe('UserProfileButton', () => {
       expect(screen.getByTestId('show-tenant-switcher')).toHaveTextContent('true');
     });
 
-    it('should not show tenant switcher for non-admin users', () => {
+    it('should not show tenant switcher for non-admin users with no other tenants', () => {
       mockIsAdmin = false;
+      // User is only enrolled on the current tenant (plus main), so there are no
+      // other non-main tenants to switch to.
+      mockUserTenants = [
+        { key: 'test-tenant', is_admin: false, org: 'test-org' },
+        { key: 'main', is_admin: false, org: 'main-org' },
+      ];
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('show-tenant-switcher')).toHaveTextContent('false');
+    });
+
+    it('should show tenant switcher for non-admin users enrolled on other tenants', () => {
+      mockIsAdmin = false;
+      // Default tenant list includes 'other-tenant', a non-main tenant other than
+      // the current one, so the switcher should be shown even for non-admins.
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-tenant-switcher')).toHaveTextContent('true');
     });
   });
 

@@ -66,7 +66,9 @@ export const UserProfileButton = () => {
       // Configuration
       showProfileTab={true}
       showAccountTab={false} // Skills app doesn't have account tab
-      showTenantSwitcher={isAdmin}
+      showTenantSwitcher={
+        isAdmin || userTenants.some((t) => t.key !== 'main' && t.key !== tenantKey)
+      }
       showHelpLink={false} // Skills app doesn't have help link in dropdown
       showLogoutButton={true}
       showLearnerModeSwitch={false} // Skills app doesn't have learner mode switch
