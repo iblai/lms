@@ -24,7 +24,9 @@ vi.mock('../credentials-list-box', () => ({
 
 vi.mock('../all-time-perlearner-box', () => ({
   AllTimePerLearnerBox: (props: any) => (
-    <div data-testid="all-time-box">All Time: {props.total_time_spent}</div>
+    <div data-testid="all-time-box">
+      All Time: {props.total_time_spent} / {props.courses} / {props.credentials} / {props.skills}
+    </div>
   ),
 }));
 
@@ -56,6 +58,12 @@ const mockUseUserMetadata = vi.fn(() => ({
   userMetaDataLoading: false,
 }));
 
+const mockUseAllTimeStats = vi.fn(() => ({
+  courses: 4,
+  credentials: 2,
+  skills: 6,
+}));
+
 vi.mock('@/hooks/skills/use-latest-skills', () => ({
   useLatestSkills: () => mockUseLatestSkills(),
 }));
@@ -70,6 +78,10 @@ vi.mock('@/hooks/perlearner/use-perlearner', () => ({
 
 vi.mock('@/hooks/users/use-usermetadata', () => ({
   useUserMetadata: () => mockUseUserMetadata(),
+}));
+
+vi.mock('@/hooks/profile/use-all-time-stats', () => ({
+  useAllTimeStats: () => mockUseAllTimeStats(),
 }));
 
 import { ProfileSidebar } from '../profile-sidebar';
@@ -94,6 +106,11 @@ describe('ProfileSidebar', () => {
         course_completions: 2,
       },
       userPerLearnerInfoLoading: false,
+    });
+    mockUseAllTimeStats.mockReturnValue({
+      courses: 4,
+      credentials: 2,
+      skills: 6,
     });
   });
 
@@ -143,15 +160,15 @@ describe('ProfileSidebar', () => {
 
   it('passes correct props to AllTimePerLearnerBox', () => {
     render(<ProfileSidebar />);
-    expect(screen.getByText('All Time: 3600')).toBeInTheDocument();
+    expect(screen.getByText('All Time: 3600 / 4 / 2 / 6')).toBeInTheDocument();
   });
 
-  it('defaults to 0 when perlearner info values are undefined', () => {
+  it('defaults time spent to 0 when perlearner info values are undefined', () => {
     mockUsePerLearnerInfoQuery.mockReturnValue({
       userPerLearnerInfo: undefined,
       userPerLearnerInfoLoading: false,
     } as any);
     render(<ProfileSidebar />);
-    expect(screen.getByText('All Time: 0')).toBeInTheDocument();
+    expect(screen.getByText('All Time: 0 / 4 / 2 / 6')).toBeInTheDocument();
   });
 });
