@@ -3,11 +3,11 @@ import { NavBar } from '@/components/nav-bar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { isNonAuthPathname } from '@/constants/global';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ChatButton, useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
-import { NavigationDrawer } from '@/components/navigation-drawer';
+import { SidebarInset, SidebarProvider, useSidebar } from '@iblai/iblai-js/web-containers/next';
 import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
@@ -24,10 +24,16 @@ function DefaultPageLayout({ children }: { children: any }) {
   );
 }
 
+/** NavBar wired to the SDK sidebar context — the mobile hamburger opens the
+ * PlatformSidebar mobile sheet (replaces the old NavigationDrawer). */
+function SidebarAwareNavBar({ activePage }: { activePage: string }) {
+  const { toggleSidebar, openMobile } = useSidebar();
+  return <NavBar sidebarOpen={openMobile} activePage={activePage} onMenuClick={toggleSidebar} />;
+}
+
 export default function AppLayout({ children }: { children: any }) {
   const { courseMentor, setCourseMentor, setMentorSidebarHidden, mentorSidebarHidden } =
     useChatState();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const username = getUserName();
   const userIsLoggedIn = isLoggedIn();
   const { currentTenant } = useCurrentTenant();
@@ -76,41 +82,48 @@ export default function AppLayout({ children }: { children: any }) {
   return (
     <DefaultPageLayout>
       <div className="flex h-screen flex-col overflow-hidden bg-white">
-        {/* Main part: left sidebar + inner main content (navbar lives inside) */}
-        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        {/* Main part: left sidebar + inner main content (navbar lives inside).
+            The sidebar is the cross-SPA PlatformSidebar shell, so it lives
+            inside the SDK's SidebarProvider and the content sits in the
+            matching SidebarInset. The Footer lives at the bottom of the
+            inset so it sits to the RIGHT of the sidebar instead of
+            overlaying it. */}
+        <SidebarProvider defaultOpen={false} className="min-h-0 flex-1">
           {userIsLoggedIn && <AppSidebar />}
-          <div className="flex min-h-0 w-full flex-1 flex-col">
-            <div className="z-40 w-full shrink-0">
-              <NavBar
-                sidebarOpen={sidebarOpen}
-                activePage={activePage}
-                onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-              />
-            </div>
-            <NavigationDrawer isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-            {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && (
-              <MonetizationWrapper />
-            )}
-            <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
-              <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-16">
-                {children}
+          <SidebarInset
+            asChild
+            className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white"
+          >
+            <div>
+              <div className="z-40 w-full shrink-0">
+                <SidebarAwareNavBar activePage={activePage} />
               </div>
-              {config.settings.mentorEnabled() &&
-                userIsLoggedIn &&
-                metadataLoaded &&
-                isMentorAIEnabled() &&
-                !isUserMetadataLoading &&
-                userMetadata?.enable_sidebar_ai_mentor_display !== false &&
-                !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
-                  <div className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}>
-                    <ChatButton isMobile={isMobile} />
-                  </div>
-                )}
+              {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && (
+                <MonetizationWrapper />
+              )}
+              <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
+                <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-6">
+                  {children}
+                </div>
+                {config.settings.mentorEnabled() &&
+                  userIsLoggedIn &&
+                  metadataLoaded &&
+                  isMentorAIEnabled() &&
+                  !isUserMetadataLoading &&
+                  userMetadata?.enable_sidebar_ai_mentor_display !== false &&
+                  !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
+                    <div
+                      className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}
+                    >
+                      <ChatButton isMobile={isMobile} />
+                    </div>
+                  )}
+              </div>
+              {/* Footer: bottom of the inset (right of the sidebar) */}
+              <Footer />
             </div>
-          </div>
-        </div>
-        {/* Footer: bottom section (fixed full-width bar) */}
-        <Footer />
+          </SidebarInset>
+        </SidebarProvider>
       </div>
     </DefaultPageLayout>
   );

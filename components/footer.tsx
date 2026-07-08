@@ -64,13 +64,13 @@ export function Footer() {
 
   return (
     <>
-      {/* Desktop Copyright Footer */}
+      {/* Desktop Copyright Footer — in-flow at the bottom of the sidebar
+          inset, so it sits to the right of the fixed PlatformSidebar
+          instead of overlaying it. */}
       <footer
         className={`${
           isOpen ? 'hidden sm:flex' : 'flex'
-        } fixed bottom-0 left-0 z-40 items-center justify-between border-t border-gray-200 bg-white px-6 py-3 text-sm text-gray-600 transition-all duration-300 ${
-          isOpen ? 'w-[calc(100%-var(--chat-width))]' : 'w-full'
-        }`}
+        } w-full shrink-0 items-center justify-between border-t border-gray-200 bg-white px-6 py-3 text-sm text-gray-600`}
       >
         <div className="flex space-x-6">
           {customMenus.map((menu, index) => (

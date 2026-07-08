@@ -49,18 +49,6 @@ vi.mock('@/lib/config', () => ({
   },
 }));
 
-// Mock NavigationDrawer
-vi.mock('@/components/navigation-drawer', () => ({
-  NavigationDrawer: ({ isOpen, onClose }: any) => (
-    <div data-testid="navigation-drawer" data-is-open={isOpen}>
-      NavigationDrawer
-      <button onClick={onClose} data-testid="drawer-close">
-        Close
-      </button>
-    </div>
-  ),
-}));
-
 // Mock NavBar
 vi.mock('@/components/nav-bar', () => ({
   NavBar: ({ sidebarOpen, activePage, onMenuClick }: any) => (
@@ -104,6 +92,13 @@ vi.mock('@/utils/helpers', () => ({
 // which doesn't resolve under vitest's module resolver).
 vi.mock('../monetization-wrapper', () => ({
   MonetizationWrapper: () => <div data-testid="monetization-wrapper" />,
+}));
+
+// Mock the sidebar — it's the cross-SPA PlatformSidebar shell and pulls the
+// full @iblai/iblai-js/web-containers surface, which is out of scope for
+// AppLayout's layout tests.
+vi.mock('@/components/app-sidebar', () => ({
+  AppSidebar: () => <div data-testid="app-sidebar" />,
 }));
 
 import AppLayout from '../app-layout';
@@ -194,7 +189,6 @@ describe('AppLayout', () => {
 
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
-    expect(screen.getByTestId('navigation-drawer')).toBeInTheDocument();
   });
 
   it('renders children within auth layout', () => {

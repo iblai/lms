@@ -941,12 +941,16 @@
       "name": "Mobile View",
       "spec": "24-mobile-view.spec.ts",
       "sourceFiles": [
-        "components/navigation-drawer.tsx",
+        "components/app-sidebar/index.tsx",
         "components/nav-bar.tsx",
         "app/home/page.tsx"
       ],
       "checkpoints": [
-        { "id": "mob-01", "description": "Navigation drawer opens on mobile", "status": "covered" },
+        {
+          "id": "mob-01",
+          "description": "Sidebar mobile sheet opens via hamburger on mobile",
+          "status": "covered"
+        },
         { "id": "mob-02", "description": "Course tabs scrollable on mobile", "status": "covered" },
         {
           "id": "mob-03",

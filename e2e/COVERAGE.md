@@ -349,9 +349,9 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 24: Mobile View (7 checkpoints) — `journeys/24-mobile-view.spec.ts`
 
-**Source files:** `components/navigation-drawer.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
+**Source files:** `components/app-sidebar/index.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
 
-- [x] Navigation drawer opens and displays menu items on mobile viewport (375×812)
+- [x] Sidebar mobile sheet opens via the navbar hamburger and displays menu items on mobile viewport (375×812)
 - [x] Course nav tabs container is horizontally scrollable on mobile (overflow-x-auto, w-full)
 - [x] EdX iframe container has course-edx-iframe-container class and correct active-tab class per tab
 - [x] Mobile viewport: non-course tabs (Progress, Dates, Discussion) have no padding on iframe container

@@ -103,7 +103,9 @@ describe('NavBar', () => {
 
   it('renders without crashing', () => {
     render(<NavBar {...defaultProps} />);
-    expect(screen.getByTestId('logo')).toBeInTheDocument();
+    // The logo moved into the PlatformSidebar; the navbar itself is the
+    // header landmark.
+    expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
   it('renders navigation links', () => {

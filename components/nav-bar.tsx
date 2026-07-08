@@ -88,13 +88,17 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
     <header className="h-16 flex-shrink-0 border-b border-[var(--border)] bg-[var(--navbar-bg)] md:h-20">
       <div className="flex h-full items-center justify-between px-4 sm:px-6 md:px-6 lg:px-8">
         <div className="flex h-full items-center">
-          <button
-            onClick={onMenuClick}
-            className="mr-3 rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset md:hidden"
-            aria-label="Open sidebar"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+          {/* Mobile hamburger — opens the PlatformSidebar mobile sheet, which
+              only renders for logged-in users, so hide it when logged out. */}
+          {isUserLoggedIn && (
+            <button
+              onClick={onMenuClick}
+              className="mr-3 rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset md:hidden"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          )}
 
           {/* Navigation Links */}
           {shouldShowNavLinks() && (
