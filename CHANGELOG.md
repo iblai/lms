@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.48.0](https://github.com/iblai/lms/compare/skills-v0.47.0...skills-v0.48.0) (2026-07-08)
+
+### Features
+
+* tenant switcher shown when user enrolled on other tenants not main ([ff73a11](https://github.com/iblai/lms/commit/ff73a11eabb7283c9c5f6ec37aa7b91cd4f4615f))
+* tenant switcher shown when user enrolled on other tenants not main > test coverage ([cfcd87e](https://github.com/iblai/lms/commit/cfcd87e2748b561c0d85b6103003e5a9b289f7dc))
+* tenant switcher shown when user enrolled on other tenants not main > test coverage ([6a90b10](https://github.com/iblai/lms/commit/6a90b10cb6a2033b0589f972de1f316e49bcca29))
+
 ## [0.47.0](https://github.com/iblai/lms/compare/skills-v0.46.0...skills-v0.47.0) (2026-07-08)
 
 ### Features
