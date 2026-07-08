@@ -218,11 +218,11 @@ export function AppSidebar() {
     if (analyticsAllowed || studioAllowed) {
       list.push({ type: 'divider', id: 'library-divider' });
     }
-    if (analyticsAllowed) {
-      list.push({ type: 'menu', menu: analyticsMenu });
-    }
     if (studioAllowed) {
       list.push(flat('studio', PencilRuler, 'Studio', config.urls.studioUrl()));
+    }
+    if (analyticsAllowed) {
+      list.push({ type: 'menu', menu: analyticsMenu });
     }
     return list;
   }, [profileBase, tenant, discoverEnabled, analyticsAllowed, analyticsMenu, studioAllowed]);
