@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.47.0](https://github.com/iblai/lms/compare/skills-v0.46.0...skills-v0.47.0) (2026-07-08)
+
+### Features
+
+* update all time card content value ([813e7a8](https://github.com/iblai/lms/commit/813e7a828dcb2d3c4b1ab9af2b3dd6a60a6c852d))
+
 ## [0.46.0](https://github.com/iblai/lms/compare/skills-v0.45.0...skills-v0.46.0) (2026-07-03)
 
 ### Features
