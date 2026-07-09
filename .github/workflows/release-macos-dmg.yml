@@ -1,0 +1,45 @@
+name: Release macOS DMG
+
+# Produces a signed + notarized macOS DMG (universal binary). The build/sign/
+# notarize logic lives in the reusable workflow (vendored from iblai/iblai-web-ops);
+# this file is just the app-specific trigger + inputs.
+#
+# Currently workflow_dispatch-only + build-only (uploads a CI artifact, does not
+# publish a Release). To ship DMGs on release like mentorai:
+#   1. Ensure the Apple signing secrets are available to this repo/org's Actions:
+#      APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_ID, APPLE_PASSWORD.
+#   2. Confirm the default signing identity/team in the reusable workflow match
+#      this app's Apple Developer account (override apple_signing_identity /
+#      apple_team_id below if not).
+#   3. Add a prepare job (see mentorai/.github/workflows/release-macos-dmg.yml)
+#      that computes release_tag/artifact_name from the version bump, optionally
+#      maintain a README Downloads table at release time (see mentorai's
+#      scripts/update-readme-downloads.mjs + .release-it.json), and add the push
+#      trigger:
+#        push:
+#          branches: [main]
+#          paths:
+#            - 'src-tauri/**'
+#            - '.github/workflows/release-macos-dmg.yml'
+#            - '.github/workflows/reusable-release-macos-dmg.yml'
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release-macos-dmg
+  cancel-in-progress: false
+
+permissions:
+  contents: read # build-only: only uploads a CI artifact (bump to write when release mode is enabled)
+
+jobs:
+  release:
+    uses: ./.github/workflows/reusable-release-macos-dmg.yml
+    with:
+      # skillsai has no tauri.devid.conf.json overlay, so build from the base
+      # tauri.conf.json (which already sets hardenedRuntime + entitlements).
+      tauri_args: '--target universal-apple-darwin --bundles app,dmg'
+      artifact_name: agentic-lms-macos-dmg
+      # release_tag omitted (empty) => build-only: uploads the CI artifact, does
+      # not attach to a Release or touch the README.
+    secrets: inherit
