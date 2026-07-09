@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.48.2](https://github.com/iblai/lms/compare/skills-v0.48.1...skills-v0.48.2) (2026-07-09)
+
+### CI
+
+* grant contents:write to macOS DMG release caller ([8346e9b](https://github.com/iblai/lms/commit/8346e9bcf3eef7e4d92ba565593a0a024c382e33))
+
 ## [0.48.1](https://github.com/iblai/lms/compare/skills-v0.48.0...skills-v0.48.1) (2026-07-09)
 
 ### CI
