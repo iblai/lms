@@ -30,7 +30,11 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read # build-only: only uploads a CI artifact (bump to write when release mode is enabled)
+  # Must be at least as permissive as the reusable workflow it calls, which
+  # declares `contents: write` (GitHub validates caller >= callee permissions at
+  # parse time, regardless of the release step's runtime `if:` guard). Only
+  # actually exercised when release_tag is set; harmless in build-only mode.
+  contents: write
 
 jobs:
   release:
