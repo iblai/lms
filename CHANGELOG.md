@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.48.1](https://github.com/iblai/lms/compare/skills-v0.48.0...skills-v0.48.1) (2026-07-09)
+
+### CI
+
+* add macOS DMG release workflow (vendored reusable) ([f416d8e](https://github.com/iblai/lms/commit/f416d8ea4570787cd1d538cbe65f5b8044f70613))
+
 ## [0.48.0](https://github.com/iblai/lms/compare/skills-v0.47.0...skills-v0.48.0) (2026-07-08)
 
 ### Features
