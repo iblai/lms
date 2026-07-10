@@ -9,15 +9,20 @@ import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-st
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { ActivityStats } from '@/types/catalog';
 
+/** Stats hidden on the landing tiles (still shown on the full profile
+ * Activity page). */
+const HIDDEN_STAT_LABELS = new Set(['Points', 'Assessments', 'Videos']);
+
 /**
- * Landing view of the profile Activity page data: the nine activity
- * stats (points, skills, credentials, courses, …) as compact tiles next
- * to the 7-day Time Spent chart. "View activity" deep-links to the full
- * profile Activity page.
+ * Landing view of the profile Activity page data: the activity stats
+ * (skills, credentials, courses, …) as compact tiles next to the 7-day
+ * Time Spent chart. "View activity" deep-links to the full profile
+ * Activity page.
  */
 export function HomeActivityOverview() {
   const tenant = useTenantParam();
-  const { stats } = useProfileActivityStats();
+  const { stats: allStats } = useProfileActivityStats();
+  const stats = allStats.filter((stat) => !HIDDEN_STAT_LABELS.has(String(stat.label)));
 
   return (
     <section aria-label="Activity Overview" className="w-full">
@@ -34,10 +39,11 @@ export function HomeActivityOverview() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+      {/* 50/50 split: stat tiles (2 per row × 3 rows) | time-spent chart */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         {/* Stat tiles — same endpoints as the profile Activity page */}
-        <div className="rounded-md border border-gray-200 bg-white p-4 lg:col-span-2">
-          <div className="grid h-full grid-cols-3 content-center gap-3">
+        <div className="rounded-md border border-gray-200 bg-white p-4">
+          <div className="grid h-full grid-cols-2 content-center gap-3">
             {stats.map((stat: ActivityStats, index: number) =>
               stat.loading ? (
                 <SkeletonActivityStatBox key={index} />

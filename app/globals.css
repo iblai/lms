@@ -9,6 +9,26 @@
    home/page.tsx (`xs:pt-4`) and onboarding (`xs:inline`). */
 @theme {
   --breakpoint-xs: 30rem; /* 480px */
+
+  /* Rebrand: every `*-amber-*` utility renders the sidebar blue family
+     (#eef6fc active bg / #cfe8fa ring / #1e40af accent) instead of amber —
+     one token remap instead of touching ~70 files. */
+  --color-amber-50: #f5fafd;
+  --color-amber-100: #eef6fc;
+  --color-amber-200: #cfe8fa;
+  --color-amber-300: #93c5fd;
+  --color-amber-400: #3b82f6;
+  --color-amber-500: #1e40af;
+  --color-amber-600: #1e3a8a;
+  --color-amber-700: #172554;
+  --color-amber-800: #172554;
+  --color-amber-900: #0f1a38;
+  --color-amber-950: #0a1226;
+
+  /* Lighter global type, matching the sidebar's weight scale: headings
+     that use `font-semibold`/`font-bold` render one step lighter. */
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
 }
 
 @plugin 'tailwind-scrollbar';
@@ -62,11 +82,12 @@ body {
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
+    /* Chart palette — warm hues remapped to the sidebar blue family */
+    --chart-1: 224 64% 40%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-4: 217 91% 60%;
+    --chart-5: 207 81% 76%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -97,11 +118,12 @@ body {
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
+    /* Chart palette — warm hues remapped to the sidebar blue family */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
+    --chart-3: 224 64% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-5: 207 70% 65%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

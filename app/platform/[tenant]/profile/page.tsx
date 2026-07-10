@@ -12,9 +12,14 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 
+/** Stats hidden from the Activity Overview tiles (Points still feeds the
+ * Skill Leaderboard below). */
+const HIDDEN_STAT_LABELS = new Set(['Points', 'Assessments', 'Videos']);
+
 export default function ProfilePage() {
   const tenant = useTenantParam();
   const { stats } = useProfileActivityStats();
+  const visibleStats = stats.filter((stat) => !HIDDEN_STAT_LABELS.has(String(stat.label)));
   const { metadataLoaded, isSkillsLeaderBoardEnabled } = useTenantMetadata({
     org: tenant,
   });
@@ -35,8 +40,8 @@ export default function ProfilePage() {
         <div className="mb-6 rounded-md border border-gray-200 bg-gray-50 p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-gray-700">Activity Overview</h2>
           <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="grid grid-cols-3 gap-4 md:grid-cols-9">
-              {stats.map((stat: ActivityStats, index: number) =>
+            <div className="grid grid-cols-3 gap-4 md:grid-cols-6">
+              {visibleStats.map((stat: ActivityStats, index: number) =>
                 stat.loading ? (
                   <SkeletonActivityStatBox key={index} />
                 ) : (

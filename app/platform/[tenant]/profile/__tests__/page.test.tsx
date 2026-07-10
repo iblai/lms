@@ -113,7 +113,7 @@ describe('ProfilePage', () => {
     vi.mocked(useProfileActivityStats).mockReturnValue({
       stats: [
         { loading: false, label: 'Courses', value: 5 },
-        { loading: false, label: 'Points', value: 100 },
+        { loading: false, label: 'Skills', value: 100 },
       ],
     } as any);
 
@@ -121,22 +121,40 @@ describe('ProfilePage', () => {
 
     expect(screen.getByText('Courses')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('Points')).toBeInTheDocument();
+    expect(screen.getByText('Skills')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
+  });
+
+  it('hides the Points, Assessments, and Videos stat tiles', () => {
+    vi.mocked(useProfileActivityStats).mockReturnValue({
+      stats: [
+        { loading: false, label: 'Courses', value: 5 },
+        { loading: false, label: 'Points', value: 100 },
+        { loading: false, label: 'Assessments', value: 2 },
+        { loading: false, label: 'Videos', value: 3 },
+      ],
+    } as any);
+
+    render(<ProfilePage />);
+
+    expect(screen.getByText('Courses')).toBeInTheDocument();
+    expect(screen.queryByText('Points')).not.toBeInTheDocument();
+    expect(screen.queryByText('Assessments')).not.toBeInTheDocument();
+    expect(screen.queryByText('Videos')).not.toBeInTheDocument();
   });
 
   it('renders mix of loading and non-loading stats', () => {
     vi.mocked(useProfileActivityStats).mockReturnValue({
       stats: [
         { loading: true, label: 'Courses', value: 0 },
-        { loading: false, label: 'Points', value: 50 },
+        { loading: false, label: 'Skills', value: 50 },
       ],
     } as any);
 
     render(<ProfilePage />);
 
     expect(screen.getByTestId('skeleton-activity-stat-box')).toBeInTheDocument();
-    expect(screen.getByText('Points')).toBeInTheDocument();
+    expect(screen.getByText('Skills')).toBeInTheDocument();
   });
 
   it('hides SkillLeaderboardChart when metadataLoaded is false', () => {

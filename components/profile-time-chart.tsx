@@ -66,7 +66,7 @@ export function ProfileTimeChart() {
               <Legend content={renderLegend} verticalAlign="top" height={36} />
               <Bar dataKey="minutes" name="Minutes" barSize={130}>
                 {timeSpentData?.map((_entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill="rgba(245, 158, 11, 0.7)" />
+                  <Cell key={`cell-${index}`} fill="rgba(30, 64, 175, 0.7)" />
                 ))}
               </Bar>
             </BarChart>

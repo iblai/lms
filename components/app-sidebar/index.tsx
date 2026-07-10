@@ -15,12 +15,7 @@ import {
   Route,
   Sparkles,
 } from 'lucide-react';
-import {
-  CredentialsList,
-  GradebookTab,
-  InviteUserDialog,
-  SkillsList,
-} from '@iblai/iblai-js/web-containers';
+import { GradebookTab, InviteUserDialog } from '@iblai/iblai-js/web-containers';
 import {
   PLATFORM_SIDEBAR_NAV_MUTED,
   PlatformAccountSheet,
@@ -57,10 +52,10 @@ import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstor
 
 type SidebarOpenSection = 'analytics';
 
-type LibraryDialogId = 'gradebook' | 'credentials' | 'skills';
+type LibraryDialogId = 'gradebook';
 
-/** The SDK gradebook-family lists, each hosted in the same dialog shell.
- * All three take `{ org, username }`. */
+/** SDK list components hosted in the shared dialog shell (currently just
+ * the Gradebook — Credentials and Skills are plain profile links). */
 const LIBRARY_DIALOGS: Record<
   LibraryDialogId,
   {
@@ -73,16 +68,6 @@ const LIBRARY_DIALOGS: Record<
     title: 'Gradebook',
     description: 'Your grades and progress across courses, programs, and pathways.',
     Component: GradebookTab,
-  },
-  credentials: {
-    title: 'Credentials',
-    description: 'Credentials you have earned.',
-    Component: CredentialsList,
-  },
-  skills: {
-    title: 'Skills',
-    description: 'Your earned, self-reported, and desired skills.',
-    Component: SkillsList,
   },
 };
 
@@ -273,6 +258,8 @@ export function AppSidebar() {
       flat('courses', GraduationCap, 'Courses', `${profileBase}/courses`),
       flat('programs', Layers, 'Programs', `${profileBase}/programs`),
       flat('pathways', Route, 'Pathways', `${profileBase}/pathways`),
+      flat('credentials', Award, 'Credentials', `${profileBase}/credentials`),
+      flat('skills', Sparkles, 'Skills', `${profileBase}/skills`),
     ];
     if (discoverEnabled) {
       list.push(flat('discover', Compass, 'Discover', `/platform/${tenant}/discover`));
@@ -284,28 +271,20 @@ export function AppSidebar() {
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
     }
-    // Gradebook / Credentials / Skills open their SDK list components in a
-    // dialog instead of routing.
-    const libraryRow = (
-      id: LibraryDialogId,
-      icon: PlatformSidebarNavIcon,
-      label: string,
-    ): PlatformSidebarSectionConfig => ({
+    // Gradebook opens its SDK list component in a dialog instead of routing.
+    list.push({
       type: 'custom',
-      id,
+      id: 'gradebook',
       render: (ctx) => (
         <FlatNavRow
           collapsed={ctx.collapsed}
-          icon={icon}
-          label={label}
-          onClick={() => setLibraryDialog(id)}
+          icon={ClipboardList}
+          label="Gradebook"
+          onClick={() => setLibraryDialog('gradebook')}
           onAfterNav={ctx.onAfterNav}
         />
       ),
     });
-    list.push(libraryRow('gradebook', ClipboardList, 'Gradebook'));
-    list.push(libraryRow('credentials', Award, 'Credentials'));
-    list.push(libraryRow('skills', Sparkles, 'Skills'));
     return list;
   }, [profileBase, tenant, discoverEnabled, analyticsAllowed, analyticsMenu, studioAllowed]);
 
