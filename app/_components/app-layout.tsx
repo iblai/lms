@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { ChatButton, useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
-import { SidebarInset, SidebarProvider, useSidebar } from '@iblai/iblai-js/web-containers/next';
+import { SidebarInset, SidebarProvider } from '@iblai/iblai-js/web-containers/next';
 import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
@@ -22,13 +22,6 @@ function DefaultPageLayout({ children }: { children: any }) {
       <div className="main-content flex-1 overflow-auto">{children}</div>
     </div>
   );
-}
-
-/** NavBar wired to the SDK sidebar context — the mobile hamburger opens the
- * PlatformSidebar mobile sheet (replaces the old NavigationDrawer). */
-function SidebarAwareNavBar({ activePage }: { activePage: string }) {
-  const { toggleSidebar, openMobile } = useSidebar();
-  return <NavBar sidebarOpen={openMobile} activePage={activePage} onMenuClick={toggleSidebar} />;
 }
 
 export default function AppLayout({ children }: { children: any }) {
@@ -67,18 +60,6 @@ export default function AppLayout({ children }: { children: any }) {
     return <DefaultPageLayout>{children}</DefaultPageLayout>;
   }
 
-  // After the `/platform/{tenant}/` prefix, the next path piece identifies the
-  // active page (`/platform/main/home` → "home"). Fallback to the first
-  // segment for legacy paths.
-  const segments = pathname.split('/').filter(Boolean);
-  const tenantIdx =
-    segments[0] === 'platform' && tenant && segments[1] === tenant
-      ? 2
-      : tenant && segments[0] === tenant
-        ? 1
-        : 0;
-  const activePage = segments[tenantIdx] || 'home';
-
   return (
     <DefaultPageLayout>
       <div className="flex h-screen flex-col overflow-hidden bg-white">
@@ -96,13 +77,13 @@ export default function AppLayout({ children }: { children: any }) {
           >
             <div>
               <div className="z-40 w-full shrink-0">
-                <SidebarAwareNavBar activePage={activePage} />
+                <NavBar />
               </div>
               {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && (
                 <MonetizationWrapper />
               )}
               <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
-                <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto pb-6">
+                <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto">
                   {children}
                 </div>
                 {config.settings.mentorEnabled() &&

@@ -4,6 +4,13 @@
 
 @config '../tailwind.config.ts';
 
+/* Custom below-`sm` breakpoint (Tailwind v4 has no `xs`). Defined here as a
+   theme token — the v4-native way — so `xs:*` variants generate. Used by
+   home/page.tsx (`xs:pt-4`) and onboarding (`xs:inline`). */
+@theme {
+  --breakpoint-xs: 30rem; /* 480px */
+}
+
 @plugin 'tailwind-scrollbar';
 
 /* SDK: custom base styles (CSS variables, no Tailwind utilities) */

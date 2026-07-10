@@ -66,7 +66,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
   );
 
   return (
-    <div className="mb-16 h-[calc(100%-50px)]">
+    <div className="h-full">
       <AnalyticsSettingsProvider
         value={{ usergroupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined }}
       >

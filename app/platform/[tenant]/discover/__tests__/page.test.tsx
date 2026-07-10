@@ -40,10 +40,6 @@ vi.mock('@/components/course-card-skeleton', () => ({
   CourseCardSkeleton: () => <div data-testid="course-card-skeleton" />,
 }));
 
-vi.mock('@/components/footer', () => ({
-  Footer: () => <div data-testid="footer" />,
-}));
-
 vi.mock('@/components/skeleton-multiplier', () => ({
   SkeletonMultiplier: () => <div data-testid="skeleton-multiplier" />,
 }));
@@ -95,11 +91,11 @@ describe('DiscoverPage', () => {
     mockGet.mockReturnValue(null);
   });
 
-  it('renders the page with heading and footer', () => {
+  it('renders the page with heading', () => {
     render(<DiscoverPage />);
 
+    // The copyright footer is global app-layout chrome now, not page-owned.
     expect(screen.getAllByText('Featured Learning Content').length).toBeGreaterThan(0);
-    expect(screen.getByTestId('footer')).toBeInTheDocument();
   });
 
   it('shows empty box when no contents and not loading', () => {

@@ -1,9 +1,26 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Compass, GraduationCap, Layers, LineChart, PencilRuler, Route } from 'lucide-react';
-import { InviteUserDialog } from '@iblai/iblai-js/web-containers';
+import {
+  Award,
+  ClipboardList,
+  Compass,
+  GraduationCap,
+  Home,
+  Layers,
+  LineChart,
+  PencilRuler,
+  Route,
+  Sparkles,
+} from 'lucide-react';
+import {
+  CredentialsList,
+  GradebookTab,
+  InviteUserDialog,
+  SkillsList,
+} from '@iblai/iblai-js/web-containers';
 import {
   PLATFORM_SIDEBAR_NAV_MUTED,
   PlatformAccountSheet,
@@ -20,6 +37,13 @@ import type {
 import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { config } from '@/lib/config';
 import { Logo } from '@/components/logo';
 import { useTenantParam } from '@/hooks/use-tenant-param';
@@ -33,41 +57,77 @@ import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstor
 
 type SidebarOpenSection = 'analytics';
 
+type LibraryDialogId = 'gradebook' | 'credentials' | 'skills';
+
+/** The SDK gradebook-family lists, each hosted in the same dialog shell.
+ * All three take `{ org, username }`. */
+const LIBRARY_DIALOGS: Record<
+  LibraryDialogId,
+  {
+    title: string;
+    description: string;
+    Component: React.ComponentType<{ org: string; username: string }>;
+  }
+> = {
+  gradebook: {
+    title: 'Gradebook',
+    description: 'Your grades and progress across courses, programs, and pathways.',
+    Component: GradebookTab,
+  },
+  credentials: {
+    title: 'Credentials',
+    description: 'Credentials you have earned.',
+    Component: CredentialsList,
+  },
+  skills: {
+    title: 'Skills',
+    description: 'Your earned, self-reported, and desired skills.',
+    Component: SkillsList,
+  },
+};
+
 /**
  * A flat (no sub-menu) top-level nav row, styled to match the SDK's
  * `PlatformSidebarNavSection` trigger. Renders an icon button with a
  * label flyout in the collapsed rail, and a full-width row when
- * expanded. `href` navigates (external http(s) URLs open a new tab).
+ * expanded. `href` navigates (external http(s) URLs open a new tab);
+ * `onClick` runs instead of navigating (e.g. opens a dialog).
  */
 function FlatNavRow({
   collapsed,
   icon: Icon,
   label,
   href,
+  onClick,
   onAfterNav,
 }: {
   collapsed: boolean;
   icon: PlatformSidebarNavIcon;
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
   onAfterNav?: () => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isExternal = /^https?:\/\//i.test(href);
+  const isExternal = !!href && /^https?:\/\//i.test(href);
   const active = React.useMemo(() => {
-    if (isExternal || !pathname) return false;
+    if (!href || isExternal || !pathname) return false;
     const normalizedHref = href.endsWith('/') ? href.slice(0, -1) : href;
     const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
     return normalizedPath === normalizedHref || normalizedPath.startsWith(`${normalizedHref}/`);
   }, [href, isExternal, pathname]);
 
   const handleClick = () => {
-    if (isExternal) {
-      window.open(href, '_blank', 'noopener,noreferrer');
-    } else {
-      router.push(href);
+    if (onClick) {
+      onClick();
+    } else if (href) {
+      if (isExternal) {
+        window.open(href, '_blank', 'noopener,noreferrer');
+      } else {
+        router.push(href);
+      }
     }
     onAfterNav?.();
   };
@@ -139,6 +199,7 @@ export function AppSidebar() {
 
   const [accountTab, setAccountTab] = React.useState<PlatformAccountTab | null>(null);
   const [inviteOpen, setInviteOpen] = React.useState(false);
+  const [libraryDialog, setLibraryDialog] = React.useState<LibraryDialogId | null>(null);
   const [openSection, setOpenSection] = React.useState<SidebarOpenSection | null>(null);
   const pathname = usePathname();
 
@@ -208,6 +269,7 @@ export function AppSidebar() {
     });
 
     const list: PlatformSidebarSectionConfig[] = [
+      flat('home', Home, 'Home', `/platform/${tenant}/home`),
       flat('courses', GraduationCap, 'Courses', `${profileBase}/courses`),
       flat('programs', Layers, 'Programs', `${profileBase}/programs`),
       flat('pathways', Route, 'Pathways', `${profileBase}/pathways`),
@@ -215,15 +277,35 @@ export function AppSidebar() {
     if (discoverEnabled) {
       list.push(flat('discover', Compass, 'Discover', `/platform/${tenant}/discover`));
     }
-    if (analyticsAllowed || studioAllowed) {
-      list.push({ type: 'divider', id: 'library-divider' });
-    }
+    list.push({ type: 'divider', id: 'library-divider' });
     if (studioAllowed) {
       list.push(flat('studio', PencilRuler, 'Studio', config.urls.studioUrl()));
     }
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
     }
+    // Gradebook / Credentials / Skills open their SDK list components in a
+    // dialog instead of routing.
+    const libraryRow = (
+      id: LibraryDialogId,
+      icon: PlatformSidebarNavIcon,
+      label: string,
+    ): PlatformSidebarSectionConfig => ({
+      type: 'custom',
+      id,
+      render: (ctx) => (
+        <FlatNavRow
+          collapsed={ctx.collapsed}
+          icon={icon}
+          label={label}
+          onClick={() => setLibraryDialog(id)}
+          onAfterNav={ctx.onAfterNav}
+        />
+      ),
+    });
+    list.push(libraryRow('gradebook', ClipboardList, 'Gradebook'));
+    list.push(libraryRow('credentials', Award, 'Credentials'));
+    list.push(libraryRow('skills', Sparkles, 'Skills'));
     return list;
   }, [profileBase, tenant, discoverEnabled, analyticsAllowed, analyticsMenu, studioAllowed]);
 
@@ -258,7 +340,11 @@ export function AppSidebar() {
   return (
     <>
       <PlatformSidebar
-        logo={<Logo className="h-9 w-auto max-w-full object-contain" />}
+        logo={
+          <Link href={`/platform/${tenant}/home`} aria-label="Home">
+            <Logo className="h-9 w-auto max-w-full object-contain" />
+          </Link>
+        }
         primaryAction={null}
         sections={sections}
         openSectionId={openSection}
@@ -311,6 +397,33 @@ export function AppSidebar() {
           hasManageUsersPermission
         />
       )}
+
+      {/* Gradebook / Credentials / Skills — SDK list components hosted in a
+          shared dialog shell. Height is PINNED (not max-h) so the chrome
+          stays stable while the lists switch between loading skeletons,
+          results, and pagination. */}
+      <Dialog
+        open={libraryDialog !== null}
+        onOpenChange={(open) => !open && setLibraryDialog(null)}
+      >
+        <DialogContent className="mx-auto my-auto flex h-[85vh] w-[95vw] max-w-none flex-col gap-0 rounded-lg p-0 sm:max-w-7xl">
+          <DialogHeader className="flex-shrink-0 border-b border-gray-200 p-4 pt-[30px]">
+            <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              {libraryDialog ? LIBRARY_DIALOGS[libraryDialog].title : ''}
+            </DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed text-gray-600">
+              {libraryDialog ? LIBRARY_DIALOGS[libraryDialog].description : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto p-6">
+            {libraryDialog &&
+              (() => {
+                const LibraryComponent = LIBRARY_DIALOGS[libraryDialog].Component;
+                return <LibraryComponent org={tenant} username={username ?? ''} />;
+              })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

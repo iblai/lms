@@ -5,13 +5,13 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 /**
  * Journey 03: Home Dashboard
  *
- * Validates the home dashboard at /home:
- *  1. Home page with Profile Sidebar
+ * Validates the home landing page at /home:
+ *  1. Hero greeting band with primary CTAs
  *  2. Suggested Courses section
  *  3. My Courses section with grid
  *  4. Click My Courses card → course about
  *  5. Click suggested course → course about
- *  6. Profile Sidebar shows stats
+ *  6. Activity Overview band shows stats
  *  7. View All links
  *  8. No console errors
  */
@@ -33,27 +33,19 @@ test.describe('Journey 03: Home Dashboard', () => {
     await waitForAppShell(page);
   });
 
-  test('Checkpoint 1: Home page displays Profile Sidebar', async ({ page }) => {
-    // Wait for the home page to be ready
-    const sidebar = page
-      .getByLabel('Profile Sidebar')
-      .or(page.locator('[data-testid="profile-sidebar"]'))
-      .first();
+  test('Checkpoint 1: Home page displays the hero greeting band', async ({ page }) => {
+    // The landing hero greets the learner and offers the primary CTAs.
+    const hero = page.getByRole('region', { name: 'Welcome' });
+    await expect(hero).toBeVisible({ timeout: 120_000 });
 
-    const hasSidebar = await sidebar.isVisible({ timeout: 120_000 }).catch(() => false);
+    const greeting = hero.getByRole('heading', { name: /welcome/i });
+    await expect(greeting).toBeVisible({ timeout: 120_000 });
+    logger.info('Hero greeting band is visible');
 
-    if (hasSidebar) {
-      logger.info('Profile Sidebar is visible');
-    } else {
-      // Fallback: look for profile-related content in a sidebar/aside region
-      const aside = page.getByRole('complementary').first();
-      const hasAside = await aside.isVisible({ timeout: 120_000 }).catch(() => false);
-      if (hasAside) {
-        logger.info('Complementary sidebar region found');
-      } else {
-        logger.info('Profile Sidebar not found — layout may differ');
-      }
-    }
+    // At least one primary CTA (Explore Catalog is tenant-gated; My Courses
+    // is always present).
+    const myCoursesCta = hero.getByRole('link', { name: /my courses/i });
+    await expect(myCoursesCta).toBeVisible({ timeout: 30_000 });
 
     // The home page itself should have loaded
     await expect(page).toHaveURL(/\/home/);
@@ -153,29 +145,24 @@ test.describe('Journey 03: Home Dashboard', () => {
     logger.info('Navigated to course about page from Suggested Courses');
   });
 
-  test('Checkpoint 6: Profile Sidebar shows stats', async ({ page }) => {
-    const sidebar = page
-      .getByLabel('Profile Sidebar')
-      .or(page.locator('[data-testid="profile-sidebar"]'))
-      .first();
+  test('Checkpoint 6: Activity Overview band shows stats', async ({ page }) => {
+    const activityBand = page.getByRole('region', { name: 'Activity Overview' });
+    await expect(activityBand).toBeVisible({ timeout: 120_000 });
 
-    const hasSidebar = await sidebar.isVisible({ timeout: 120_000 }).catch(() => false);
+    // Stat tiles carry labels from the profile Activity endpoints.
+    const statLabels = activityBand.getByText(/points|skills|credentials|courses/i);
+    const statCount = await statLabels.count();
 
-    if (!hasSidebar) {
-      logger.info('Profile Sidebar not found — skipping stats check');
-      test.skip();
-      return;
-    }
-
-    // Look for stat-like content: numbers, labels, or progress indicators
-    const sidebarText = await sidebar.textContent();
-
-    if (sidebarText && sidebarText.length > 0) {
-      logger.info('Profile Sidebar contains content');
-      expect(sidebarText.length).toBeGreaterThan(0);
+    if (statCount > 0) {
+      logger.info(`Activity Overview shows ${statCount} stat label(s)`);
+      expect(statCount).toBeGreaterThan(0);
     } else {
-      logger.info('Profile Sidebar is empty');
+      logger.info('Activity Overview present but stats still loading');
     }
+
+    // Deep link into the full Activity page.
+    const viewActivity = activityBand.getByRole('link', { name: /view activity/i });
+    await expect(viewActivity).toBeVisible({ timeout: 30_000 });
   });
 
   test('Checkpoint 7: View All links are present', async ({ page }) => {

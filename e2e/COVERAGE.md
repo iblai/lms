@@ -41,14 +41,14 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 3: Home Dashboard (8 checkpoints) — `journeys/03-home-dashboard.spec.ts`
 
-**Source files:** `app/home/page.tsx`, `components/profile-sidebar.tsx`, `components/suggested-courses.tsx`, `components/my-courses.tsx`
+**Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`, `components/suggested-courses.tsx`, `components/my-courses.tsx`
 
-- [x] Home page loads with the Profile Sidebar visible (user name, avatar, stats)
+- [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
 - [x] Suggested Courses section displays course cards or empty state
 - [x] My Courses section displays enrolled course cards in a grid
 - [x] Clicking a course card in My Courses navigates to the course about page
 - [x] Clicking a suggested course card navigates to the course about page
-- [x] Profile Sidebar shows user skills count, credentials count, and learning stats
+- [x] Activity Overview band shows the profile activity stats with a View Activity link
 - [x] "View All" or "See more" links in course sections navigate to appropriate pages
 - [x] Home page loads without console errors
 
@@ -317,18 +317,19 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 22: Navigation & NavBar (8 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
+## Journey 22: Navigation — NavBar & Sidebar (9 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
 
-**Source files:** `components/nav-bar.tsx`, `components/profile-dropdown.tsx`, `components/logo.tsx`
+**Source files:** `components/nav-bar.tsx`, `components/app-sidebar/index.tsx`, `components/header/profile/user-profile-button.tsx`
 
-- [x] NavBar renders with Home, Profile, Recommended, Discover, AI Analytics, Search, Notifications, and User Profile elements
-- [x] Clicking "Home" navigates to /home
-- [x] Clicking "Profile" navigates to /profile
-- [x] Clicking "Recommended" navigates to /recommended
-- [x] Clicking "Discover" navigates to /discover
-- [x] Clicking "AI Analytics" navigates to /analytics _(admin only — skips for non-admin)_
+- [x] NavBar (PlatformNavbar shell) renders with Search, Notifications, and User Profile elements
+- [x] Sidebar "Home" item navigates to /home
+- [x] Profile is reachable from the user profile dropdown
+- [x] Suggested Courses "See More" navigates to /recommended
+- [x] Sidebar "Discover" item navigates to /discover
+- [x] Sidebar "Analytics" menu navigates to /analytics _(admin only — skips for non-admin)_
 - [x] User profile dropdown opens with Profile link, tenant selector, and logout option
-- [x] Platform logo navigates to the home page
+- [x] Sidebar logo navigates to the home page
+- [x] Course switcher in the navbar shows the current course and switches to another enrolled course
 
 ---
 

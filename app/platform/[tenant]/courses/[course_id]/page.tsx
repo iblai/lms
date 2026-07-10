@@ -130,7 +130,7 @@ export default function CourseDetailsPage() {
         <div className="flex flex-1 overflow-hidden">
           {/* Main content area */}
           <div
-            className="flex-1 overflow-y-auto pb-16 md:pb-0"
+            className="flex-1 overflow-y-auto"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',

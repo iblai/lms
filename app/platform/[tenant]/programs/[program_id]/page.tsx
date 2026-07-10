@@ -708,7 +708,7 @@ export default function ProgramDetailPage() {
   return (
     <div className="flex flex-1 overflow-hidden">
       <div
-        className="flex-1 overflow-y-auto pb-16 md:pb-0"
+        className="flex-1 overflow-y-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <style jsx>{`

@@ -579,7 +579,7 @@ export default function CourseContentLayout({
               {/* Content area */}
               <div
                 /* className="flex-1 overflow-y-auto bg-amber-50 pb-[60px]" */
-                className="flex-1 overflow-y-auto pb-[60px]"
+                className="flex-1"
                 style={{ scrollbarWidth: 'none' }}
               >
                 {children}

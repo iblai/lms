@@ -49,15 +49,10 @@ vi.mock('@/lib/config', () => ({
   },
 }));
 
-// Mock NavBar
+// Mock NavBar — prop-less; it wires itself to the sidebar context and
+// derives page state from the pathname.
 vi.mock('@/components/nav-bar', () => ({
-  NavBar: ({ sidebarOpen, activePage, onMenuClick }: any) => (
-    <div data-testid="navbar" data-sidebar-open={sidebarOpen} data-active-page={activePage}>
-      <button onClick={onMenuClick} data-testid="menu-btn">
-        Menu
-      </button>
-    </div>
-  ),
+  NavBar: () => <div data-testid="navbar" />,
 }));
 
 // Mock Footer
@@ -297,20 +292,12 @@ describe('AppLayout', () => {
     expect(chatButton).toHaveAttribute('data-is-mobile', 'false');
   });
 
-  it('passes active page derived from pathname to NavBar', () => {
+  it('renders the NavBar on non-root pages', () => {
     vi.mocked(usePathname).mockReturnValue('/profile/skills');
 
     render(<AppLayout>Content</AppLayout>);
 
-    expect(screen.getByTestId('navbar')).toHaveAttribute('data-active-page', 'profile');
-  });
-
-  it('passes "home" as active page when pathname is root-level', () => {
-    vi.mocked(usePathname).mockReturnValue('/platform/test-tenant/home');
-
-    render(<AppLayout>Content</AppLayout>);
-
-    expect(screen.getByTestId('navbar')).toHaveAttribute('data-active-page', 'home');
+    expect(screen.getByTestId('navbar')).toBeInTheDocument();
   });
 
   it('calls setCourseMentor(null) when navigating away from course pages with courseMentor set', () => {

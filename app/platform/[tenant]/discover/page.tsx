@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Filter, X } from 'lucide-react';
 import { CourseCardSkeleton } from '@/components/course-card-skeleton';
-import { Footer } from '@/components/footer';
 import { useDiscover } from '@/hooks/discover/use-discover';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
@@ -182,7 +181,6 @@ export default function DiscoverPage() {
                 />
               </div>
             </div>
-            <Footer />
           </div>
         </main>
       </FacetFilterContext.Provider>
