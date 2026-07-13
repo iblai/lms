@@ -10,3 +10,4 @@ bumped automatically on `src-tauri` changes — see
 
 | Version | Date | Download |
 | ------- | ---- | -------- |
+| app-v1.0.15 | 2026-07-13 | [macOS (Universal)](https://github.com/iblai/lms/releases/download/app-v1.0.15/Agentic.LMS_1.0.15_universal.dmg) |
