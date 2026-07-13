@@ -35,7 +35,7 @@ use web_cache::WebCache;
 use {
     block::ConcreteBlock,
     objc::{class, msg_send, sel, sel_impl},
-    objc::runtime::{Class, Object, BOOL, YES, NO},
+    objc::runtime::{Class, Object, BOOL, YES},
     objc::declare::ClassDecl,
     std::ffi::{CStr, CString},
     std::ptr,
@@ -394,31 +394,29 @@ fn open_with_auth_session_macos(url: &str, app_handle: &AppHandle) -> Result<(),
 
         let app_handle_clone = app_handle.clone();
         let block = ConcreteBlock::new(move |callback_url: *mut Object, error: *mut Object| {
-            unsafe {
-                if !callback_url.is_null() {
-                    let url_string_ns: *mut Object = msg_send![callback_url, absoluteString];
-                    let url_c_str: *const i8 = msg_send![url_string_ns, UTF8String];
-                    if !url_c_str.is_null() {
-                        let url_str = CStr::from_ptr(url_c_str).to_string_lossy().to_string();
-                        println!("[ibl.ai] macOS ASWebAuthenticationSession completed with callback URL: {}", url_str);
-                        handle_auth_session_callback_macos(&app_handle_clone, &url_str);
-                    }
-                } else if !error.is_null() {
-                    let description: *mut Object = msg_send![error, localizedDescription];
-                    let c_str: *const i8 = msg_send![description, UTF8String];
-                    if !c_str.is_null() {
-                        let error_str = CStr::from_ptr(c_str);
-                        println!("[ibl.ai] macOS ASWebAuthenticationSession error: {:?}", error_str);
-                    }
+            if !callback_url.is_null() {
+                let url_string_ns: *mut Object = msg_send![callback_url, absoluteString];
+                let url_c_str: *const i8 = msg_send![url_string_ns, UTF8String];
+                if !url_c_str.is_null() {
+                    let url_str = CStr::from_ptr(url_c_str).to_string_lossy().to_string();
+                    println!("[ibl.ai] macOS ASWebAuthenticationSession completed with callback URL: {}", url_str);
+                    handle_auth_session_callback_macos(&app_handle_clone, &url_str);
                 }
-                // Release the retained session
-                let storage: Option<&std::sync::Mutex<Option<JsonSessionPtr>>> = MACOS_AUTH_SESSION.get();
-                if let Some(mtx) = storage {
-                    if let Ok(mut guard) = mtx.lock() {
-                        if let Some(JsonSessionPtr(ptr)) = guard.take() {
-                            let _: () = msg_send![ptr, release];
-                            println!("[ibl.ai] macOS auth session released");
-                        }
+            } else if !error.is_null() {
+                let description: *mut Object = msg_send![error, localizedDescription];
+                let c_str: *const i8 = msg_send![description, UTF8String];
+                if !c_str.is_null() {
+                    let error_str = CStr::from_ptr(c_str);
+                    println!("[ibl.ai] macOS ASWebAuthenticationSession error: {:?}", error_str);
+                }
+            }
+            // Release the retained session
+            let storage: Option<&std::sync::Mutex<Option<JsonSessionPtr>>> = MACOS_AUTH_SESSION.get();
+            if let Some(mtx) = storage {
+                if let Ok(mut guard) = mtx.lock() {
+                    if let Some(JsonSessionPtr(ptr)) = guard.take() {
+                        let _: () = msg_send![ptr, release];
+                        println!("[ibl.ai] macOS auth session released");
                     }
                 }
             }
@@ -569,6 +567,72 @@ fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
         }
     } else {
         println!("[ibl.ai] Main window not found for callback navigation");
+    }
+}
+
+/// Handle a cross-origin SSO redirect intercepted by the desktop `on_navigation`
+/// hook (e.g. `https://skillsai.iblai.app/sso-login-complete?data=...`).
+///
+/// WKWebView re-encodes already-percent-encoded query params on cross-origin
+/// navigations, double-encoding the `data` payload. We intercept the redirect,
+/// fully decode each param, and re-navigate the main window via URLSearchParams
+/// so the app receives the params exactly once-decoded.
+#[cfg(not(any(target_os = "ios", target_os = "android")))]
+fn handle_auth_session_callback_sso(app_handle: &AppHandle, raw_url: &str) {
+    println!("[ibl.ai] SSO redirect callback: {}", raw_url);
+
+    let parsed = match tauri::Url::parse(raw_url) {
+        Ok(url) => url,
+        Err(e) => {
+            println!("[ibl.ai] Failed to parse SSO URL: {}", e);
+            return;
+        }
+    };
+
+    // Normalize /sso-login → /sso-login-complete to match the macOS/Windows
+    // custom-scheme handlers; /sso-login-complete is the app's canonical route.
+    let raw_path = parsed.path();
+    let path = if raw_path.starts_with("/sso-login") && !raw_path.starts_with("/sso-login-complete") {
+        raw_path.replacen("/sso-login", "/sso-login-complete", 1)
+    } else {
+        raw_path.to_string()
+    };
+    let base_url = format!("{}{}", get_app_url(), path);
+    let raw_query = raw_url.find('?').map(|i| &raw_url[i + 1..]).unwrap_or("");
+
+    let mut params: Vec<(String, String)> = Vec::new();
+    for part in raw_query.split('&') {
+        if part.is_empty() { continue; }
+        let (key, value) = match part.find('=') {
+            Some(i) => (&part[..i], &part[i + 1..]),
+            None => (part, ""),
+        };
+        let mut decoded = value.to_string();
+        loop {
+            match urlencoding::decode(&decoded) {
+                Ok(d) if d != decoded => decoded = d.into_owned(),
+                _ => break,
+            }
+        }
+        let decoded_key = urlencoding::decode(key).unwrap_or_else(|_| key.into()).into_owned();
+        params.push((decoded_key, decoded));
+    }
+
+    if let Some(window) = app_handle.get_webview_window("main") {
+        let js_base = serde_json::to_string(&base_url).unwrap_or_default();
+        let mut js_parts = vec![format!("var u = new URL({});", js_base)];
+        for (key, value) in &params {
+            let js_key = serde_json::to_string(key).unwrap_or_default();
+            let js_val = serde_json::to_string(value).unwrap_or_default();
+            js_parts.push(format!("u.searchParams.set({}, {});", js_key, js_val));
+        }
+        js_parts.push("window.location.href = u.toString();".to_string());
+        let js = js_parts.join(" ");
+
+        match window.eval(&js) {
+            Ok(_) => println!("[ibl.ai] Successfully navigated via URLSearchParams"),
+            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+        }
     }
 }
 
