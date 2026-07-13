@@ -2,8 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
+  Activity,
   Award,
   ClipboardList,
   Compass,
@@ -49,25 +50,38 @@ import { checkRbacPermission } from '@/hoc';
 import { getUserEmail, getUserName } from '@/utils/helpers';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
+import { ProfileCredentialsContent } from '@/components/profile/profile-credentials-content';
+import { ProfileSkillsContent } from '@/components/profile/profile-skills-content';
 
 type SidebarOpenSection = 'analytics';
 
-type LibraryDialogId = 'gradebook';
+type LibraryDialogId = 'gradebook' | 'credentials' | 'skills';
 
-/** SDK list components hosted in the shared dialog shell (currently just
- * the Gradebook — Credentials and Skills are plain profile links). */
+/** Content hosted in the shared dialog shell: the SDK Gradebook, plus the
+ * profile > Credentials and profile > Skills page content (shared with
+ * those routes via the components/profile/* content components). */
 const LIBRARY_DIALOGS: Record<
   LibraryDialogId,
   {
     title: string;
     description: string;
-    Component: React.ComponentType<{ org: string; username: string }>;
+    render: (ctx: { org: string; username: string }) => React.ReactNode;
   }
 > = {
   gradebook: {
     title: 'Gradebook',
     description: 'Your grades and progress across courses, programs, and pathways.',
-    Component: GradebookTab,
+    render: ({ org, username }) => <GradebookTab org={org} username={username} />,
+  },
+  credentials: {
+    title: 'Credentials',
+    description: 'Credentials you have earned.',
+    render: () => <ProfileCredentialsContent />,
+  },
+  skills: {
+    title: 'Skills',
+    description: 'Your earned, self-reported, and desired skills.',
+    render: () => <ProfileSkillsContent />,
   },
 };
 
@@ -83,6 +97,8 @@ function FlatNavRow({
   icon: Icon,
   label,
   href,
+  exact,
+  activeOverride,
   onClick,
   onAfterNav,
 }: {
@@ -90,6 +106,12 @@ function FlatNavRow({
   icon: PlatformSidebarNavIcon;
   label: string;
   href?: string;
+  /** Only mark active on an exact path match (e.g. `/profile` shouldn't
+   * light up on `/profile/skills`). */
+  exact?: boolean;
+  /** Overrides the pathname-derived active state (e.g. catalog items
+   * distinguished by query params on the same route). */
+  activeOverride?: boolean;
   onClick?: () => void;
   onAfterNav?: () => void;
 }) {
@@ -98,11 +120,13 @@ function FlatNavRow({
 
   const isExternal = !!href && /^https?:\/\//i.test(href);
   const active = React.useMemo(() => {
+    if (activeOverride !== undefined) return activeOverride;
     if (!href || isExternal || !pathname) return false;
-    const normalizedHref = href.endsWith('/') ? href.slice(0, -1) : href;
+    const normalizedHref = (href.split('?')[0] ?? '').replace(/\/$/, '');
     const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+    if (exact) return normalizedPath === normalizedHref;
     return normalizedPath === normalizedHref || normalizedPath.startsWith(`${normalizedHref}/`);
-  }, [href, isExternal, pathname]);
+  }, [href, exact, activeOverride, isExternal, pathname]);
 
   const handleClick = () => {
     if (onClick) {
@@ -187,6 +211,7 @@ export function AppSidebar() {
   const [libraryDialog, setLibraryDialog] = React.useState<LibraryDialogId | null>(null);
   const [openSection, setOpenSection] = React.useState<SidebarOpenSection | null>(null);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Force-open the Analytics accordion when deep-linked into it.
   React.useEffect(() => {
@@ -233,12 +258,20 @@ export function AppSidebar() {
     config.settings.aiAnalyticsHeaderMenuEnabled() &&
     checkRbacPermission(rbacPermissions, `/platforms/${tenant}/#can_view_analytics`);
 
+  // Catalog context — Courses / Programs / Pathways / Discover all live on
+  // the centralized catalog page and are told apart by query params.
+  const onCatalogPage = !!pathname?.split('?')[0]?.match(/\/discover\/?$/);
+  const catalogEnrolled = searchParams?.get('enrolled') === 'true';
+  const catalogContent = searchParams?.get('content') ?? '';
+  const catalogBase = `/platform/${tenant}/discover`;
+
   const sections = React.useMemo<PlatformSidebarSectionConfig[]>(() => {
     const flat = (
       id: string,
       icon: PlatformSidebarNavIcon,
       label: string,
       href: string,
+      opts?: { exact?: boolean; activeOverride?: boolean },
     ): PlatformSidebarSectionConfig => ({
       type: 'custom',
       id,
@@ -248,21 +281,57 @@ export function AppSidebar() {
           icon={icon}
           label={label}
           href={href}
+          exact={opts?.exact}
+          activeOverride={opts?.activeOverride}
           onAfterNav={ctx.onAfterNav}
         />
       ),
     });
 
+    // Dialog rows: open the shared library dialog instead of routing.
+    const dialogRow = (
+      id: LibraryDialogId,
+      icon: PlatformSidebarNavIcon,
+      label: string,
+    ): PlatformSidebarSectionConfig => ({
+      type: 'custom',
+      id,
+      render: (ctx) => (
+        <FlatNavRow
+          collapsed={ctx.collapsed}
+          icon={icon}
+          label={label}
+          onClick={() => setLibraryDialog(id)}
+          onAfterNav={ctx.onAfterNav}
+        />
+      ),
+    });
+
+    // Courses / Programs / Pathways deep-link the centralized catalog with
+    // the user's enrollments pre-filtered; Discover is the same page with
+    // no enrollment filter.
+    const catalogItem = (
+      id: string,
+      icon: PlatformSidebarNavIcon,
+      label: string,
+      content: string,
+    ) =>
+      flat(id, icon, label, `${catalogBase}?content=${content}&enrolled=true`, {
+        activeOverride: onCatalogPage && catalogEnrolled && catalogContent === content,
+      });
+
     const list: PlatformSidebarSectionConfig[] = [
       flat('home', Home, 'Home', `/platform/${tenant}/home`),
-      flat('courses', GraduationCap, 'Courses', `${profileBase}/courses`),
-      flat('programs', Layers, 'Programs', `${profileBase}/programs`),
-      flat('pathways', Route, 'Pathways', `${profileBase}/pathways`),
-      flat('credentials', Award, 'Credentials', `${profileBase}/credentials`),
-      flat('skills', Sparkles, 'Skills', `${profileBase}/skills`),
+      catalogItem('courses', GraduationCap, 'Courses', 'courses'),
+      catalogItem('programs', Layers, 'Programs', 'programs'),
+      catalogItem('pathways', Route, 'Pathways', 'pathways'),
     ];
     if (discoverEnabled) {
-      list.push(flat('discover', Compass, 'Discover', `/platform/${tenant}/discover`));
+      list.push(
+        flat('discover', Compass, 'Discover', catalogBase, {
+          activeOverride: onCatalogPage && !catalogEnrolled,
+        }),
+      );
     }
     list.push({ type: 'divider', id: 'library-divider' });
     if (studioAllowed) {
@@ -271,22 +340,25 @@ export function AppSidebar() {
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
     }
-    // Gradebook opens its SDK list component in a dialog instead of routing.
-    list.push({
-      type: 'custom',
-      id: 'gradebook',
-      render: (ctx) => (
-        <FlatNavRow
-          collapsed={ctx.collapsed}
-          icon={ClipboardList}
-          label="Gradebook"
-          onClick={() => setLibraryDialog('gradebook')}
-          onAfterNav={ctx.onAfterNav}
-        />
-      ),
-    });
+    // Exact match: /profile is the Activity page; its sub-routes belong to
+    // other items (Courses, Programs, …).
+    list.push(flat('activity', Activity, 'Activity', profileBase, { exact: true }));
+    list.push(dialogRow('gradebook', ClipboardList, 'Gradebook'));
+    list.push(dialogRow('credentials', Award, 'Credentials'));
+    list.push(dialogRow('skills', Sparkles, 'Skills'));
     return list;
-  }, [profileBase, tenant, discoverEnabled, analyticsAllowed, analyticsMenu, studioAllowed]);
+  }, [
+    profileBase,
+    tenant,
+    discoverEnabled,
+    analyticsAllowed,
+    analyticsMenu,
+    studioAllowed,
+    catalogBase,
+    onCatalogPage,
+    catalogEnrolled,
+    catalogContent,
+  ]);
 
   const handleFooterAction = React.useCallback(
     (actionId: PlatformSidebarFooterActionId) => {
@@ -396,10 +468,7 @@ export function AppSidebar() {
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-y-auto p-6">
             {libraryDialog &&
-              (() => {
-                const LibraryComponent = LIBRARY_DIALOGS[libraryDialog].Component;
-                return <LibraryComponent org={tenant} username={username ?? ''} />;
-              })()}
+              LIBRARY_DIALOGS[libraryDialog].render({ org: tenant, username: username ?? '' })}
           </div>
         </DialogContent>
       </Dialog>

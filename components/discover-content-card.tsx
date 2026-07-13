@@ -45,6 +45,11 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
             <div className="absolute bottom-2 left-2 rounded-sm bg-amber-500 px-2 py-1 text-xs text-white uppercase">
               {content.contentType}
             </div>
+            {content.enrolled && (
+              <div className="absolute top-2 right-2 rounded-full border border-[#cfe8fa] bg-[#eef6fc] px-2 py-0.5 text-xs font-medium text-[#1e40af]">
+                Enrolled
+              </div>
+            )}
           </div>
           <div className="flex flex-1 flex-col justify-between p-4 pb-6">
             <div>

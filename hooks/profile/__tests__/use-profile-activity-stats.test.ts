@@ -40,6 +40,11 @@ vi.mock('@/services/catalog', () => ({
   useLazyGetUserCatalogPathwaysQuery: vi.fn(() => [mockGetUserCatalogPathways, { error: null }]),
 }));
 
+const mockGetUserPerLearnerInfo = vi.fn();
+vi.mock('@/services/perlearner', () => ({
+  useLazyGetUserPerLearnerInfoQuery: vi.fn(() => [mockGetUserPerLearnerInfo, { isError: false }]),
+}));
+
 import { useProfileActivityStats } from '../use-profile-activity-stats';
 
 describe('useProfileActivityStats', () => {
@@ -53,6 +58,7 @@ describe('useProfileActivityStats', () => {
     mockGetUserEnrolledCourses.mockResolvedValue({ data: null });
     mockGetUserEnrolledPrograms.mockResolvedValue({ data: null });
     mockGetUserCatalogPathways.mockResolvedValue({ data: null });
+    mockGetUserPerLearnerInfo.mockResolvedValue({ data: null });
   });
 
   it('returns expected shape', () => {
@@ -73,7 +79,7 @@ describe('useProfileActivityStats', () => {
     expect(labels).toContain('Courses');
     expect(labels).toContain('Programs');
     expect(labels).toContain('Pathways');
-    expect(labels).toContain('Resources');
+    expect(labels).toContain('Time Spent');
     expect(labels).toContain('Assessments');
     expect(labels).toContain('Videos');
   });
@@ -168,7 +174,7 @@ describe('useProfileActivityStats', () => {
     });
   });
 
-  it('updates Pathways and Resources stats', async () => {
+  it('updates Pathways stat', async () => {
     mockGetUserCatalogPathways.mockResolvedValue({
       data: [
         { id: 'p1', path: [{ id: 'r1' }, { id: 'r2' }] },
@@ -180,11 +186,8 @@ describe('useProfileActivityStats', () => {
 
     await waitFor(() => {
       const pathwaysStat = result.current.stats.find((s) => s.label === 'Pathways');
-      const resourcesStat = result.current.stats.find((s) => s.label === 'Resources');
       expect(pathwaysStat?.loading).toBe(false);
       expect(pathwaysStat?.value).toBe(2);
-      expect(resourcesStat?.loading).toBe(false);
-      expect(resourcesStat?.value).toBe(3);
     });
   });
 
@@ -219,6 +222,22 @@ describe('useProfileActivityStats', () => {
       expect(assessmentsStat?.value).toBe(10);
       expect(videosStat?.loading).toBe(false);
       expect(videosStat?.value).toBe(5);
+    });
+  });
+
+  it('formats total time spent as hours', async () => {
+    mockGetUserPerLearnerInfo.mockResolvedValue({
+      data: {
+        data: { total_time_spent: 53_460 }, // 14.85h
+      },
+    });
+
+    const { result } = renderHook(() => useProfileActivityStats());
+
+    await waitFor(() => {
+      const timeSpentStat = result.current.stats.find((s) => s.label === 'Time Spent');
+      expect(timeSpentStat?.loading).toBe(false);
+      expect(timeSpentStat?.value).toBe('15h');
     });
   });
 

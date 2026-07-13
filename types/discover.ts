@@ -4,6 +4,8 @@ export interface DiscoverContentCardProps {
   url: string;
   image: string;
   id: string;
+  /** The current user is enrolled in this content ("Enrolled" pill). */
+  enrolled?: boolean;
 }
 
 export interface DiscoverContent {

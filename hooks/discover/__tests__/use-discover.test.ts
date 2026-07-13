@@ -44,7 +44,24 @@ vi.mock('use-debounce', () => ({
   useDebouncedCallback: (fn: any) => fn,
 }));
 
+const mockEnrollments = vi.hoisted(() => ({
+  enrolledIds: new Set<string>(),
+  enrolledCards: { courses: [] as any[], programs: [] as any[], pathways: [] as any[] },
+  enrolledTotal: 0,
+  enrollmentsLoading: false,
+}));
+vi.mock('../use-user-enrollments', () => ({
+  useUserEnrollments: vi.fn(() => mockEnrollments),
+}));
+
 import { useDiscover } from '../use-discover';
+
+const ENROLLMENT_FACET = {
+  slug: 'enrollment',
+  label: 'Enrollment',
+  expanded: true,
+  terms: [{ key: 'Enrolled', count: 0 }],
+};
 
 describe('useDiscover', () => {
   beforeEach(() => {
@@ -91,8 +108,8 @@ describe('useDiscover', () => {
     });
     expect(result.current.page).toBe(1);
     expect(result.current.contents).toEqual([]);
-    expect(result.current.facets).toEqual([]);
-    expect(result.current.filteredFacets).toEqual([]);
+    expect(result.current.facets).toEqual([ENROLLMENT_FACET]);
+    expect(result.current.filteredFacets).toEqual([ENROLLMENT_FACET]);
     expect(result.current.selectedFacets).toEqual({ content: ['courses'] });
   });
 
@@ -201,7 +218,7 @@ describe('useDiscover', () => {
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facetsLoading).toBe(false));
-    expect(result.current.facets).toEqual([]);
+    expect(result.current.facets).toEqual([ENROLLMENT_FACET]);
   });
 
   it('handleToggleFacet flips the expanded flag for a single facet', async () => {
@@ -375,7 +392,7 @@ describe('useDiscover', () => {
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facetsLoading).toBe(false));
-    expect(result.current.facets).toEqual([]);
+    expect(result.current.facets).toEqual([ENROLLMENT_FACET]);
   });
 
   it('passes selected facet params through to handleSearch', async () => {

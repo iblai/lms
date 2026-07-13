@@ -83,7 +83,9 @@ export default function ProfilePage() {
               <h2 className="mb-4 text-lg font-medium text-gray-700">Skill Leaderboard</h2>
               <div className="rounded-lg border border-amber-200 bg-white p-4">
                 <SkillLeaderboardChart
-                  userSkillPoints={stats.find((stat) => stat.label === 'Points')?.value || 0}
+                  userSkillPoints={
+                    Number(stats.find((stat) => stat.label === 'Points')?.value) || 0
+                  }
                 />
               </div>
             </div>

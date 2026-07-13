@@ -1,6 +1,6 @@
 import { getUserName } from '@/utils/helpers';
 import { usePersonnalizedCatalog } from '../search/use-personnalized-catalog';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';
 import _ from 'lodash';
 import { useDebouncedCallback } from 'use-debounce';
@@ -10,6 +10,12 @@ import { DiscoverContentCardProps } from '@/types/discover';
 import { useRouter } from 'next/navigation';
 import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '../use-tenant-param';
+import { useUserEnrollments, EnrolledContentType } from './use-user-enrollments';
+
+/** Synthetic facet: filters the catalog down to the user's enrollments. */
+export const ENROLLMENT_FACET_SLUG = 'enrollment';
+export const ENROLLMENT_FACET_TERM = 'Enrolled';
+
 export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const router = useRouter();
   const tenant = useTenantParam();
@@ -19,6 +25,9 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   });
   const { handleSearch, isError, pagination } = usePersonnalizedCatalog({
     isLoggedIn: isUserLoggedIn,
+  });
+  const { enrolledIds, enrolledCards, enrolledTotal, enrollmentsLoading } = useUserEnrollments({
+    tenant,
   });
 
   const [facets, setFacets] = useState<CourseFacet[]>([]);
@@ -40,6 +49,27 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const isFacetTermSelected = (facetSlug: string, term: string) => {
     return selectedFacets?.[facetSlug]?.includes(term);
   };
+
+  /** "Enrolled" filter active — the catalog lists the user's enrollments. */
+  const enrolledOnly = !_.isEmpty(selectedFacets?.[ENROLLMENT_FACET_SLUG]);
+
+  const buildEnrollmentFacet = (count: number): CourseFacet => ({
+    slug: ENROLLMENT_FACET_SLUG,
+    label: 'Enrollment',
+    expanded: true,
+    terms: [{ key: ENROLLMENT_FACET_TERM, count }],
+  });
+
+  // Keep the synthetic Enrollment facet's count in sync once the user's
+  // enrollments load.
+  useEffect(() => {
+    const syncCount = (list: CourseFacet[]) =>
+      list.map((facet) =>
+        facet.slug === ENROLLMENT_FACET_SLUG ? buildEnrollmentFacet(enrolledTotal) : facet,
+      );
+    setFacets(syncCount);
+    setFilteredFacets(syncCount);
+  }, [enrolledTotal]);
 
   const handleSelectFacets = (facetSlug: string, term: string) => {
     if (facetSlug === 'q') {
@@ -129,8 +159,13 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
       }
       const allFacets = response?.data?.facets;
       if (onlyFacets) {
-        setFacets(handleFormatFacets(allFacets));
-        setFilteredFacets(handleFormatFacets(allFacets));
+        // The synthetic Enrollment facet leads the list — logged-in users
+        // can narrow the catalog down to their own enrollments.
+        const formattedFacets = isUserLoggedIn
+          ? [buildEnrollmentFacet(enrolledTotal), ...handleFormatFacets(allFacets)]
+          : handleFormatFacets(allFacets);
+        setFacets(formattedFacets);
+        setFilteredFacets(formattedFacets);
         setFacetsLoading(false);
       } else {
         setContents(response?.data?.results);
@@ -220,6 +255,7 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
               : config.urls.lms() + data?.data?.card_image
             : '',
           id: data?.program_id,
+          enrolled: enrolledIds.has(data?.program_id) || enrolledIds.has(data?.program_key),
         };
       case 'pathway':
         return {
@@ -231,6 +267,7 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
           )}&user_related=false&pathway_id=${encodeURIComponent(data?.pathway_id)}`,
           image: '',
           id: data?.pathway_uuid,
+          enrolled: enrolledIds.has(data?.pathway_uuid) || enrolledIds.has(data?.pathway_id),
         };
       //case "course":
       default:
@@ -242,6 +279,7 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
           url: `/courses/${course?.course_id}`,
           image: `${config.urls.lms()}${course?.edx_data?.course_image_asset_path}`,
           id: course?.course_id,
+          enrolled: enrolledIds.has(course?.course_id),
         };
       /* case "article":
         return contents.map((content) => {
@@ -251,6 +289,29 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
         }); */
     }
   };
+
+  /**
+   * The cards to render for the current mode:
+   *  - "Enrolled" filter active → the user's enrollments (narrowed by the
+   *    selected content types and the search query, all client-side);
+   *  - otherwise → the personalized catalog search results, each flagged
+   *    `enrolled` when the user is enrolled in it.
+   */
+  const displayCards = useMemo<DiscoverContentCardProps[]>(() => {
+    if (enrolledOnly) {
+      const selectedTypes = (
+        !_.isEmpty(selectedFacets?.content)
+          ? selectedFacets.content
+          : ['courses', 'programs', 'pathways']
+      ).filter((type): type is EnrolledContentType => type in enrolledCards);
+      const query = (selectedFacets?.q?.[0] ?? '').toLowerCase();
+      return selectedTypes
+        .flatMap((type) => enrolledCards[type])
+        .filter((card) => !query || card.title.toLowerCase().includes(query));
+    }
+    return (contents ?? []).map(handleFormatContents);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enrolledOnly, selectedFacets, enrolledCards, contents, enrolledIds]);
 
   const handleFilterFacets = (facetSlug: string, searchTerm: string) => {
     try {
@@ -302,5 +363,8 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
     setPage,
     handleFilterFacets,
     setSelectedFacets,
+    displayCards,
+    enrolledOnly,
+    enrollmentsLoading,
   };
 };

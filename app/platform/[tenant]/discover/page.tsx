@@ -9,7 +9,6 @@ import { DefaultEmptyBox } from '@/components/default-empty-box';
 import _ from 'lodash';
 import React from 'react';
 import { DiscoverContentCard } from '@/components/discover-content-card';
-import { DiscoverContent } from '@/types/discover';
 import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,6 @@ export default function DiscoverPage() {
   const [limit] = useState<number>(12);
   const searchParams = useSearchParams();
   const {
-    contents,
     facets,
     contentsLoading,
     facetsLoading,
@@ -29,30 +27,39 @@ export default function DiscoverPage() {
     selectedFacets,
     isFacetTermSelected,
     handleSelectFacets,
-    handleFormatContents,
     pagination,
     setPage,
     handleFilterFacets,
     filteredFacets,
     setSelectedFacets,
+    displayCards,
+    enrolledOnly,
+    enrollmentsLoading,
   } = useDiscover({
     limit,
   });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
+  // Seed the filters from the URL: `q` (navbar search), `content`
+  // (courses|programs|pathways) and `enrolled=true` (the sidebar's
+  // Courses / Programs / Pathways entries deep-link the user's
+  // enrollments on this centralized catalog page).
   useEffect(() => {
-    if (searchParams.get('q')) {
-      setSelectedFacets({
-        ...selectedFacets,
-        q: [decodeURIComponent(searchParams.get('q') || '')],
-      });
-    } else {
-      setSelectedFacets({
-        ...selectedFacets,
-        q: [],
-      });
-    }
-  }, [searchParams]);
+    const contentParam = searchParams.get('content');
+    const enrolledParam = searchParams.get('enrolled');
+    setSelectedFacets((previous) => ({
+      ...previous,
+      q: searchParams.get('q') ? [decodeURIComponent(searchParams.get('q') || '')] : [],
+      ...(contentParam !== null && {
+        content: contentParam ? contentParam.split(',').filter(Boolean) : [],
+      }),
+      ...(enrolledParam !== null && {
+        enrollment: enrolledParam === 'true' ? ['Enrolled'] : [],
+      }),
+    }));
+  }, [searchParams, setSelectedFacets]);
+
+  const cardsBusy = contentsLoading || (enrolledOnly && enrollmentsLoading);
 
   return (
     <>
@@ -141,28 +148,27 @@ export default function DiscoverPage() {
                   })}
                 </div>
               )}
-              {((!contentsLoading && isError) ||
-                (!contentsLoading && !isError && contents?.length === 0)) && (
-                <DefaultEmptyBox message="No content found." />
+              {((!cardsBusy && isError && !enrolledOnly) ||
+                (!cardsBusy && displayCards?.length === 0)) && (
+                <DefaultEmptyBox
+                  message={enrolledOnly ? 'No enrolled content found.' : 'No content found.'}
+                />
               )}
 
               {/* Course Grid */}
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden min-[450px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                {contentsLoading && (
-                  <SkeletonMultiplier multiplier={10} Skeleton={CourseCardSkeleton} />
-                )}
-                {!contentsLoading &&
-                  !isError &&
-                  contents.length > 0 &&
-                  contents.map((content: DiscoverContent, index) => (
-                    <div key={`content-${index}`} className="w-full">
-                      <DiscoverContentCard content={handleFormatContents(content)} />
+                {cardsBusy && <SkeletonMultiplier multiplier={10} Skeleton={CourseCardSkeleton} />}
+                {!cardsBusy &&
+                  displayCards.length > 0 &&
+                  displayCards.map((card, index) => (
+                    <div key={`content-${card.id || index}`} className="w-full">
+                      <DiscoverContentCard content={card} />
                     </div>
                   ))}
               </div>
 
-              {/* Pagination */}
-              <div className="mt-8 mb-6 flex justify-end">
+              {/* Pagination — the enrolled view lists everything at once */}
+              <div className={`mt-8 mb-6 ${enrolledOnly ? 'hidden' : 'flex'} justify-end`}>
                 <AccessiblePaginate
                   className="flex items-center space-x-2"
                   pageClassName="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
