@@ -100,6 +100,25 @@ Whether you're an enterprise building an internal upskilling program, a universi
 
 ---
 
+## Available On
+
+<div align="center">
+
+| Platform    | Status                                                                       |
+| ----------- | ---------------------------------------------------------------------------- |
+| **Web**     | Production at [lms.ibl.ai](https://lms.ibl.ai) — works on any modern browser |
+| **macOS**   | Native desktop app — [download the latest build](#download)                  |
+| **iOS**     | Native mobile app — available on iPhone and iPad                             |
+| **Android** | Native mobile app — available on phones and tablets                          |
+| **Windows** | Native desktop app                                                           |
+| **Linux**   | Native desktop app                                                           |
+
+</div>
+
+One codebase, six platforms — Agentic LMS runs natively everywhere your learners are.
+
+---
+
 ## Download
 
 **Latest macOS build:** [Agentic LMS app-v1.0.15 (Universal .dmg)](https://github.com/iblai/lms/releases/download/app-v1.0.15/Agentic.LMS_1.0.15_universal.dmg) · [all versions](docs/DOWNLOADS.md)
