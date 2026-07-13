@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.48.5](https://github.com/iblai/lms/compare/skills-v0.48.4...skills-v0.48.5) (2026-07-13)
+
+### Documentation
+
+* **readme:** add "Available On" platforms section ([08df6bc](https://github.com/iblai/lms/commit/08df6bcb646d440d455b86a9d96bfd4e6ad3cddd)), closes [#download](https://github.com/iblai/lms/issues/download)
+
 ## [0.48.4](https://github.com/iblai/lms/compare/skills-v0.48.3...skills-v0.48.4) (2026-07-13)
 
 ### Bug Fixes
