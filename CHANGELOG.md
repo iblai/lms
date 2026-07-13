@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.48.4](https://github.com/iblai/lms/compare/skills-v0.48.3...skills-v0.48.4) (2026-07-13)
+
+### Bug Fixes
+
+* **tauri:** clear unused NO import and redundant unsafe block ([67c0116](https://github.com/iblai/lms/commit/67c01165ed4c48b665026ebf0dc4c366862ea3af))
+* **tauri:** restore missing handle_auth_session_callback_sso ([e87480c](https://github.com/iblai/lms/commit/e87480c3a841b59ad2dd5df8fa57edd126681af9))
+
+### Chores
+
+* **tauri:** release app-v1.0.15 ([0d037f9](https://github.com/iblai/lms/commit/0d037f97aae633cbfb59ff76782cd35abfa19dc5))
+
 ## [0.48.3](https://github.com/iblai/lms/compare/skills-v0.48.2...skills-v0.48.3) (2026-07-13)
 
 ### CI
