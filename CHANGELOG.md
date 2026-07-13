@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.3](https://github.com/iblai/lms/compare/skills-v0.48.2...skills-v0.48.3) (2026-07-13)
+
+### CI
+
+* harden tauri auto-version against release race + re-run double-bump ([09b57b3](https://github.com/iblai/lms/commit/09b57b3a8dd4eff9485667fb0a4d75e4c256aa7f)), closes [#2](https://github.com/iblai/lms/issues/2) [#3](https://github.com/iblai/lms/issues/3)
+* independent tauri versioning with auto-bump + DMG release ([b1a0f97](https://github.com/iblai/lms/commit/b1a0f97dd983f71e788429570593d932ccf05d2a))
+
 ## [0.48.2](https://github.com/iblai/lms/compare/skills-v0.48.1...skills-v0.48.2) (2026-07-09)
 
 ### CI
