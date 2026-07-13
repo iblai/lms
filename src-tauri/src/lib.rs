@@ -35,7 +35,7 @@ use web_cache::WebCache;
 use {
     block::ConcreteBlock,
     objc::{class, msg_send, sel, sel_impl},
-    objc::runtime::{Class, Object, BOOL, YES, NO},
+    objc::runtime::{Class, Object, BOOL, YES},
     objc::declare::ClassDecl,
     std::ffi::{CStr, CString},
     std::ptr,
@@ -394,31 +394,29 @@ fn open_with_auth_session_macos(url: &str, app_handle: &AppHandle) -> Result<(),
 
         let app_handle_clone = app_handle.clone();
         let block = ConcreteBlock::new(move |callback_url: *mut Object, error: *mut Object| {
-            unsafe {
-                if !callback_url.is_null() {
-                    let url_string_ns: *mut Object = msg_send![callback_url, absoluteString];
-                    let url_c_str: *const i8 = msg_send![url_string_ns, UTF8String];
-                    if !url_c_str.is_null() {
-                        let url_str = CStr::from_ptr(url_c_str).to_string_lossy().to_string();
-                        println!("[ibl.ai] macOS ASWebAuthenticationSession completed with callback URL: {}", url_str);
-                        handle_auth_session_callback_macos(&app_handle_clone, &url_str);
-                    }
-                } else if !error.is_null() {
-                    let description: *mut Object = msg_send![error, localizedDescription];
-                    let c_str: *const i8 = msg_send![description, UTF8String];
-                    if !c_str.is_null() {
-                        let error_str = CStr::from_ptr(c_str);
-                        println!("[ibl.ai] macOS ASWebAuthenticationSession error: {:?}", error_str);
-                    }
+            if !callback_url.is_null() {
+                let url_string_ns: *mut Object = msg_send![callback_url, absoluteString];
+                let url_c_str: *const i8 = msg_send![url_string_ns, UTF8String];
+                if !url_c_str.is_null() {
+                    let url_str = CStr::from_ptr(url_c_str).to_string_lossy().to_string();
+                    println!("[ibl.ai] macOS ASWebAuthenticationSession completed with callback URL: {}", url_str);
+                    handle_auth_session_callback_macos(&app_handle_clone, &url_str);
                 }
-                // Release the retained session
-                let storage: Option<&std::sync::Mutex<Option<JsonSessionPtr>>> = MACOS_AUTH_SESSION.get();
-                if let Some(mtx) = storage {
-                    if let Ok(mut guard) = mtx.lock() {
-                        if let Some(JsonSessionPtr(ptr)) = guard.take() {
-                            let _: () = msg_send![ptr, release];
-                            println!("[ibl.ai] macOS auth session released");
-                        }
+            } else if !error.is_null() {
+                let description: *mut Object = msg_send![error, localizedDescription];
+                let c_str: *const i8 = msg_send![description, UTF8String];
+                if !c_str.is_null() {
+                    let error_str = CStr::from_ptr(c_str);
+                    println!("[ibl.ai] macOS ASWebAuthenticationSession error: {:?}", error_str);
+                }
+            }
+            // Release the retained session
+            let storage: Option<&std::sync::Mutex<Option<JsonSessionPtr>>> = MACOS_AUTH_SESSION.get();
+            if let Some(mtx) = storage {
+                if let Ok(mut guard) = mtx.lock() {
+                    if let Some(JsonSessionPtr(ptr)) = guard.take() {
+                        let _: () = msg_send![ptr, release];
+                        println!("[ibl.ai] macOS auth session released");
                     }
                 }
             }
