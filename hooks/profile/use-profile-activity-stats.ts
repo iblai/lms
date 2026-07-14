@@ -20,6 +20,18 @@ import {
   useLazyGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 
+/** Total learning time, in plain words ("42 minutes", "351 hours"). */
+const formatTimeSpent = (totalSeconds: unknown): string => {
+  const seconds =
+    typeof totalSeconds === 'number' && !isNaN(totalSeconds) ? Math.max(0, totalSeconds) : 0;
+  const hours = Math.round(seconds / 3600);
+  if (hours < 1) {
+    const minutes = Math.round(seconds / 60);
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  }
+  return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+};
+
 export const useProfileActivityStats = () => {
   const [getUserSkillsPoints, { isError: isErrorGetUserSkillsPoints }] =
     useLazyGetUserSkillsPointsQuery();
@@ -47,7 +59,7 @@ export const useProfileActivityStats = () => {
     { value: 4, label: 'Courses', loading: true },
     { value: 0, label: 'Programs', loading: true },
     { value: 0, label: 'Pathways', loading: true },
-    { value: '0h', label: 'Time Spent', loading: true },
+    { value: '0 minutes', label: 'Time Spent', loading: true },
     { value: 0, label: 'Assessments', loading: true },
     { value: 0, label: 'Videos', loading: true },
   ]);
@@ -318,18 +330,14 @@ export const useProfileActivityStats = () => {
         throw new Error();
       }
       const totalTimeSpentSeconds = response?.data?.data?.total_time_spent;
-      const hours =
-        typeof totalTimeSpentSeconds === 'number' && !isNaN(totalTimeSpentSeconds)
-          ? Math.round(totalTimeSpentSeconds / 3600)
-          : 0;
       updateSingleStat({
-        value: `${hours}h`,
+        value: formatTimeSpent(totalTimeSpentSeconds),
         label: timeSpentLabel,
         loading: false,
       });
     } catch {
       updateSingleStat({
-        value: '0h',
+        value: formatTimeSpent(0),
         label: timeSpentLabel,
         loading: false,
       });

@@ -58,22 +58,30 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     expect(page.url()).toContain('/profile');
   });
 
-  test('CP-4: Suggested Courses "See More" navigates to /recommended', async ({ page }) => {
-    const suggestedHeading = page.getByRole('heading', { name: /suggested courses/i });
-    const hasSuggested = await suggestedHeading.isVisible({ timeout: 120_000 }).catch(() => false);
+  test('CP-4: Recommended catalog view lists recommendations with pills', async ({ page }) => {
+    // Recommendations live on the centralized catalog page behind the
+    // Recommended filter.
+    await gotoTenantPage(page, 'discover?recommended=true', { timeout: 120_000 });
+    await waitForAppShell(page);
 
-    if (!hasSuggested) {
+    const recommendedChip = page.getByRole('button', { name: /remove filter recommended/i });
+    await expect(recommendedChip).toBeVisible({ timeout: 120_000 });
+
+    const contentCard = page.locator('[data-testid="discover-content-card"]');
+    const emptyState = page.getByText(/no recommended content found/i).first();
+    await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const hasCards = await contentCard
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasCards) {
       test.skip();
       return;
     }
 
-    // The See More link sits in the Suggested Courses section header.
-    const seeMore = page.locator('a[href*="/recommended"]').first();
-    await expect(seeMore).toBeVisible({ timeout: 30_000 });
-    await seeMore.click();
-
-    await page.waitForURL(/\/recommended/, { timeout: 60_000 });
-    expect(page.url()).toContain('/recommended');
+    const recommendedPill = contentCard.first().getByText('Recommended');
+    await expect(recommendedPill).toBeVisible({ timeout: 30_000 });
   });
 
   test('CP-5: Sidebar Discover item navigates to /discover', async ({ page }) => {
@@ -159,16 +167,16 @@ test.describe('Journey 22: Navigation & NavBar', () => {
   test('CP-9: Course switcher shows the current course and switches to another', async ({
     page,
   }) => {
-    // Enter a course from My Courses
-    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
-    const courseLink = myCoursesGrid.getByRole('link').first();
+    // Enter a course from the enrolled catalog view
+    await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120_000 });
+    await waitForAppShell(page);
+    const courseCard = page.locator('[data-testid="discover-content-card"]').first();
 
-    if (!(await courseLink.isVisible({ timeout: 30_000 }).catch(() => false))) {
+    if (!(await courseCard.isVisible({ timeout: 120_000 }).catch(() => false))) {
       test.skip();
       return;
     }
-    await courseLink.click();
+    await courseCard.click();
     await page.waitForURL(/\/courses\//, { timeout: 120_000 });
     await waitForAppShell(page);
 

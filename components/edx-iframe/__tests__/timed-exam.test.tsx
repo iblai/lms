@@ -359,7 +359,7 @@ describe('TimedExam', () => {
       },
     };
     const { container } = renderTimedExam({ examInfo: examWithLowTime });
-    expect(container.querySelector('[class*="bg-[#eef6fc]"]')).toBeInTheDocument();
+    expect(container.querySelector('[class*="bg-[#dbeafe]"]')).toBeInTheDocument();
   });
 
   it('shows red style when time is critically low', () => {

@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
+  isRecommendedTabHidden: vi.fn(() => false),
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -54,6 +55,16 @@ vi.mock('../use-user-enrollments', () => ({
   useUserEnrollments: vi.fn(() => mockEnrollments),
 }));
 
+const mockRecommendations = vi.hoisted(() => ({
+  recommendedCourses: [] as any[],
+  allRecommendedCourses: [] as any[],
+  isLoading: false,
+  isError: undefined,
+}));
+vi.mock('../../courses/use-recommended-courses', () => ({
+  useRecommendedCourses: vi.fn(() => mockRecommendations),
+}));
+
 import { useDiscover } from '../use-discover';
 
 const ENROLLMENT_FACET = {
@@ -61,6 +72,13 @@ const ENROLLMENT_FACET = {
   label: 'Enrollment',
   expanded: true,
   terms: [{ key: 'Enrolled', count: 0 }],
+};
+
+const RECOMMENDED_FACET = {
+  slug: 'recommended',
+  label: 'Recommended',
+  expanded: true,
+  terms: [{ key: 'Recommended', count: 0 }],
 };
 
 describe('useDiscover', () => {
@@ -108,8 +126,8 @@ describe('useDiscover', () => {
     });
     expect(result.current.page).toBe(1);
     expect(result.current.contents).toEqual([]);
-    expect(result.current.facets).toEqual([ENROLLMENT_FACET]);
-    expect(result.current.filteredFacets).toEqual([ENROLLMENT_FACET]);
+    expect(result.current.facets).toEqual([ENROLLMENT_FACET, RECOMMENDED_FACET]);
+    expect(result.current.filteredFacets).toEqual([ENROLLMENT_FACET, RECOMMENDED_FACET]);
     expect(result.current.selectedFacets).toEqual({ content: ['courses'] });
   });
 
@@ -218,7 +236,7 @@ describe('useDiscover', () => {
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facetsLoading).toBe(false));
-    expect(result.current.facets).toEqual([ENROLLMENT_FACET]);
+    expect(result.current.facets).toEqual([ENROLLMENT_FACET, RECOMMENDED_FACET]);
   });
 
   it('handleToggleFacet flips the expanded flag for a single facet', async () => {
@@ -392,7 +410,7 @@ describe('useDiscover', () => {
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facetsLoading).toBe(false));
-    expect(result.current.facets).toEqual([ENROLLMENT_FACET]);
+    expect(result.current.facets).toEqual([ENROLLMENT_FACET, RECOMMENDED_FACET]);
   });
 
   it('passes selected facet params through to handleSearch', async () => {

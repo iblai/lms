@@ -41,14 +41,14 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 3: Home Dashboard (8 checkpoints) — `journeys/03-home-dashboard.spec.ts`
 
-**Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`, `components/suggested-courses.tsx`, `components/my-courses.tsx`
+**Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`
 
 - [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
-- [x] Suggested Courses section displays course cards or empty state
-- [x] My Courses section displays enrolled course cards in a grid
-- [x] Clicking a course card in My Courses navigates to the course about page
-- [x] Clicking a suggested course card navigates to the course about page
-- [x] Activity Overview band shows the profile activity stats with a View Activity link
+- [x] Explore the Catalog rail displays catalog cards or hides when empty
+- [x] My Courses CTA opens the enrolled catalog view
+- [x] Clicking an enrolled catalog card navigates to the course about page
+- [x] Clicking a catalog rail card navigates to the content page
+- [x] Activity Overview band shows the activity stats beside the Time Spent chart
 - [x] "View All" or "See more" links in course sections navigate to appropriate pages
 - [x] Home page loads without console errors
 
@@ -201,9 +201,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 14: Course Discovery (8 checkpoints) — `journeys/14-course-discovery.spec.ts`
+## Journey 14: Course Discovery — Centralized Catalog (9 checkpoints) — `journeys/14-course-discovery.spec.ts`
 
-**Source files:** `app/discover/page.tsx`, `components/discover-content-card.tsx`
+**Source files:** `app/discover/page.tsx`, `components/discover-content-card.tsx`, `hooks/discover/use-discover.ts`, `hooks/discover/use-user-enrollments.ts`
 
 - [x] Discover page (/discover) loads with course catalog cards and search input
 - [x] Search input filters the course catalog by title/keyword
@@ -213,6 +213,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Clicking a course card navigates to the course about page
 - [x] Filter drawer opens and closes on mobile viewport _(if applicable)_
 - [x] Pagination or infinite scroll loads additional courses
+- [x] Enrolled catalog view (`?content=<type>&enrolled=true`, deep-linked by the sidebar Courses/Programs/Pathways items) lists the user's enrollments with "Enrolled" pills; removing the Enrollment filter returns to the full catalog
 
 ---
 
@@ -324,7 +325,7 @@ When adding a new page or modifying an existing user flow:
 - [x] NavBar (PlatformNavbar shell) renders with Search, Notifications, and User Profile elements
 - [x] Sidebar "Home" item navigates to /home
 - [x] Profile is reachable from the user profile dropdown
-- [x] Suggested Courses "See More" navigates to /recommended
+- [x] Recommended catalog view (`?recommended=true`) lists recommendations with "Recommended" pills
 - [x] Sidebar "Discover" item navigates to /discover
 - [x] Sidebar "Analytics" menu navigates to /analytics _(admin only — skips for non-admin)_
 - [x] User profile dropdown opens with Profile link, tenant selector, and logout option

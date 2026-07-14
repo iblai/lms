@@ -2,8 +2,8 @@
   "version": 2,
   "lastUpdated": "2026-06-12",
   "summary": {
-    "totalCheckpoints": 226,
-    "coveredCheckpoints": 226,
+    "totalCheckpoints": 227,
+    "coveredCheckpoints": 227,
     "percent": 100,
     "totalJourneys": 32
   },
@@ -83,9 +83,7 @@
         "app/platform/[tenant]/home/page.tsx",
         "components/home/home-hero.tsx",
         "components/home/home-activity-overview.tsx",
-        "components/home/home-discover-rail.tsx",
-        "components/suggested-courses.tsx",
-        "components/my-courses.tsx"
+        "components/home/home-discover-rail.tsx"
       ],
       "checkpoints": [
         {
@@ -95,27 +93,27 @@
         },
         {
           "id": "home-02",
-          "description": "Suggested Courses section displays course cards or empty state",
+          "description": "Explore the Catalog rail displays catalog cards or hides when empty",
           "status": "covered"
         },
         {
           "id": "home-03",
-          "description": "My Courses section displays enrolled course cards",
+          "description": "My Courses CTA opens the enrolled catalog view",
           "status": "covered"
         },
         {
           "id": "home-04",
-          "description": "Clicking My Courses card navigates to course about",
+          "description": "Clicking an enrolled catalog card navigates to course about",
           "status": "covered"
         },
         {
           "id": "home-05",
-          "description": "Clicking suggested course navigates to course about",
+          "description": "Clicking a catalog rail card navigates to the content page",
           "status": "covered"
         },
         {
           "id": "home-06",
-          "description": "Activity Overview band shows activity stats with a View Activity link",
+          "description": "Activity Overview band shows activity stats beside the Time Spent chart",
           "status": "covered"
         },
         {
@@ -637,7 +635,12 @@
       "id": "course-discovery",
       "name": "Course Discovery",
       "spec": "14-course-discovery.spec.ts",
-      "sourceFiles": ["app/discover/page.tsx", "components/discover-content-card.tsx"],
+      "sourceFiles": [
+        "app/discover/page.tsx",
+        "components/discover-content-card.tsx",
+        "hooks/discover/use-user-enrollments.ts",
+        "hooks/discover/use-discover.ts"
+      ],
       "checkpoints": [
         {
           "id": "disc-01",
@@ -677,6 +680,11 @@
         {
           "id": "disc-08",
           "description": "Pagination loads additional courses",
+          "status": "covered"
+        },
+        {
+          "id": "disc-09",
+          "description": "Enrolled catalog view (content+enrolled URL params) lists enrollments with Enrolled pills; removing the filter returns to the full catalog",
           "status": "covered"
         }
       ]
@@ -1049,7 +1057,7 @@
         },
         {
           "id": "nav-04",
-          "description": "Suggested Courses See More navigates to /recommended",
+          "description": "Recommended catalog view (recommended=true) lists recommendations with Recommended pills",
           "status": "covered"
         },
         {

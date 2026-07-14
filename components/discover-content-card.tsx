@@ -45,9 +45,18 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
             <div className="absolute bottom-2 left-2 rounded-sm bg-amber-500 px-2 py-1 text-xs text-white uppercase">
               {content.contentType}
             </div>
-            {content.enrolled && (
-              <div className="absolute top-2 right-2 rounded-full border border-[#cfe8fa] bg-[#eef6fc] px-2 py-0.5 text-xs font-medium text-[#1e40af]">
-                Enrolled
+            {(content.enrolled || content.recommended) && (
+              <div className="absolute top-2 right-2 flex gap-1">
+                {content.enrolled && (
+                  <div className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-2 py-0.5 text-xs font-medium text-[#1d4ed8]">
+                    Enrolled
+                  </div>
+                )}
+                {content.recommended && (
+                  <div className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-2 py-0.5 text-xs font-medium text-[#1d4ed8]">
+                    Recommended
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -17,6 +17,8 @@ const mockHandleSelectFacets = vi.fn();
 const mockSetPage = vi.fn();
 
 vi.mock('@/hooks/discover/use-discover', () => ({
+  ENROLLMENT_FACET_SLUG: 'enrollment',
+  RECOMMENDED_FACET_SLUG: 'recommended',
   useDiscover: vi.fn(() => ({
     contents: [],
     facets: [],
@@ -36,6 +38,8 @@ vi.mock('@/hooks/discover/use-discover', () => ({
     displayCards: [],
     enrolledOnly: false,
     enrollmentsLoading: false,
+    recommendedOnly: false,
+    recommendationsLoading: false,
   })),
 }));
 
@@ -94,11 +98,11 @@ describe('DiscoverPage', () => {
     mockGet.mockReturnValue(null);
   });
 
-  it('renders the page with heading', () => {
+  it('renders no page titles (the title lives in the navbar)', () => {
     render(<DiscoverPage />);
 
-    // The copyright footer is global app-layout chrome now, not page-owned.
-    expect(screen.getAllByText('Featured Learning Content').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Featured Learning Content')).not.toBeInTheDocument();
+    expect(screen.queryByText('Explore Content')).not.toBeInTheDocument();
   });
 
   it('shows empty box when no contents and not loading', () => {
@@ -268,6 +272,6 @@ describe('DiscoverPage', () => {
     render(<DiscoverPage />);
 
     expect(screen.getByTestId('facets-filter')).toBeInTheDocument();
-    expect(screen.getByText('Explore Content')).toBeInTheDocument();
+    expect(screen.getByText('Filter By')).toBeInTheDocument();
   });
 });

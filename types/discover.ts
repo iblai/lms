@@ -6,6 +6,8 @@ export interface DiscoverContentCardProps {
   id: string;
   /** The current user is enrolled in this content ("Enrolled" pill). */
   enrolled?: boolean;
+  /** This content is recommended for the user ("Recommended" pill). */
+  recommended?: boolean;
 }
 
 export interface DiscoverContent {

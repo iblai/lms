@@ -66,9 +66,9 @@ export function generateCssVariables() {
     // Button
     '--button-primary-bg':
       components.button?.primary?.background ||
-      `linear-gradient(${components.button?.primary?.gradient?.direction || 'to right'}, ${components.button?.primary?.gradient?.from || '#4B5563'}, ${components.button?.primary?.gradient?.to || '#1e40af'})`,
-    '--button-primary-gradient-from': components.button?.primary?.gradient?.from || '#4B5563',
-    '--button-primary-gradient-to': components.button?.primary?.gradient?.to || '#1e40af',
+      `linear-gradient(${components.button?.primary?.gradient?.direction || 'to right'}, ${components.button?.primary?.gradient?.from || '#2563EB'}, ${components.button?.primary?.gradient?.to || '#93C5FD'})`,
+    '--button-primary-gradient-from': components.button?.primary?.gradient?.from || '#2563EB',
+    '--button-primary-gradient-to': components.button?.primary?.gradient?.to || '#93C5FD',
     '--button-primary-text': components.button?.primary?.text || '#FFFFFF',
     '--button-primary-hover-opacity': components.button?.primary?.hoverOpacity?.toString() || '0.9',
 
@@ -79,9 +79,9 @@ export function generateCssVariables() {
     '--button-secondary-hover-bg': components.button?.secondary?.hoverBackground || '#E5E7EB',
     '--button-secondary-gradient': `linear-gradient(${components.button?.secondary?.gradient?.direction || 'to right'}, ${components.button?.secondary?.gradient?.from || '#F3F4F6'}, ${components.button?.secondary?.gradient?.to || '#E5E7EB'})`,
 
-    '--button-accent-gradient': `linear-gradient(${components.button?.accent?.gradient?.direction || 'to right'}, ${components.button?.accent?.gradient?.from || '#1e40af'}, ${components.button?.accent?.gradient?.to || '#1e3a8a'})`,
-    '--button-accent-gradient-from': components.button?.accent?.gradient?.from || '#1e40af',
-    '--button-accent-gradient-to': components.button?.accent?.gradient?.to || '#1e3a8a',
+    '--button-accent-gradient': `linear-gradient(${components.button?.accent?.gradient?.direction || 'to right'}, ${components.button?.accent?.gradient?.from || '#2563EB'}, ${components.button?.accent?.gradient?.to || '#93C5FD'})`,
+    '--button-accent-gradient-from': components.button?.accent?.gradient?.from || '#2563EB',
+    '--button-accent-gradient-to': components.button?.accent?.gradient?.to || '#93C5FD',
     '--button-accent-text': components.button?.accent?.text || '#FFFFFF',
     '--button-accent-hover-opacity': components.button?.accent?.hoverOpacity?.toString() || '0.9',
 

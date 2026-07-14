@@ -7,21 +7,16 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
  * Returns the course heading text or null if no courses exist.
  */
 async function navigateToCourseAbout(page: Page): Promise<string | null> {
-  await gotoTenantPage(page, 'home', { timeout: 120000 });
+  // Enrolled courses live on the centralized catalog page.
+  await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120000 });
   await waitForAppShell(page);
 
-  const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-  await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
-
-  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-  await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
-
-  const courseLink = myCoursesGrid.getByRole('link').first();
-  const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
+  const courseCard = page.locator('[data-testid="discover-content-card"]').first();
+  const hasCourse = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasCourse) return null;
 
-  await courseLink.click();
+  await courseCard.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
   await waitForAppShell(page);
 

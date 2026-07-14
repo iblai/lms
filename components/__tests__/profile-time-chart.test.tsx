@@ -5,8 +5,8 @@ import React from 'react';
 
 const mockUseProfileTimeSpent = vi.fn(() => ({
   timeSpent: [
-    { date: 'Mon', minutes: 10 },
-    { date: 'Tue', minutes: 20 },
+    { date: 'Mon 06/07/26', minutes: 10 },
+    { date: 'Tue 07/07/26', minutes: 20 },
   ],
   timeSpentLoading: false,
 }));
@@ -20,17 +20,13 @@ vi.mock('recharts', () => ({
   BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
-  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  Tooltip: () => <div data-testid="tooltip" />,
+  LabelList: ({ formatter }: any) => (
+    <div data-testid="label-list">{formatter ? formatter(80) : null}</div>
+  ),
   ResponsiveContainer: ({ children }: any) => (
     <div data-testid="responsive-container">{children}</div>
   ),
-  Legend: ({ content }: any) => {
-    if (content) {
-      const rendered = content({ payload: [{ value: 'Minutes' }] });
-      return <div data-testid="legend">{rendered}</div>;
-    }
-    return <div data-testid="legend" />;
-  },
   Cell: () => <div data-testid="cell" />,
 }));
 
@@ -57,26 +53,27 @@ describe('ProfileTimeChart', () => {
 
   it('renders chart components when data is loaded', () => {
     mockUseProfileTimeSpent.mockReturnValue({
-      timeSpent: [{ date: 'Mon', minutes: 10 }],
+      timeSpent: [{ date: 'Mon 06/07/26', minutes: 10 }],
       timeSpentLoading: false,
     });
     render(<ProfileTimeChart />);
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
     expect(screen.getByTestId('x-axis')).toBeInTheDocument();
     expect(screen.getByTestId('y-axis')).toBeInTheDocument();
-    expect(screen.getByTestId('cartesian-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('tooltip')).toBeInTheDocument();
   });
 
-  it('renders legend with "Minutes" label', () => {
+  it('labels bars with plain-words durations (1h 20m)', () => {
     render(<ProfileTimeChart />);
-    expect(screen.getByText('Minutes')).toBeInTheDocument();
+    // The LabelList formatter turns 80 minutes into "1h 20m".
+    expect(screen.getByTestId('label-list')).toHaveTextContent('1h 20m');
   });
 
   it('renders cells for each data point', () => {
     mockUseProfileTimeSpent.mockReturnValue({
       timeSpent: [
-        { date: 'Mon', minutes: 10 },
-        { date: 'Tue', minutes: 20 },
+        { date: 'Mon 06/07/26', minutes: 10 },
+        { date: 'Tue 07/07/26', minutes: 20 },
       ],
       timeSpentLoading: false,
     });
@@ -87,7 +84,7 @@ describe('ProfileTimeChart', () => {
 
   it('does not show spinner when data is loaded', () => {
     mockUseProfileTimeSpent.mockReturnValue({
-      timeSpent: [{ date: 'Mon', minutes: 10 }],
+      timeSpent: [{ date: 'Mon 06/07/26', minutes: 10 }],
       timeSpentLoading: false,
     });
     const { container } = render(<ProfileTimeChart />);

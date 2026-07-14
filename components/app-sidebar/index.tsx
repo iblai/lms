@@ -4,7 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
-  Activity,
   Award,
   ClipboardList,
   Compass,
@@ -219,7 +218,6 @@ export function AppSidebar() {
   }, [pathname]);
 
   const isPlatformAdmin = !!departmentMemberCheck?.is_platform_admin;
-  const profileBase = `/platform/${tenant}/profile`;
 
   // Discover follows the same gate as the nav-bar: the config flag
   // supersedes the tenant's `enable_discover_page` metadata.
@@ -340,15 +338,11 @@ export function AppSidebar() {
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
     }
-    // Exact match: /profile is the Activity page; its sub-routes belong to
-    // other items (Courses, Programs, …).
-    list.push(flat('activity', Activity, 'Activity', profileBase, { exact: true }));
     list.push(dialogRow('gradebook', ClipboardList, 'Gradebook'));
     list.push(dialogRow('credentials', Award, 'Credentials'));
     list.push(dialogRow('skills', Sparkles, 'Skills'));
     return list;
   }, [
-    profileBase,
     tenant,
     discoverEnabled,
     analyticsAllowed,

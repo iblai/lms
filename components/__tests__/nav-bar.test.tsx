@@ -267,6 +267,19 @@ describe('NavBar', () => {
     });
   });
 
+  describe('catalog page title', () => {
+    it('shows "Explore Content" in the left cluster on the catalog page', () => {
+      mockPathname = '/platform/test-tenant/discover';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Explore Content' })).toBeInTheDocument();
+    });
+
+    it('is absent off the catalog page', () => {
+      render(<NavBar />);
+      expect(screen.queryByText('Explore Content')).not.toBeInTheDocument();
+    });
+  });
+
   describe('course switcher', () => {
     it('is absent off course pages', () => {
       render(<NavBar />);

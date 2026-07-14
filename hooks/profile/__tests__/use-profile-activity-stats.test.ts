@@ -237,7 +237,7 @@ describe('useProfileActivityStats', () => {
     await waitFor(() => {
       const timeSpentStat = result.current.stats.find((s) => s.label === 'Time Spent');
       expect(timeSpentStat?.loading).toBe(false);
-      expect(timeSpentStat?.value).toBe('15h');
+      expect(timeSpentStat?.value).toBe('15 hours');
     });
   });
 

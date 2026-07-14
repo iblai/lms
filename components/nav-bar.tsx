@@ -175,6 +175,7 @@ export function NavBar() {
   );
 
   const isCoursePage = /\/(courses|course-content)\/[^/]+/.test(pathname ?? '');
+  const isCatalogPage = /\/discover\/?$/.test(pathname?.split('?')[0] ?? '');
 
   // VARIABLE left cluster: mobile sidebar toggle, the course switcher on
   // course about/detail pages, and tenant-configured extra links. The old
@@ -195,6 +196,11 @@ export function NavBar() {
 
       {/* Current course + switcher on course about/detail pages */}
       {isUserLoggedIn && isCoursePage && <CourseSwitcher tenant={tenant} />}
+
+      {/* Catalog page title (the page itself renders no heading) */}
+      {isCatalogPage && (
+        <h1 className="truncate text-base font-medium text-gray-700 sm:text-lg">Explore Content</h1>
+      )}
 
       {additionalLeftHeaderMenuItems.length > 0 && (
         <nav className="ml-2 hidden h-full items-center space-x-6 md:flex">

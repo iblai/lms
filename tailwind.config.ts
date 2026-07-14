@@ -73,8 +73,8 @@ const config: Config = {
         // Legacy colors (keeping for backward compatibility) — amber renders
         // the sidebar blue family (see the @theme remap in globals.css).
         amber: {
-          100: '#eef6fc',
-          500: '#1e40af',
+          100: '#dbeafe',
+          500: '#3b82f6',
         },
         chart: {
           '1': 'hsl(var(--chart-1))',
