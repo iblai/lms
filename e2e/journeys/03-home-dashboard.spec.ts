@@ -7,7 +7,7 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
  *
  * Validates the home landing page at /home:
  *  1. Hero greeting band with primary CTAs
- *  2. Explore the Catalog rail
+ *  2. Explore rail
  *  3. My Courses CTA → enrolled catalog
  *  4. Click enrolled catalog card → course about
  *  5. Click catalog rail card → course about
@@ -51,16 +51,16 @@ test.describe('Journey 03: Home Dashboard', () => {
     await expect(page).toHaveURL(/\/home/);
   });
 
-  test('Checkpoint 2: Explore the Catalog rail is displayed', async ({ page }) => {
+  test('Checkpoint 2: Explore rail is displayed', async ({ page }) => {
     // Recommendations moved to the centralized catalog page; the home
     // page closes with a catalog discovery rail instead.
-    const railHeading = page.getByRole('heading', { name: /explore the catalog/i });
+    const railHeading = page.getByRole('heading', { name: /^explore$/i });
 
     const hasRail = await railHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasRail) {
       await expect(railHeading).toBeVisible();
-      logger.info('Explore the Catalog rail found');
+      logger.info('Explore rail found');
     } else {
       logger.info('Catalog rail not present — Discover may be disabled or empty');
     }
@@ -108,12 +108,12 @@ test.describe('Journey 03: Home Dashboard', () => {
   });
 
   test('Checkpoint 5: Click catalog rail card navigates to course about', async ({ page }) => {
-    const railRegion = page.getByRole('region', { name: 'Explore the Catalog' });
+    const railRegion = page.getByRole('region', { name: 'Explore' });
 
     const hasRail = await railRegion.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasRail) {
-      logger.info('No Explore the Catalog rail — skipping');
+      logger.info('No Explore rail — skipping');
       test.skip();
       return;
     }
@@ -137,24 +137,16 @@ test.describe('Journey 03: Home Dashboard', () => {
     logger.info('Navigated to content page from the catalog rail');
   });
 
-  test('Checkpoint 6: Activity Overview band shows stats', async ({ page }) => {
-    const activityBand = page.getByRole('region', { name: 'Activity Overview' });
-    await expect(activityBand).toBeVisible({ timeout: 120_000 });
+  test('Checkpoint 6: Activity Overview band is NOT on the home page', async ({ page }) => {
+    // The stats + time-spent chart live on the profile Activity page only.
+    // Wait until the Explore rail (or its absence) settles so we assert on
+    // the fully rendered page, not a loading state.
+    const rail = page.getByRole('region', { name: 'Explore' });
+    await rail.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    // Stat tiles carry labels from the profile Activity endpoints.
-    const statLabels = activityBand.getByText(/points|skills|credentials|courses/i);
-    const statCount = await statLabels.count();
-
-    if (statCount > 0) {
-      logger.info(`Activity Overview shows ${statCount} stat label(s)`);
-      expect(statCount).toBeGreaterThan(0);
-    } else {
-      logger.info('Activity Overview present but stats still loading');
-    }
-
-    // The Time Spent chart card sits beside the stat tiles.
-    const timeSpentHeading = activityBand.getByRole('heading', { name: /time spent/i });
-    await expect(timeSpentHeading).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('region', { name: 'Activity Overview' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: /time spent/i })).toHaveCount(0);
+    logger.info('No Activity Overview band on the home page');
   });
 
   test('Checkpoint 7: View All links are present', async ({ page }) => {

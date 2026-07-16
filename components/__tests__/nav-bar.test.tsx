@@ -65,6 +65,27 @@ vi.mock('@/services/courses', () => ({
   })),
 }));
 
+const mockEnrolledPrograms = [
+  { program_id: 'program-alpha', name: 'Program Alpha', active: true },
+  { program_id: 'program-beta', name: 'Program Beta', active: true },
+];
+
+const mockCatalogPathways = [
+  { pathway_uuid: 'uuid-alpha', name: 'Pathway Alpha' },
+  { pathway_uuid: 'uuid-beta', name: 'Pathway Beta' },
+];
+
+vi.mock('@/services/catalog', () => ({
+  useGetUserEnrolledProgramsQuery: vi.fn(() => ({
+    data: mockEnrolledPrograms,
+    isLoading: false,
+  })),
+  useGetUserCatalogPathwaysQuery: vi.fn(() => ({
+    data: mockCatalogPathways,
+    isLoading: false,
+  })),
+}));
+
 vi.mock('../header/profile/user-profile-button', () => ({
   UserProfileButton: () => <div data-testid="user-profile-button">Profile</div>,
 }));
@@ -125,21 +146,6 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: vi.fn(() => true),
   useTenantMetadata: vi.fn(() => ({ metadata: {}, isLoading: false, isError: false })),
-}));
-
-// Always-open dropdown stub: the radix open/close behavior is the SDK's
-// concern; these tests target the CourseSwitcher's own logic (label
-// resolution, listing, switch navigation).
-vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: any) => <div role="menu">{children}</div>,
-  DropdownMenuLabel: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onSelect }: any) => (
-    <button role="menuitem" onClick={() => onSelect?.()}>
-      {children}
-    </button>
-  ),
 }));
 
 import { NavBar } from '../nav-bar';
@@ -278,51 +284,90 @@ describe('NavBar', () => {
       render(<NavBar />);
       expect(screen.queryByText('Explore Content')).not.toBeInTheDocument();
     });
+
+    it('shows "Notifications" on the notifications page', () => {
+      mockPathname = '/platform/test-tenant/notifications';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+    });
+
+    it('shows "Analytics" on analytics pages (including sub-pages) with extra left padding on md+', () => {
+      mockPathname = '/platform/test-tenant/analytics/users';
+      render(<NavBar />);
+      const title = screen.getByRole('heading', { name: 'Analytics' });
+      expect(title).toBeInTheDocument();
+      // 12px from the md breakpoint up; mobile keeps the default alignment.
+      expect(title).toHaveClass('md:pl-3');
+    });
   });
 
-  describe('course switcher', () => {
+  describe('course title', () => {
     it('is absent off course pages', () => {
       render(<NavBar />);
+      expect(screen.queryByText('Course Alpha')).not.toBeInTheDocument();
+    });
+
+    it('shows the current course name as a heading on a course about page', () => {
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Course Alpha' })).toBeInTheDocument();
+    });
+
+    it('shows the current course name on course-content detail pages', () => {
+      mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/progress';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Course Beta' })).toBeInTheDocument();
+    });
+
+    it('does not render the old enrolled-courses dropdown', () => {
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
       expect(screen.queryByLabelText('Switch course')).not.toBeInTheDocument();
-    });
-
-    it('shows the current course name on a course about page', () => {
-      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
-      render(<NavBar />);
-      const trigger = screen.getByLabelText('Switch course');
-      expect(trigger).toHaveTextContent('Course Alpha');
-    });
-
-    it('lists enrolled courses and switches to another course about page', () => {
-      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
-      render(<NavBar />);
-      fireEvent.click(screen.getByRole('menuitem', { name: /Course Beta/ }));
-      expect(mockPush).toHaveBeenCalledWith(
-        '/platform/test-tenant/courses/course-v1:main+BBB+2026',
-      );
-    });
-
-    it('preserves the detail tab when switching on course-content pages', () => {
-      mockPathname = '/platform/test-tenant/course-content/course-v1:main+AAA+2026/progress';
-      render(<NavBar />);
-      fireEvent.click(screen.getByRole('menuitem', { name: /Course Beta/ }));
-      expect(mockPush).toHaveBeenCalledWith(
-        `/platform/test-tenant/course-content/${encodeURIComponent('course-v1:main+BBB+2026')}/progress`,
-      );
-    });
-
-    it('does not navigate when re-selecting the current course', () => {
-      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
-      render(<NavBar />);
-      fireEvent.click(screen.getByRole('menuitem', { name: /Course Alpha/ }));
-      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
     });
 
     it('falls back to an id-derived label for a non-enrolled course', () => {
       mockPathname = '/platform/test-tenant/courses/course-v1:other+XYZ+2026';
       render(<NavBar />);
-      const trigger = screen.getByLabelText('Switch course');
-      expect(trigger).toHaveTextContent('XYZ 2026');
+      expect(screen.getByRole('heading', { name: 'XYZ 2026' })).toBeInTheDocument();
+    });
+  });
+
+  describe('program title', () => {
+    it('shows the current program name as a heading on a program page', () => {
+      mockPathname = '/platform/test-tenant/programs/program-alpha';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Program Alpha' })).toBeInTheDocument();
+    });
+
+    it('falls back to the program id when the program is not in the enrollments', () => {
+      mockPathname = '/platform/test-tenant/programs/unknown-program';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'unknown-program' })).toBeInTheDocument();
+    });
+
+    it('is absent off program pages', () => {
+      render(<NavBar />);
+      expect(screen.queryByText('Program Alpha')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('pathway title', () => {
+    it('shows the current pathway name as a heading on a pathway page', () => {
+      mockPathname = '/platform/test-tenant/pathways/uuid-alpha';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Pathway Alpha' })).toBeInTheDocument();
+    });
+
+    it('falls back to a generic label for an unknown pathway', () => {
+      mockPathname = '/platform/test-tenant/pathways/unknown-uuid';
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name: 'Pathway' })).toBeInTheDocument();
+    });
+
+    it('is absent off pathway pages', () => {
+      render(<NavBar />);
+      expect(screen.queryByText('Pathway Alpha')).not.toBeInTheDocument();
     });
   });
 

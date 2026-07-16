@@ -5,8 +5,8 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
  * Journey 22: Navigation — NavBar & Sidebar
  *
  * The navbar is the cross-SPA PlatformNavbar shell (search + notification
- * bell + profile dropdown on the right, Studio / AI Analytics links, and
- * the course switcher on course pages). Page navigation (Home, Courses,
+ * bell + profile dropdown on the right, and the current course / program
+ * title on course and program pages). Page navigation (Home, Courses,
  * Discover, …) lives in the PlatformSidebar.
  */
 test.describe('Journey 22: Navigation & NavBar', () => {
@@ -64,7 +64,10 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     await gotoTenantPage(page, 'discover?recommended=true', { timeout: 120_000 });
     await waitForAppShell(page);
 
-    const recommendedChip = page.getByRole('button', { name: /remove filter recommended/i });
+    // "Recommended" is a term of the Access facet (slug: enrollment).
+    const recommendedChip = page.getByRole('button', {
+      name: /remove filter enrollment: recommended/i,
+    });
     await expect(recommendedChip).toBeVisible({ timeout: 120_000 });
 
     const contentCard = page.locator('[data-testid="discover-content-card"]');
@@ -164,9 +167,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     expect(url.includes('/home') || url.endsWith('/') || url.includes('/start')).toBeTruthy();
   });
 
-  test('CP-9: Course switcher shows the current course and switches to another', async ({
-    page,
-  }) => {
+  test('CP-9: Navbar shows the current course title on a course page', async ({ page }) => {
     // Enter a course from the enrolled catalog view
     await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120_000 });
     await waitForAppShell(page);
@@ -176,39 +177,19 @@ test.describe('Journey 22: Navigation & NavBar', () => {
       test.skip();
       return;
     }
+    const cardTitle = (await courseCard.getByRole('heading').first().textContent())?.trim();
     await courseCard.click();
     await page.waitForURL(/\/courses\//, { timeout: 120_000 });
     await waitForAppShell(page);
 
-    // The switcher shows the current course in the navbar's left cluster
-    const switcher = page.getByRole('button', { name: 'Switch course' });
-    await expect(switcher).toBeVisible({ timeout: 30_000 });
-    await switcher.click();
-
-    const menu = page.getByRole('menu');
-    await expect(menu).toBeVisible({ timeout: 10_000 });
-    const items = menu.getByRole('menuitem');
-    const count = await items.count();
-
-    if (count < 2) {
-      test.skip();
-      return;
+    // The navbar's left cluster shows the course name as a heading (the
+    // enrolled-courses dropdown is gone).
+    const navbar = page.getByRole('banner');
+    const title = navbar.getByRole('heading').first();
+    await expect(title).toBeVisible({ timeout: 30_000 });
+    if (cardTitle) {
+      await expect(title).toHaveText(cardTitle, { timeout: 30_000 });
     }
-
-    const startUrl = page.url();
-    // Pick the first course that is NOT the current one (current is marked
-    // but simplest is: click an item and verify the URL changed to another
-    // course about page).
-    for (let i = 0; i < count; i++) {
-      const item = items.nth(i);
-      const hasCheck = (await item.locator('svg.text-amber-500').count()) > 0;
-      if (!hasCheck) {
-        await item.click();
-        break;
-      }
-    }
-
-    await page.waitForURL(/\/courses\//, { timeout: 60_000 });
-    expect(page.url()).not.toBe(startUrl);
+    await expect(navbar.getByRole('button', { name: 'Switch course' })).toHaveCount(0);
   });
 });

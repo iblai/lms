@@ -193,7 +193,9 @@ describe('CourseDetailsPage', () => {
 
     render(<CourseDetailsPage />);
 
-    expect(screen.getByText('Test Course')).toBeInTheDocument();
+    // No in-page course title — it lives in the navbar's left cluster.
+    expect(screen.queryByRole('heading', { name: 'Test Course' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('about-tab')).toHaveTextContent('Test Course');
     expect(screen.getByText('$99')).toBeInTheDocument();
     expect(screen.getByText('English')).toBeInTheDocument();
     expect(screen.getByText('4 weeks')).toBeInTheDocument();

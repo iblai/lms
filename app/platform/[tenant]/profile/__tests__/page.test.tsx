@@ -125,6 +125,23 @@ describe('ProfilePage', () => {
     expect(screen.getByText('100')).toBeInTheDocument();
   });
 
+  it('hides stat tiles whose value is zero', () => {
+    vi.mocked(useProfileActivityStats).mockReturnValue({
+      stats: [
+        { loading: false, label: 'Courses', value: 5 },
+        { loading: false, label: 'Programs', value: 0 },
+        { loading: true, label: 'Pathways', value: 0 },
+      ],
+    } as any);
+
+    render(<ProfilePage />);
+
+    expect(screen.getByText('Courses')).toBeInTheDocument();
+    expect(screen.queryByText('Programs')).not.toBeInTheDocument();
+    // Still-loading stats keep their skeleton even at value 0.
+    expect(screen.getByTestId('skeleton-activity-stat-box')).toBeInTheDocument();
+  });
+
   it('hides the Points, Assessments, and Videos stat tiles', () => {
     vi.mocked(useProfileActivityStats).mockReturnValue({
       stats: [

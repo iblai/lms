@@ -20,16 +20,11 @@ import {
   useLazyGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 
-/** Total learning time, in plain words ("42 minutes", "351 hours"). */
-const formatTimeSpent = (totalSeconds: unknown): string => {
+/** Total learning time as whole hours — the tile shows "351" over "Hours". */
+const formatTimeSpentHours = (totalSeconds: unknown): number => {
   const seconds =
     typeof totalSeconds === 'number' && !isNaN(totalSeconds) ? Math.max(0, totalSeconds) : 0;
-  const hours = Math.round(seconds / 3600);
-  if (hours < 1) {
-    const minutes = Math.round(seconds / 60);
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
-  }
-  return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+  return Math.round(seconds / 3600);
 };
 
 export const useProfileActivityStats = () => {
@@ -59,7 +54,7 @@ export const useProfileActivityStats = () => {
     { value: 4, label: 'Courses', loading: true },
     { value: 0, label: 'Programs', loading: true },
     { value: 0, label: 'Pathways', loading: true },
-    { value: '0 minutes', label: 'Time Spent', loading: true },
+    { value: 0, label: 'Hours', loading: true },
     { value: 0, label: 'Assessments', loading: true },
     { value: 0, label: 'Videos', loading: true },
   ]);
@@ -314,7 +309,7 @@ export const useProfileActivityStats = () => {
   };
 
   const handleTimeSpentStat = async () => {
-    const timeSpentLabel = 'Time Spent';
+    const timeSpentLabel = 'Hours';
     try {
       // Same per-learner meta endpoint the old profile-sidebar All Time
       // box used — it carries `total_time_spent` in seconds.
@@ -331,13 +326,13 @@ export const useProfileActivityStats = () => {
       }
       const totalTimeSpentSeconds = response?.data?.data?.total_time_spent;
       updateSingleStat({
-        value: formatTimeSpent(totalTimeSpentSeconds),
+        value: formatTimeSpentHours(totalTimeSpentSeconds),
         label: timeSpentLabel,
         loading: false,
       });
     } catch {
       updateSingleStat({
-        value: formatTimeSpent(0),
+        value: 0,
         label: timeSpentLabel,
         loading: false,
       });

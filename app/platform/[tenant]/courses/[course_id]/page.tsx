@@ -141,19 +141,12 @@ export default function CourseDetailsPage() {
                 display: none;
               }
             `}</style>
-            {/* Course Title */}
-            <div className="border-b border-gray-200 p-6">
-              <div className="mx-auto max-w-6xl">
-                <h1 className="text-base font-semibold text-gray-600 md:text-lg">
-                  {course.display_name}
-                </h1>
-              </div>
-            </div>
+            {/* The course title lives in the navbar's left cluster. */}
 
             {/* Tabs */}
             <div className="border-b border-gray-200">
               <div className="px-6">
-                <div className="mx-auto max-w-6xl">
+                <div className="max-w-6xl">
                   <div className="flex space-x-8 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <button
                       onClick={() => setActiveTab('about')}
@@ -228,8 +221,8 @@ export default function CourseDetailsPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="h-[calc(100%-100px)] w-full overflow-y-auto bg-amber-50 p-6 md:h-full">
-              <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="h-[calc(100%-100px)] h-full w-full overflow-y-auto bg-amber-50 p-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="md:col-span-2">
                   {activeTab === 'about' && <AboutTab course={course} />}
 
@@ -262,7 +255,7 @@ export default function CourseDetailsPage() {
                   )}
                 </div>
                 <div className="md:col-span-1">
-                  <div className="sticky top-6 space-y-6">
+                  <div className="sticky space-y-6">
                     <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white">
                       <Image
                         src={`${config.urls.lms()}${course.course_image_asset_path}`}

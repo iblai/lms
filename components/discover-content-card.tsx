@@ -4,17 +4,26 @@ import { useState } from 'react';
 import { DiscoverContentCardProps } from '../types/discover';
 import { useRouter } from 'next/navigation';
 import { useTenantParam } from '@/hooks/use-tenant-param';
-import { PathwayDetailModal } from './pathway-detail-modal';
 
-export function DiscoverContentCard({ content }: { content: DiscoverContentCardProps }) {
+export function DiscoverContentCard({
+  content,
+  onClick,
+}: {
+  content: DiscoverContentCardProps;
+  /** Overrides the default navigation (e.g. pathway resources open a URL). */
+  onClick?: () => void;
+}) {
   const router = useRouter();
   const tenant = useTenantParam();
   const [randomImage] = useState(() => getRandomCourseImage());
-  const [selectedPathway, setSelectedPathway] = useState<any>(null);
   const handleContentClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
     switch (content.contentType) {
       case 'pathway':
-        setSelectedPathway(content);
+        router.push(`/platform/${tenant}/pathways/${content.id}`);
         break;
       case 'program':
         router.push(`/platform/${tenant}/programs/${content.id}`);
@@ -69,9 +78,6 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
           </div>
         </div>
       </div>
-      {selectedPathway && (
-        <PathwayDetailModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} />
-      )}
     </>
   );
 }

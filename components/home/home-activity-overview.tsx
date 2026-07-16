@@ -16,7 +16,12 @@ const HIDDEN_STAT_LABELS = new Set(['Points', 'Assessments', 'Videos']);
  */
 export function HomeActivityOverview() {
   const { stats: allStats } = useProfileActivityStats();
-  const stats = allStats.filter((stat) => !HIDDEN_STAT_LABELS.has(String(stat.label)));
+  // Zero-value tiles are noise — only show a stat once it has something
+  // to say (skeletons still render while loading).
+  const stats = allStats.filter(
+    (stat) =>
+      !HIDDEN_STAT_LABELS.has(String(stat.label)) && (stat.loading || Number(stat.value) !== 0),
+  );
 
   return (
     <section aria-label="Activity Overview" className="w-full">

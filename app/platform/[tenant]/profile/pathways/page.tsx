@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, Plus } from 'lucide-react';
-import { PathwayDetailModal } from '@/components/pathway-detail-modal';
 import { CreatePathwayModal } from '@/components/create-pathway-modal';
 import { useProfilePathways } from '@/hooks/profile/use-profile-pathways';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
@@ -16,6 +16,7 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 export default function PathwaysPage() {
   const tenant = useTenantParam();
+  const router = useRouter();
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
     org: tenant,
   });
@@ -24,7 +25,6 @@ export default function PathwaysPage() {
   const ASSIGNED_TAB = 'assigned';
   const ENROLLED_TAB = 'enrolled';
   const [activeTab, setActiveTab] = useState<'catalog' | 'assigned' | 'enrolled'>(CATALOG_TAB); // "my" or "assigned"
-  const [selectedPathway, setSelectedPathway] = useState<any>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const {
     filteredPathways,
@@ -139,7 +139,9 @@ export default function PathwaysPage() {
                 key={index}
                 data-testid="pathway-card"
                 className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-                onClick={() => setSelectedPathway(pathway)}
+                onClick={() =>
+                  router.push(`/platform/${tenant}/pathways/${(pathway as any)?.pathway_uuid}`)
+                }
               >
                 <div className="relative h-32 w-full overflow-hidden">
                   <Image
@@ -181,11 +183,6 @@ export default function PathwaysPage() {
             ))}
         </div>
       </div>
-      {/* Pathway Detail Modal */}
-      {selectedPathway && (
-        <PathwayDetailModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} />
-      )}
-
       {/* Create Pathway Dialog */}
       {createDialogOpen && (
         <CreatePathwayModal

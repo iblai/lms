@@ -6,7 +6,6 @@ import Image from 'next/image';
 import {
   Award,
   Calendar,
-  Clock,
   DollarSign,
   Globe,
   ImageIcon,
@@ -41,6 +40,7 @@ import {
 } from '@iblai/iblai-js/web-utils';
 
 import { DefaultEmptyBox } from '@/components/default-empty-box';
+import { DiscoverContentCard } from '@/components/discover-content-card';
 import {
   Select,
   SelectContent,
@@ -368,10 +368,6 @@ export default function ProgramDetailPage() {
     }
   };
 
-  const handleCourseClick = (courseId: string) => {
-    router.push(`/platform/${tenant}/courses/${courseId}`);
-  };
-
   const triggerNotLoggedInAction = () => handleNotLoggedInAction(tenant);
 
   const dispatchPaywall = () => {
@@ -632,6 +628,9 @@ export default function ProgramDetailPage() {
     );
   }
 
+  // Courses render as catalog-style content boxes and are always
+  // clickable — access gating (purchase etc.) applies to the program CTA,
+  // never to browsing the course list.
   const renderCoursesList = () =>
     programDetailLoading ? (
       <div className="flex h-full items-center justify-center py-8" data-testid="courses-loading">
@@ -640,68 +639,26 @@ export default function ProgramDetailPage() {
     ) : (
       <div className="pt-4">
         <h4 className="mb-4 text-lg font-medium text-gray-800">Courses</h4>
-        <div className="space-y-4">
-          {(!programDetail?.courses || programDetail?.courses?.length === 0) && (
-            <DefaultEmptyBox message="No courses found under this program." className="w-full" />
-          )}
-          {programDetail?.courses?.length > 0 &&
-            programDetail?.courses?.map((course: any, index: number) => (
-              <div
-                onClick={
-                  hasMonetizationAccess
-                    ? () => handleCourseClick(course?.course?.course_id)
-                    : undefined
-                }
-                key={course?.course.id}
-                className={`overflow-hidden rounded-lg border border-gray-200 transition-shadow ${
-                  hasMonetizationAccess
-                    ? 'cursor-pointer hover:shadow-md'
-                    : 'cursor-not-allowed opacity-70'
-                }`}
-                data-testid={`course-card-${index}`}
-                role={hasMonetizationAccess ? 'button' : undefined}
-                tabIndex={hasMonetizationAccess ? 0 : -1}
-                aria-disabled={!hasMonetizationAccess}
-                onKeyDown={(e) => {
-                  if (hasMonetizationAccess && (e.key === 'Enter' || e.key === ' ')) {
-                    handleCourseClick(course?.course?.course_id);
-                  }
-                }}
-              >
-                <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
-                  <h3
-                    className="text-md flex items-center gap-2 font-medium text-gray-700"
-                    data-testid={`course-number-${index}`}
-                  >
-                    <Clock className="h-4 w-4 text-amber-500" />
-                    Course {index + 1}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-4 p-4">
-                  <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                    <Image
-                      src={course?.course?.edx_data?.course_image_asset_path}
-                      alt={course.course.name || ''}
-                      width={96}
-                      height={64}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = getRandomCourseImage();
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4
-                      className="text-sm font-medium text-amber-500"
-                      data-testid={`course-name-${index}`}
-                    >
-                      {course.course.name}
-                    </h4>
-                  </div>
-                </div>
+        {(!programDetail?.courses || programDetail?.courses?.length === 0) && (
+          <DefaultEmptyBox message="No courses found under this program." className="w-full" />
+        )}
+        {programDetail?.courses?.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 min-[450px]:grid-cols-2 lg:grid-cols-3">
+            {programDetail?.courses?.map((course: any, index: number) => (
+              <div key={course?.course.id} data-testid={`course-card-${index}`}>
+                <DiscoverContentCard
+                  content={{
+                    id: course?.course?.course_id,
+                    title: course?.course?.name || '',
+                    contentType: 'course',
+                    image: course?.course?.edx_data?.course_image_asset_path || '',
+                    url: '',
+                  }}
+                />
               </div>
             ))}
-        </div>
+          </div>
+        )}
       </div>
     );
 
@@ -717,21 +674,13 @@ export default function ProgramDetailPage() {
           }
         `}</style>
 
-        <div className="border-b border-gray-200 p-6">
-          <div className="mx-auto max-w-6xl">
-            <h1
-              className="text-base font-semibold text-gray-600 md:text-lg"
-              data-testid="program-page-name"
-            >
-              {program.name}
-            </h1>
-          </div>
-        </div>
-
-        <div className="h-[calc(100%-60px)] w-full overflow-y-auto bg-amber-50 p-6 md:h-full">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
+        {/* The program title lives in the navbar's left cluster. */}
+        <div className="h-full w-full overflow-y-auto bg-amber-50 p-6">
+          {/* min-h-full so the white content container always covers the
+              full height of the page, however short the courses list is. */}
+          <div className="grid min-h-full grid-cols-1 gap-6 md:grid-cols-3">
             <div className="md:col-span-2">
-              <div className="w-full bg-white p-4" data-testid="program-detail-content">
+              <div className="h-full w-full bg-white p-4" data-testid="program-detail-content">
                 {showTabs ? (
                   <Tabs defaultValue="about" className="w-full" data-testid="program-tabs">
                     <TabsList className="mb-4 w-full" data-testid="program-tabs-list">
@@ -1098,7 +1047,10 @@ export default function ProgramDetailPage() {
               </div>
             </div>
             <div className="md:col-span-1">
-              <div className="sticky top-6 space-y-6">
+              {/* top-0 (not top-6): inside the padded scroll container a
+                  positive offset pins the sidebar below the content box's
+                  top edge — 0 keeps both columns flush. */}
+              <div className="sticky top-0 space-y-6">
                 <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white">
                   <Image
                     src={cardImage}
@@ -1128,7 +1080,7 @@ export default function ProgramDetailPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Progress</span>
                       <span className="font-medium text-gray-800">
-                        {programCompletion.completion_percentage || 0}%
+                        {Math.round(programCompletion.completion_percentage || 0)}%
                       </span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-gray-200">

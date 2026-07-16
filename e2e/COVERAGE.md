@@ -44,11 +44,11 @@ When adding a new page or modifying an existing user flow:
 **Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`
 
 - [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
-- [x] Explore the Catalog rail displays catalog cards or hides when empty
+- [x] Explore rail displays catalog cards or hides when empty
 - [x] My Courses CTA opens the enrolled catalog view
 - [x] Clicking an enrolled catalog card navigates to the course about page
 - [x] Clicking a catalog rail card navigates to the content page
-- [x] Activity Overview band shows the activity stats beside the Time Spent chart
+- [x] Activity Overview band is absent from the home page (stats live on profile Activity)
 - [x] "View All" or "See more" links in course sections navigate to appropriate pages
 - [x] Home page loads without console errors
 
@@ -141,12 +141,12 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 9: Profile — Pathways (5 checkpoints) — `journeys/09-profile-pathways.spec.ts`
 
-**Source files:** `app/profile/pathways/page.tsx`, `components/pathway-detail-modal.tsx`
+**Source files:** `app/profile/pathways/page.tsx`, `app/platform/[tenant]/pathways/[pathway_id]/page.tsx`
 
 - [x] Pathways page (/profile/pathways) loads and displays learning pathways or empty state
 - [x] Pathway cards display pathway name, description, and progress indicator
-- [x] Clicking a pathway card opens a detail modal showing pathway steps/courses
-- [x] Pathway detail modal can be closed
+- [x] Clicking a pathway card navigates to the pathway detail page
+- [x] Pathway detail page shows content cards and the sidebar (banner, CTA, progress)
 - [x] "Create Pathway" button is visible for users with appropriate permissions _(admin only)_
 
 ---
@@ -330,7 +330,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Sidebar "Analytics" menu navigates to /analytics _(admin only — skips for non-admin)_
 - [x] User profile dropdown opens with Profile link, tenant selector, and logout option
 - [x] Sidebar logo navigates to the home page
-- [x] Course switcher in the navbar shows the current course and switches to another enrolled course
+- [x] Navbar shows the current course title on a course page (no enrolled-courses dropdown)
 
 ---
 

@@ -10,6 +10,7 @@ export const DiscoverFacetsFilter = () => {
     facetsLoading,
     isError,
     facets,
+    filteredFacets,
     handleToggleFacet,
     handleFilterFacets,
     isFacetTermSelected,
@@ -25,11 +26,13 @@ export const DiscoverFacetsFilter = () => {
   }
 
   if ((!facetsLoading && isError) || (!facetsLoading && !isError && facets.length === 0)) {
-    <DefaultEmptyBox message="No content filters found." />;
+    return <DefaultEmptyBox message="No content filters found." />;
   }
 
   if (!facetsLoading && !isError && facets.length > 0) {
-    return facets.map((facet, index) => {
+    // Term lists come from `filteredFacets` so the per-facet search box
+    // narrows them client-side.
+    return filteredFacets.map((facet, index) => {
       return (
         <div className="mb-4" key={index} data-testid="facet-filter">
           <div

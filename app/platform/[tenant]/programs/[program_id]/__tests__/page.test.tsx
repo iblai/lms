@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 vi.mock('next/image', () => ({
@@ -257,7 +257,8 @@ describe('ProgramDetailPage', () => {
     mockCreateCatalogProgramSelfEnrollment.mockResolvedValue({});
     mockGetUserEnrolledPrograms.mockResolvedValue({ data: [] });
     mockGetProgramCompletion.mockResolvedValue({
-      data: { completion_percentage: 42 },
+      // Decimal on purpose — the page shows the rounded value ("42%").
+      data: { completion_percentage: 41.665 },
     });
     mockUpdateProgramMetadata.mockReturnValue({ unwrap: () => Promise.resolve({}) });
   });
@@ -284,9 +285,9 @@ describe('ProgramDetailPage', () => {
     });
   });
 
-  it('renders program name once loaded', async () => {
+  it('does not render an in-page program title (it lives in the navbar)', async () => {
     await renderPage();
-    expect(screen.getByTestId('program-page-name')).toHaveTextContent('Sample Program');
+    expect(screen.queryByTestId('program-page-name')).not.toBeInTheDocument();
   });
 
   it('renders the admin tabs when admin user is on their tenant', async () => {
@@ -301,28 +302,36 @@ describe('ProgramDetailPage', () => {
     expect(screen.queryByTestId('program-tabs')).not.toBeInTheDocument();
   });
 
-  it('renders the courses list when programDetail loads', async () => {
+  it('renders the courses as catalog-style content cards when programDetail loads', async () => {
     isAdminState.value = false;
     await renderPage();
     await waitFor(() => {
       expect(screen.getByTestId('course-card-0')).toBeInTheDocument();
     });
-    expect(screen.getByTestId('course-name-0')).toHaveTextContent('Course A');
+    expect(screen.getByTestId('course-card-0')).toHaveTextContent('Course A');
+    expect(
+      within(screen.getByTestId('course-card-0')).getByTestId('discover-content-card'),
+    ).toBeInTheDocument();
   });
 
   it('navigates to a course when a course card is clicked', async () => {
     isAdminState.value = false;
     await renderPage();
     await waitFor(() => expect(screen.getByTestId('course-card-0')).toBeInTheDocument());
-    fireEvent.click(screen.getByTestId('course-card-0'));
+    fireEvent.click(
+      within(screen.getByTestId('course-card-0')).getByTestId('discover-content-card'),
+    );
     expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/cid-1');
   });
 
-  it('opens the course when Enter/Space is pressed on a card', async () => {
+  it('keeps course cards clickable even without monetization access', async () => {
+    mockCheckAccess.mockResolvedValue({ data: { has_access: false } });
     isAdminState.value = false;
     await renderPage();
     await waitFor(() => expect(screen.getByTestId('course-card-0')).toBeInTheDocument());
-    fireEvent.keyDown(screen.getByTestId('course-card-0'), { key: 'Enter' });
+    fireEvent.click(
+      within(screen.getByTestId('course-card-0')).getByTestId('discover-content-card'),
+    );
     expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/cid-1');
   });
 

@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Check, ChevronDown, GraduationCap, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -13,111 +13,110 @@ import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetUserEnrolledCoursesQuery } from '@/services/courses';
-import { EnrolledCourse } from '@/types/courses';
+import {
+  useGetUserCatalogPathwaysQuery,
+  useGetUserEnrolledProgramsQuery,
+} from '@/services/catalog';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
-/** Max enrolled courses listed in the switcher dropdown. */
-const COURSE_SWITCHER_PAGE_SIZE = 50;
+/** Max enrolled courses fetched when resolving the current course's name. */
+const COURSE_LOOKUP_PAGE_SIZE = 50;
+
+/** Shared navbar page-title rendering (course / program / catalog). */
+function NavbarTitle({ label, className }: { label: string; className?: string }) {
+  return (
+    <h1
+      className={`truncate text-lg font-medium text-[var(--navbar-text)] sm:text-xl ${className ?? ''}`}
+      data-testid="navbar-page-title"
+    >
+      {label}
+    </h1>
+  );
+}
 
 /**
- * Course context switcher — shown in the navbar's left cluster on the
+ * Current course title — shown in the navbar's left cluster on the
  * course ABOUT page (`/courses/<id>`) and the course DETAIL pages
- * (`/course-content/<id>/…`). Displays the current course and lets the
- * learner jump to any other enrolled course, preserving the surface
- * they're on (about ↔ about, detail tab ↔ same detail tab).
+ * (`/course-content/<id>/…`). Resolves the name from the learner's
+ * enrollments, falling back to a label derived from the course id.
  */
-function CourseSwitcher({ tenant }: { tenant: string }) {
+function CourseTitle({ tenant }: { tenant: string }) {
   const pathname = usePathname();
-  const router = useRouter();
   const username = getUserName();
 
   const match = pathname?.match(/\/(courses|course-content)\/([^/]+)(\/.*)?$/);
-  const kind = match?.[1];
   const courseId = match?.[2] ? decodeURIComponent(match[2]) : undefined;
-  // For detail pages keep only the tab segment (course|progress|dates|…) —
-  // deeper unit paths are course-specific and don't transfer.
-  const tab = match?.[3]?.split('/')[1];
 
-  const { data, isLoading } = useGetUserEnrolledCoursesQuery(
+  const { data } = useGetUserEnrolledCoursesQuery(
     {
       username: username ?? '',
-      query: { page_size: COURSE_SWITCHER_PAGE_SIZE, platform_key: tenant },
+      query: { page_size: COURSE_LOOKUP_PAGE_SIZE, platform_key: tenant },
     },
     { skip: !courseId || !username },
   );
 
-  if (!courseId || !kind) return null;
+  if (!courseId) return null;
 
-  const courses = (data?.results ?? []).filter((course) => course.course_name);
-  const current = courses.find((course) => course.course_id === courseId);
+  const current = (data?.results ?? []).find((course) => course.course_id === courseId);
   // Fallback when the opened course isn't in the enrollments (e.g. an
   // un-enrolled about page): derive a readable label from the course id
   // (`course-v1:org+NUM+RUN` → "NUM RUN").
   const fallbackLabel = courseId.split(':').pop()?.split('+').slice(1).join(' ') || courseId;
-  const label = current?.course_name ?? fallbackLabel;
+  const label = current?.course_name || fallbackLabel;
 
-  const handleSelect = (course: EnrolledCourse) => {
-    if (course.course_id === courseId) return;
-    const base = `/platform/${tenant}`;
-    router.push(
-      kind === 'course-content'
-        ? // Encoded like the app's own course-content tab links.
-          `${base}/course-content/${encodeURIComponent(course.course_id)}/${tab || 'course'}`
-        : `${base}/courses/${course.course_id}`,
-    );
-  };
+  return <NavbarTitle label={label} />;
+}
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="flex min-w-0 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium text-[var(--navbar-text)] transition-colors hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
-          aria-label="Switch course"
-        >
-          <GraduationCap className="h-4 w-4 shrink-0 text-amber-500" aria-hidden />
-          <span className="max-w-[160px] truncate sm:max-w-[240px] lg:max-w-[320px]">{label}</span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-[70vh] w-80 max-w-[90vw] overflow-y-auto">
-        <DropdownMenuLabel className="text-xs font-medium text-gray-500">
-          My Courses
-        </DropdownMenuLabel>
-        {isLoading && (
-          <div className="space-y-1 px-2 py-1.5">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-5 w-full animate-pulse rounded bg-gray-100" />
-            ))}
-          </div>
-        )}
-        {!isLoading && courses.length === 0 && (
-          <div className="px-2 py-1.5 text-sm text-gray-500">No enrolled courses</div>
-        )}
-        {!isLoading &&
-          courses.map((course) => (
-            <DropdownMenuItem
-              key={course.course_id}
-              onSelect={() => handleSelect(course)}
-              className="cursor-pointer"
-            >
-              <span className="min-w-0 flex-1 truncate">{course.course_name}</span>
-              {course.course_id === courseId && (
-                <Check className="ml-2 h-4 w-4 shrink-0 text-amber-500" aria-hidden />
-              )}
-            </DropdownMenuItem>
-          ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+/**
+ * Current program title — shown in the navbar's left cluster on the
+ * program detail page (`/programs/<id>`). Resolves the name from the
+ * learner's program enrollments, falling back to the raw program id.
+ */
+function ProgramTitle({ tenant }: { tenant: string }) {
+  const pathname = usePathname();
+  const username = getUserName();
+
+  const match = pathname?.match(/\/programs\/([^/]+)/);
+  const programId = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+
+  const { data } = useGetUserEnrolledProgramsQuery(
+    { username: username ?? '', platform_key: tenant },
+    { skip: !programId || !username },
   );
+
+  if (!programId) return null;
+
+  const current = (data ?? []).find((program) => program.program_id === programId);
+  const label = current?.name || programId;
+
+  return <NavbarTitle label={label} />;
+}
+
+/**
+ * Current pathway title — shown in the navbar's left cluster on the
+ * pathway detail page (`/pathways/<uuid>`). Resolves the name from the
+ * user's catalog pathways, falling back to a generic label (the raw
+ * uuid would be noise).
+ */
+function PathwayTitle({ tenant }: { tenant: string }) {
+  const pathname = usePathname();
+  const username = getUserName();
+
+  const match = pathname?.match(/\/pathways\/([^/]+)/);
+  const pathwayId = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+
+  const { data } = useGetUserCatalogPathwaysQuery(
+    { username: username ?? '', platform_key: tenant },
+    { skip: !pathwayId || !username },
+  );
+
+  if (!pathwayId) return null;
+
+  const current = (data ?? []).find((pathway) => pathway.pathway_uuid === pathwayId);
+  const label = current?.name || 'Pathway';
+
+  return <NavbarTitle label={label} />;
 }
 
 /**
@@ -125,8 +124,8 @@ function CourseSwitcher({ tenant }: { tenant: string }) {
  * shell. The shell owns the invariant right cluster (search box,
  * notification bell, profile dropdown slot, anonymous Log in / Sign up);
  * this wrapper supplies the SkillsAI-specific left cluster (mobile
- * sidebar toggle + course switcher — page navigation lives in the
- * PlatformSidebar now) and the right-side Studio / AI Analytics links.
+ * sidebar toggle + the current page title — page navigation lives in
+ * the PlatformSidebar now) and the right-side tenant-configured links.
  */
 export function NavBar() {
   const tenant = useTenantParam();
@@ -175,11 +174,16 @@ export function NavBar() {
   );
 
   const isCoursePage = /\/(courses|course-content)\/[^/]+/.test(pathname ?? '');
+  const isProgramPage = /\/programs\/[^/]+/.test(pathname ?? '');
+  const isPathwayPage = /\/pathways\/[^/]+/.test(pathname ?? '');
   const isCatalogPage = /\/discover\/?$/.test(pathname?.split('?')[0] ?? '');
+  const isNotificationsPage = /\/notifications(\/|$)/.test(pathname?.split('?')[0] ?? '');
+  const isAnalyticsPage = /\/analytics(\/|$)/.test(pathname?.split('?')[0] ?? '');
 
-  // VARIABLE left cluster: mobile sidebar toggle, the course switcher on
-  // course about/detail pages, and tenant-configured extra links. The old
-  // Home / Profile / Recommended / Discover links moved to the sidebar.
+  // VARIABLE left cluster: mobile sidebar toggle, the current course /
+  // program title on their detail pages, and tenant-configured extra
+  // links. The old Home / Profile / Recommended / Discover links moved
+  // to the sidebar.
   const leftCluster = (
     <div className="flex h-16 min-w-0 items-center overflow-hidden pl-4 sm:pl-6 md:h-20">
       {/* Mobile hamburger — opens the PlatformSidebar mobile sheet, which
@@ -194,13 +198,18 @@ export function NavBar() {
         </button>
       )}
 
-      {/* Current course + switcher on course about/detail pages */}
-      {isUserLoggedIn && isCoursePage && <CourseSwitcher tenant={tenant} />}
+      {/* Current course / program / pathway title on their detail pages */}
+      {isUserLoggedIn && isCoursePage && <CourseTitle tenant={tenant} />}
+      {isUserLoggedIn && isProgramPage && <ProgramTitle tenant={tenant} />}
+      {isUserLoggedIn && isPathwayPage && <PathwayTitle tenant={tenant} />}
 
-      {/* Catalog page title (the page itself renders no heading) */}
-      {isCatalogPage && (
-        <h1 className="truncate text-base font-medium text-gray-700 sm:text-lg">Explore Content</h1>
-      )}
+      {/* Static page titles (the pages themselves render no heading) */}
+      {isCatalogPage && <NavbarTitle label="Explore Content" />}
+      {isNotificationsPage && <NavbarTitle label="Notifications" />}
+      {/* The analytics content is inset further than other pages, so the
+          title gets extra left padding on tablet/desktop to line up with
+          it (mobile keeps the default alignment). */}
+      {isAnalyticsPage && <NavbarTitle label="Analytics" className="md:pl-3" />}
 
       {additionalLeftHeaderMenuItems.length > 0 && (
         <nav className="ml-2 hidden h-full items-center space-x-6 md:flex">

@@ -93,7 +93,7 @@
         },
         {
           "id": "home-02",
-          "description": "Explore the Catalog rail displays catalog cards or hides when empty",
+          "description": "Explore rail displays catalog cards or hides when empty",
           "status": "covered"
         },
         {
@@ -113,7 +113,7 @@
         },
         {
           "id": "home-06",
-          "description": "Activity Overview band shows activity stats beside the Time Spent chart",
+          "description": "Activity Overview band is absent from the home page (lives on profile Activity)",
           "status": "covered"
         },
         {
@@ -460,7 +460,10 @@
       "id": "profile-pathways",
       "name": "Profile \u2014 Pathways",
       "spec": "09-profile-pathways.spec.ts",
-      "sourceFiles": ["app/profile/pathways/page.tsx", "components/pathway-detail-modal.tsx"],
+      "sourceFiles": [
+        "app/profile/pathways/page.tsx",
+        "app/platform/[tenant]/pathways/[pathway_id]/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "path-01",
@@ -474,12 +477,12 @@
         },
         {
           "id": "path-03",
-          "description": "Clicking pathway opens detail modal",
+          "description": "Clicking pathway navigates to the pathway detail page",
           "status": "covered"
         },
         {
           "id": "path-04",
-          "description": "Pathway detail modal can be closed",
+          "description": "Pathway detail page shows content cards and sidebar (banner, CTA, progress)",
           "status": "covered"
         },
         {
@@ -1082,7 +1085,7 @@
         },
         {
           "id": "nav-09",
-          "description": "Course switcher shows the current course and switches to another enrolled course",
+          "description": "Navbar shows the current course title on a course page (no enrolled-courses dropdown)",
           "status": "covered"
         }
       ]

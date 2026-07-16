@@ -79,7 +79,7 @@ describe('useProfileActivityStats', () => {
     expect(labels).toContain('Courses');
     expect(labels).toContain('Programs');
     expect(labels).toContain('Pathways');
-    expect(labels).toContain('Time Spent');
+    expect(labels).toContain('Hours');
     expect(labels).toContain('Assessments');
     expect(labels).toContain('Videos');
   });
@@ -225,7 +225,7 @@ describe('useProfileActivityStats', () => {
     });
   });
 
-  it('formats total time spent as hours', async () => {
+  it('reports total time spent as a whole-hours number under the "Hours" label', async () => {
     mockGetUserPerLearnerInfo.mockResolvedValue({
       data: {
         data: { total_time_spent: 53_460 }, // 14.85h
@@ -235,9 +235,9 @@ describe('useProfileActivityStats', () => {
     const { result } = renderHook(() => useProfileActivityStats());
 
     await waitFor(() => {
-      const timeSpentStat = result.current.stats.find((s) => s.label === 'Time Spent');
-      expect(timeSpentStat?.loading).toBe(false);
-      expect(timeSpentStat?.value).toBe('15 hours');
+      const hoursStat = result.current.stats.find((s) => s.label === 'Hours');
+      expect(hoursStat?.loading).toBe(false);
+      expect(hoursStat?.value).toBe(15);
     });
   });
 

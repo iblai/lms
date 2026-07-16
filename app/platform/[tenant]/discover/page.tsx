@@ -3,11 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Filter, X } from 'lucide-react';
 import { CourseCardSkeleton } from '@/components/course-card-skeleton';
-import {
-  useDiscover,
-  ENROLLMENT_FACET_SLUG,
-  RECOMMENDED_FACET_SLUG,
-} from '@/hooks/discover/use-discover';
+import { useDiscover, ENROLLMENT_FACET_SLUG } from '@/hooks/discover/use-discover';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
 import _ from 'lodash';
@@ -60,11 +56,13 @@ export default function DiscoverPage() {
       ...(contentParam !== null && {
         content: contentParam ? contentParam.split(',').filter(Boolean) : [],
       }),
-      ...(enrolledParam !== null && {
-        enrollment: enrolledParam === 'true' ? ['Enrolled'] : [],
-      }),
-      ...(recommendedParam !== null && {
-        recommended: recommendedParam === 'true' ? ['Recommended'] : [],
+      // Both deep-link params feed the one Access facet (terms Enrolled /
+      // Recommended).
+      ...((enrolledParam !== null || recommendedParam !== null) && {
+        enrollment: [
+          ...(enrolledParam === 'true' ? ['Enrolled'] : []),
+          ...(recommendedParam === 'true' ? ['Recommended'] : []),
+        ],
       }),
     }));
   }, [searchParams, setSelectedFacets]);
@@ -103,9 +101,6 @@ export default function DiscoverPage() {
           >
             {/* The page title ("Explore Content") lives in the navbar's left cluster. */}
             <div className="mb-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-base font-medium text-gray-700">Filter By</h3>
-              </div>
               <DiscoverFacetsFilter />
             </div>
           </div>
@@ -137,9 +132,7 @@ export default function DiscoverPage() {
                     // "Enrolled", "Recommended") — the term IS the label,
                     // so no facet prefix for these.
                     const hideFacetPrefix =
-                      selectedFacet === 'content' ||
-                      selectedFacet === ENROLLMENT_FACET_SLUG ||
-                      selectedFacet === RECOMMENDED_FACET_SLUG;
+                      selectedFacet === 'content' || selectedFacet === ENROLLMENT_FACET_SLUG;
                     return (
                       <div
                         key={`selected-facet-${selectedFacet}-${index}`}

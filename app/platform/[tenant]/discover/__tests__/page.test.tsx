@@ -240,6 +240,30 @@ describe('DiscoverPage', () => {
     );
   });
 
+  it('seeds the Recommended term of the Access facet from the recommended URL param', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'recommended') return 'true';
+      return null;
+    });
+
+    render(<DiscoverPage />);
+
+    expect(seededFacets()).toEqual(expect.objectContaining({ enrollment: ['Recommended'] }));
+  });
+
+  it('seeds both Access terms when enrolled and recommended params are set', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'enrolled' || key === 'recommended') return 'true';
+      return null;
+    });
+
+    render(<DiscoverPage />);
+
+    expect(seededFacets()).toEqual(
+      expect.objectContaining({ enrollment: ['Enrolled', 'Recommended'] }),
+    );
+  });
+
   it('renders selected facets with remove buttons', () => {
     vi.mocked(useDiscover).mockReturnValue({
       contents: [],
@@ -268,10 +292,10 @@ describe('DiscoverPage', () => {
     expect(screen.getByText('course')).toBeInTheDocument();
   });
 
-  it('renders facets filter sidebar', () => {
+  it('renders facets filter sidebar without a "Filter By" heading', () => {
     render(<DiscoverPage />);
 
     expect(screen.getByTestId('facets-filter')).toBeInTheDocument();
-    expect(screen.getByText('Filter By')).toBeInTheDocument();
+    expect(screen.queryByText('Filter By')).not.toBeInTheDocument();
   });
 });

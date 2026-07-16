@@ -13,12 +13,13 @@ import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '../use-tenant-param';
 import { useUserEnrollments, EnrolledContentType } from './use-user-enrollments';
 
-/** Synthetic facet: filters the catalog down to the user's enrollments. */
+/**
+ * Synthetic "Access" facet: narrows the catalog down to the user's
+ * enrollments and/or their recommended courses. Both terms live under
+ * the one `enrollment` slug.
+ */
 export const ENROLLMENT_FACET_SLUG = 'enrollment';
 export const ENROLLMENT_FACET_TERM = 'Enrolled';
-
-/** Synthetic facet: filters the catalog down to recommended courses. */
-export const RECOMMENDED_FACET_SLUG = 'recommended';
 export const RECOMMENDED_FACET_TERM = 'Recommended';
 
 /** How many recommendations to pull for the catalog view (the AI-search
@@ -73,36 +74,32 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   };
 
   /** "Enrolled" filter active — the catalog lists the user's enrollments. */
-  const enrolledOnly = !_.isEmpty(selectedFacets?.[ENROLLMENT_FACET_SLUG]);
+  const enrolledOnly = !!selectedFacets?.[ENROLLMENT_FACET_SLUG]?.includes(ENROLLMENT_FACET_TERM);
   /** "Recommended" filter active — the catalog lists recommended courses. */
   const recommendedOnly =
-    recommendationsEnabled && !_.isEmpty(selectedFacets?.[RECOMMENDED_FACET_SLUG]);
+    recommendationsEnabled &&
+    !!selectedFacets?.[ENROLLMENT_FACET_SLUG]?.includes(RECOMMENDED_FACET_TERM);
 
-  const buildEnrollmentFacet = (count: number): CourseFacet => ({
+  const buildAccessFacet = (enrolledCount: number, recommendedCount: number): CourseFacet => ({
     slug: ENROLLMENT_FACET_SLUG,
-    label: 'Enrollment',
+    label: 'Access',
     expanded: true,
-    terms: [{ key: ENROLLMENT_FACET_TERM, count }],
+    terms: [
+      { key: ENROLLMENT_FACET_TERM, count: enrolledCount },
+      ...(recommendationsEnabled ? [{ key: RECOMMENDED_FACET_TERM, count: recommendedCount }] : []),
+    ],
   });
 
-  const buildRecommendedFacet = (count: number): CourseFacet => ({
-    slug: RECOMMENDED_FACET_SLUG,
-    label: 'Recommended',
-    expanded: true,
-    terms: [{ key: RECOMMENDED_FACET_TERM, count }],
-  });
-
-  // Keep the synthetic facets' counts in sync — both when the user data
+  // Keep the synthetic facet's counts in sync — both when the user data
   // lands and when the facet fetch itself completes (whichever finishes
   // last).
   useEffect(() => {
     const syncCount = (list: CourseFacet[]) =>
-      list.map((facet) => {
-        if (facet.slug === ENROLLMENT_FACET_SLUG) return buildEnrollmentFacet(enrolledTotal);
-        if (facet.slug === RECOMMENDED_FACET_SLUG)
-          return buildRecommendedFacet(recommendedCourses.length);
-        return facet;
-      });
+      list.map((facet) =>
+        facet.slug === ENROLLMENT_FACET_SLUG
+          ? buildAccessFacet(enrolledTotal, recommendedCourses.length)
+          : facet,
+      );
     setFacets(syncCount);
     setFilteredFacets(syncCount);
   }, [enrolledTotal, recommendedCourses.length, facetsLoading]);
@@ -180,6 +177,11 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
             ...(!_.isEmpty(selectedFacets?.certificate) && {
               certificate: selectedFacets?.certificate,
             }),
+            // The "Format" facet (self-paced / instructor-led) maps to the
+            // endpoint's `self_paced` parameter.
+            ...(!_.isEmpty(selectedFacets?.format) && {
+              selfPaced: selectedFacets?.format,
+            }),
             ...(!_.isEmpty(selectedFacets?.price) && {
               price: selectedFacets?.price.at(-1),
             }),
@@ -195,13 +197,12 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
       }
       const allFacets = response?.data?.facets;
       if (onlyFacets) {
-        // The synthetic Enrollment / Recommended facets lead the list —
-        // logged-in users can narrow the catalog down to their own
+        // The synthetic Access facet (Enrolled / Recommended) leads the
+        // list — logged-in users can narrow the catalog down to their own
         // enrollments or their recommendations.
         const formattedFacets = isUserLoggedIn
           ? [
-              buildEnrollmentFacet(enrolledTotal),
-              ...(recommendationsEnabled ? [buildRecommendedFacet(recommendedCourses.length)] : []),
+              buildAccessFacet(enrolledTotal, recommendedCourses.length),
               ...handleFormatFacets(allFacets),
             ]
           : handleFormatFacets(allFacets);
@@ -222,11 +223,12 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   };
 
   const handleToggleFacet = (slug: string) => {
-    const updatedFacets = facets.map((facet) =>
-      facet.slug === slug ? { ...facet, expanded: !facet.expanded } : facet,
-    );
-    setFacets(updatedFacets);
-    setFilteredFacets(updatedFacets);
+    // Toggle each list in place so expanding one facet doesn't clobber
+    // another facet's client-side term filter.
+    const toggle = (list: CourseFacet[]) =>
+      list.map((facet) => (facet.slug === slug ? { ...facet, expanded: !facet.expanded } : facet));
+    setFacets(toggle);
+    setFilteredFacets(toggle);
   };
 
   const handleFormatFacets = (allFacets: Record<string, any>) => {
@@ -271,7 +273,19 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
           }
         }
       });
-      return formattedFacets;
+      // The catalog lumps unclassified content under a generic "other"
+      // subject — always hide that term from the Subject filter (and the
+      // whole facet if nothing else remains).
+      return formattedFacets
+        .map((facet) =>
+          facet.slug === 'subject'
+            ? {
+                ...facet,
+                terms: facet.terms.filter((term) => String(term.key).toLowerCase() !== 'other'),
+              }
+            : facet,
+        )
+        .filter((facet) => facet.terms.length > 0);
     } catch (error) {
       console.log(error);
       return [];
@@ -383,38 +397,44 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
     recommendedCourses,
   ]);
 
+  /**
+   * Client-side search within one facet's term list. Only the targeted
+   * facet is touched (other facets keep their own filters); clearing the
+   * search restores the facet's full term list, and no matches means an
+   * empty list — not a reset.
+   */
   const handleFilterFacets = (facetSlug: string, searchTerm: string) => {
-    try {
-      if (!searchTerm) {
-        throw new Error();
-      }
-      const targetedFacet = facets.find((facet) => facet.slug === facetSlug);
-      const matchingTermsFilters = targetedFacet?.terms.filter((term) =>
-        String(term.key).toLowerCase().includes(String(searchTerm).toLowerCase()),
-      );
-      if (!matchingTermsFilters || matchingTermsFilters?.length === 0) {
-        throw new Error();
-      }
-      setFilteredFacets(
-        facets.map((facet) => {
-          if (facet.slug === facetSlug) {
-            return { ...facet, terms: [...matchingTermsFilters] };
-          }
-          return facet;
-        }),
-      );
-    } catch {
-      setFilteredFacets(facets);
-    }
+    const allTerms = facets.find((facet) => facet.slug === facetSlug)?.terms ?? [];
+    const matchingTerms = !searchTerm
+      ? allTerms
+      : allTerms.filter((term) =>
+          String(term.key).toLowerCase().includes(String(searchTerm).toLowerCase()),
+        );
+    setFilteredFacets((previous) =>
+      previous.map((facet) =>
+        facet.slug === facetSlug ? { ...facet, terms: matchingTerms } : facet,
+      ),
+    );
   };
 
   useEffect(() => {
     handleFetchData(true);
   }, []);
 
+  // Every selected facet except the synthetic client-side ones (Enrolled /
+  // Recommended) is a server-side search parameter — refetch whenever any
+  // of them changes (subject, format, certificate, level, …), not just the
+  // query and content type.
+  const searchFacetsKey = JSON.stringify(
+    Object.fromEntries(
+      Object.entries(selectedFacets ?? {}).filter(([slug]) => slug !== ENROLLMENT_FACET_SLUG),
+    ),
+  );
+
   useEffect(() => {
     handleFetchSearchContents();
-  }, [selectedFacets?.q?.length, selectedFacets?.content?.length, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFacetsKey, page]);
 
   return {
     contents,

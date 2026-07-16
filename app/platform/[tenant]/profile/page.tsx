@@ -19,7 +19,11 @@ const HIDDEN_STAT_LABELS = new Set(['Points', 'Assessments', 'Videos']);
 export default function ProfilePage() {
   const tenant = useTenantParam();
   const { stats } = useProfileActivityStats();
-  const visibleStats = stats.filter((stat) => !HIDDEN_STAT_LABELS.has(String(stat.label)));
+  // Zero-value tiles are hidden, same as the home Activity Overview.
+  const visibleStats = stats.filter(
+    (stat) =>
+      !HIDDEN_STAT_LABELS.has(String(stat.label)) && (stat.loading || Number(stat.value) !== 0),
+  );
   const { metadataLoaded, isSkillsLeaderBoardEnabled } = useTenantMetadata({
     org: tenant,
   });

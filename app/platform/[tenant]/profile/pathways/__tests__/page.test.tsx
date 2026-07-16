@@ -6,6 +6,16 @@ vi.mock('next/image', () => ({
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }));
 
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
+  useRouter: () => ({ push: mockPush }),
+}));
+
+vi.mock('@/hooks/use-tenant-param', () => ({
+  useTenantParam: () => 'test-tenant',
+}));
+
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => ({
     metadataLoaded: true,
@@ -31,17 +41,6 @@ vi.mock('@/hooks/profile/use-profile-pathways', () => ({
     setFilteredPathways: mockSetFilteredPathways,
     pathwayCompletions: [],
   })),
-}));
-
-vi.mock('@/components/pathway-detail-modal', () => ({
-  PathwayDetailModal: ({ pathway, onClose }: any) => (
-    <div data-testid="pathway-modal">
-      <span>{pathway?.name}</span>
-      <button data-testid="close-pathway-modal" onClick={onClose}>
-        Close
-      </button>
-    </div>
-  ),
 }));
 
 vi.mock('@/components/create-pathway-modal', () => ({
@@ -188,9 +187,9 @@ describe('PathwaysPage', () => {
     expect(screen.getByText('75%')).toBeInTheDocument();
   });
 
-  it('opens pathway detail modal on click', () => {
+  it('navigates to the pathway detail page on click', () => {
     vi.mocked(useProfilePathways).mockReturnValue({
-      filteredPathways: [{ name: 'Pathway 1', metadata: {} }],
+      filteredPathways: [{ name: 'Pathway 1', pathway_uuid: 'uuid-1', metadata: {} }],
       isLoading: false,
       pathways: [{ name: 'Pathway 1' }],
       isError: false,
@@ -202,27 +201,7 @@ describe('PathwaysPage', () => {
     render(<PathwaysPage />);
 
     fireEvent.click(screen.getByText('Pathway 1'));
-    expect(screen.getByTestId('pathway-modal')).toBeInTheDocument();
-  });
-
-  it('closes pathway detail modal', () => {
-    vi.mocked(useProfilePathways).mockReturnValue({
-      filteredPathways: [{ name: 'Pathway 1', metadata: {} }],
-      isLoading: false,
-      pathways: [{ name: 'Pathway 1' }],
-      isError: false,
-      setPathways: mockSetPathways,
-      setFilteredPathways: mockSetFilteredPathways,
-      pathwayCompletions: [],
-    } as any);
-
-    render(<PathwaysPage />);
-
-    fireEvent.click(screen.getByText('Pathway 1'));
-    expect(screen.getByTestId('pathway-modal')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId('close-pathway-modal'));
-    expect(screen.queryByTestId('pathway-modal')).not.toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/pathways/uuid-1');
   });
 
   it('opens create pathway modal on button click', () => {

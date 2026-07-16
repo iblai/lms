@@ -6,10 +6,6 @@ vi.mock('@/components/home/home-hero', () => ({
   HomeHero: () => <div data-testid="home-hero" />,
 }));
 
-vi.mock('@/components/home/home-activity-overview', () => ({
-  HomeActivityOverview: () => <div data-testid="home-activity-overview" />,
-}));
-
 vi.mock('@/components/home/home-discover-rail', () => ({
   HomeDiscoverRail: () => <div data-testid="home-discover-rail" />,
 }));
@@ -23,10 +19,11 @@ describe('Dashboard (home page)', () => {
     expect(screen.getByTestId('home-hero')).toBeInTheDocument();
   });
 
-  it('renders the activity overview band', () => {
+  it('does not render the activity overview band (lives on the profile Activity page)', () => {
     render(<Dashboard />);
 
-    expect(screen.getByTestId('home-activity-overview')).toBeInTheDocument();
+    expect(screen.queryByTestId('home-activity-overview')).not.toBeInTheDocument();
+    expect(screen.queryByText(/time spent/i)).not.toBeInTheDocument();
   });
 
   it('does not render the My Courses section (moved to the catalog page)', () => {

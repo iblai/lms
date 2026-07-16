@@ -141,26 +141,13 @@ test.describe('Journey 14: Course Discovery', () => {
       return;
     }
 
-    // DiscoverContentCard onClick navigates to /courses/{id} for courses,
-    // or opens a modal for pathways/programs
+    // DiscoverContentCard onClick navigates to the matching detail page:
+    // /courses/{id}, /programs/{id} or /pathways/{uuid}.
     await contentCard.click();
 
-    // Wait for either a navigation or a dialog to appear
-    const dialog = page.getByRole('dialog').first();
-    const navigated = await page
-      .waitForURL((url) => url.href.includes('/courses/'), { timeout: 10_000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (navigated) {
-      expect(page.url()).toContain('/courses/');
-      logger.info(`Navigated to course: ${page.url()}`);
-    } else {
-      // Pathway/program card opens a modal instead
-      const hasDialog = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
-      expect(hasDialog).toBe(true);
-      logger.info('Content card opened a detail modal');
-    }
+    await page.waitForURL(/\/(courses|programs|pathways)\/[^/]+/, { timeout: 60_000 });
+    expect(page.url()).toMatch(/\/(courses|programs|pathways)\/[^/]+/);
+    logger.info(`Navigated to content detail page: ${page.url()}`);
   });
 
   test('CP-7: filter drawer on mobile viewport', async ({ page }) => {

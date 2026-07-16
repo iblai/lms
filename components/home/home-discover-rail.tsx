@@ -12,7 +12,7 @@ import { CourseCardSkeleton } from '@/components/course-card-skeleton';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
-const RAIL_LIMIT = 8;
+const RAIL_LIMIT = 16;
 
 /**
  * Landing rail over the Discover page's personalized-catalog endpoint:
@@ -38,11 +38,9 @@ export function HomeDiscoverRail() {
   if (!contentsLoading && (isError || !contents || contents.length === 0)) return null;
 
   return (
-    <section aria-label="Explore the Catalog" className="mb-6 w-full">
+    <section aria-label="Explore" className="mb-6 w-full">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-base font-semibold text-gray-600 sm:text-lg md:text-xl">
-          Explore the Catalog
-        </h3>
+        <h3 className="text-base font-semibold text-gray-600 sm:text-lg md:text-xl">Explore</h3>
         <Link
           href={`/platform/${tenant}/discover`}
           className="flex items-center gap-1 rounded-md px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 sm:text-sm"

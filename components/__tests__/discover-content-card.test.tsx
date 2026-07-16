@@ -24,16 +24,6 @@ vi.mock('@/utils/helpers', () => ({
   getRandomCourseImage: vi.fn(() => '/default-course-image.jpg'),
 }));
 
-// Mock the pathway detail modal
-vi.mock('../pathway-detail-modal', () => ({
-  PathwayDetailModal: ({ pathway, onClose }: any) => (
-    <div data-testid="pathway-modal">
-      Pathway Modal: {pathway?.title}
-      <button onClick={onClose}>Close</button>
-    </div>
-  ),
-}));
-
 describe('DiscoverContentCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -71,7 +61,7 @@ describe('DiscoverContentCard', () => {
     expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/courses/course-123');
   });
 
-  it('opens pathway modal when pathway content is clicked', () => {
+  it('navigates to the pathway detail page when pathway content is clicked', () => {
     const content = {
       id: 'pathway-123',
       title: 'Test Pathway',
@@ -85,8 +75,7 @@ describe('DiscoverContentCard', () => {
     const card = screen.getByText('Test Pathway').closest('div[class*="block"]');
     fireEvent.click(card!);
 
-    expect(screen.getByTestId('pathway-modal')).toBeInTheDocument();
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/pathways/pathway-123');
   });
 
   it('navigates to program page when program content is clicked', () => {
@@ -150,25 +139,23 @@ describe('DiscoverContentCard', () => {
     expect(image).toHaveAttribute('src', '/custom-image.jpg');
   });
 
-  it('closes pathway modal when close is triggered', () => {
+  it('prefers a provided onClick override over the default navigation', () => {
+    const onClick = vi.fn();
     const content = {
-      id: 'pathway-123',
-      title: 'Test Pathway',
-      url: '/pathways/pathway-123',
-      image: '/test-pathway.jpg',
-      contentType: 'pathway',
+      id: 'resource-1',
+      title: 'External Resource',
+      url: 'https://example.com/resource',
+      image: '/resource.jpg',
+      contentType: 'resource',
     };
 
-    render(<DiscoverContentCard content={content} />);
+    render(<DiscoverContentCard content={content} onClick={onClick} />);
 
-    // Open modal
-    const card = screen.getByText('Test Pathway').closest('div[class*="block"]');
+    const card = screen.getByText('External Resource').closest('div[class*="block"]');
     fireEvent.click(card!);
-    expect(screen.getByTestId('pathway-modal')).toBeInTheDocument();
 
-    // Close modal
-    fireEvent.click(screen.getByText('Close'));
-    expect(screen.queryByTestId('pathway-modal')).not.toBeInTheDocument();
+    expect(onClick).toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('handles image error by setting fallback image', () => {
