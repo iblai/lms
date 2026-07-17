@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.49.1](https://github.com/iblai/lms/compare/skills-v0.49.0...skills-v0.49.1) (2026-07-17)
+
+### Bug Fixes
+
+* assessment mode cutted fullscreen fixed & informative popover ([56a4b34](https://github.com/iblai/lms/commit/56a4b34dd6bcf6cbc5b3922d2276dfd0118421e8))
+* assessment mode cutted fullscreen fixed & informative popover ([e65c5db](https://github.com/iblai/lms/commit/e65c5dbeae436e1bb8390c60a8cf1b3694c5f81f))
+* assessment mode cutted fullscreen fixed & informative popover > test coverage ([ab47a31](https://github.com/iblai/lms/commit/ab47a31f232a09df3fe480cb76dcf16919eb03c9))
+
 ## [0.49.0](https://github.com/iblai/lms/compare/skills-v0.48.6...skills-v0.49.0) (2026-07-17)
 
 ### Features
