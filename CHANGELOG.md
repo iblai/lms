@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.48.6](https://github.com/iblai/lms/compare/skills-v0.48.5...skills-v0.48.6) (2026-07-17)
+
+### CI
+
+* update stg1 E2E host IP 32.196.111.179 -> 98.82.66.78 ([2f98bf2](https://github.com/iblai/lms/commit/2f98bf2d8f98bfdc1b51b0d49af7ce7917339c0f))
+
 ## [0.48.5](https://github.com/iblai/lms/compare/skills-v0.48.4...skills-v0.48.5) (2026-07-13)
 
 ### Documentation
