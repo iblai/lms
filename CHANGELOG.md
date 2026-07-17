@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.49.0](https://github.com/iblai/lms/compare/skills-v0.48.6...skills-v0.49.0) (2026-07-17)
+
+### Features
+
+* amber color replacement into blue-ish & font weight reduced ([0551dd3](https://github.com/iblai/lms/commit/0551dd39d862e8f7639006de477f39a64bd80b30))
+* sidebar & top navbar refactoring on progress ([719f890](https://github.com/iblai/lms/commit/719f890cc20dcc2928c7e47d28a300962612243e))
+* sidebar + navbar refactoring on progress ([74bda63](https://github.com/iblai/lms/commit/74bda63b086f9121d08af56f4eb53d55dab52e4d))
+* sidebar and navbar revamp ([1be76f8](https://github.com/iblai/lms/commit/1be76f8374433fe403eea93dc6cb6ed5ab343bab))
+* sidebar and navbar revamp completed ([4fa5db9](https://github.com/iblai/lms/commit/4fa5db9c42b431bdfc6771d5526a33319fdec242))
+* sidebar and navbar revamp completed ([ecd964f](https://github.com/iblai/lms/commit/ecd964f9ba15bca640716efdfa4d8ff81866cfb3))
+* sidebar and navbar revamp completed ([b54739f](https://github.com/iblai/lms/commit/b54739f41af7354ac32dd97ff9b89a5b6d702fbb))
+* sidebar and navbar revamp completed > css colors update ([e937a29](https://github.com/iblai/lms/commit/e937a29f966d11c34f769fba11f33080eab10eb3))
+* sidebar and navbar revamp completed > playwright coverage fixme updated ([31fd300](https://github.com/iblai/lms/commit/31fd300f643439a87b1fa2274484bddd14017c9b))
+* sidebar and navbar revamp completed > playwright coverage updated ([c956874](https://github.com/iblai/lms/commit/c9568749cb9b10166b771742186d9200b9fc609a))
+* sidebar and navbar revamp completed > test coverage ([55fafd9](https://github.com/iblai/lms/commit/55fafd99d5258152ee569cda0b47a59202779830))
+* sidebar and navbar revamp on progress ([b49690d](https://github.com/iblai/lms/commit/b49690dce7a6a16781fbe4b97e9cd2b956d4e310))
+* sidebar and navbar revamp on progress ([7f83362](https://github.com/iblai/lms/commit/7f83362c52ecea1e4c7c47bd1c6aa71e58df547d))
+* sidebar navbar restructuring with PlatformSidebar component comsumption ([ee0a0e6](https://github.com/iblai/lms/commit/ee0a0e63fac1ab006d725afdc89d55486e636bb7))
+* sidebar navbar restructuring with PlatformSidebar component comsumption ([d5df9bd](https://github.com/iblai/lms/commit/d5df9bd0d6ac94617fec4e0f36622d535e38fb16))
+* sidebar navbar restructuring with PlatformSidebar component comsumption ([5968b0c](https://github.com/iblai/lms/commit/5968b0c1daa0d4c279728c60fcc0ce383c7ff793))
+
 ## [0.48.6](https://github.com/iblai/lms/compare/skills-v0.48.5...skills-v0.48.6) (2026-07-17)
 
 ### CI
