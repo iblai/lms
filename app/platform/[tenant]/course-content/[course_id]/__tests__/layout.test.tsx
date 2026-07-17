@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -46,6 +46,7 @@ vi.mock('lucide-react', () => ({
   CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
   CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
   Maximize: () => <span data-testid="maximize">Maximize</span>,
+  X: () => <span data-testid="dismiss-x">×</span>,
 }));
 
 // Mock helpers
@@ -172,11 +173,25 @@ vi.mock('@/components/ui/switch', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/popover', () => ({
-  Popover: ({ children }: any) => <>{children}</>,
-  PopoverTrigger: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
-  PopoverContent: ({ children }: any) => <div data-testid="agent-mode-popover">{children}</div>,
-}));
+// The Popover mock shares the controlling `open` prop with its content via a
+// context so the agent-mode hint popover (which is `open`-controlled) can be
+// asserted as shown/hidden. Uncontrolled popovers (open===undefined, e.g. the
+// mobile 3-dot menu) always render their content, matching the prior behavior.
+vi.mock('@/components/ui/popover', async () => {
+  const ReactActual = await vi.importActual<typeof React>('react');
+  const PopoverOpenContext = ReactActual.createContext<boolean | undefined>(undefined);
+  return {
+    Popover: ({ children, open }: any) =>
+      ReactActual.createElement(PopoverOpenContext.Provider, { value: open }, children),
+    PopoverTrigger: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
+    PopoverAnchor: ({ children }: any) => <>{children}</>,
+    PopoverContent: ({ children }: any) => {
+      const open = ReactActual.useContext(PopoverOpenContext);
+      if (open === false) return null;
+      return <div data-testid="agent-mode-popover">{children}</div>;
+    },
+  };
+});
 
 // Mock ExamInfo from data-layer
 vi.mock('@iblai/iblai-js/data-layer', () => ({
@@ -1330,6 +1345,176 @@ describe('CourseContentLayout', () => {
       // After click, every rendered switch should reflect the new checked state.
       const updatedSwitches = screen.getAllByTestId('agent-mode-switch');
       updatedSwitches.forEach((s) => expect(s).toHaveAttribute('aria-checked', 'true'));
+    });
+  });
+
+  describe('one-time agent-mode hint popover', () => {
+    const STORAGE_KEY = 'skills:agent-mode-hint-dismissed';
+
+    const blockDetailsWithMentor = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+        'mentor-block': { id: 'mentor-block', type: 'ibl_mentor_xblock', display_name: 'Mentor' },
+      },
+    };
+
+    // Puts the layout on the agent tab with a mentor xblock present, which is
+    // what makes the Learn/Assess switch (and therefore the hint) eligible.
+    const setupAgentTab = async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_content_mode: true, course_content_mode: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
+    };
+
+    beforeEach(() => {
+      localStorage.clear();
+      // Keep the unrelated "Loaded" toast timer from firing during our waits.
+      mentorState.spinnerHidden = false;
+    });
+
+    it('does not show the hint before the 600ms delay elapses', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(599);
+        });
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('shows the hint 600ms after the Learn/Assess switch appears (first visit)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(600);
+        });
+        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not show the hint when it was previously dismissed (persisted in localStorage)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        localStorage.setItem(STORAGE_KEY, 'true');
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1000);
+        });
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not show the hint on a non-agent tab (switch not visible)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        const { usePathname } = await import('next/navigation');
+        vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+        mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
+
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1000);
+        });
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('persists dismissal to localStorage and hides the hint when "Got it" is clicked', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(600);
+        });
+        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+
+        expect(localStorage.getItem(STORAGE_KEY)).toBe('true');
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('persists dismissal and hides the hint when the X button is clicked', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(600);
+        });
+        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+        expect(localStorage.getItem(STORAGE_KEY)).toBe('true');
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
