@@ -24,8 +24,8 @@ li {
 .course-wrapper .course-content .xblock > div:first-child[style*='background'] {
   background: linear-gradient(
     135deg,
-    rgba(251, 191, 36, 1) 73%,
-    rgba(245, 158, 11, 1) 100%
+    rgba(96, 165, 250, 1) 73%,
+    rgba(59, 130, 246, 1) 100%
   ) !important;
 }
 
@@ -33,7 +33,7 @@ li {
 
 /* =============================================
    INSTRUCTOR DASHBOARD (LMS) - UNIFORMITY CSS
-   Primary Accent: #F59E0B (Amber)
+   Primary Accent: #3B82F6 (Blue)
    Text Color: #4a5568 (slate gray)
    Font: "Open Sans", sans-serif
    ============================================= */
@@ -139,11 +139,11 @@ b {
 }
 /* --- LINKS --- */
 a {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
   text-decoration: none !important;
 }
 a:hover {
-  color: #d97706 !important;
+  color: #2563eb !important;
   text-decoration: underline !important;
 }
 /* --- INSTRUCTOR NAV TABS --- */
@@ -168,20 +168,20 @@ a:hover {
   text-decoration: none !important;
 }
 .instructor-nav .btn-link:hover {
-  color: #f59e0b !important;
-  border-bottom-color: #fde68a !important;
+  color: #3b82f6 !important;
+  border-bottom-color: #bfdbfe !important;
   text-decoration: none !important;
 }
 .instructor-nav .btn-link.active-section {
-  color: #f59e0b !important;
-  border-bottom: 3px solid #f59e0b !important;
+  color: #3b82f6 !important;
+  border-bottom: 3px solid #3b82f6 !important;
   font-weight: 600 !important;
 }
 /* --- "VIEW COURSE IN STUDIO" BUTTON --- */
 .instructor-info-action a {
   background-color: transparent !important;
-  color: #f59e0b !important;
-  border: 2px solid #f59e0b !important;
+  color: #3b82f6 !important;
+  border: 2px solid #3b82f6 !important;
   border-radius: 6px !important;
   font-size: 12px !important;
   font-weight: 600 !important;
@@ -192,7 +192,7 @@ a:hover {
   transition: all 0.2s ease !important;
 }
 .instructor-info-action a:hover {
-  background-color: #f59e0b !important;
+  background-color: #3b82f6 !important;
   color: #ffffff !important;
   text-decoration: none !important;
 }
@@ -229,8 +229,8 @@ input[type='search']:focus,
 input[type='number']:focus,
 input[type='url']:focus,
 select:focus {
-  border-color: #f59e0b !important;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
   outline: none !important;
 }
 textarea::placeholder,
@@ -239,7 +239,7 @@ input::placeholder {
 }
 /* --- CHECKBOXES --- */
 input[type='checkbox'] {
-  accent-color: #f59e0b !important;
+  accent-color: #3b82f6 !important;
 }
 /* --- ACTION BUTTONS (Enroll, Generate Report, etc.) --- */
 input[type='button'],
@@ -252,7 +252,7 @@ button:not(.btn-link):not(.instructor-nav .btn-link) {
   border-radius: 6px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  background-color: #f59e0b !important;
+  background-color: #3b82f6 !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -262,7 +262,7 @@ button:not(.btn-link):not(.instructor-nav .btn-link) {
 input[type='button']:hover,
 input[type='submit']:hover,
 button:not(.btn-link):not(.instructor-nav .btn-link):hover {
-  background-color: #d97706 !important;
+  background-color: #2563eb !important;
   background-image: none !important;
 }
 /* Secondary buttons (Unenroll, Remove, Delete) - outline style */
@@ -272,19 +272,19 @@ input[type='button'][name*='remove'],
 .btn-secondary {
   background-color: transparent !important;
   background-image: none !important;
-  color: #f59e0b !important;
-  border: 2px solid #f59e0b !important;
+  color: #3b82f6 !important;
+  border: 2px solid #3b82f6 !important;
 }
 input[type='button'][value='Unenroll']:hover,
 .btn-secondary:hover {
-  background-color: #f59e0b !important;
+  background-color: #3b82f6 !important;
   color: #ffffff !important;
 }
 /* --- BLUE BUTTONS (Special Exams, legacy) --- */
 .blue-button,
 a.blue-button,
 .add.blue-button {
-  background: #f59e0b !important;
+  background: #3b82f6 !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -299,7 +299,7 @@ a.blue-button,
 }
 .blue-button:hover,
 a.blue-button:hover {
-  background: #d97706 !important;
+  background: #2563eb !important;
   background-image: none !important;
   color: #ffffff !important;
   text-decoration: none !important;
@@ -317,8 +317,8 @@ table th {
   font-weight: 600 !important;
   font-size: 13px !important;
   padding: 8px 12px !important;
-  border-bottom: 2px solid #f59e0b !important;
-  background-color: #fef3c7 !important;
+  border-bottom: 2px solid #3b82f6 !important;
+  background-color: #dbeafe !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
 }
@@ -331,7 +331,7 @@ table td {
 }
 .data-display-table tr:hover,
 table tbody tr:hover {
-  background-color: #fffbeb !important;
+  background-color: #eff6ff !important;
 }
 .data-display-table td:first-child {
   font-weight: 600 !important;
@@ -341,7 +341,7 @@ td[style*='green'],
 td[style*='color: green'],
 span[style*='green'],
 span[style*='color: green'] {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
   font-weight: 700 !important;
 }
 /* --- SECTION DIVIDERS --- */
@@ -365,17 +365,17 @@ hr {
 }
 .special-exam-header:hover,
 .ui-accordion-header:hover {
-  background-color: #fef3c7 !important;
-  border-color: #f59e0b !important;
+  background-color: #dbeafe !important;
+  border-color: #3b82f6 !important;
 }
 .special-exam-header.ui-state-active,
 .ui-accordion-header.ui-state-active {
-  background-color: #fef3c7 !important;
-  border-color: #f59e0b !important;
-  color: #f59e0b !important;
+  background-color: #dbeafe !important;
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
 }
 .ui-accordion-header.ui-state-active a {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
 }
 .ui-accordion-content {
   border: 1px solid #e5e7eb !important;
@@ -384,18 +384,18 @@ hr {
   padding: 16px !important;
 }
 .ui-accordion-header .ui-icon {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
 }
 /* --- EXAM TABLES --- */
 .exam-attempts-table th,
 .certificate-data-display-table th,
 .auth-list-container table th {
-  background-color: #fef3c7 !important;
-  border-bottom: 2px solid #f59e0b !important;
+  background-color: #dbeafe !important;
+  border-bottom: 2px solid #3b82f6 !important;
 }
 /* --- ASYNC REPORT BUTTONS --- */
 .async-report-btn {
-  background-color: #f59e0b !important;
+  background-color: #3b82f6 !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -405,11 +405,11 @@ hr {
   box-shadow: none !important;
 }
 .async-report-btn:hover {
-  background-color: #d97706 !important;
+  background-color: #2563eb !important;
 }
 /* --- GENERATE PROGRESS / VIEW PROGRESS --- */
 .ibl-generate-progress-btn {
-  background-color: #f59e0b !important;
+  background-color: #3b82f6 !important;
   background-image: none !important;
   color: #ffffff !important;
   border: none !important;
@@ -417,10 +417,10 @@ hr {
   box-shadow: none !important;
 }
 .ibl-generate-progress-btn:hover {
-  background-color: #d97706 !important;
+  background-color: #2563eb !important;
 }
 .ibl-view-progress-link {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
 }
 /* --- CONTAINER ADJUSTMENTS --- */
 .instructor-dashboard-wrapper-2 {
@@ -440,11 +440,11 @@ label {
 .enrollment-status-link,
 .gradebook-link a,
 a.gradebook-link {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
 }
 .enrollment-status-link:hover,
 .gradebook-link a:hover {
-  color: #d97706 !important;
+  color: #2563eb !important;
 }
 /* --- COHORTS --- */
 .cohorts-state-section {
@@ -452,7 +452,7 @@ a.gradebook-link {
 }
 /* --- LIST MARKERS --- */
 ul li::marker {
-  color: #f59e0b !important;
+  color: #3b82f6 !important;
 }
 /* --- FOOTER --- */
 footer,
