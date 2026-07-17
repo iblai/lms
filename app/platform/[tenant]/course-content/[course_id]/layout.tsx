@@ -10,6 +10,7 @@ import {
   ListTree,
   Maximize,
   MoreVertical,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
@@ -31,7 +32,8 @@ import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import {
   setAdvancedDisplayMonetizationCheckoutModal,
   useTenantMetadata,
@@ -172,6 +174,31 @@ export default function CourseContentLayout({
   );
   const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
   const fullscreenToggleVisible = currentTab === 'agent';
+
+  // One-time informative hint shown above the Learn/Assess switcher the first
+  // time it becomes available. Persisted so it doesn't nag on every visit.
+  const [agentModeHintDismissed, setAgentModeHintDismissed] = useLocalStorage<boolean>(
+    'skills:agent-mode-hint-dismissed',
+    false,
+    {
+      serializer: (value) => (value ? 'true' : 'false'),
+      deserializer: (value) => value === 'true',
+    },
+  );
+  const [agentModeHintOpen, setAgentModeHintOpen] = useState(false);
+  const dismissAgentModeHint = () => {
+    setAgentModeHintOpen(false);
+    setAgentModeHintDismissed(true);
+  };
+
+  useEffect(() => {
+    if (assessmentToggleVisible && !agentModeHintDismissed) {
+      // Small delay so the switcher has settled into place before anchoring.
+      const timer = setTimeout(() => setAgentModeHintOpen(true), 600);
+      return () => clearTimeout(timer);
+    }
+    setAgentModeHintOpen(false);
+  }, [assessmentToggleVisible, agentModeHintDismissed]);
 
   useEffect(() => {
     if (!assessmentToggleVisible && agentMode !== 'learning') {
@@ -508,30 +535,82 @@ export default function CourseContentLayout({
                       </button>
                     )}
                     {assessmentToggleVisible && (
-                      <div
-                        className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
-                        role="group"
-                        aria-label="Agent display mode"
-                      >
-                        <span
-                          className={agentMode === 'learning' ? 'font-medium text-amber-600' : ''}
-                        >
-                          Learn
-                        </span>
-                        <Switch
-                          checked={agentMode === 'assessment'}
-                          onCheckedChange={(checked) =>
-                            setAgentMode(checked ? 'assessment' : 'learning')
+                      <Popover
+                        open={agentModeHintOpen}
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            dismissAgentModeHint();
                           }
-                          aria-label="Toggle assessment mode"
-                          className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                        />
-                        <span
-                          className={agentMode === 'assessment' ? 'font-medium text-amber-600' : ''}
+                        }}
+                      >
+                        <PopoverAnchor asChild>
+                          <div
+                            className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
+                            role="group"
+                            aria-label="Agent display mode"
+                          >
+                            <span
+                              className={
+                                agentMode === 'learning' ? 'font-medium text-amber-600' : ''
+                              }
+                            >
+                              Learn
+                            </span>
+                            <Switch
+                              checked={agentMode === 'assessment'}
+                              onCheckedChange={(checked) =>
+                                setAgentMode(checked ? 'assessment' : 'learning')
+                              }
+                              aria-label="Toggle assessment mode"
+                              className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                            />
+                            <span
+                              className={
+                                agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                              }
+                            >
+                              Assess
+                            </span>
+                          </div>
+                        </PopoverAnchor>
+                        <PopoverContent
+                          side="top"
+                          align="end"
+                          sideOffset={10}
+                          className="w-64 p-3"
+                          onOpenAutoFocus={(event) => event.preventDefault()}
                         >
-                          Assess
-                        </span>
-                      </div>
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 text-xs text-gray-600">
+                              <p className="mb-1 font-medium text-gray-900">Two ways to learn</p>
+                              <p>
+                                Use this switch to move between{' '}
+                                <span className="font-medium text-amber-600">Learn</span> mode,
+                                where the agent teaches you, and{' '}
+                                <span className="font-medium text-amber-600">Assess</span> mode,
+                                where it quizzes you on what you&apos;ve covered.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={dismissAgentModeHint}
+                              aria-label="Dismiss"
+                              className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <div className="mt-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={dismissAgentModeHint}
+                              className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            >
+                              Got it
+                            </button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                     {(assessmentToggleVisible || autoplayToggleVisible) && (
                       <Popover>

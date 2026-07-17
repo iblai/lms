@@ -395,5 +395,55 @@ describe('EdxIframe - JWT PostMessage', () => {
       expect(iframe.className).toContain('md:h-[calc(100vh-260px)]');
       expect(iframe.className).toContain('lg:h-[calc(100vh-250px)]');
     });
+
+    it('stretches the wrapper and iframe to full height in assessment fullscreen mode', async () => {
+      const { container } = renderEdxIframe({
+        ...defaultContextValue,
+        agentMode: 'assessment',
+        agentFullscreen: true,
+      } as any);
+
+      await waitFor(() => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      });
+
+      // Wrapper gets h-full so the iframe can fill the freed vertical space.
+      const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
+      expect(wrapper.className).toContain('p-0');
+      expect(wrapper.className).toContain('h-full');
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      // Fullscreen wins over the responsive assessment heights: h-full + 100% inline.
+      expect(iframe.className).toContain('h-full');
+      expect(iframe.className).toContain('w-full');
+      expect(iframe.className).not.toContain('h-[calc(100vh-258px)]');
+      expect(iframe.style.height).toBe('100%');
+      expect(iframe.style.width).toBe('100%');
+    });
+
+    it('does not apply fullscreen sizing when agentFullscreen is set but mode is learning', async () => {
+      // Fullscreen only takes effect in assessment mode; a stray flag in learning
+      // mode must not collapse the iframe to h-full.
+      const { container } = renderEdxIframe({
+        ...defaultContextValue,
+        agentMode: 'learning',
+        agentFullscreen: true,
+      } as any);
+
+      await waitFor(() => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      });
+
+      const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
+      expect(wrapper.className).toContain('p-6');
+      expect(wrapper.className).not.toContain('h-full');
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      expect(iframe.className).toBe('');
+      // Legacy learning-mode inline height is preserved.
+      expect(iframe.style.height).toContain('100vh');
+    });
   });
 });
