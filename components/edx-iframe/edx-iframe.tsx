@@ -28,8 +28,10 @@ export const EdxIframe = () => {
     setIframeUrl,
     refresher,
     agentMode,
+    agentFullscreen,
   } = useContext(EdxIframeContext);
   const isAssessmentMode = agentMode === 'assessment';
+  const isAssessmentFullscreen = isAssessmentMode && agentFullscreen;
   const { currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
 
   const searchParams = useSearchParams();
@@ -179,6 +181,7 @@ export const EdxIframe = () => {
           className={cn(
             'w-full',
             isAssessmentMode ? 'p-0' : 'p-6',
+            isAssessmentFullscreen && 'h-full',
             `active-tab-${activeTab} course-edx-iframe-container`,
           )}
         >
@@ -196,14 +199,18 @@ export const EdxIframe = () => {
               sandbox="allow-modals allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
               frameBorder={0}
               className={
-                isAssessmentMode
-                  ? 'h-[calc(100vh-258px)] w-full md:h-[calc(100vh-260px)] lg:h-[calc(100vh-250px)]'
-                  : undefined
+                isAssessmentFullscreen
+                  ? 'h-full w-full'
+                  : isAssessmentMode
+                    ? 'h-[calc(100vh-258px)] w-full md:h-[calc(100vh-260px)] lg:h-[calc(100vh-250px)]'
+                    : undefined
               }
               style={
-                isAssessmentMode
-                  ? { width: '100%' }
-                  : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
+                isAssessmentFullscreen
+                  ? { width: '100%', height: '100%' }
+                  : isAssessmentMode
+                    ? { width: '100%' }
+                    : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
               }
               allowFullScreen={true}
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"
