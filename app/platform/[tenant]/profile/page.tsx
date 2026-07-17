@@ -1,8 +1,7 @@
 'use client';
 
-import { ProfileTimeChart } from '@/components/profile-time-chart';
+import dynamic from 'next/dynamic';
 import { ProfileInfoCards } from '@/components/profile-info-cards';
-import { SkillLeaderboardChart } from '@/components/skill-leaderboard-chart';
 import { useProfileActivityStats } from '@/hooks/profile/use-profile-activity-stats';
 import { ActivityStats } from '@/types/catalog';
 import { SkeletonActivityStatBox } from '@/components/skeleton-activity-stat-box';
@@ -15,6 +14,18 @@ import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
 /** Stats hidden from the Activity Overview tiles (Points still feeds the
  * Skill Leaderboard below). */
 const HIDDEN_STAT_LABELS = new Set(['Points', 'Assessments', 'Videos']);
+
+const chartFallback = <div className="h-64 w-full animate-pulse rounded-lg bg-gray-100" />;
+
+const ProfileTimeChart = dynamic(
+  () => import('@/components/profile-time-chart').then((m) => m.ProfileTimeChart),
+  { ssr: false, loading: () => chartFallback },
+);
+
+const SkillLeaderboardChart = dynamic(
+  () => import('@/components/skill-leaderboard-chart').then((m) => m.SkillLeaderboardChart),
+  { ssr: false, loading: () => chartFallback },
+);
 
 export default function ProfilePage() {
   const tenant = useTenantParam();

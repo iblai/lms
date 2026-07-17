@@ -46,6 +46,7 @@ import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
+import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 import { getUserEmail, getUserName } from '@/utils/helpers';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
@@ -252,9 +253,12 @@ export function AppSidebar() {
     };
   }, [tenant]);
 
+  // Analytics is visible to users with the RBAC permission OR watchers
+  // (same rule main applied to the old navbar's AI Analytics link).
   const analyticsAllowed =
     config.settings.aiAnalyticsHeaderMenuEnabled() &&
-    checkRbacPermission(rbacPermissions, `/platforms/${tenant}/#can_view_analytics`);
+    (checkRbacPermission(rbacPermissions, `/platforms/${tenant}/#can_view_analytics`) ||
+      checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE));
 
   // Catalog context — Courses / Programs / Pathways / Discover all live on
   // the centralized catalog page and are told apart by query params.

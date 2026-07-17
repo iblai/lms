@@ -1,10 +1,11 @@
-import { Footer } from '@/components/footer';
-import { NavBar } from '@/components/nav-bar';
+import { Footer as FooterBase } from '@/components/footer';
+import { NavBar as NavBarBase } from '@/components/nav-bar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { isNonAuthPathname } from '@/constants/global';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
-import { ChatButton, useChatState } from '@/components/chat-button';
+import dynamic from 'next/dynamic';
+import { memo, useEffect } from 'react';
+import { useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
 import { SidebarInset, SidebarProvider } from '@iblai/iblai-js/web-containers/next';
@@ -13,8 +14,25 @@ import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 // @ts-ignore
 import { useGetUserMetadataQuery } from '@iblai/iblai-js/data-layer';
-import { MonetizationWrapper } from './monetization-wrapper';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
+
+// Defer the AI mentor widget (pulls @iblai/agent-ai + livekit) so it only loads
+// when the mentor sidebar is actually shown, keeping it out of the shared layout chunk.
+const ChatButton = dynamic(() => import('@/components/chat-button').then((m) => m.ChatButton), {
+  ssr: false,
+  loading: () => null,
+});
+
+// Paywall UI only renders for monetizing tenants; keep its bundle out of the shared chunk.
+const MonetizationWrapper = dynamic(
+  () => import('./monetization-wrapper').then((m) => m.MonetizationWrapper),
+  { ssr: false, loading: () => null },
+);
+
+// The chrome doesn't depend on the page children, so memoize it to skip re-renders
+// triggered by AppLayout updates (metadata loads, sidebar toggles) on every navigation.
+const NavBar = memo(NavBarBase);
+const Footer = memo(FooterBase);
 
 function DefaultPageLayout({ children }: { children: any }) {
   return (

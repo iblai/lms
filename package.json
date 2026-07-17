@@ -1,6 +1,6 @@
 {
   "name": "ibl-web-nextjs-skills-spa",
-  "version": "0.41.0",
+  "version": "0.48.5",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
@@ -19,7 +19,8 @@
     "test:e2e": "playwright test --config e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --config e2e/playwright.config.ts --ui",
     "test:e2e:headed": "playwright test --config e2e/playwright.config.ts --headed",
-    "prepare": "husky"
+    "prepare": "husky",
+    "tauri:bump": "node scripts/tauri-bump.mjs"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "1.4.0",

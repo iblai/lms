@@ -23,6 +23,7 @@ const {
 // Mutable state for per-test config control
 let mockEnableGravatarOnProfilePic = 'true';
 let mockDefaultSupportPhoneNumber = '(571) 293-0242';
+let mockEnableSupportPhone = false;
 let mockTenantMetadata: { support_phone_number?: string } | undefined = undefined;
 
 // Mock helpers
@@ -37,16 +38,18 @@ vi.mock('@/utils/helpers', () => ({
 
 // Mock local storage hooks - default to admin
 let mockIsAdmin = true;
+const defaultUserTenants = [
+  { key: 'test-tenant', is_admin: true, org: 'test-org' },
+  { key: 'other-tenant', is_admin: false, org: 'other-org' },
+];
+let mockUserTenants: { key: string; is_admin: boolean; org: string }[] = defaultUserTenants;
 vi.mock('@/utils/localstorage', () => ({
   useCurrentTenant: () => ({
     currentTenant: { key: 'test-tenant', is_admin: true, org: 'test-org' },
     saveCurrentTenant: mockSaveCurrentTenant,
   }),
   useUserTenants: () => ({
-    userTenants: [
-      { key: 'test-tenant', is_admin: true, org: 'test-org' },
-      { key: 'other-tenant', is_admin: false, org: 'other-org' },
-    ],
+    userTenants: mockUserTenants,
     saveUserTenants: mockSaveUserTenants,
   }),
   useIsAdmin: () => mockIsAdmin,
@@ -62,6 +65,7 @@ vi.mock('@/lib/config', () => ({
       enableGravatarOnProfilePic: () => mockEnableGravatarOnProfilePic,
       mainPlatformKey: () => 'main',
       defaultSupportPhoneNumber: () => mockDefaultSupportPhoneNumber,
+      enableSupportPhone: () => mockEnableSupportPhone,
     },
     urls: {
       auth: () => 'https://auth.example.com',
@@ -107,11 +111,13 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="show-account-tab">{String(props.showAccountTab)}</span>
       <span data-testid="show-help-link">{String(props.showHelpLink)}</span>
       <span data-testid="show-learner-mode-switch">{String(props.showLearnerModeSwitch)}</span>
+      <span data-testid="show-gradebook-tab">{String(props.showGradebookTab)}</span>
       <span data-testid="current-spa">{props.currentSPA}</span>
       <span data-testid="enable-gravatar-on-profile-pic">
         {String(props.enableGravatarOnProfilePic)}
       </span>
       <span data-testid="default-support-phone">{String(props.defaultSupportPhone)}</span>
+      <span data-testid="enable-support-phone">{String(props.enableSupportPhone)}</span>
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
@@ -149,7 +155,9 @@ describe('UserProfileButton', () => {
     mockIsAdmin = true; // Reset to admin by default
     mockEnableGravatarOnProfilePic = 'true'; // Reset to gravatar enabled by default
     mockDefaultSupportPhoneNumber = '(571) 293-0242'; // Reset to config default
+    mockEnableSupportPhone = false; // Reset to support phone disabled by default
     mockTenantMetadata = undefined; // Reset to no tenant metadata
+    mockUserTenants = defaultUserTenants; // Reset to default tenant list
   });
 
   describe('rendering', () => {
@@ -200,6 +208,19 @@ describe('UserProfileButton', () => {
 
       expect(screen.getByTestId('user-is-student')).toHaveTextContent('false');
     });
+
+    it('should show the gradebook tab', () => {
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-gradebook-tab')).toHaveTextContent('true');
+    });
+
+    it('should show the gradebook tab regardless of admin status', () => {
+      mockIsAdmin = false;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-gradebook-tab')).toHaveTextContent('true');
+    });
   });
 
   describe('tenant switcher visibility', () => {
@@ -210,11 +231,26 @@ describe('UserProfileButton', () => {
       expect(screen.getByTestId('show-tenant-switcher')).toHaveTextContent('true');
     });
 
-    it('should not show tenant switcher for non-admin users', () => {
+    it('should not show tenant switcher for non-admin users with no other tenants', () => {
       mockIsAdmin = false;
+      // User is only enrolled on the current tenant (plus main), so there are no
+      // other non-main tenants to switch to.
+      mockUserTenants = [
+        { key: 'test-tenant', is_admin: false, org: 'test-org' },
+        { key: 'main', is_admin: false, org: 'main-org' },
+      ];
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('show-tenant-switcher')).toHaveTextContent('false');
+    });
+
+    it('should show tenant switcher for non-admin users enrolled on other tenants', () => {
+      mockIsAdmin = false;
+      // Default tenant list includes 'other-tenant', a non-main tenant other than
+      // the current one, so the switcher should be shown even for non-admins.
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-tenant-switcher')).toHaveTextContent('true');
     });
   });
 
@@ -346,6 +382,22 @@ describe('UserProfileButton', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(111) 222-3333');
+    });
+  });
+
+  describe('enableSupportPhone', () => {
+    it('passes true to dropdown when config enables the support phone', () => {
+      mockEnableSupportPhone = true;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-support-phone')).toHaveTextContent('true');
+    });
+
+    it('passes false to dropdown when config disables the support phone', () => {
+      mockEnableSupportPhone = false;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('enable-support-phone')).toHaveTextContent('false');
     });
   });
 });

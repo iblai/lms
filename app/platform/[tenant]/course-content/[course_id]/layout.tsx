@@ -1,9 +1,16 @@
 'use client';
 
 import type React from 'react';
-import { use, useEffect, useRef, useState } from 'react';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChevronRight, CirclePause, CirclePlay, ListTree, MoreVertical } from 'lucide-react';
+import {
+  ChevronRight,
+  CirclePause,
+  CirclePlay,
+  ListTree,
+  Maximize,
+  MoreVertical,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -41,6 +48,8 @@ import {
 } from '@/utils/course-content-mode';
 import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
+import { useMediaQuery } from 'react-responsive';
+import { cn } from '@/lib/utils';
 
 export default function CourseContentLayout({
   children,
@@ -57,10 +66,15 @@ export default function CourseContentLayout({
   } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
+  const isMobile = useMediaQuery({ maxWidth: 768 });
   const isAdmin = departmentMemberCheck?.is_platform_admin === true;
   const isAdminResolved = departmentMemberCheckSuccess || departmentMemberCheckError;
   const rbacPermissions = useSelector(selectRbacPermissions);
   const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
+  const canViewAnalytics = checkRbacPermission(
+    rbacPermissions,
+    `/platforms/${tenant}/#can_view_analytics`,
+  );
   const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
@@ -137,6 +151,7 @@ export default function CourseContentLayout({
   const [currentUnitID, setCurrentUnitID] = useState<string | null>(null);
   const [refresher, setRefresher] = useState<Date | null>(null);
   const [agentMode, setAgentMode] = useState<AgentMode>('learning');
+  const [agentFullscreen, setAgentFullscreen] = useState(false);
   const [agentAutoplayOn, setAgentAutoplayOn] = useState(false);
   const setAgentAutoplay = (enabled: boolean) => {
     setAgentAutoplayOn(enabled);
@@ -156,12 +171,19 @@ export default function CourseContentLayout({
     (block) => block.type === 'ibl_mentor_xblock',
   );
   const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
+  const fullscreenToggleVisible = currentTab === 'agent';
 
   useEffect(() => {
     if (!assessmentToggleVisible && agentMode !== 'learning') {
       setAgentMode('learning');
     }
   }, [assessmentToggleVisible]);
+  // Leaving the agent tab should always drop out of fullscreen.
+  useEffect(() => {
+    if (!fullscreenToggleVisible && agentFullscreen) {
+      setAgentFullscreen(false);
+    }
+  }, [fullscreenToggleVisible]);
   useEffect(() => {
     if (!_.isEmpty(courseOutline)) {
       const currentCourse = getUnitToIframe(courseOutline);
@@ -238,6 +260,38 @@ export default function CourseContentLayout({
     (isCourseContentModeOn(course) &&
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
+  const edxIframeValue = useMemo(
+    () => ({
+      iframeUrl,
+      setIframeUrl,
+      courseOutline,
+      setActiveTab,
+      activeTab,
+      courseID: courseId,
+      currentlyInExamSubsection,
+      setCurrentlyInExamSubsection,
+      examInfo,
+      setExamInfo,
+      refresher,
+      setRefresher,
+      agentMode,
+      setAgentMode,
+      agentFullscreen,
+      setAgentFullscreen,
+    }),
+    [
+      iframeUrl,
+      courseOutline,
+      activeTab,
+      courseId,
+      currentlyInExamSubsection,
+      examInfo,
+      refresher,
+      agentMode,
+      agentFullscreen,
+    ],
+  );
+
   return (
     <CourseAccessGuard
       course={course}
@@ -266,25 +320,7 @@ export default function CourseContentLayout({
         }}
       >
         <CourseOutlineDrawer />
-        <EdxIframeContext.Provider
-          value={{
-            iframeUrl: iframeUrl,
-            setIframeUrl: setIframeUrl,
-            courseOutline: courseOutline,
-            setActiveTab: setActiveTab,
-            activeTab: activeTab,
-            courseID: courseId,
-            currentlyInExamSubsection: currentlyInExamSubsection,
-            setCurrentlyInExamSubsection: setCurrentlyInExamSubsection,
-            examInfo: examInfo,
-            setExamInfo: setExamInfo,
-            refresher: refresher,
-            setRefresher: setRefresher,
-            agentMode: agentMode,
-            setAgentMode: setAgentMode,
-            //setCourseOutline: () => {},
-          }}
-        >
+        <EdxIframeContext.Provider value={edxIframeValue}>
           <main className="flex flex-1 overflow-hidden">
             {/* Course sidebar (collapsible on tablet / small screens) */}
             <CourseOutlineSidebar />
@@ -370,6 +406,59 @@ export default function CourseContentLayout({
                         Instructor
                       </Link>
                     )}
+                    {course?.learning_info && course.learning_info.length > 0 && (
+                      <Link
+                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/learning-info`}
+                        aria-current={activeTab === 'learning-info' ? 'page' : undefined}
+                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                          activeTab === 'learning-info'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Learning Info
+                      </Link>
+                    )}
+                    {course?.instructor_info?.instructors &&
+                      course.instructor_info.instructors.length > 0 && (
+                        <Link
+                          href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/instructors`}
+                          aria-current={activeTab === 'instructors' ? 'page' : undefined}
+                          className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                            activeTab === 'instructors'
+                              ? 'border-amber-500 text-amber-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          Instructors
+                        </Link>
+                      )}
+                    {departmentMemberCheck?.is_platform_admin && (
+                      <Link
+                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/configuration`}
+                        aria-current={activeTab === 'configuration' ? 'page' : undefined}
+                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                          activeTab === 'configuration'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Configuration
+                      </Link>
+                    )}
+                    {canViewAnalytics && (
+                      <Link
+                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/analytics`}
+                        aria-current={activeTab === 'analytics' ? 'page' : undefined}
+                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
+                          activeTab === 'analytics'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Analytics
+                      </Link>
+                    )}
                     {departmentMemberCheck?.is_platform_admin && (
                       <a
                         href={`${config.urls.studioUrl()}/course/${courseId}`}
@@ -404,6 +493,18 @@ export default function CourseContentLayout({
                         ) : (
                           <CirclePlay className="h-5 w-5" />
                         )}
+                      </button>
+                    )}
+                    {fullscreenToggleVisible && (
+                      <button
+                        type="button"
+                        onClick={() => setAgentFullscreen(true)}
+                        aria-label="Enter fullscreen"
+                        title="Fullscreen"
+                        data-testid="agent-fullscreen-toggle"
+                        className="rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      >
+                        <Maximize className="h-5 w-5" />
                       </button>
                     )}
                     {assessmentToggleVisible && (
@@ -579,7 +680,9 @@ export default function CourseContentLayout({
               {/* Content area */}
               <div
                 /* className="flex-1 overflow-y-auto bg-amber-50 pb-[60px]" */
-                className="flex-1"
+                // Mobile scrolls this container itself; on desktop the
+                // inner content manages its own scroll (no overflow here).
+                className={cn('flex-1', isMobile && 'overflow-y-auto')}
                 style={{ scrollbarWidth: 'none' }}
               >
                 {children}

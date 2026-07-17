@@ -66,11 +66,14 @@ export const UserProfileButton = () => {
       // Configuration
       showProfileTab={true}
       showAccountTab={false} // Skills app doesn't have account tab
-      showTenantSwitcher={isAdmin}
+      showTenantSwitcher={
+        isAdmin || userTenants.some((t) => t.key !== 'main' && t.key !== tenantKey)
+      }
       showHelpLink={false} // Skills app doesn't have help link in dropdown
       showLogoutButton={true}
       showLearnerModeSwitch={false} // Skills app doesn't have learner mode switch
       currentSPA={config.settings.appName() || 'skills'}
+      showGradebookTab={true}
       // Customization
       helpCenterUrl=""
       enableGravatarOnProfilePic={config.settings.enableGravatarOnProfilePic() !== 'false'}
@@ -102,6 +105,7 @@ export const UserProfileButton = () => {
       defaultSupportPhone={
         metadata?.support_phone_number || config.settings.defaultSupportPhoneNumber()
       }
+      enableSupportPhone={config.settings.enableSupportPhone()}
     />
   );
 };

@@ -1,11 +1,21 @@
 'use client';
 
-import OnboardingFlow from '@/components/onboarding';
+import dynamic from 'next/dynamic';
 import { Spinner } from '@/components/spinner';
 import { config } from '@/lib/config';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { redirect } from 'next/navigation';
+
+// Onboarding pulls framer-motion across its slides; defer it past the metadata guard.
+const OnboardingFlow = dynamic(() => import('@/components/onboarding'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-screen items-center justify-center">
+      <Spinner className="h-14 w-14 text-[var(--primary)]" />
+    </div>
+  ),
+});
 
 export default function StartOnboarding() {
   const tenant = useTenantParam();

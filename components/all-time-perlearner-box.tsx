@@ -1,18 +1,22 @@
-import { Award, Clock, FileText, Play } from 'lucide-react';
+'use client';
+import { Award, BookOpen, Clock, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 interface AllTimePerLearnerBoxProps {
-  total_assessments: number;
   total_time_spent: number;
-  total_videos: number;
-  course_completions: number;
+  courses: number;
+  credentials: number;
+  skills: number;
 }
 
 export const AllTimePerLearnerBox = ({
-  total_assessments,
   total_time_spent,
-  total_videos,
-  course_completions,
+  courses,
+  credentials,
+  skills,
 }: AllTimePerLearnerBoxProps) => {
+  const tenant = useTenantParam();
   const hours =
     typeof total_time_spent === 'number' && !isNaN(total_time_spent)
       ? Math.round(total_time_spent / 3600)
@@ -20,7 +24,9 @@ export const AllTimePerLearnerBox = ({
 
   return (
     <div className="mb-4 rounded-md border border-[var(--sidebar-border)] p-4">
-      <h3 className="mb-3 text-sm font-medium text-[var(--sidebar-text)] md:text-base">All Time</h3>
+      <h3 className="mb-3 text-sm font-medium text-[var(--sidebar-text)] md:text-base">
+        Highlights
+      </h3>
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -34,29 +40,47 @@ export const AllTimePerLearnerBox = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="flex h-5 w-5 items-center justify-center rounded-sm bg-[var(--sidebar-icon-bg)]">
-              <Play className="h-3 w-3 text-[var(--sidebar-icon-color)]" />
+              <BookOpen className="h-3 w-3 text-[var(--sidebar-icon-color)]" />
             </div>
-            <span className="text-xs text-[var(--sidebar-text)]">Watched Video</span>
+            <span className="text-xs text-[var(--sidebar-text)]">Courses</span>
           </div>
-          <span className="text-xs font-medium text-[var(--text-dark)]">{total_videos}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-5 w-5 items-center justify-center rounded-sm bg-[var(--sidebar-icon-bg)]">
-              <FileText className="h-3 w-3 text-[var(--sidebar-icon-color)]" />
-            </div>
-            <span className="text-xs text-[var(--sidebar-text)]">Assessments</span>
-          </div>
-          <span className="text-xs font-medium text-[var(--text-dark)]">{total_assessments}</span>
+          <Link
+            href={`/platform/${tenant}/profile/courses`}
+            aria-label="View courses"
+            className="text-xs font-medium text-[var(--text-dark)] hover:underline"
+          >
+            {courses}
+          </Link>
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="flex h-5 w-5 items-center justify-center rounded-sm bg-[var(--sidebar-icon-bg)]">
               <Award className="h-3 w-3 text-[var(--sidebar-icon-color)]" />
             </div>
-            <span className="text-xs text-[var(--sidebar-text)]">Courses Completions</span>
+            <span className="text-xs text-[var(--sidebar-text)]">Credentials</span>
           </div>
-          <span className="text-xs font-medium text-[var(--text-dark)]">{course_completions}</span>
+          <Link
+            href={`/platform/${tenant}/profile/credentials`}
+            aria-label="View credentials"
+            className="text-xs font-medium text-[var(--text-dark)] hover:underline"
+          >
+            {credentials}
+          </Link>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-5 w-5 items-center justify-center rounded-sm bg-[var(--sidebar-icon-bg)]">
+              <Sparkles className="h-3 w-3 text-[var(--sidebar-icon-color)]" />
+            </div>
+            <span className="text-xs text-[var(--sidebar-text)]">Skills</span>
+          </div>
+          <Link
+            href={`/platform/${tenant}/profile/skills`}
+            aria-label="View skills"
+            className="text-xs font-medium text-[var(--text-dark)] hover:underline"
+          >
+            {skills}
+          </Link>
         </div>
       </div>
     </div>

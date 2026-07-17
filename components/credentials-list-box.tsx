@@ -2,7 +2,6 @@
 import { Plus } from 'lucide-react';
 import { Assertion } from '@iblai/iblai-api';
 import { CredentialMiniBox } from './credential-mini-box';
-import { DefaultEmptyBox } from './default-empty-box';
 import Link from 'next/link';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 type CredentialsListBoxProps = {
@@ -27,9 +26,6 @@ export function CredentialsListBox({ credentials }: CredentialsListBoxProps) {
           </span>
         </Link>
       </div>
-      {credentials.length === 0 && (
-        <DefaultEmptyBox className="w-full" message="No credentials yet." />
-      )}
       <div className="space-y-2">
         {credentials.map((credential, index) => (
           <CredentialMiniBox

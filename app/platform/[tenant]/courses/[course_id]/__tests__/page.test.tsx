@@ -29,7 +29,6 @@ vi.mock('@/lib/config', () => ({
   config: {
     urls: {
       lms: vi.fn(() => 'https://lms.example.com'),
-      studioUrl: vi.fn(() => 'https://studio.example.com'),
     },
   },
 }));
@@ -52,13 +51,6 @@ vi.mock('@/components/chat-button', () => ({
   useChatState: vi.fn(() => ({
     setCourseMentor: vi.fn(),
     setMentorSidebarHidden: vi.fn(),
-  })),
-}));
-
-// Mock useGetDepartmentMemberCheckQuery
-vi.mock('@/services/core', () => ({
-  useGetDepartmentMemberCheckQuery: vi.fn(() => ({
-    data: { is_platform_admin: false },
   })),
 }));
 
@@ -104,21 +96,8 @@ vi.mock('../_components/syllabus-tab', () => ({
   SyllabusTab: () => <div data-testid="syllabus-tab">Syllabus Tab</div>,
 }));
 
-vi.mock('../_components/learning-info-tab', () => ({
-  LearningInfoTab: () => <div data-testid="learning-info-tab">Learning Info Tab</div>,
-}));
-
-vi.mock('../_components/instructor-tab', () => ({
-  InstructorTab: () => <div data-testid="instructor-tab">Instructor Tab</div>,
-}));
-
-vi.mock('../_components/configuration-tab', () => ({
-  ConfigurationTab: () => <div data-testid="configuration-tab">Configuration Tab</div>,
-}));
-
 import CourseDetailsPage from '../page';
 import { useCourseDetailContext } from '@/hooks/courses/course-detail-context';
-import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useChatState } from '@/components/chat-button';
 
 describe('CourseDetailsPage', () => {
@@ -257,216 +236,6 @@ describe('CourseDetailsPage', () => {
     fireEvent.click(screen.getByText('Syllabus'));
 
     expect(screen.getByTestId('syllabus-tab')).toBeInTheDocument();
-  });
-
-  it('shows learning info tab when course has learning_info', () => {
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-      learning_info: [{ title: 'Info 1' }],
-    };
-
-    vi.mocked(useCourseDetailContext).mockReturnValue({
-      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      course: mockCourse,
-      courseOutline: null,
-      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-      courseOutlineLoading: false,
-      courseEligibilityLoading: false,
-      courseButtonActionLoading: false,
-      courseInfoLoadingState: 'successful',
-    } as any);
-
-    render(<CourseDetailsPage />);
-
-    expect(screen.getByText('Learning Info')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('Learning Info'));
-    expect(screen.getByTestId('learning-info-tab')).toBeInTheDocument();
-  });
-
-  it('shows instructor tab when course has instructors', () => {
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-      instructor_info: { instructors: [{ name: 'John Doe' }] },
-    };
-
-    vi.mocked(useCourseDetailContext).mockReturnValue({
-      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      course: mockCourse,
-      courseOutline: null,
-      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-      courseOutlineLoading: false,
-      courseEligibilityLoading: false,
-      courseButtonActionLoading: false,
-      courseInfoLoadingState: 'successful',
-    } as any);
-
-    render(<CourseDetailsPage />);
-
-    expect(screen.getByText('Instructors')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('Instructors'));
-    expect(screen.getByTestId('instructor-tab')).toBeInTheDocument();
-  });
-
-  it('shows configuration tab for platform admin', () => {
-    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-      data: { is_platform_admin: true },
-    } as any);
-
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-    };
-
-    vi.mocked(useCourseDetailContext).mockReturnValue({
-      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      course: mockCourse,
-      courseOutline: null,
-      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-      courseOutlineLoading: false,
-      courseEligibilityLoading: false,
-      courseButtonActionLoading: false,
-      courseInfoLoadingState: 'successful',
-    } as any);
-
-    render(<CourseDetailsPage />);
-
-    expect(screen.getByText('Configuration')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText('Configuration'));
-    expect(screen.getByTestId('configuration-tab')).toBeInTheDocument();
-  });
-
-  it('hides configuration tab for non-admin users', () => {
-    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-      data: { is_platform_admin: false },
-    } as any);
-
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-    };
-
-    vi.mocked(useCourseDetailContext).mockReturnValue({
-      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      course: mockCourse,
-      courseOutline: null,
-      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-      courseOutlineLoading: false,
-      courseEligibilityLoading: false,
-      courseButtonActionLoading: false,
-      courseInfoLoadingState: 'successful',
-    } as any);
-
-    render(<CourseDetailsPage />);
-
-    expect(screen.queryByText('Configuration')).not.toBeInTheDocument();
-  });
-
-  describe('Authoring tab (platform admin only)', () => {
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-    };
-
-    const mockCourseDetail = () =>
-      vi.mocked(useCourseDetailContext).mockReturnValue({
-        handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-        handleFetchCourseInfo: mockHandleFetchCourseInfo,
-        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-        handleOpenLesson: mockHandleOpenLesson,
-        course: mockCourse,
-        courseOutline: null,
-        courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-        courseOutlineLoading: false,
-        courseEligibilityLoading: false,
-        courseButtonActionLoading: false,
-        courseInfoLoadingState: 'successful',
-      } as any);
-
-    it('renders Authoring tab for platform admin', () => {
-      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-        data: { is_platform_admin: true },
-      } as any);
-      mockCourseDetail();
-
-      render(<CourseDetailsPage />);
-
-      expect(screen.getByText('Authoring')).toBeInTheDocument();
-    });
-
-    it('hides Authoring tab for non-admin users', () => {
-      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-        data: { is_platform_admin: false },
-      } as any);
-      mockCourseDetail();
-
-      render(<CourseDetailsPage />);
-
-      expect(screen.queryByText('Authoring')).not.toBeInTheDocument();
-    });
-
-    it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
-      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-        data: { is_platform_admin: true },
-      } as any);
-      mockCourseDetail();
-
-      render(<CourseDetailsPage />);
-
-      const link = screen.getByText('Authoring').closest('a');
-      // The mocked useParams returns the URL-encoded id; the page decodes it.
-      expect(link?.getAttribute('href')).toBe(
-        'https://studio.example.com/course/course-v1:test+course+2024',
-      );
-      expect(link?.getAttribute('target')).toBe('_blank');
-      expect(link?.getAttribute('rel')).toContain('noopener');
-    });
-
-    it('Authoring tab is rendered after Configuration tab', () => {
-      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
-        data: { is_platform_admin: true },
-      } as any);
-      mockCourseDetail();
-
-      const { container } = render(<CourseDetailsPage />);
-      const tabRow = container.querySelector('div.flex.space-x-8');
-      const labels = Array.from(tabRow?.children ?? []).map((el) => el.textContent?.trim());
-      const configIdx = labels.indexOf('Configuration');
-      const authoringIdx = labels.indexOf('Authoring');
-      expect(configIdx).toBeGreaterThanOrEqual(0);
-      expect(authoringIdx).toBe(configIdx + 1);
-    });
   });
 
   it('shows skeleton button when loading eligibility', () => {
@@ -752,64 +521,6 @@ describe('CourseDetailsPage', () => {
 
     expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
     expect(document.querySelector('.animate-spin')).not.toBeInTheDocument();
-  });
-
-  it('does not show learning info tab when course has no learning_info', () => {
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-      learning_info: [],
-    };
-
-    vi.mocked(useCourseDetailContext).mockReturnValue({
-      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      course: mockCourse,
-      courseOutline: null,
-      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-      courseOutlineLoading: false,
-      courseEligibilityLoading: false,
-      courseButtonActionLoading: false,
-      courseInfoLoadingState: 'successful',
-    } as any);
-
-    render(<CourseDetailsPage />);
-
-    expect(screen.queryByText('Learning Info')).not.toBeInTheDocument();
-  });
-
-  it('does not show instructor tab when course has no instructors', () => {
-    const mockCourse = {
-      display_name: 'Test Course',
-      course_image_asset_path: '/course-image.jpg',
-      course_price: '$99',
-      language: 'English',
-      start_date: '2024-01-01',
-      instructor_info: { instructors: [] },
-    };
-
-    vi.mocked(useCourseDetailContext).mockReturnValue({
-      handleFetchCourseEligibilityInfo: mockHandleFetchCourseEligibilityInfo,
-      handleFetchCourseInfo: mockHandleFetchCourseInfo,
-      handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-      handleOpenLesson: mockHandleOpenLesson,
-      course: mockCourse,
-      courseOutline: null,
-      courseEligibility: { btn_label: 'Enroll', btn_action: vi.fn(), disabled: false },
-      courseOutlineLoading: false,
-      courseEligibilityLoading: false,
-      courseButtonActionLoading: false,
-      courseInfoLoadingState: 'successful',
-    } as any);
-
-    render(<CourseDetailsPage />);
-
-    expect(screen.queryByText('Instructors')).not.toBeInTheDocument();
   });
 
   it('hides duration when not provided', () => {

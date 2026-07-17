@@ -13,32 +13,12 @@ val tauriProperties = Properties().apply {
     }
 }
 
-val keyProperties = Properties().apply {
-    val propFile = rootProject.file("key.properties")
-    if (propFile.exists()) {
-        propFile.inputStream().use { load(it) }
-    }
-}
-
 android {
     compileSdk = 36
-    namespace = "ai.ibl.skills"
-
-    signingConfigs {
-        create("release") {
-            val ksFile = keyProperties.getProperty("storeFile")
-            if (ksFile != null) {
-                storeFile = file(ksFile)
-                storePassword = keyProperties.getProperty("storePassword")
-                keyAlias = keyProperties.getProperty("keyAlias")
-                keyPassword = keyProperties.getProperty("keyPassword")
-            }
-        }
-    }
-
+    namespace = "ai.ibl.skillsai"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
-        applicationId = "ai.ibl.skills"
+        applicationId = "ai.ibl.skillsai"
         minSdk = 24
         targetSdk = 36
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
@@ -57,7 +37,6 @@ android {
             }
         }
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             proguardFiles(
                 *fileTree(".") { include("**/*.pro") }
@@ -71,11 +50,6 @@ android {
     }
     buildFeatures {
         buildConfig = true
-    }
-    packaging {
-        jniLibs {
-            useLegacyPackaging = false
-        }
     }
 }
 

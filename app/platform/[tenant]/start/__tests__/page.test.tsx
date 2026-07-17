@@ -62,10 +62,11 @@ describe('StartOnboarding page', () => {
     } as any);
   });
 
-  it('renders the onboarding flow when enabled and loaded', () => {
+  it('renders the onboarding flow when enabled and loaded', async () => {
     render(<StartOnboarding />);
 
-    expect(screen.getByTestId('onboarding-flow')).toBeInTheDocument();
+    // OnboardingFlow is lazy-loaded via next/dynamic (framer-motion).
+    expect(await screen.findByTestId('onboarding-flow')).toBeInTheDocument();
     expect(mockRedirect).not.toHaveBeenCalled();
   });
 

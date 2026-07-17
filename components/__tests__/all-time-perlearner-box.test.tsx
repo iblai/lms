@@ -1,14 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ tenant: 'test-tenant' }),
+}));
+
+vi.mock('@/utils/helpers', () => ({
+  getTenant: vi.fn(() => 'test-tenant'),
+}));
+
 import { AllTimePerLearnerBox } from '../all-time-perlearner-box';
 
 describe('AllTimePerLearnerBox', () => {
   const defaultProps = {
-    total_assessments: 10,
     total_time_spent: 7200,
-    total_videos: 5,
-    course_completions: 3,
+    courses: 4,
+    credentials: 2,
+    skills: 6,
   };
 
   it('renders without crashing', () => {
@@ -16,9 +25,9 @@ describe('AllTimePerLearnerBox', () => {
     expect(container.firstChild).toBeInTheDocument();
   });
 
-  it('renders "All Time" heading', () => {
+  it('renders "Highlights" heading', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('All Time')).toBeInTheDocument();
+    expect(screen.getByText('Highlights')).toBeInTheDocument();
   });
 
   it('renders Time Spent label', () => {
@@ -26,19 +35,19 @@ describe('AllTimePerLearnerBox', () => {
     expect(screen.getByText('Time Spent')).toBeInTheDocument();
   });
 
-  it('renders Watched Video label', () => {
+  it('renders Courses label', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('Watched Video')).toBeInTheDocument();
+    expect(screen.getByText('Courses')).toBeInTheDocument();
   });
 
-  it('renders Assessments label', () => {
+  it('renders Credentials label', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('Assessments')).toBeInTheDocument();
+    expect(screen.getByText('Credentials')).toBeInTheDocument();
   });
 
-  it('renders Courses Completions label', () => {
+  it('renders Skills label', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('Courses Completions')).toBeInTheDocument();
+    expect(screen.getByText('Skills')).toBeInTheDocument();
   });
 
   it('converts time spent to hours correctly', () => {
@@ -47,19 +56,25 @@ describe('AllTimePerLearnerBox', () => {
     expect(screen.getByText('2 hours')).toBeInTheDocument();
   });
 
-  it('displays total videos count', () => {
+  it('displays courses count as a link to the profile courses page', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('5')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'View courses' });
+    expect(link).toHaveTextContent('4');
+    expect(link).toHaveAttribute('href', '/platform/test-tenant/profile/courses');
   });
 
-  it('displays total assessments count', () => {
+  it('displays credentials count as a link to the profile credentials page', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('10')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'View credentials' });
+    expect(link).toHaveTextContent('2');
+    expect(link).toHaveAttribute('href', '/platform/test-tenant/profile/credentials');
   });
 
-  it('displays course completions count', () => {
+  it('displays skills count as a link to the profile skills page', () => {
     render(<AllTimePerLearnerBox {...defaultProps} />);
-    expect(screen.getByText('3')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'View skills' });
+    expect(link).toHaveTextContent('6');
+    expect(link).toHaveAttribute('href', '/platform/test-tenant/profile/skills');
   });
 
   it('handles zero time spent', () => {
@@ -84,14 +99,7 @@ describe('AllTimePerLearnerBox', () => {
   });
 
   it('handles zero values for all props', () => {
-    render(
-      <AllTimePerLearnerBox
-        total_assessments={0}
-        total_time_spent={0}
-        total_videos={0}
-        course_completions={0}
-      />,
-    );
+    render(<AllTimePerLearnerBox total_time_spent={0} courses={0} credentials={0} skills={0} />);
     expect(screen.getByText('0 hours')).toBeInTheDocument();
     // All zeros displayed
     const zeros = screen.getAllByText('0');

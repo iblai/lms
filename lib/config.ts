@@ -34,6 +34,7 @@ const env = {
   NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU: process.env.NEXT_PUBLIC_ENABLE_STUDIO_HEADER_MENU,
   NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT: process.env.NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT,
   NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER: process.env.NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER,
+  NEXT_PUBLIC_ENABLE_SUPPORT_PHONE: process.env.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE,
 };
 
 const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
@@ -44,12 +45,24 @@ export const getEnv = (key: keyof typeof env, fallback = ''): string => {
 
 const apiBaseUrl = () => getEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.iblai.app');
 
+const platformBaseDomain = () => getEnv('NEXT_PUBLIC_PLATFORM_BASE_DOMAIN', '.iblai.app');
+
 export const config = {
   environment: () => getEnv('NODE_ENV', 'development'),
   urls: {
     apiBase: apiBaseUrl,
-    dm: () => `${apiBaseUrl()}/dm`,
-    axd: () => `${apiBaseUrl()}/axd`,
+    dm: () => {
+      if (apiBaseUrl) {
+        return `${apiBaseUrl()}/dm`;
+      }
+      return `https://base.manager.${platformBaseDomain()}`;
+    },
+    axd: () => {
+      if (apiBaseUrl) {
+        return `${apiBaseUrl()}/axd`;
+      }
+      return `https://base.manager.${platformBaseDomain()}`;
+    },
     lms: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://lms.iblai.app'),
     legacyLmsUrl: () => getEnv('NEXT_PUBLIC_LMS_URL', 'https://lms.iblai.app'),
     studio: () => `${apiBaseUrl()}/studio`,
@@ -88,5 +101,6 @@ export const config = {
     staticCopyrightEnabled: () => getEnv('NEXT_PUBLIC_ENABLE_STATIC_COPYRIGHT', 'false') === 'true',
     defaultSupportPhoneNumber: () =>
       getEnv('NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER', '(571) 293-0242') || '(571) 293-0242',
+    enableSupportPhone: () => getEnv('NEXT_PUBLIC_ENABLE_SUPPORT_PHONE', 'false') === 'true',
   },
 };

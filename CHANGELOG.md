@@ -1,5 +1,145 @@
 # Changelog
 
+## [0.48.5](https://github.com/iblai/lms/compare/skills-v0.48.4...skills-v0.48.5) (2026-07-13)
+
+### Documentation
+
+* **readme:** add "Available On" platforms section ([08df6bc](https://github.com/iblai/lms/commit/08df6bcb646d440d455b86a9d96bfd4e6ad3cddd)), closes [#download](https://github.com/iblai/lms/issues/download)
+
+## [0.48.4](https://github.com/iblai/lms/compare/skills-v0.48.3...skills-v0.48.4) (2026-07-13)
+
+### Bug Fixes
+
+* **tauri:** clear unused NO import and redundant unsafe block ([67c0116](https://github.com/iblai/lms/commit/67c01165ed4c48b665026ebf0dc4c366862ea3af))
+* **tauri:** restore missing handle_auth_session_callback_sso ([e87480c](https://github.com/iblai/lms/commit/e87480c3a841b59ad2dd5df8fa57edd126681af9))
+
+### Chores
+
+* **tauri:** release app-v1.0.15 ([0d037f9](https://github.com/iblai/lms/commit/0d037f97aae633cbfb59ff76782cd35abfa19dc5))
+
+## [0.48.3](https://github.com/iblai/lms/compare/skills-v0.48.2...skills-v0.48.3) (2026-07-13)
+
+### CI
+
+* harden tauri auto-version against release race + re-run double-bump ([09b57b3](https://github.com/iblai/lms/commit/09b57b3a8dd4eff9485667fb0a4d75e4c256aa7f)), closes [#2](https://github.com/iblai/lms/issues/2) [#3](https://github.com/iblai/lms/issues/3)
+* independent tauri versioning with auto-bump + DMG release ([b1a0f97](https://github.com/iblai/lms/commit/b1a0f97dd983f71e788429570593d932ccf05d2a))
+
+## [0.48.2](https://github.com/iblai/lms/compare/skills-v0.48.1...skills-v0.48.2) (2026-07-09)
+
+### CI
+
+* grant contents:write to macOS DMG release caller ([8346e9b](https://github.com/iblai/lms/commit/8346e9bcf3eef7e4d92ba565593a0a024c382e33))
+
+## [0.48.1](https://github.com/iblai/lms/compare/skills-v0.48.0...skills-v0.48.1) (2026-07-09)
+
+### CI
+
+* add macOS DMG release workflow (vendored reusable) ([f416d8e](https://github.com/iblai/lms/commit/f416d8ea4570787cd1d538cbe65f5b8044f70613))
+
+## [0.48.0](https://github.com/iblai/lms/compare/skills-v0.47.0...skills-v0.48.0) (2026-07-08)
+
+### Features
+
+* tenant switcher shown when user enrolled on other tenants not main ([ff73a11](https://github.com/iblai/lms/commit/ff73a11eabb7283c9c5f6ec37aa7b91cd4f4615f))
+* tenant switcher shown when user enrolled on other tenants not main > test coverage ([cfcd87e](https://github.com/iblai/lms/commit/cfcd87e2748b561c0d85b6103003e5a9b289f7dc))
+* tenant switcher shown when user enrolled on other tenants not main > test coverage ([6a90b10](https://github.com/iblai/lms/commit/6a90b10cb6a2033b0589f972de1f316e49bcca29))
+
+## [0.47.0](https://github.com/iblai/lms/compare/skills-v0.46.0...skills-v0.47.0) (2026-07-08)
+
+### Features
+
+* update all time card content value ([813e7a8](https://github.com/iblai/lms/commit/813e7a828dcb2d3c4b1ab9af2b3dd6a60a6c852d))
+
+## [0.46.0](https://github.com/iblai/lms/compare/skills-v0.45.0...skills-v0.46.0) (2026-07-03)
+
+### Features
+
+* agent tab fullscreen mode implemented ([6cc82ac](https://github.com/iblai/lms/commit/6cc82acf7b87b5e300315dbaf1fddbd38575fab7))
+* gradebook display gated behind env flag > test coverage ([e0caec8](https://github.com/iblai/lms/commit/e0caec8ff1ebc511f17ae5794ef230cfbcbbc866))
+* gradebook display gated behind env flag > test coverage ([39ef040](https://github.com/iblai/lms/commit/39ef04049561334718af9e19ca285597d906d5e9))
+
+### Chores
+
+* **e2e:** update coverage for agent tab fullscreen feature [skip ci] ([e231b53](https://github.com/iblai/lms/commit/e231b5375d6486ebd4244d8c3a086997c0d6bbf8))
+
+## [0.45.0](https://github.com/iblai/lms/compare/skills-v0.44.0...skills-v0.45.0) (2026-07-03)
+
+### Features
+
+* gradebook display gated behind env flag ([1fc6236](https://github.com/iblai/lms/commit/1fc62362c863c8d650aec09310813a121de54ca2))
+* gradebook display gated behind env flag > iblai-js bump ([e735ff2](https://github.com/iblai/lms/commit/e735ff2f4e6f7a9051258c4fd02ba8085d8c4bed))
+* gradebook display gated behind env flag > test coverage ([1d926cb](https://github.com/iblai/lms/commit/1d926cb6788438898290382dcd40825e5d936e7c))
+
+### CI
+
+* push release image to iblai-lms-spa (replaces iblai-skills-spa-pro) ([28fca18](https://github.com/iblai/lms/commit/28fca18f940ab333e6bd1042f2e0357078167cd1))
+
+## [0.44.0](https://github.com/iblai/lms/compare/skills-v0.43.2...skills-v0.44.0) (2026-07-02)
+
+### Features
+
+* admin config tab moved from course about to course content page ([f6fd680](https://github.com/iblai/lms/commit/f6fd6808af782edd02322ecbe721930155b0c39a))
+* admin config tab to course content page + analytics tab > playwright tests updates ([9065901](https://github.com/iblai/lms/commit/906590164bc73b751134b96ca7770f39aba8efb8))
+* admin config tab to course content page + analytics tab > test coverage ([30de269](https://github.com/iblai/lms/commit/30de269785faaaa787d72c9bcd89e605317df1bd))
+* analytics tab on the course content page implemented ([c345dfe](https://github.com/iblai/lms/commit/c345dfe92187ea1c1fbb52cfe685af64561b0c5c))
+
+### Chores
+
+* pnpm lock update ([121ee96](https://github.com/iblai/lms/commit/121ee96bc3a857d9064d9d25298e360717a480ec))
+
+## [0.43.2](https://github.com/iblai/lms/compare/skills-v0.43.1...skills-v0.43.2) (2026-06-30)
+
+### Bug Fixes
+
+* spa overall optimization with lazy loading & re-rendering issues fixed ([a8b42d2](https://github.com/iblai/lms/commit/a8b42d28bd37ca8f55a88251bb37e153cf5aa3c5))
+* spa overall optimization with lazy loading & re-rendering issues fixed ([b887a09](https://github.com/iblai/lms/commit/b887a0963f77e85bd530cab5b11a16d3b9ad525f))
+* spa overall optimization with lazy loading & re-rendering issues fixed > next.config.mjs update ([f9b3673](https://github.com/iblai/lms/commit/f9b36738f75001aeca16692cab55fea92a2531a4))
+* spa overall optimization with lazy loading & re-rendering issues fixed > test coverage ([4ed8a66](https://github.com/iblai/lms/commit/4ed8a66f8cbc0837ee040e807b9edbda64c91eda))
+
+## [0.43.1](https://github.com/iblai/lms/compare/skills-v0.43.0...skills-v0.43.1) (2026-06-29)
+
+### Chores
+
+* bumped iblai-js to 1.20.13 ([4d6e0c5](https://github.com/iblai/lms/commit/4d6e0c5aeda097608c83a225bd76ea7e34a5a942))
+
+## [0.43.0](https://github.com/iblai/lms/compare/skills-v0.42.2...skills-v0.43.0) (2026-06-26)
+
+### Features
+
+* enable support phone env update ([50fe84c](https://github.com/iblai/lms/commit/50fe84c3b103d91488804d5c7f76e6d45ccf11ab))
+* enable support phone env update > test coverage ([5e8b66d](https://github.com/iblai/lms/commit/5e8b66d8ffdcba6936f32278771935e8891f5421))
+* enable support phone env update > test coverage ([47cce6b](https://github.com/iblai/lms/commit/47cce6b1de46de85c438ed622a28f8459318e6c4))
+
+### Bug Fixes
+
+* enable support phone env update > playwright test update ([c6d247b](https://github.com/iblai/lms/commit/c6d247bcffcf36b2a4883605c697c1f004bfd787))
+
+## [0.42.2](https://github.com/iblai/lms/compare/skills-v0.42.1...skills-v0.42.2) (2026-06-25)
+
+### Chores
+
+* updates to lib.rs ([aa40667](https://github.com/iblai/lms/commit/aa406673176c5d60373e55b156005e89e58789f6))
+
+## [0.42.1](https://github.com/iblai/lms/compare/skills-v0.42.0...skills-v0.42.1) (2026-06-24)
+
+### Bug Fixes
+
+* ai analytics buttons now visible to view analytics & watcher rbac permissions ([db098cc](https://github.com/iblai/lms/commit/db098cc1e549351da9c342e2b4c33c217e670d9d))
+* ai analytics buttons now visible to view analytics & watcher rbac permissions > test coverage ([f708160](https://github.com/iblai/lms/commit/f708160a16a42fed398314d560be1db97305e571))
+* analytics layout height update restructuring ([ed6c4b1](https://github.com/iblai/lms/commit/ed6c4b17d0be99aec2da6ca038354d93667638ce))
+* analytics layout height update restructuring ([5271a47](https://github.com/iblai/lms/commit/5271a47cac0e72cf75496f576ddc1072a73bd992))
+* analytics layout height update restructuring > test coverage ([15f849b](https://github.com/iblai/lms/commit/15f849bd158353b2d976d14ec9225977bcbe1f5c))
+
+### Chores
+
+* bumped iblai-js version to 1.20.10 ([ed80f53](https://github.com/iblai/lms/commit/ed80f53e26ed4e1bf2243c18cd0359d8de4aaf7d))
+
+## [0.42.0](https://github.com/iblai/lms/compare/skills-v0.41.0...skills-v0.42.0) (2026-06-24)
+
+### Features
+
+* **android:** add SSO deep-link support and align Android package id ([7fc7c7a](https://github.com/iblai/lms/commit/7fc7c7afe786cc160e72e3ad01088d8502deef4f))
+
 ## [0.41.0](https://github.com/iblai/lms/compare/skills-v0.40.1...skills-v0.41.0) (2026-06-18)
 
 ### Features

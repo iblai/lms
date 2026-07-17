@@ -14,6 +14,7 @@ import { AllTimePerLearnerBox } from './all-time-perlearner-box';
 import { useUserMetadata } from '@/hooks/users/use-usermetadata';
 import { UserProfileBox } from './user-profile-box';
 import { useProfileCredentials } from '@/hooks/profile/use-profile-credentials';
+import { useAllTimeStats } from '@/hooks/profile/use-all-time-stats';
 
 export function ProfileSidebar() {
   const { latestSkills, latestSkillsLoading } = useLatestSkills(6);
@@ -23,6 +24,7 @@ export function ProfileSidebar() {
   });
   const { userPerLearnerInfo, userPerLearnerInfoLoading } = usePerLearnerInfoQuery();
   const { userMetaDataLoading } = useUserMetadata();
+  const { courses, credentials: credentialsCount, skills } = useAllTimeStats();
 
   return (
     <aside
@@ -46,10 +48,10 @@ export function ProfileSidebar() {
         <AllTimeSkeleton />
       ) : (
         <AllTimePerLearnerBox
-          total_assessments={userPerLearnerInfo?.total_assessments ?? 0}
           total_time_spent={userPerLearnerInfo?.total_time_spent ?? 0}
-          total_videos={userPerLearnerInfo?.total_videos ?? 0}
-          course_completions={userPerLearnerInfo?.course_completions ?? 0}
+          courses={courses}
+          credentials={credentialsCount}
+          skills={skills}
         />
       )}
     </aside>

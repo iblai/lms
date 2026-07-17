@@ -26,7 +26,10 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
     timeout: 30_000,
   });
 
+  // Access Course only appears once eligibility resolves; wait for it before
+  // probing so we don't falsely skip while the CTA is still settling.
   const accessCourseButton = page.getByRole('button', { name: 'Access Course' });
+  await accessCourseButton.waitFor({ state: 'visible', timeout: 60_000 }).catch(() => null);
   const hasAccess = await accessCourseButton.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasAccess) return false;
@@ -1008,5 +1011,344 @@ test.describe('Journey 05: Course Content Tabs', () => {
       .toBeGreaterThan(0);
 
     logger.info('Mobile viewport surfaces the toggle inside a popover');
+  });
+
+  test('Checkpoint 33: Agent tab fullscreen toggle expands the chat and the floating bubble restores it', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The mentor web component should mount before we exercise fullscreen.
+    await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 60_000 });
+
+    // The fullscreen control lives in the tabs row, to the right of the autoplay icon.
+    const enterFullscreen = page.getByRole('button', { name: 'Enter fullscreen' });
+    await expect(enterFullscreen).toBeVisible({ timeout: 30_000 });
+    await enterFullscreen.click();
+
+    // Entering fullscreen surfaces the floating exit bubble; its container is the
+    // fixed inset-0 overlay that covers the layout chrome.
+    const exitFullscreen = page.getByRole('button', { name: 'Exit fullscreen' });
+    await expect(exitFullscreen).toBeVisible({ timeout: 15_000 });
+    const overlayClass = await exitFullscreen.locator('xpath=..').getAttribute('class');
+    expect(overlayClass ?? '').toContain('fixed');
+    expect(overlayClass ?? '').toContain('inset-0');
+
+    // The agent chat stays mounted inside the fullscreen overlay.
+    await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 15_000 });
+
+    // Clicking the bubble collapses the overlay and restores the enter control.
+    await exitFullscreen.click();
+    await expect(exitFullscreen).toBeHidden({ timeout: 15_000 });
+    await expect(enterFullscreen).toBeVisible({ timeout: 15_000 });
+    logger.info('Agent tab fullscreen toggle expands the chat and the floating bubble restores it');
+  });
+
+  // ── Admin Configuration tab (moved here from the course about page) ──────────
+  //
+  // Configuration is now a course-content route (`/course-content/<id>/configuration`)
+  // gated on platform-admin. It renders the same ConfigurationTab component (and
+  // therefore the same test ids) that previously lived on the about page.
+
+  /**
+   * Reach the Configuration tab content. Returns false when the run should skip
+   * (no enrolled course, or the current user is not a platform admin).
+   */
+  async function openConfigurationTab(page: Page): Promise<boolean> {
+    const ready = await navigateToCourseContent(page);
+    if (!ready) return false;
+
+    const configTab = page.getByRole('link', { name: 'Configuration', exact: true }).first();
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    if (!isAdmin) return false;
+
+    await configTab.click();
+    await page.waitForURL(/\/course-content\/.+\/configuration/, { timeout: 30_000 });
+    await expect(page.getByTestId('configuration-tab')).toBeVisible({ timeout: 30000 });
+    return true;
+  }
+
+  test('Checkpoint 24: Configuration tab (admin) opens the configuration route', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      logger.info('No enrolled courses — skipping');
+      test.skip();
+      return;
+    }
+
+    const configTab = page.getByRole('link', { name: 'Configuration', exact: true }).first();
+    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    if (!isAdmin) {
+      logger.info('Configuration tab not visible — user is not a platform admin; skipping');
+      test.skip();
+      return;
+    }
+
+    await configTab.click();
+    await page.waitForURL(/\/course-content\/.+\/configuration/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/configuration$/);
+    await expect(page.getByTestId('configuration-tab')).toBeVisible({ timeout: 30000 });
+    logger.info('Configuration route opened for admin user');
+  });
+
+  test('Checkpoint 25: Configuration shows the Credentials section', async ({ page }) => {
+    const ready = await openConfigurationTab(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    await expect(page.getByRole('heading', { name: 'Credentials' })).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByTestId('add-credential-button')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('credential-list-toggle')).toBeVisible({ timeout: 10000 });
+    logger.info('Credentials section with Add button and list toggle is visible');
+  });
+
+  test('Checkpoint 26: Credential creation modal opens and closes', async ({ page }) => {
+    const ready = await openConfigurationTab(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const addCredentialButton = page.getByTestId('add-credential-button');
+    await expect(addCredentialButton).toBeVisible({ timeout: 10000 });
+    await addCredentialButton.click();
+
+    const modal = page.getByTestId('credential-modal');
+    await expect(modal).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('credential-name-input')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('credential-description-input')).toBeVisible({ timeout: 10000 });
+    logger.info('Credential creation modal opened with form fields');
+
+    await page.getByTestId('credential-modal-cancel').click();
+    await expect(modal).not.toBeVisible({ timeout: 10000 });
+    logger.info('Credential modal closed');
+  });
+
+  test('Checkpoint 27: Advanced Settings expand/collapse', async ({ page }) => {
+    const ready = await openConfigurationTab(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const toggle = page.getByTestId('advanced-settings-toggle');
+    await expect(toggle).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible();
+
+    await toggle.click();
+    await expect(page.getByTestId('advanced-settings-content')).toBeVisible({ timeout: 10000 });
+    logger.info('Advanced Settings expanded');
+
+    await page.getByTestId('advanced-settings-toggle').click();
+    await expect(page.getByTestId('advanced-settings-content')).not.toBeVisible({ timeout: 5000 });
+    logger.info('Advanced Settings collapsed');
+  });
+
+  test('Checkpoint 28: Advanced Settings search filters results', async ({ page }) => {
+    const ready = await openConfigurationTab(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const toggle = page.getByTestId('advanced-settings-toggle');
+    await toggle.click();
+    await expect(page.getByTestId('advanced-settings-content')).toBeVisible({ timeout: 10000 });
+
+    const searchInput = page.getByTestId('advanced-settings-search');
+    const hasSearch = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    if (!hasSearch) {
+      logger.info('No search input — settings may not have loaded');
+      return;
+    }
+
+    await searchInput.fill('xyznonexistent999');
+    const hasEmpty = await page
+      .getByTestId('advanced-settings-empty')
+      .isVisible({ timeout: 120_000 })
+      .catch(() => false);
+    if (hasEmpty) {
+      logger.info('Empty state shown for non-matching search');
+    }
+
+    await searchInput.fill('');
+    const hasSettings = await page
+      .getByTestId('advanced-settings-list')
+      .isVisible({ timeout: 120_000 })
+      .catch(() => false);
+    if (hasSettings) {
+      logger.info('Settings restored after clearing search');
+    }
+  });
+
+  test('Checkpoint 29: Save Changes button appears on modification', async ({ page }) => {
+    const ready = await openConfigurationTab(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const toggle = page.getByTestId('advanced-settings-toggle');
+    await toggle.click();
+    await expect(page.getByTestId('advanced-settings-content')).toBeVisible({ timeout: 10000 });
+
+    const searchInput = page.getByTestId('advanced-settings-search');
+    const hasSearch = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    if (!hasSearch) {
+      logger.info('No settings loaded — skipping save test');
+      return;
+    }
+
+    await expect(page.getByTestId('save-advanced-settings-button')).not.toBeVisible({
+      timeout: 2000,
+    });
+
+    const settingsList = page.getByTestId('advanced-settings-list');
+    const textInput = settingsList.locator('input[type="text"]').first();
+    const hasInput = await textInput.isVisible({ timeout: 120_000 }).catch(() => false);
+
+    if (hasInput) {
+      const originalValue = await textInput.inputValue();
+      await textInput.fill(originalValue + ' test');
+      await expect(page.getByTestId('save-advanced-settings-button')).toBeVisible({
+        timeout: 5000,
+      });
+      logger.info('Save Changes button appeared after modification');
+      await settingsList.locator('input[type="text"]').first().fill(originalValue);
+    } else {
+      const switchEl = settingsList.locator('button[role="switch"]').first();
+      const hasSwitch = await switchEl.isVisible({ timeout: 120_000 }).catch(() => false);
+      if (hasSwitch) {
+        await switchEl.click();
+        await expect(page.getByTestId('save-advanced-settings-button')).toBeVisible({
+          timeout: 5000,
+        });
+        logger.info('Save Changes button appeared after toggling switch');
+        await settingsList.locator('button[role="switch"]').first().click();
+      } else {
+        logger.info('No modifiable inputs found');
+      }
+    }
+  });
+
+  test('Checkpoint 30: Learning Info tab (optional) renders What You’ll Learn', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const learningInfoTab = page.getByRole('link', { name: 'Learning Info', exact: true }).first();
+    const hasTab = await learningInfoTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasTab) {
+      logger.info('Learning Info tab not present — course has no learning_info; skipping');
+      test.skip();
+      return;
+    }
+
+    await learningInfoTab.click();
+    await page.waitForURL(/\/course-content\/.+\/learning-info/, { timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: /What You.?ll Learn/i })).toBeVisible({
+      timeout: 30000,
+    });
+    logger.info('Learning Info tab renders the "What You’ll Learn" section');
+  });
+
+  test('Checkpoint 31: Instructors tab (optional) renders the instructors list', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const instructorsTab = page.getByRole('link', { name: 'Instructors', exact: true }).first();
+    const hasTab = await instructorsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasTab) {
+      logger.info('Instructors tab not present — course has no instructor_info; skipping');
+      test.skip();
+      return;
+    }
+
+    await instructorsTab.click();
+    await page.waitForURL(/\/course-content\/.+\/instructors/, { timeout: 30_000 });
+    // The InstructorTab renders an <h2>Instructors</h2> heading above the list.
+    await expect(page.getByRole('heading', { name: 'Instructors' })).toBeVisible({
+      timeout: 30000,
+    });
+    logger.info('Instructors tab renders the instructors list');
+  });
+
+  test('Checkpoint 32: Analytics tab (can_view_analytics) renders course analytics', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const analyticsTab = page.getByRole('link', { name: 'Analytics', exact: true }).first();
+    const hasTab = await analyticsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasTab) {
+      logger.info('Analytics tab not present — user lacks can_view_analytics; skipping');
+      test.skip();
+      return;
+    }
+
+    await analyticsTab.click();
+    await page.waitForURL(/\/course-content\/.+\/analytics/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/analytics$/);
+
+    // AnalyticsCourseDetail from the SDK renders enrollment stat cards and an
+    // "Enrolled Users" table.
+    await expect(page.getByRole('heading', { name: 'Enrolled Users' })).toBeVisible({
+      timeout: 60000,
+    });
+    await expect(page.getByText('Active Enrollments', { exact: false }).first()).toBeVisible({
+      timeout: 30000,
+    });
+    logger.info('Analytics tab renders AnalyticsCourseDetail (stat cards + Enrolled Users table)');
   });
 });

@@ -71,7 +71,7 @@ export const CourseOutlineSidebar = () => {
 
       {/* Expanded outline — full sidebar */}
       <div
-        className={`${fullClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200`}
+        className={`${fullClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200 pl-4`}
         style={{ scrollbarWidth: 'none' }}
         data-testid="course-outline-sidebar"
       >

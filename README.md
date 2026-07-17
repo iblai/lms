@@ -100,6 +100,34 @@ Whether you're an enterprise building an internal upskilling program, a universi
 
 ---
 
+## Available On
+
+<div align="center">
+
+| Platform    | Status                                                                       |
+| ----------- | ---------------------------------------------------------------------------- |
+| **Web**     | Production at [lms.ibl.ai](https://lms.ibl.ai) — works on any modern browser |
+| **macOS**   | Native desktop app — [download the latest build](#download)                  |
+| **iOS**     | Native mobile app — available on iPhone and iPad                             |
+| **Android** | Native mobile app — available on phones and tablets                          |
+| **Windows** | Native desktop app                                                           |
+| **Linux**   | Native desktop app                                                           |
+
+</div>
+
+One codebase, six platforms — Agentic LMS runs natively everywhere your learners are.
+
+---
+
+## Download
+
+**Latest macOS build:** [Agentic LMS app-v1.0.15 (Universal .dmg)](https://github.com/iblai/lms/releases/download/app-v1.0.15/Agentic.LMS_1.0.15_universal.dmg) · [all versions](docs/DOWNLOADS.md)
+
+Signed & notarized universal build (Intel + Apple Silicon), published
+automatically on `src-tauri` changes. Full history in [docs/DOWNLOADS.md](docs/DOWNLOADS.md).
+
+---
+
 ## Tech Stack
 
 | Layer     | Technology                                                                                                       |
@@ -305,32 +333,32 @@ The app uses **[@iblai/iblai-js](https://www.npmjs.com/package/@iblai/iblai-js)*
 
 All app config is `NEXT_PUBLIC_*` (exposed to the browser). Defaults below match `.env.example`.
 
-| Variable                                              | Required | Default                          | Description                                                       |
-| ----------------------------------------------------- | -------- | -------------------------------- | ----------------------------------------------------------------- |
-| `NODE_ENV`                                            | No       | `development`                    | Node environment                                                  |
-| `NEXT_PUBLIC_API_BASE_URL`                            | Yes      | `https://api.iblai.app`          | Base API URL — `/dm`, `/axd`, `/lms`, `/studio` are derived from this |
-| `NEXT_PUBLIC_LMS_URL`                                 | Yes      | `https://learn.iblai.app`        | EdX LMS host                                                      |
-| `NEXT_PUBLIC_DM_URL_TEST`                             | No       |                                  | Override DM URL for testing                                       |
-| `NEXT_PUBLIC_AUTH_URL`                                | Yes      | `https://login.iblai.app`        | Authentication service URL                                        |
-| `NEXT_PUBLIC_MFE_URL`                                 | Yes      | `https://apps.learn.iblai.app`   | Open edX micro-frontends host                                     |
-| `NEXT_PUBLIC_SPA_ANALYTICS_URL`                       | No       | `https://analytics.iblai.app`    | Analytics SPA URL                                                 |
-| `NEXT_PUBLIC_MENTOR_URL`                              | No       | `https://mentorai.iblai.app`     | AI mentor service URL                                             |
-| `NEXT_PUBLIC_PLATFORM_BASE_DOMAIN`                    | No       |                                  | Tenant subdomain root                                             |
-| `NEXT_PUBLIC_SUPPORT_EMAIL`                           | No       | `support@ibl.ai`                 | Support contact email                                             |
-| `NEXT_PUBLIC_COPYRIGHT`                               | No       |                                  | Footer copyright string                                           |
-| `NEXT_PUBLIC_HIDE_RECOMMENDED_TAB`                    | No       | `false`                          | Hide the recommendations page                                     |
-| `NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED`              | No       | `false`                          | Enable enrollment prerequisite checks                             |
-| `NEXT_PUBLIC_ENABLE_COURSE_ELIGIBILITY_LICENSE_CHECK` | No       | `false`                          | Gate eligibility on license status                                |
-| `NEXT_PUBLIC_ENABLE_START_ROLE`                       | No       | `false`                          | Enable onboarding skill self-assessment                           |
-| `NEXT_PUBLIC_ENABLE_MENTOR`                           | No       | `true`                           | Enable embedded AI mentor sidebar                                 |
-| `NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC`          | No       | `true`                           | Use Gravatar for profile pictures                                 |
-| `NEXT_PUBLIC_ENABLE_RBAC`                             | No       | `false`                          | Enable role-based access control                                  |
-| `NEXT_PUBLIC_USE_FOOTER_MENUS`                        | No       | `false`                          | Enable custom footer navigation                                   |
-| `NEXT_PUBLIC_ENABLE_COMBINED_RECOMMENDATION_REPORT`   | No       | `false`                          | Aggregate recommendation reports                                  |
-| `NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE`         | No       |                                  | Comma-separated list of discover facets to hide                   |
-| `NEXT_PUBLIC_FOOTER_MENUS`                            | No       |                                  | JSON array of footer menu items                                   |
-| `NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME`            | No       | `mentorAI`                       | Default mentor identifier                                         |
-| `NEXT_PUBLIC_COMBINED_RECOMMENDATION_REPORTS`         | No       |                                  | Combined recommendation reports config                            |
+| Variable                                              | Required | Default                        | Description                                                           |
+| ----------------------------------------------------- | -------- | ------------------------------ | --------------------------------------------------------------------- |
+| `NODE_ENV`                                            | No       | `development`                  | Node environment                                                      |
+| `NEXT_PUBLIC_API_BASE_URL`                            | Yes      | `https://api.iblai.app`        | Base API URL — `/dm`, `/axd`, `/lms`, `/studio` are derived from this |
+| `NEXT_PUBLIC_LMS_URL`                                 | Yes      | `https://learn.iblai.app`      | EdX LMS host                                                          |
+| `NEXT_PUBLIC_DM_URL_TEST`                             | No       |                                | Override DM URL for testing                                           |
+| `NEXT_PUBLIC_AUTH_URL`                                | Yes      | `https://login.iblai.app`      | Authentication service URL                                            |
+| `NEXT_PUBLIC_MFE_URL`                                 | Yes      | `https://apps.learn.iblai.app` | Open edX micro-frontends host                                         |
+| `NEXT_PUBLIC_SPA_ANALYTICS_URL`                       | No       | `https://analytics.iblai.app`  | Analytics SPA URL                                                     |
+| `NEXT_PUBLIC_MENTOR_URL`                              | No       | `https://mentorai.iblai.app`   | AI mentor service URL                                                 |
+| `NEXT_PUBLIC_PLATFORM_BASE_DOMAIN`                    | No       |                                | Tenant subdomain root                                                 |
+| `NEXT_PUBLIC_SUPPORT_EMAIL`                           | No       | `support@ibl.ai`               | Support contact email                                                 |
+| `NEXT_PUBLIC_COPYRIGHT`                               | No       |                                | Footer copyright string                                               |
+| `NEXT_PUBLIC_HIDE_RECOMMENDED_TAB`                    | No       | `false`                        | Hide the recommendations page                                         |
+| `NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED`              | No       | `false`                        | Enable enrollment prerequisite checks                                 |
+| `NEXT_PUBLIC_ENABLE_COURSE_ELIGIBILITY_LICENSE_CHECK` | No       | `false`                        | Gate eligibility on license status                                    |
+| `NEXT_PUBLIC_ENABLE_START_ROLE`                       | No       | `false`                        | Enable onboarding skill self-assessment                               |
+| `NEXT_PUBLIC_ENABLE_MENTOR`                           | No       | `true`                         | Enable embedded AI mentor sidebar                                     |
+| `NEXT_PUBLIC_ENABLE_GRAVATAR_ON_PROFILE_PIC`          | No       | `true`                         | Use Gravatar for profile pictures                                     |
+| `NEXT_PUBLIC_ENABLE_RBAC`                             | No       | `false`                        | Enable role-based access control                                      |
+| `NEXT_PUBLIC_USE_FOOTER_MENUS`                        | No       | `false`                        | Enable custom footer navigation                                       |
+| `NEXT_PUBLIC_ENABLE_COMBINED_RECOMMENDATION_REPORT`   | No       | `false`                        | Aggregate recommendation reports                                      |
+| `NEXT_PUBLIC_DISCOVER_FACETS_FILTERS_TO_HIDE`         | No       |                                | Comma-separated list of discover facets to hide                       |
+| `NEXT_PUBLIC_FOOTER_MENUS`                            | No       |                                | JSON array of footer menu items                                       |
+| `NEXT_PUBLIC_DEFAULT_EMBEDDED_MENTOR_NAME`            | No       | `mentorAI`                     | Default mentor identifier                                             |
+| `NEXT_PUBLIC_COMBINED_RECOMMENDATION_REPORTS`         | No       |                                | Combined recommendation reports config                                |
 
 ### Theming
 

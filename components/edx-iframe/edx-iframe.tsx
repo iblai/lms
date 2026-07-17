@@ -1,5 +1,6 @@
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useContext, useEffect, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import _ from 'lodash';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
@@ -9,9 +10,11 @@ import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 // @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
-import { TimedExam } from './timed-exam';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { cn } from '@/lib/utils';
+
+// Only mounted inside a timed/special-exam subsection (examInfo set); defer its chunk.
+const TimedExam = dynamic(() => import('./timed-exam').then((m) => m.TimedExam), { ssr: false });
 
 export const EdxIframe = () => {
   const {

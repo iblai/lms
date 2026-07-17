@@ -1,4 +1,4 @@
-/src/main/java/ai/ibl/skills/generated
+/src/main/java/ai/ibl/skillsai/generated
 /src/main/jniLibs/**/*.so
 /src/main/assets/tauri.conf.json
 /tauri.build.gradle.kts

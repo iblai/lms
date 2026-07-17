@@ -61,8 +61,6 @@ export default function OnboardingFlow() {
     ...(getStartedScreenEnabled ? ['FinalSlide'] : []),
   ];
 
-  console.log({ slides });
-
   const nextSlide = () => {
     /* if (currentSlide === 1 && fields.roles.length === 0) {
       toast.error("Please select at least one role to continue.");
@@ -93,7 +91,6 @@ export default function OnboardingFlow() {
   };
 
   const goToSlide = (index: number) => {
-    console.log({ index });
     setCurrentSlide(index);
   };
 

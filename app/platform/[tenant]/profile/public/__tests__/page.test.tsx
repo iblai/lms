@@ -265,7 +265,7 @@ describe('PublicProfilePage', () => {
     expect(screen.getByTestId('credential-box')).toBeInTheDocument();
   });
 
-  it('switches to Resume tab on click and shows ResumeBox', () => {
+  it('switches to Resume tab on click and shows ResumeBox', async () => {
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadataLoaded: true,
       isSkillsResumeFeatureHidden: vi.fn(() => false),
@@ -273,13 +273,15 @@ describe('PublicProfilePage', () => {
 
     renderWithContext();
     fireEvent.click(screen.getByText('Resume'));
-    expect(screen.getByTestId('resume-box')).toBeInTheDocument();
+    // ResumeBox is lazy-loaded via next/dynamic (ssr:false for react-pdf).
+    expect(await screen.findByTestId('resume-box')).toBeInTheDocument();
   });
 
-  it('switches to Media tab on click', () => {
+  it('switches to Media tab on click', async () => {
     renderWithContext();
     fireEvent.click(screen.getByText('Media'));
-    expect(screen.getByTestId('media-box')).toBeInTheDocument();
+    // MediaBox is lazy-loaded via next/dynamic.
+    expect(await screen.findByTestId('media-box')).toBeInTheDocument();
   });
 
   it('opens UserProfileModal when Edit2 button is clicked', () => {

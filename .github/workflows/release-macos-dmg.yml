@@ -1,0 +1,38 @@
+name: Release macOS DMG
+
+# Builds a signed + notarized macOS DMG (universal — Intel + Apple Silicon) and
+# attaches it to the app-v<X> Release. Triggered by the `app-v*` tag that
+# tauri-autoversion.yml pushes when a src-tauri change bumps the tauri version.
+# The build/sign/notarize logic lives in the reusable workflow (vendored from
+# iblai/iblai-web-ops); this file is just the trigger + inputs.
+#
+# skillsai has no tauri.devid.conf.json overlay, so it builds from the base
+# tauri.conf.json (which already sets hardenedRuntime + entitlements). If this
+# app uses a different Apple Developer account than the reusable's defaults,
+# override apple_signing_identity / apple_team_id below.
+#
+# Manual "Run workflow" produces a build-only DMG artifact (no Release).
+on:
+  push:
+    tags:
+      - 'app-v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-macos-dmg-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # attach the DMG to the Release
+
+jobs:
+  release:
+    uses: ./.github/workflows/reusable-release-macos-dmg.yml
+    with:
+      tauri_args: '--target universal-apple-darwin --bundles app,dmg'
+      # Tag push -> attach the DMG to that app-v<X> Release.
+      # Manual dispatch -> build-only artifact (no Release), named by short SHA.
+      release_tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+      release_name: ${{ github.ref_type == 'tag' && format('Agentic LMS {0} (macOS)', github.ref_name) || '' }}
+      artifact_name: ${{ github.ref_type == 'tag' && format('agentic-lms-macos-dmg-{0}', github.ref_name) || format('agentic-lms-macos-dmg-{0}', github.sha) }}
+    secrets: inherit

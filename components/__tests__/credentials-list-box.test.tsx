@@ -89,11 +89,9 @@ describe('CredentialsListBox', () => {
     expect(screen.getByText('Credential B')).toBeInTheDocument();
   });
 
-  it('shows empty message when no credentials', () => {
+  it('does not show an empty message when no credentials', () => {
     render(<CredentialsListBox credentials={[]} />);
-    // DefaultEmptyBox is rendered with message "No credentials yet."
-    // Since we're not mocking DefaultEmptyBox, it renders the actual component
-    expect(screen.getByText('No credentials yet.')).toBeInTheDocument();
+    expect(screen.queryByText('No credentials yet.')).not.toBeInTheDocument();
   });
 
   it('renders correct number of credential items', () => {

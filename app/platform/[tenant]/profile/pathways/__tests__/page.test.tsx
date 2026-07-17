@@ -204,11 +204,12 @@ describe('PathwaysPage', () => {
     expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/pathways/uuid-1');
   });
 
-  it('opens create pathway modal on button click', () => {
+  it('opens create pathway modal on button click', async () => {
     render(<PathwaysPage />);
 
     fireEvent.click(screen.getByText('Create Pathway'));
-    expect(screen.getByTestId('create-pathway-modal')).toBeInTheDocument();
+    // CreatePathwayModal is lazy-loaded via next/dynamic.
+    expect(await screen.findByTestId('create-pathway-modal')).toBeInTheDocument();
   });
 
   it('handles search input', () => {

@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useContext, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Facebook, Linkedin, Twitter, Edit2, Edit } from 'lucide-react';
 import { useUserMetadata } from '@/hooks/users/use-usermetadata';
 import { EducationBox } from '@/components/profile/education-box';
 import { ExperienceBox } from '@/components/profile/experience-box';
 import { SkillsBox } from '@/components/profile/skills-box';
 import { CredentialBox } from '@/components/profile/credential-box';
-import { ResumeBox } from '@/components/profile/resume-box';
-import { MediaBox } from '@/components/profile/media-box';
 import { UserAvatar } from '@/components/header/profile/user-avatar';
 import { AppContext } from '@/components/client-layout';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
@@ -20,6 +19,21 @@ import { UserProfileModal } from '@iblai/iblai-js/web-containers/next';
 import { useIsAdmin, useUserTenants } from '@/utils/localstorage';
 import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
+
+const boxFallback = <div className="h-[200px] w-full animate-pulse rounded-lg bg-gray-200" />;
+
+// react-pdf + pdfjs sets a browser worker at module scope, so this must stay client-only.
+const ResumeBox = dynamic(
+  () => import('@/components/profile/resume-box').then((m) => m.ResumeBox),
+  {
+    ssr: false,
+    loading: () => boxFallback,
+  },
+);
+
+const MediaBox = dynamic(() => import('@/components/profile/media-box').then((m) => m.MediaBox), {
+  loading: () => boxFallback,
+});
 
 export default function PublicProfilePage() {
   const tenant = useTenantParam();

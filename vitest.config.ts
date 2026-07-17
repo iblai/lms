@@ -62,7 +62,7 @@ export default defineConfig({
         // Note: 'app/**' removed to allow coverage for app pages when explicitly included via CLI
         'instrumentation.ts',
         'middleware.ts',
-        'next.config.ts',
+        'next.config.mjs',
         'sentry.*.config.*',
         'scripts/**',
       ],

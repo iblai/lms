@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Search, Plus } from 'lucide-react';
-import { CreatePathwayModal } from '@/components/create-pathway-modal';
 import { useProfilePathways } from '@/hooks/profile/use-profile-pathways';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
@@ -13,6 +13,11 @@ import { PathwayEnrollmentPlus } from '@iblai/iblai-api';
 import { getRandomCourseImage } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+
+// Lazy-loaded: only fetched when the Create Pathway dialog opens.
+const CreatePathwayModal = dynamic(() =>
+  import('@/components/create-pathway-modal').then((m) => m.CreatePathwayModal),
+);
 
 export default function PathwaysPage() {
   const tenant = useTenantParam();
