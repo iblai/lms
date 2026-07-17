@@ -38,7 +38,10 @@ test.describe('Journey 03: Home Dashboard', () => {
     const hero = page.getByRole('region', { name: 'Welcome' });
     await expect(hero).toBeVisible({ timeout: 120_000 });
 
-    const greeting = hero.getByRole('heading', { name: /welcome/i });
+    //greeting should be good morning, good afternoon or good evening
+    const greeting = hero.getByRole('heading', {
+      name: /good morning|good afternoon|good evening/i,
+    });
     await expect(greeting).toBeVisible({ timeout: 120_000 });
     logger.info('Hero greeting band is visible');
 

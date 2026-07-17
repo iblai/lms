@@ -25,11 +25,11 @@ test.describe('Journey 21: Search', () => {
   });
 
   test('CP-2: Typing a query shows results', async ({ page }) => {
-    const navbar = page.getByRole('banner');
+    const navbar = page.getByRole('banner').getByRole('navigation');
     await expect(navbar).toBeVisible({ timeout: 30_000 });
 
     // Find the search input — could be directly visible or revealed by clicking a button
-    let searchInput = navbar.getByRole('textbox', { name: /search/i });
+    let searchInput = navbar.getByRole('searchbox', { name: /search/i });
     const isInputVisible = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!isInputVisible) {
@@ -61,21 +61,10 @@ test.describe('Journey 21: Search', () => {
   });
 
   test('CP-3: Results show matching courses', async ({ page }) => {
-    const navbar = page.getByRole('banner');
+    const navbar = page.getByRole('banner').getByRole('navigation');
     await expect(navbar).toBeVisible({ timeout: 30_000 });
 
-    let searchInput = navbar.getByRole('textbox', { name: /search/i });
-    const isInputVisible = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!isInputVisible) {
-      const searchButton = navbar.getByRole('button', { name: /search/i });
-      const isButtonVisible = await searchButton.isVisible({ timeout: 120_000 }).catch(() => false);
-      if (isButtonVisible) {
-        await searchButton.click();
-        searchInput = page.getByRole('textbox', { name: /search/i });
-        await expect(searchInput).toBeVisible({ timeout: 10_000 });
-      }
-    }
+    let searchInput = navbar.getByRole('searchbox', { name: /search/i });
 
     await searchInput.fill('course');
     await page.waitForTimeout(2000);
@@ -97,21 +86,10 @@ test.describe('Journey 21: Search', () => {
   });
 
   test('CP-4: Clearing the search resets results', async ({ page }) => {
-    const navbar = page.getByRole('banner');
+    const navbar = page.getByRole('banner').getByRole('navigation');
     await expect(navbar).toBeVisible({ timeout: 30_000 });
 
-    let searchInput = navbar.getByRole('textbox', { name: /search/i });
-    const isInputVisible = await searchInput.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!isInputVisible) {
-      const searchButton = navbar.getByRole('button', { name: /search/i });
-      const isButtonVisible = await searchButton.isVisible({ timeout: 120_000 }).catch(() => false);
-      if (isButtonVisible) {
-        await searchButton.click();
-        searchInput = page.getByRole('textbox', { name: /search/i });
-        await expect(searchInput).toBeVisible({ timeout: 10_000 });
-      }
-    }
+    let searchInput = navbar.getByRole('searchbox', { name: /search/i });
 
     // Type a query
     await searchInput.fill('course');
@@ -144,7 +122,11 @@ test.describe('Journey 21: Search', () => {
     await waitForAppShell(page);
 
     // Look for a search input on the discover page
-    const searchInput = page.getByRole('textbox', { name: /search/i }).first();
+    const searchInput = page
+      .getByRole('banner')
+      .getByRole('navigation')
+      .getByRole('searchbox', { name: /search/i })
+      .first();
     await expect(searchInput).toBeVisible({ timeout: 30_000 });
 
     // Type a query

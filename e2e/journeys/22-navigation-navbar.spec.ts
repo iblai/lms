@@ -54,8 +54,7 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     await expect(profileMenuItem).toBeVisible({ timeout: 10_000 });
     await profileMenuItem.click();
 
-    await page.waitForURL(/\/profile/, { timeout: 60_000 });
-    expect(page.url()).toContain('/profile');
+    expect(await page.getByRole('dialog', { name: 'Profile' })).toBeVisible({ timeout: 10_000 });
   });
 
   test('CP-4: Recommended catalog view lists recommendations with pills', async ({ page }) => {
