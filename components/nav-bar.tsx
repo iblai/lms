@@ -1,61 +1,149 @@
 'use client';
 import Link from 'next/link';
-import { Menu, Search, X } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Menu } from 'lucide-react';
+import { useCallback } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { Logo } from './logo';
 import { UserProfileButton } from './header/profile/user-profile-button';
-import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  getUserName,
-  isRecommendedTabHidden,
-  parseMarkdownLinks,
-  redirectToAuthSpaJoinTenant,
-} from '@/utils/helpers';
+import { getUserName, parseMarkdownLinks, redirectToAuthSpaJoinTenant } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
-import { NotificationDropdown } from '@iblai/iblai-js/web-containers';
+import { PlatformNavbar } from '@iblai/iblai-js/web-containers';
+import { useSidebar } from '@iblai/iblai-js/web-containers/next';
 import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { useMediaQuery } from 'react-responsive';
-import { checkRbacPermission, WithPermissions } from '@/hoc';
+import { useGetUserEnrolledCoursesQuery } from '@/services/courses';
+import {
+  useGetUserCatalogPathwaysQuery,
+  useGetUserEnrolledProgramsQuery,
+} from '@/services/catalog';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
-import { useAppSelector } from '@/lib/hooks';
-import { selectRbacPermissions } from '@/features/rbac';
-import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 
-interface NavBarProps {
-  sidebarOpen: boolean;
-  activePage: string;
-  onMenuClick: () => void;
+/** Max enrolled courses fetched when resolving the current course's name. */
+const COURSE_LOOKUP_PAGE_SIZE = 50;
+
+/** Shared navbar page-title rendering (course / program / catalog). */
+function NavbarTitle({ label, className }: { label: string; className?: string }) {
+  return (
+    <h1
+      className={`truncate text-lg font-medium text-[var(--navbar-text)] sm:text-xl ${className ?? ''}`}
+      data-testid="navbar-page-title"
+    >
+      {label}
+    </h1>
+  );
 }
 
-export function NavBar({ activePage, onMenuClick }: NavBarProps) {
+/**
+ * Current course title — shown in the navbar's left cluster on the
+ * course ABOUT page (`/courses/<id>`) and the course DETAIL pages
+ * (`/course-content/<id>/…`). Resolves the name from the learner's
+ * enrollments, falling back to a label derived from the course id.
+ */
+function CourseTitle({ tenant }: { tenant: string }) {
+  const pathname = usePathname();
+  const username = getUserName();
+
+  const match = pathname?.match(/\/(courses|course-content)\/([^/]+)(\/.*)?$/);
+  const courseId = match?.[2] ? decodeURIComponent(match[2]) : undefined;
+
+  const { data } = useGetUserEnrolledCoursesQuery(
+    {
+      username: username ?? '',
+      query: { page_size: COURSE_LOOKUP_PAGE_SIZE, platform_key: tenant },
+    },
+    { skip: !courseId || !username },
+  );
+
+  if (!courseId) return null;
+
+  const current = (data?.results ?? []).find((course) => course.course_id === courseId);
+  // Fallback when the opened course isn't in the enrollments (e.g. an
+  // un-enrolled about page): derive a readable label from the course id
+  // (`course-v1:org+NUM+RUN` → "NUM RUN").
+  const fallbackLabel = courseId.split(':').pop()?.split('+').slice(1).join(' ') || courseId;
+  const label = current?.course_name || fallbackLabel;
+
+  return <NavbarTitle label={label} />;
+}
+
+/**
+ * Current program title — shown in the navbar's left cluster on the
+ * program detail page (`/programs/<id>`). Resolves the name from the
+ * learner's program enrollments, falling back to the raw program id.
+ */
+function ProgramTitle({ tenant }: { tenant: string }) {
+  const pathname = usePathname();
+  const username = getUserName();
+
+  const match = pathname?.match(/\/programs\/([^/]+)/);
+  const programId = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+
+  const { data } = useGetUserEnrolledProgramsQuery(
+    { username: username ?? '', platform_key: tenant },
+    { skip: !programId || !username },
+  );
+
+  if (!programId) return null;
+
+  const current = (data ?? []).find((program) => program.program_id === programId);
+  const label = current?.name || programId;
+
+  return <NavbarTitle label={label} />;
+}
+
+/**
+ * Current pathway title — shown in the navbar's left cluster on the
+ * pathway detail page (`/pathways/<uuid>`). Resolves the name from the
+ * user's catalog pathways, falling back to a generic label (the raw
+ * uuid would be noise).
+ */
+function PathwayTitle({ tenant }: { tenant: string }) {
+  const pathname = usePathname();
+  const username = getUserName();
+
+  const match = pathname?.match(/\/pathways\/([^/]+)/);
+  const pathwayId = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+
+  const { data } = useGetUserCatalogPathwaysQuery(
+    { username: username ?? '', platform_key: tenant },
+    { skip: !pathwayId || !username },
+  );
+
+  if (!pathwayId) return null;
+
+  const current = (data ?? []).find((pathway) => pathway.pathway_uuid === pathwayId);
+  const label = current?.name || 'Pathway';
+
+  return <NavbarTitle label={label} />;
+}
+
+/**
+ * SkillsAI top navigation, built on the cross-SPA `PlatformNavbar`
+ * shell. The shell owns the invariant right cluster (search box,
+ * notification bell, profile dropdown slot, anonymous Log in / Sign up);
+ * this wrapper supplies the SkillsAI-specific left cluster (mobile
+ * sidebar toggle + the current page title — page navigation lives in
+ * the PlatformSidebar now) and the right-side tenant-configured links.
+ */
+export function NavBar() {
   const tenant = useTenantParam();
   const isUserLoggedIn = isLoggedIn();
   const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
-  const rbacPermissions = useAppSelector(selectRbacPermissions);
-  const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isDesktop = useMediaQuery({ minWidth: 915 });
-  const isTabletRange = useMediaQuery({ minWidth: 760, maxWidth: 915 });
-  const isMobile = useMediaQuery({ maxWidth: 760 });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchVisible, setSearchVisible] = useState(false);
+  const pathname = usePathname();
+  const { toggleSidebar } = useSidebar();
 
   const { metadata } = useTenantMetadata({ org: tenant });
-  // Discover (menu item + search bar) is gated by both the config flag and the
-  // tenant's `enable_discover_page` metadata; the config flag supersedes it.
+  // The search bar is gated like the old navbar's: by the config flag and
+  // the tenant's `enable_discover_page` metadata (flag supersedes).
   const discoverEnabled = isDiscoverEnabled({
     hideDiscoverTab: config.settings.hideDiscoverTab(),
     enableDiscoverPage: metadata?.enable_discover_page,
   });
-  const aiAnalyticsHeaderMenuEnabled = config.settings.aiAnalyticsHeaderMenuEnabled();
-  const studioHeaderMenuEnabled = config.settings.studioHeaderMenuEnabled();
   const additionalLeftHeaderMenuItems = parseMarkdownLinks(
     config.settings.additionalLeftHeaderMenuItems(),
   );
@@ -63,259 +151,133 @@ export function NavBar({ activePage, onMenuClick }: NavBarProps) {
     config.settings.additionalRightHeaderMenuItems(),
   );
 
-  useEffect(() => {
-    setSearchQuery(decodeURIComponent(searchParams.get('q') || ''));
-  }, [searchParams]);
-
   const handleViewNotifications = useCallback(
     (notificationId?: string) => {
       router.push(`/platform/${tenant}/notifications/${notificationId ?? ''}`);
     },
-    [router],
+    [router, tenant],
   );
 
-  const handleFormSubmit = () => {
-    if (activePage === 'discover') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('q', encodeURIComponent(searchQuery));
-      router.push(url.pathname + url.search);
-    } else {
-      router.push(`/platform/${tenant}/discover?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
-  const shouldShowNavLinks = () => {
-    if (isDesktop) return true;
-    if (isTabletRange && searchVisible) return false; // Hide links when search is open in tablet range
-    if (isTabletRange && !searchVisible) return true; // Show links when search is closed in tablet range
-    return false; // Hide on mobile
-  };
+  // The invariant navbar search routes to the Discover page, seeding its
+  // search box via `?q=`; on Discover itself it updates the query in place.
+  const handleSearchSubmit = useCallback(
+    (query: string) => {
+      if (pathname?.includes('/discover')) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('q', encodeURIComponent(query));
+        router.push(url.pathname + url.search);
+      } else {
+        router.push(`/platform/${tenant}/discover?q=${encodeURIComponent(query)}`);
+      }
+    },
+    [pathname, router, tenant],
+  );
+
+  const isCoursePage = /\/(courses|course-content)\/[^/]+/.test(pathname ?? '');
+  const isProgramPage = /\/programs\/[^/]+/.test(pathname ?? '');
+  const isPathwayPage = /\/pathways\/[^/]+/.test(pathname ?? '');
+  const isCatalogPage = /\/discover\/?$/.test(pathname?.split('?')[0] ?? '');
+  const isNotificationsPage = /\/notifications(\/|$)/.test(pathname?.split('?')[0] ?? '');
+  const isAnalyticsPage = /\/analytics(\/|$)/.test(pathname?.split('?')[0] ?? '');
+
+  // VARIABLE left cluster: mobile sidebar toggle, the current course /
+  // program title on their detail pages, and tenant-configured extra
+  // links. The old Home / Profile / Recommended / Discover links moved
+  // to the sidebar.
+  const leftCluster = (
+    <div className="flex h-16 min-w-0 items-center overflow-hidden pl-4 sm:pl-6 md:h-20">
+      {/* Mobile hamburger — opens the PlatformSidebar mobile sheet, which
+          only renders for logged-in users, so hide it when logged out. */}
+      {isUserLoggedIn && (
+        <button
+          onClick={toggleSidebar}
+          className="mr-3 rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset md:hidden"
+          aria-label="Open sidebar"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+      )}
+
+      {/* Current course / program / pathway title on their detail pages */}
+      {isUserLoggedIn && isCoursePage && <CourseTitle tenant={tenant} />}
+      {isUserLoggedIn && isProgramPage && <ProgramTitle tenant={tenant} />}
+      {isUserLoggedIn && isPathwayPage && <PathwayTitle tenant={tenant} />}
+
+      {/* Static page titles (the pages themselves render no heading) */}
+      {isCatalogPage && <NavbarTitle label="Explore Content" />}
+      {isNotificationsPage && <NavbarTitle label="Notifications" />}
+      {/* The analytics content is inset further than other pages, so the
+          title gets extra left padding on tablet/desktop to line up with
+          it (mobile keeps the default alignment). */}
+      {isAnalyticsPage && <NavbarTitle label="Analytics" className="md:pl-3" />}
+
+      {additionalLeftHeaderMenuItems.length > 0 && (
+        <nav className="ml-2 hidden h-full items-center space-x-6 md:flex">
+          {additionalLeftHeaderMenuItems.map((menu, index) => (
+            <Link
+              key={`left-header-menu-${index}`}
+              href={menu.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-full items-center text-sm font-medium text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]"
+            >
+              {menu.label}
+            </Link>
+          ))}
+        </nav>
+      )}
+    </div>
+  );
+
+  // Right-side tenant-configured links — handed to the shell's
+  // `modeSwitcher` slot, which positions them right before the invariant
+  // cluster. (Studio and Analytics live in the sidebar.)
+  const rightLinks =
+    additionalRightHeaderMenuItems.length > 0 ? (
+      <>
+        {additionalRightHeaderMenuItems.map((menu, index) => (
+          <Link
+            key={`right-header-menu-${index}`}
+            href={menu.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]"
+          >
+            {menu.label}
+          </Link>
+        ))}
+      </>
+    ) : undefined;
 
   return (
-    <header className="h-16 flex-shrink-0 border-b border-[var(--border)] bg-[var(--navbar-bg)] md:h-20">
-      <div className="flex h-full items-center justify-between px-4 sm:px-6 md:px-6 lg:px-8">
-        <div className="flex h-full items-center">
-          <button
-            onClick={onMenuClick}
-            className="mr-3 rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset md:hidden"
-            aria-label="Open sidebar"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-
-          {/* Replace direct Image with Logo component */}
-          <Logo variant="small" />
-
-          {/* Navigation Links */}
-          {shouldShowNavLinks() && (
-            <nav className="ml-8 hidden h-full items-center space-x-6 md:flex">
-              {isUserLoggedIn && (
-                <>
-                  <Link
-                    href={`/platform/${tenant}/home`}
-                    className={`text-sm font-medium ${
-                      activePage === 'home'
-                        ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                        : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                    } flex h-full items-center`}
-                  >
-                    Home
-                  </Link>
-                  <Link
-                    href={`/platform/${tenant}/profile`}
-                    className={`text-sm font-medium ${
-                      activePage === 'profile'
-                        ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                        : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                    } flex h-full items-center`}
-                  >
-                    Profile
-                  </Link>
-                  {!isRecommendedTabHidden() && (
-                    <Link
-                      href={`/platform/${tenant}/recommended`}
-                      className={`text-sm font-medium ${
-                        activePage === 'recommended'
-                          ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                          : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                      } flex h-full items-center`}
-                    >
-                      Recommended
-                    </Link>
-                  )}
-                </>
-              )}
-              {discoverEnabled && (
-                <Link
-                  href={`/platform/${tenant}/discover`}
-                  className={`text-sm font-medium ${
-                    activePage === 'discover' && !activePage.startsWith('course')
-                      ? 'border-b-2 border-[var(--navbar-active-border)] text-[var(--navbar-active-text)]'
-                      : 'text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]'
-                  } flex h-full items-center`}
-                >
-                  Discover
-                </Link>
-              )}
-              {additionalLeftHeaderMenuItems.map((menu, index) => (
-                <Link
-                  key={`left-header-menu-${index}`}
-                  href={menu.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-full items-center text-sm font-medium text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)]"
-                >
-                  {menu.label}
-                </Link>
-              ))}
-            </nav>
-          )}
-        </div>
-
-        <div className="flex items-center space-x-4">
-          {discoverEnabled && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleFormSubmit();
-              }}
-            >
-              <>
-                {/* Updated Search Bar */}
-                {isDesktop && (
-                  <div className="relative" style={{ width: 'clamp(12rem, 20vw, 16rem)' }}>
-                    <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-                      <Search className="h-4 w-4 text-[var(--text-light)]" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                {/* Search Icon/Bar for tablet range (915px - 760px) and mobile (≤ 760px) */}
-                {(isTabletRange || isMobile) && (
-                  <>
-                    {!searchVisible ? (
-                      <button
-                        onClick={() => setSearchVisible(!searchVisible)}
-                        className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
-                        aria-label="Open search"
-                      >
-                        <Search className="h-5 w-5" />
-                      </button>
-                    ) : (
-                      <div className="flex flex-1 items-center space-x-2">
-                        <div className="relative flex-1">
-                          <div
-                            onClick={() => handleFormSubmit()}
-                            className="pointer-events-none absolute inset-y-0 left-3 flex items-center"
-                          >
-                            <Search className="h-4 w-4 text-[var(--text-light)]" />
-                          </div>
-                          <input
-                            type="text"
-                            placeholder="Search"
-                            className="w-full rounded-sm border border-[var(--border)] bg-white py-2 pr-4 pl-10 text-sm focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
-                            autoFocus
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                          />
-                        </div>
-                        <button
-                          onClick={() => setSearchVisible(!searchVisible)}
-                          className="rounded-sm text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] hover:text-[var(--navbar-hover-text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none focus:ring-inset"
-                          aria-label="Close search"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            </form>
-          )}
-
-          {/* AI Analytics Button */}
-          {!(isTabletRange && searchVisible) &&
-            studioHeaderMenuEnabled &&
-            (departmentMemberCheck?.is_platform_admin ||
-              departmentMemberCheck?.is_department_admin) && (
-              <Link
-                href={config.urls.studioUrl()}
-                target="_blank"
-                className="ml-2 hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
-              >
-                Studio
-              </Link>
-            )}
-          {!(isTabletRange && searchVisible) && aiAnalyticsHeaderMenuEnabled && (
-            <WithPermissions rbacResource={`/platforms/${tenant}/#can_view_analytics`}>
-              {({ hasPermission }) =>
-                (hasPermission || isWatcher) && (
-                  <Link
-                    href={`/platform/${tenant}/analytics`}
-                    className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
-                  >
-                    AI Analytics
-                  </Link>
-                )
+    // Keep the banner landmark the app (and e2e) relies on; the SDK shell
+    // renders the inner <nav>.
+    <header className="flex-shrink-0">
+      <PlatformNavbar
+        left={leftCluster}
+        modeSwitcher={rightLinks}
+        search={discoverEnabled ? { onSubmit: handleSearchSubmit } : null}
+        notifications={
+          isUserLoggedIn
+            ? {
+                org: tenant,
+                userId: getUserName() ?? '',
+                isAdmin: departmentMemberCheck?.is_platform_admin,
+                onViewNotifications: handleViewNotifications,
               }
-            </WithPermissions>
-          )}
-          {!(isTabletRange && searchVisible) &&
-            additionalRightHeaderMenuItems.map((menu, index) => (
-              <Link
-                key={`right-header-menu-${index}`}
-                href={menu.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden items-center text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:text-[var(--navbar-hover-text)] md:flex"
-              >
-                {menu.label}
-              </Link>
-            ))}
-          {/* Auth Buttons (logged out) */}
-          {!isUserLoggedIn && (
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => redirectToAuthSpaJoinTenant(tenant, undefined, true)}
-                className="rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium whitespace-nowrap text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => redirectToAuthSpaJoinTenant(tenant, undefined, true)}
-                className="rounded-sm border border-[var(--border)] bg-transparent px-4 py-2 text-sm font-medium whitespace-nowrap text-[var(--navbar-text)] hover:bg-[var(--navbar-hover-bg)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
-              >
-                Sign Up
-              </button>
-            </div>
-          )}
-
-          {/* Notification Bell */}
-          {isUserLoggedIn && (
-            <NotificationDropdown
-              org={tenant}
-              userId={getUserName()}
-              isAdmin={departmentMemberCheck?.is_platform_admin}
-              onViewNotifications={handleViewNotifications}
-            />
-          )}
-          {isUserLoggedIn && (
+            : null
+        }
+        profile={
+          isUserLoggedIn ? (
             <div className="relative">
               <UserProfileButton />
             </div>
-          )}
-        </div>
-      </div>
+          ) : undefined
+        }
+        visibleToLoggedInUsersOnly={isUserLoggedIn}
+        onLoginClick={() => redirectToAuthSpaJoinTenant(tenant, undefined, true)}
+        className="mb-0 h-16 border-[var(--border)] bg-[var(--navbar-bg)] md:h-20"
+      />
     </header>
   );
 }

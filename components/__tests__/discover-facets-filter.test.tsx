@@ -44,14 +44,21 @@ const getDefaultContextValue = () => ({
   facetsLoading: false,
   isError: false,
   facets: [] as any[],
+  filteredFacets: [] as any[],
   handleToggleFacet: mockHandleToggleFacet,
   handleFilterFacets: mockHandleFilterFacets,
   isFacetTermSelected: mockIsFacetTermSelected,
   handleSelectFacets: mockHandleSelectFacets,
 });
 
-const renderWithContext = (contextOverrides = {}) => {
-  const value = { ...getDefaultContextValue(), ...contextOverrides };
+const renderWithContext = (contextOverrides: Record<string, any> = {}) => {
+  const value = {
+    ...getDefaultContextValue(),
+    ...contextOverrides,
+    // Unless a test narrows it explicitly, the filtered list mirrors the
+    // full one — matching the hook's initial state.
+    filteredFacets: contextOverrides.filteredFacets ?? contextOverrides.facets ?? [],
+  };
   return render(
     <FacetFilterContext.Provider value={value as any}>
       <DiscoverFacetsFilter />
@@ -69,15 +76,14 @@ describe('DiscoverFacetsFilter', () => {
     expect(screen.getByTestId('skeleton-multiplier')).toBeInTheDocument();
   });
 
-  it('renders nothing when not loading and error', () => {
-    const { container } = renderWithContext({ facetsLoading: false, isError: true });
-    // The component has a bug: it doesn't return the DefaultEmptyBox, just evaluates the expression
-    expect(container.innerHTML).toBe('');
+  it('renders the empty box when not loading and error', () => {
+    renderWithContext({ facetsLoading: false, isError: true });
+    expect(screen.getByTestId('default-empty-box')).toHaveTextContent('No content filters found.');
   });
 
-  it('renders nothing when not loading, no error, and empty facets', () => {
-    const { container } = renderWithContext({ facetsLoading: false, isError: false, facets: [] });
-    expect(container.innerHTML).toBe('');
+  it('renders the empty box when not loading, no error, and empty facets', () => {
+    renderWithContext({ facetsLoading: false, isError: false, facets: [] });
+    expect(screen.getByTestId('default-empty-box')).toBeInTheDocument();
   });
 
   it('renders facets when data is available', () => {
@@ -193,5 +199,30 @@ describe('DiscoverFacetsFilter', () => {
     renderWithContext({ facets });
     expect(screen.getByText('Category')).toBeInTheDocument();
     expect(screen.getByText('Level')).toBeInTheDocument();
+  });
+
+  it('renders the term lists from filteredFacets (per-facet search results)', () => {
+    const facets = [
+      {
+        slug: 'category',
+        label: 'Category',
+        expanded: true,
+        terms: [
+          { key: 'math', count: 5 },
+          { key: 'science', count: 3 },
+        ],
+      },
+    ];
+    const filteredFacets = [
+      {
+        slug: 'category',
+        label: 'Category',
+        expanded: true,
+        terms: [{ key: 'math', count: 5 }],
+      },
+    ];
+    renderWithContext({ facets, filteredFacets });
+    expect(screen.getByText('math (5)')).toBeInTheDocument();
+    expect(screen.queryByText('science (3)')).not.toBeInTheDocument();
   });
 });

@@ -679,9 +679,18 @@ export default function CourseContentLayout({
 
               {/* Content area */}
               <div
-                /* className="flex-1 overflow-y-auto bg-amber-50 pb-[60px]" */
-                //no overflow hidden on mobile
-                className={cn('flex-1', isMobile ? 'overflow-y-auto' : 'overflow-hidden')}
+                // Mobile scrolls this container itself. On desktop the
+                // iframe tabs manage their own scroll, but the plain-page
+                // tabs (analytics / configuration / instructor(s)) render
+                // long content and need the container to scroll too.
+                className={cn(
+                  'flex-1',
+                  (isMobile ||
+                    ['analytics', 'configuration', 'instructor', 'instructors'].includes(
+                      currentTab ?? '',
+                    )) &&
+                    'overflow-y-auto',
+                )}
                 style={{ scrollbarWidth: 'none' }}
               >
                 {children}

@@ -141,26 +141,13 @@ test.describe('Journey 14: Course Discovery', () => {
       return;
     }
 
-    // DiscoverContentCard onClick navigates to /courses/{id} for courses,
-    // or opens a modal for pathways/programs
+    // DiscoverContentCard onClick navigates to the matching detail page:
+    // /courses/{id}, /programs/{id} or /pathways/{uuid}.
     await contentCard.click();
 
-    // Wait for either a navigation or a dialog to appear
-    const dialog = page.getByRole('dialog').first();
-    const navigated = await page
-      .waitForURL((url) => url.href.includes('/courses/'), { timeout: 10_000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (navigated) {
-      expect(page.url()).toContain('/courses/');
-      logger.info(`Navigated to course: ${page.url()}`);
-    } else {
-      // Pathway/program card opens a modal instead
-      const hasDialog = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
-      expect(hasDialog).toBe(true);
-      logger.info('Content card opened a detail modal');
-    }
+    await page.waitForURL(/\/(courses|programs|pathways)\/[^/]+/, { timeout: 60_000 });
+    expect(page.url()).toMatch(/\/(courses|programs|pathways)\/[^/]+/);
+    logger.info(`Navigated to content detail page: ${page.url()}`);
   });
 
   test('CP-7: filter drawer on mobile viewport', async ({ page }) => {
@@ -221,5 +208,43 @@ test.describe('Journey 14: Course Discovery', () => {
 
     await expect(pagination).toBeVisible();
     logger.info('Pagination controls are visible');
+  });
+
+  test('CP-9: enrolled catalog view lists enrollments with Enrolled pills', async ({ page }) => {
+    // The sidebar Courses item deep-links this view.
+    await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 60_000 });
+    await waitForAppShell(page);
+
+    // The Enrolled filter chip is applied from the URL.
+    const enrollmentChip = page.getByRole('button', { name: /remove filter enrollment/i });
+    await expect(enrollmentChip).toBeVisible({ timeout: 120_000 });
+
+    const contentCard = page.locator('[data-testid="discover-content-card"]');
+    const emptyState = page.getByText(/no enrolled content found/i).first();
+    await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
+
+    const hasCards = await contentCard
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasCards) {
+      logger.info('No enrollments for this user — empty state shown');
+      return;
+    }
+
+    // Every card in the enrolled view carries the Enrolled pill.
+    const enrolledPill = contentCard.first().getByText('Enrolled');
+    await expect(enrolledPill).toBeVisible({ timeout: 30_000 });
+    logger.info('Enrolled pills are visible on enrolled catalog cards');
+
+    // Removing the Enrollment chip returns to the full catalog view.
+    const removeEnrollment = page.getByRole('button', {
+      name: /remove filter enrollment/i,
+    });
+    await removeEnrollment.click();
+    await expect(page.getByRole('button', { name: /remove filter enrollment/i })).not.toBeVisible({
+      timeout: 30_000,
+    });
+    logger.info('Enrollment filter removed — back to full catalog');
   });
 });

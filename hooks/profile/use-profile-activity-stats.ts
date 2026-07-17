@@ -13,11 +13,19 @@ import {
 } from '@iblai/iblai-js/data-layer';
 import _ from 'lodash';
 import { useLazyGetUserCredentialsQuery } from '@/services/credentials';
+import { useLazyGetUserPerLearnerInfoQuery } from '@/services/perlearner';
 import { useLazyGetUserEnrolledCoursesQuery } from '@/services/courses';
 import {
   useLazyGetUserCatalogPathwaysQuery,
   useLazyGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
+
+/** Total learning time as whole hours — the tile shows "351" over "Hours". */
+const formatTimeSpentHours = (totalSeconds: unknown): number => {
+  const seconds =
+    typeof totalSeconds === 'number' && !isNaN(totalSeconds) ? Math.max(0, totalSeconds) : 0;
+  return Math.round(seconds / 3600);
+};
 
 export const useProfileActivityStats = () => {
   const [getUserSkillsPoints, { isError: isErrorGetUserSkillsPoints }] =
@@ -36,6 +44,8 @@ export const useProfileActivityStats = () => {
     useLazyGetUserCatalogPathwaysQuery();
   const [getPerLearnerInfo, { isError: isErrorgetPerLearnerInfo }] =
     useLazyGetPerLearnerInfoQuery();
+  const [getUserPerLearnerInfo, { isError: isErrorGetUserPerLearnerInfo }] =
+    useLazyGetUserPerLearnerInfoQuery();
 
   const [stats, setStats] = useState<ActivityStats[]>([
     { value: 0, label: 'Points', loading: true },
@@ -44,7 +54,7 @@ export const useProfileActivityStats = () => {
     { value: 4, label: 'Courses', loading: true },
     { value: 0, label: 'Programs', loading: true },
     { value: 0, label: 'Pathways', loading: true },
-    { value: 0, label: 'Resources', loading: true },
+    { value: 0, label: 'Hours', loading: true },
     { value: 0, label: 'Assessments', loading: true },
     { value: 0, label: 'Videos', loading: true },
   ]);
@@ -226,21 +236,9 @@ export const useProfileActivityStats = () => {
     });
   };
 
-  const aggregatePathwaysAndResources = (data: any) => {
-    let totalResources = 0;
-    data.forEach((pathway: any) => {
-      totalResources += pathway.path?.length || 0;
-    });
-    return {
-      pathways: data?.length,
-      totalResources: totalResources,
-    };
-  };
-
   const handlePathwaysActivityStats = async () => {
     // TODO: SDK to return multuple pathways
     const pathwaysLabel = 'Pathways';
-    const resourcesLabel = 'Resources';
     try {
       const response = await getUserCatalogPathways(
         {
@@ -253,26 +251,15 @@ export const useProfileActivityStats = () => {
         throw new Error();
       }
       const uniquePathways = filterUniquePathways(response.data);
-      const { pathways, totalResources } = aggregatePathwaysAndResources(uniquePathways);
       updateSingleStat({
-        value: pathways,
+        value: uniquePathways?.length || 0,
         label: pathwaysLabel,
-        loading: false,
-      });
-      updateSingleStat({
-        value: totalResources,
-        label: resourcesLabel,
         loading: false,
       });
     } catch {
       updateSingleStat({
         value: 0,
         label: pathwaysLabel,
-        loading: false,
-      });
-      updateSingleStat({
-        value: 0,
-        label: resourcesLabel,
         loading: false,
       });
     }
@@ -321,6 +308,37 @@ export const useProfileActivityStats = () => {
     }
   };
 
+  const handleTimeSpentStat = async () => {
+    const timeSpentLabel = 'Hours';
+    try {
+      // Same per-learner meta endpoint the old profile-sidebar All Time
+      // box used — it carries `total_time_spent` in seconds.
+      const response = await getUserPerLearnerInfo(
+        {
+          org: getTenant(),
+          username: getUserName(),
+          query: { meta: true },
+        },
+        true,
+      );
+      if (isErrorGetUserPerLearnerInfo || _.isEmpty(response.data)) {
+        throw new Error();
+      }
+      const totalTimeSpentSeconds = response?.data?.data?.total_time_spent;
+      updateSingleStat({
+        value: formatTimeSpentHours(totalTimeSpentSeconds),
+        label: timeSpentLabel,
+        loading: false,
+      });
+    } catch {
+      updateSingleStat({
+        value: 0,
+        label: timeSpentLabel,
+        loading: false,
+      });
+    }
+  };
+
   useEffect(() => {
     handleSkillsPointActivityStats();
     handleActivitySkillsStats();
@@ -329,6 +347,7 @@ export const useProfileActivityStats = () => {
     handleProgramsActivityStats();
     handlePathwaysActivityStats();
     handlePerLearnerInfoStats();
+    handleTimeSpentStat();
   }, []);
 
   return {

@@ -55,7 +55,6 @@ export const CourseOutlineSidebar = () => {
       {/* Collapsed rail — md (768px) and up, while collapsed */}
       <div
         className={`${railClass} w-12 flex-shrink-0 flex-col items-center border-r border-gray-200 pt-2`}
-        //style={{ height: 'calc(100% - 60px)' }}
         data-testid="course-outline-rail"
       >
         <button

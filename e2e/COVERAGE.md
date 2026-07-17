@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-07-03 | 226 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-07-03 | 231 checkpoints | 32 journeys | 100% covered
 
 ## How This Works
 
@@ -41,14 +41,14 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 3: Home Dashboard (8 checkpoints) — `journeys/03-home-dashboard.spec.ts`
 
-**Source files:** `app/home/page.tsx`, `components/profile-sidebar.tsx`, `components/suggested-courses.tsx`, `components/my-courses.tsx`
+**Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`
 
-- [x] Home page loads with the Profile Sidebar visible (user name, avatar, stats)
-- [x] Suggested Courses section displays course cards or empty state
-- [x] My Courses section displays enrolled course cards in a grid
-- [x] Clicking a course card in My Courses navigates to the course about page
-- [x] Clicking a suggested course card navigates to the course about page
-- [x] Profile Sidebar shows user skills count, credentials count, and learning stats
+- [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
+- [x] Explore rail displays catalog cards or hides when empty
+- [x] My Courses CTA opens the enrolled catalog view
+- [x] Clicking an enrolled catalog card navigates to the course about page
+- [x] Clicking a catalog rail card navigates to the content page
+- [x] Activity Overview band is absent from the home page (stats live on profile Activity)
 - [x] "View All" or "See more" links in course sections navigate to appropriate pages
 - [x] Home page loads without console errors
 
@@ -147,12 +147,12 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 9: Profile — Pathways (5 checkpoints) — `journeys/09-profile-pathways.spec.ts`
 
-**Source files:** `app/profile/pathways/page.tsx`, `components/pathway-detail-modal.tsx`
+**Source files:** `app/profile/pathways/page.tsx`, `app/platform/[tenant]/pathways/[pathway_id]/page.tsx`
 
 - [x] Pathways page (/profile/pathways) loads and displays learning pathways or empty state
 - [x] Pathway cards display pathway name, description, and progress indicator
-- [x] Clicking a pathway card opens a detail modal showing pathway steps/courses
-- [x] Pathway detail modal can be closed
+- [x] Clicking a pathway card navigates to the pathway detail page
+- [x] Pathway detail page shows content cards and the sidebar (banner, CTA, progress)
 - [x] "Create Pathway" button is visible for users with appropriate permissions _(admin only)_
 
 ---
@@ -207,9 +207,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 14: Course Discovery (8 checkpoints) — `journeys/14-course-discovery.spec.ts`
+## Journey 14: Course Discovery — Centralized Catalog (9 checkpoints) — `journeys/14-course-discovery.spec.ts`
 
-**Source files:** `app/discover/page.tsx`, `components/discover-content-card.tsx`
+**Source files:** `app/discover/page.tsx`, `components/discover-content-card.tsx`, `hooks/discover/use-discover.ts`, `hooks/discover/use-user-enrollments.ts`
 
 - [x] Discover page (/discover) loads with course catalog cards and search input
 - [x] Search input filters the course catalog by title/keyword
@@ -219,6 +219,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Clicking a course card navigates to the course about page
 - [x] Filter drawer opens and closes on mobile viewport _(if applicable)_
 - [x] Pagination or infinite scroll loads additional courses
+- [x] Enrolled catalog view (`?content=<type>&enrolled=true`, deep-linked by the sidebar Courses/Programs/Pathways items) lists the user's enrollments with "Enrolled" pills; removing the Enrollment filter returns to the full catalog
 
 ---
 
@@ -323,18 +324,19 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 22: Navigation & NavBar (8 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
+## Journey 22: Navigation — NavBar & Sidebar (9 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
 
-**Source files:** `components/nav-bar.tsx`, `components/profile-dropdown.tsx`, `components/logo.tsx`
+**Source files:** `components/nav-bar.tsx`, `components/app-sidebar/index.tsx`, `components/header/profile/user-profile-button.tsx`
 
-- [x] NavBar renders with Home, Profile, Recommended, Discover, AI Analytics, Search, Notifications, and User Profile elements
-- [x] Clicking "Home" navigates to /home
-- [x] Clicking "Profile" navigates to /profile
-- [x] Clicking "Recommended" navigates to /recommended
-- [x] Clicking "Discover" navigates to /discover
-- [x] Clicking "AI Analytics" navigates to /analytics _(admin only — skips for non-admin)_
+- [x] NavBar (PlatformNavbar shell) renders with Search, Notifications, and User Profile elements
+- [x] Sidebar "Home" item navigates to /home
+- [x] Profile is reachable from the user profile dropdown
+- [x] Recommended catalog view (`?recommended=true`) lists recommendations with "Recommended" pills
+- [x] Sidebar "Discover" item navigates to /discover
+- [x] Sidebar "Analytics" menu navigates to /analytics _(admin only — skips for non-admin)_
 - [x] User profile dropdown opens with Profile link, tenant selector, and logout option
-- [x] Platform logo navigates to the home page
+- [x] Sidebar logo navigates to the home page
+- [x] Navbar shows the current course title on a course page (no enrolled-courses dropdown)
 
 ---
 
@@ -355,9 +357,9 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 24: Mobile View (7 checkpoints) — `journeys/24-mobile-view.spec.ts`
 
-**Source files:** `components/navigation-drawer.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
+**Source files:** `components/app-sidebar/index.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
 
-- [x] Navigation drawer opens and displays menu items on mobile viewport (375×812)
+- [x] Sidebar mobile sheet opens via the navbar hamburger and displays menu items on mobile viewport (375×812)
 - [x] Course nav tabs container is horizontally scrollable on mobile (overflow-x-auto, w-full)
 - [x] EdX iframe container has course-edx-iframe-container class and correct active-tab class per tab
 - [x] Mobile viewport: non-course tabs (Progress, Dates, Discussion) have no padding on iframe container

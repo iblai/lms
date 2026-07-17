@@ -44,7 +44,7 @@ async function openProgramDetailPage(page: Page): Promise<void> {
   await expect(page.getByTestId('program-detail-content')).toBeVisible({
     timeout: 120_000,
   });
-  await expect(page.getByTestId('program-page-name')).toBeVisible({
+  await expect(page.getByTestId('navbar-page-title')).toBeVisible({
     timeout: 10_000,
   });
   logger.info('Program detail page opened');
@@ -134,7 +134,7 @@ test.describe('Journey 10: Profile Programs', () => {
 
     await openProgramDetailPage(page);
 
-    const name = page.getByTestId('program-page-name');
+    const name = page.getByTestId('navbar-page-title');
     await expect(name).toBeVisible({ timeout: 5000 });
     const programName = (await name.textContent())?.trim() ?? '';
     expect(programName.length).toBeGreaterThan(0);

@@ -33,7 +33,7 @@ const CompletionIcon = ({ node }: { node: CourseOutlineChildNode }) => {
     // Fully complete - filled check circle
     return (
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="#f59e0b" stroke="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="#3b82f6" stroke="none" />
         <path
           d="M5 8.5L7 10.5L11 6"
           fill="none"
@@ -78,7 +78,7 @@ const CompletionIcon = ({ node }: { node: CourseOutlineChildNode }) => {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#f59e0b"
+        stroke="#3b82f6"
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}
         strokeDashoffset={dashOffset}

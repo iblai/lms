@@ -1722,4 +1722,33 @@ describe('CourseContentLayout', () => {
       expect(screen.queryByText('Analytics')).not.toBeInTheDocument();
     });
   });
+
+  describe('content area scrolling', () => {
+    const renderOnTab = async (tab: string) => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${tab}`);
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      return screen.getByText('children').parentElement as HTMLElement;
+    };
+
+    it.each(['analytics', 'configuration', 'instructor', 'instructors'])(
+      'scrolls the container on the %s tab (desktop)',
+      async (tab) => {
+        const contentArea = await renderOnTab(tab);
+        expect(contentArea.className).toContain('overflow-y-auto');
+      },
+    );
+
+    it.each(['course', 'progress', 'dates', 'discussion'])(
+      'leaves scrolling to the iframe on the %s tab (desktop)',
+      async (tab) => {
+        const contentArea = await renderOnTab(tab);
+        expect(contentArea.className).not.toContain('overflow-y-auto');
+      },
+    );
+  });
 });

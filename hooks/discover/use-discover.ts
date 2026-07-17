@@ -1,6 +1,7 @@
-import { getUserName } from '@/utils/helpers';
+import { getUserName, isRecommendedTabHidden } from '@/utils/helpers';
 import { usePersonnalizedCatalog } from '../search/use-personnalized-catalog';
-import { useEffect, useState } from 'react';
+import { useRecommendedCourses } from '../courses/use-recommended-courses';
+import { useEffect, useMemo, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';
 import _ from 'lodash';
 import { useDebouncedCallback } from 'use-debounce';
@@ -10,6 +11,21 @@ import { DiscoverContentCardProps } from '@/types/discover';
 import { useRouter } from 'next/navigation';
 import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '../use-tenant-param';
+import { useUserEnrollments, EnrolledContentType } from './use-user-enrollments';
+
+/**
+ * Synthetic "Access" facet: narrows the catalog down to the user's
+ * enrollments and/or their recommended courses. Both terms live under
+ * the one `enrollment` slug.
+ */
+export const ENROLLMENT_FACET_SLUG = 'enrollment';
+export const ENROLLMENT_FACET_TERM = 'Enrolled';
+export const RECOMMENDED_FACET_TERM = 'Recommended';
+
+/** How many recommendations to pull for the catalog view (the AI-search
+ * recommendations endpoint caps `limit` at 20). */
+const RECOMMENDATIONS_LIMIT = 20;
+
 export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const router = useRouter();
   const tenant = useTenantParam();
@@ -20,6 +36,22 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const { handleSearch, isError, pagination } = usePersonnalizedCatalog({
     isLoggedIn: isUserLoggedIn,
   });
+  const { enrolledIds, enrolledCards, enrolledTotal, enrollmentsLoading } = useUserEnrollments({
+    tenant,
+  });
+  const recommendationsEnabled = isUserLoggedIn && !isRecommendedTabHidden();
+  const { recommendedCourses, isLoading: recommendationsLoading } = useRecommendedCourses({
+    limit: RECOMMENDATIONS_LIMIT,
+    forceLimit: true,
+    tenant,
+  });
+  const recommendedIds = useMemo(
+    () =>
+      new Set(
+        recommendedCourses.map((course) => course.data?.course_id).filter(Boolean) as string[],
+      ),
+    [recommendedCourses],
+  );
 
   const [facets, setFacets] = useState<CourseFacet[]>([]);
   const [filteredFacets, setFilteredFacets] = useState<CourseFacet[]>([]);
@@ -40,6 +72,37 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const isFacetTermSelected = (facetSlug: string, term: string) => {
     return selectedFacets?.[facetSlug]?.includes(term);
   };
+
+  /** "Enrolled" filter active — the catalog lists the user's enrollments. */
+  const enrolledOnly = !!selectedFacets?.[ENROLLMENT_FACET_SLUG]?.includes(ENROLLMENT_FACET_TERM);
+  /** "Recommended" filter active — the catalog lists recommended courses. */
+  const recommendedOnly =
+    recommendationsEnabled &&
+    !!selectedFacets?.[ENROLLMENT_FACET_SLUG]?.includes(RECOMMENDED_FACET_TERM);
+
+  const buildAccessFacet = (enrolledCount: number, recommendedCount: number): CourseFacet => ({
+    slug: ENROLLMENT_FACET_SLUG,
+    label: 'Access',
+    expanded: true,
+    terms: [
+      { key: ENROLLMENT_FACET_TERM, count: enrolledCount },
+      ...(recommendationsEnabled ? [{ key: RECOMMENDED_FACET_TERM, count: recommendedCount }] : []),
+    ],
+  });
+
+  // Keep the synthetic facet's counts in sync — both when the user data
+  // lands and when the facet fetch itself completes (whichever finishes
+  // last).
+  useEffect(() => {
+    const syncCount = (list: CourseFacet[]) =>
+      list.map((facet) =>
+        facet.slug === ENROLLMENT_FACET_SLUG
+          ? buildAccessFacet(enrolledTotal, recommendedCourses.length)
+          : facet,
+      );
+    setFacets(syncCount);
+    setFilteredFacets(syncCount);
+  }, [enrolledTotal, recommendedCourses.length, facetsLoading]);
 
   const handleSelectFacets = (facetSlug: string, term: string) => {
     if (facetSlug === 'q') {
@@ -114,6 +177,11 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
             ...(!_.isEmpty(selectedFacets?.certificate) && {
               certificate: selectedFacets?.certificate,
             }),
+            // The "Format" facet (self-paced / instructor-led) maps to the
+            // endpoint's `self_paced` parameter.
+            ...(!_.isEmpty(selectedFacets?.format) && {
+              selfPaced: selectedFacets?.format,
+            }),
             ...(!_.isEmpty(selectedFacets?.price) && {
               price: selectedFacets?.price.at(-1),
             }),
@@ -129,8 +197,17 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
       }
       const allFacets = response?.data?.facets;
       if (onlyFacets) {
-        setFacets(handleFormatFacets(allFacets));
-        setFilteredFacets(handleFormatFacets(allFacets));
+        // The synthetic Access facet (Enrolled / Recommended) leads the
+        // list — logged-in users can narrow the catalog down to their own
+        // enrollments or their recommendations.
+        const formattedFacets = isUserLoggedIn
+          ? [
+              buildAccessFacet(enrolledTotal, recommendedCourses.length),
+              ...handleFormatFacets(allFacets),
+            ]
+          : handleFormatFacets(allFacets);
+        setFacets(formattedFacets);
+        setFilteredFacets(formattedFacets);
         setFacetsLoading(false);
       } else {
         setContents(response?.data?.results);
@@ -146,11 +223,12 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   };
 
   const handleToggleFacet = (slug: string) => {
-    const updatedFacets = facets.map((facet) =>
-      facet.slug === slug ? { ...facet, expanded: !facet.expanded } : facet,
-    );
-    setFacets(updatedFacets);
-    setFilteredFacets(updatedFacets);
+    // Toggle each list in place so expanding one facet doesn't clobber
+    // another facet's client-side term filter.
+    const toggle = (list: CourseFacet[]) =>
+      list.map((facet) => (facet.slug === slug ? { ...facet, expanded: !facet.expanded } : facet));
+    setFacets(toggle);
+    setFilteredFacets(toggle);
   };
 
   const handleFormatFacets = (allFacets: Record<string, any>) => {
@@ -195,7 +273,19 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
           }
         }
       });
-      return formattedFacets;
+      // The catalog lumps unclassified content under a generic "other"
+      // subject — always hide that term from the Subject filter (and the
+      // whole facet if nothing else remains).
+      return formattedFacets
+        .map((facet) =>
+          facet.slug === 'subject'
+            ? {
+                ...facet,
+                terms: facet.terms.filter((term) => String(term.key).toLowerCase() !== 'other'),
+              }
+            : facet,
+        )
+        .filter((facet) => facet.terms.length > 0);
     } catch (error) {
       console.log(error);
       return [];
@@ -220,6 +310,7 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
               : config.urls.lms() + data?.data?.card_image
             : '',
           id: data?.program_id,
+          enrolled: enrolledIds.has(data?.program_id) || enrolledIds.has(data?.program_key),
         };
       case 'pathway':
         return {
@@ -231,6 +322,7 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
           )}&user_related=false&pathway_id=${encodeURIComponent(data?.pathway_id)}`,
           image: '',
           id: data?.pathway_uuid,
+          enrolled: enrolledIds.has(data?.pathway_uuid) || enrolledIds.has(data?.pathway_id),
         };
       //case "course":
       default:
@@ -242,6 +334,8 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
           url: `/courses/${course?.course_id}`,
           image: `${config.urls.lms()}${course?.edx_data?.course_image_asset_path}`,
           id: course?.course_id,
+          enrolled: enrolledIds.has(course?.course_id),
+          recommended: recommendedIds.has(course?.course_id),
         };
       /* case "article":
         return contents.map((content) => {
@@ -252,38 +346,95 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
     }
   };
 
-  const handleFilterFacets = (facetSlug: string, searchTerm: string) => {
-    try {
-      if (!searchTerm) {
-        throw new Error();
+  /**
+   * The cards to render for the current mode:
+   *  - "Enrolled" / "Recommended" filters active → the union of the user's
+   *    enrollments and their recommended courses (narrowed by the selected
+   *    content types and the search query, all client-side);
+   *  - otherwise → the personalized catalog search results, each flagged
+   *    `enrolled` / `recommended` when applicable.
+   */
+  const displayCards = useMemo<DiscoverContentCardProps[]>(() => {
+    if (enrolledOnly || recommendedOnly) {
+      const selectedTypes = (
+        !_.isEmpty(selectedFacets?.content)
+          ? selectedFacets.content
+          : ['courses', 'programs', 'pathways']
+      ).filter((type): type is EnrolledContentType => type in enrolledCards);
+      const query = (selectedFacets?.q?.[0] ?? '').toLowerCase();
+
+      const cards: DiscoverContentCardProps[] = [];
+      const seen = new Set<string>();
+      const pushCard = (card: DiscoverContentCardProps) => {
+        const key = card.id || card.title;
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        cards.push(card);
+      };
+
+      if (enrolledOnly) {
+        selectedTypes
+          .flatMap((type) => enrolledCards[type])
+          .forEach((card) => pushCard({ ...card, recommended: recommendedIds.has(card.id) }));
       }
-      const targetedFacet = facets.find((facet) => facet.slug === facetSlug);
-      const matchingTermsFilters = targetedFacet?.terms.filter((term) =>
-        String(term.key).toLowerCase().includes(String(searchTerm).toLowerCase()),
-      );
-      if (!matchingTermsFilters || matchingTermsFilters?.length === 0) {
-        throw new Error();
+      // Recommendations are courses — they only contribute when the
+      // content filter includes courses (or no content filter is set).
+      if (recommendedOnly && selectedTypes.includes('courses')) {
+        recommendedCourses.map(handleFormatContents).forEach(pushCard);
       }
-      setFilteredFacets(
-        facets.map((facet) => {
-          if (facet.slug === facetSlug) {
-            return { ...facet, terms: [...matchingTermsFilters] };
-          }
-          return facet;
-        }),
-      );
-    } catch {
-      setFilteredFacets(facets);
+      return cards.filter((card) => !query || card.title.toLowerCase().includes(query));
     }
+    return (contents ?? []).map(handleFormatContents);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    enrolledOnly,
+    recommendedOnly,
+    selectedFacets,
+    enrolledCards,
+    contents,
+    enrolledIds,
+    recommendedIds,
+    recommendedCourses,
+  ]);
+
+  /**
+   * Client-side search within one facet's term list. Only the targeted
+   * facet is touched (other facets keep their own filters); clearing the
+   * search restores the facet's full term list, and no matches means an
+   * empty list — not a reset.
+   */
+  const handleFilterFacets = (facetSlug: string, searchTerm: string) => {
+    const allTerms = facets.find((facet) => facet.slug === facetSlug)?.terms ?? [];
+    const matchingTerms = !searchTerm
+      ? allTerms
+      : allTerms.filter((term) =>
+          String(term.key).toLowerCase().includes(String(searchTerm).toLowerCase()),
+        );
+    setFilteredFacets((previous) =>
+      previous.map((facet) =>
+        facet.slug === facetSlug ? { ...facet, terms: matchingTerms } : facet,
+      ),
+    );
   };
 
   useEffect(() => {
     handleFetchData(true);
   }, []);
 
+  // Every selected facet except the synthetic client-side ones (Enrolled /
+  // Recommended) is a server-side search parameter — refetch whenever any
+  // of them changes (subject, format, certificate, level, …), not just the
+  // query and content type.
+  const searchFacetsKey = JSON.stringify(
+    Object.fromEntries(
+      Object.entries(selectedFacets ?? {}).filter(([slug]) => slug !== ENROLLMENT_FACET_SLUG),
+    ),
+  );
+
   useEffect(() => {
     handleFetchSearchContents();
-  }, [selectedFacets?.q?.length, selectedFacets?.content?.length, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFacetsKey, page]);
 
   return {
     contents,
@@ -302,5 +453,10 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
     setPage,
     handleFilterFacets,
     setSelectedFacets,
+    displayCards,
+    enrolledOnly,
+    enrollmentsLoading,
+    recommendedOnly,
+    recommendationsLoading,
   };
 };

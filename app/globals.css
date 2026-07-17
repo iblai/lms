@@ -4,6 +4,33 @@
 
 @config '../tailwind.config.ts';
 
+/* Custom below-`sm` breakpoint (Tailwind v4 has no `xs`). Defined here as a
+   theme token — the v4-native way — so `xs:*` variants generate. Used by
+   home/page.tsx (`xs:pt-4`) and onboarding (`xs:inline`). */
+@theme {
+  --breakpoint-xs: 30rem; /* 480px */
+
+  /* Rebrand: every `*-amber-*` utility renders the standard blue palette
+     (blue-500 is the default accent) instead of amber — one token remap
+     instead of touching ~70 files. */
+  --color-amber-50: oklch(97% 0.014 254.604);
+  --color-amber-100: oklch(93.2% 0.032 255.585);
+  --color-amber-200: oklch(88.2% 0.059 254.128);
+  --color-amber-300: oklch(80.9% 0.105 251.813);
+  --color-amber-400: oklch(70.7% 0.165 254.624);
+  --color-amber-500: oklch(62.3% 0.214 259.815);
+  --color-amber-600: oklch(54.6% 0.245 262.881);
+  --color-amber-700: oklch(48.8% 0.243 264.376);
+  --color-amber-800: oklch(42.4% 0.199 265.638);
+  --color-amber-900: oklch(37.9% 0.146 265.522);
+  --color-amber-950: oklch(28.2% 0.091 267.935);
+
+  /* Lighter global type, matching the sidebar's weight scale: headings
+     that use `font-semibold`/`font-bold` render one step lighter. */
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
+}
+
 @plugin 'tailwind-scrollbar';
 
 /* SDK: custom base styles (CSS variables, no Tailwind utilities) */
@@ -11,6 +38,7 @@
 
 /* SDK: scan compiled components so Tailwind generates their utility classes */
 @source "../node_modules/@iblai/iblai-js/dist/web-containers/source";
+@source "../node_modules/@iblai/iblai-js/dist/web-containers/source/next";
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -54,11 +82,12 @@ body {
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
+    /* Chart palette — warm hues remapped to the standard blue family */
+    --chart-1: 217 91% 60%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-4: 224 76% 48%;
+    --chart-5: 212 96% 78%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -89,11 +118,12 @@ body {
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
+    /* Chart palette — warm hues remapped to the standard blue family */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
+    --chart-3: 217 91% 60%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-5: 212 96% 78%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

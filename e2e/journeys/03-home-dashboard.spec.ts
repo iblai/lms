@@ -5,13 +5,13 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 /**
  * Journey 03: Home Dashboard
  *
- * Validates the home dashboard at /home:
- *  1. Home page with Profile Sidebar
- *  2. Suggested Courses section
- *  3. My Courses section with grid
- *  4. Click My Courses card → course about
- *  5. Click suggested course → course about
- *  6. Profile Sidebar shows stats
+ * Validates the home landing page at /home:
+ *  1. Hero greeting band with primary CTAs
+ *  2. Explore rail
+ *  3. My Courses CTA → enrolled catalog
+ *  4. Click enrolled catalog card → course about
+ *  5. Click catalog rail card → course about
+ *  6. Activity Overview band shows stats
  *  7. View All links
  *  8. No console errors
  */
@@ -33,149 +33,123 @@ test.describe('Journey 03: Home Dashboard', () => {
     await waitForAppShell(page);
   });
 
-  test('Checkpoint 1: Home page displays Profile Sidebar', async ({ page }) => {
-    // Wait for the home page to be ready
-    const sidebar = page
-      .getByLabel('Profile Sidebar')
-      .or(page.locator('[data-testid="profile-sidebar"]'))
-      .first();
+  test('Checkpoint 1: Home page displays the hero greeting band', async ({ page }) => {
+    // The landing hero greets the learner and offers the primary CTAs.
+    const hero = page.getByRole('region', { name: 'Welcome' });
+    await expect(hero).toBeVisible({ timeout: 120_000 });
 
-    const hasSidebar = await sidebar.isVisible({ timeout: 120_000 }).catch(() => false);
+    //greeting should be good morning, good afternoon or good evening
+    const greeting = hero.getByRole('heading', {
+      name: /good morning|good afternoon|good evening/i,
+    });
+    await expect(greeting).toBeVisible({ timeout: 120_000 });
+    logger.info('Hero greeting band is visible');
 
-    if (hasSidebar) {
-      logger.info('Profile Sidebar is visible');
-    } else {
-      // Fallback: look for profile-related content in a sidebar/aside region
-      const aside = page.getByRole('complementary').first();
-      const hasAside = await aside.isVisible({ timeout: 120_000 }).catch(() => false);
-      if (hasAside) {
-        logger.info('Complementary sidebar region found');
-      } else {
-        logger.info('Profile Sidebar not found — layout may differ');
-      }
-    }
+    // At least one primary CTA (Explore Catalog is tenant-gated; My Courses
+    // is always present).
+    const myCoursesCta = hero.getByRole('link', { name: /my courses/i });
+    await expect(myCoursesCta).toBeVisible({ timeout: 30_000 });
 
     // The home page itself should have loaded
     await expect(page).toHaveURL(/\/home/);
   });
 
-  test('Checkpoint 2: Suggested Courses section is displayed', async ({ page }) => {
-    const suggestedHeading = page.getByRole('heading', {
-      name: /suggested courses|recommended/i,
-    });
+  test('Checkpoint 2: Explore rail is displayed', async ({ page }) => {
+    // Recommendations moved to the centralized catalog page; the home
+    // page closes with a catalog discovery rail instead.
+    const railHeading = page.getByRole('heading', { name: /^explore$/i });
 
-    const hasSuggested = await suggestedHeading.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasRail = await railHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    if (hasSuggested) {
-      await expect(suggestedHeading).toBeVisible();
-      logger.info('Suggested Courses section found');
+    if (hasRail) {
+      await expect(railHeading).toBeVisible();
+      logger.info('Explore rail found');
     } else {
-      logger.info('Suggested Courses section not present — may require data');
+      logger.info('Catalog rail not present — Discover may be disabled or empty');
     }
   });
 
-  test('Checkpoint 3: My Courses section with grid', async ({ page }) => {
-    const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-    await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
+  test('Checkpoint 3: My Courses CTA opens the enrolled catalog', async ({ page }) => {
+    // The hero's My Courses CTA deep-links the centralized catalog's
+    // enrolled view (the home My Courses grid moved there).
+    const hero = page.getByRole('region', { name: 'Welcome' });
+    const myCoursesCta = hero.getByRole('link', { name: /my courses/i });
+    await expect(myCoursesCta).toBeVisible({ timeout: 120_000 });
+    await myCoursesCta.click();
 
-    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
-    logger.info('My Courses Grid is visible');
+    await page.waitForURL(/\/discover\?.*enrolled=true/, { timeout: 120_000 });
 
-    // Verify at least one course link exists in the grid
-    const courseLinks = myCoursesGrid.getByRole('link');
-    const courseCount = await courseLinks.count();
-
-    if (courseCount > 0) {
-      logger.info(`Found ${courseCount} course(s) in My Courses grid`);
-    } else {
-      logger.info('My Courses grid is empty — user may not be enrolled');
-    }
+    const enrollmentChip = page.getByRole('button', { name: /remove filter enrollment/i });
+    await expect(enrollmentChip).toBeVisible({ timeout: 120_000 });
+    logger.info('Enrolled catalog view reached from the home CTA');
   });
 
-  test('Checkpoint 4: Click My Courses card navigates to course about', async ({ page }) => {
-    const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-    await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
+  test('Checkpoint 4: Click enrolled catalog card navigates to course about', async ({ page }) => {
+    const hero = page.getByRole('region', { name: 'Welcome' });
+    const myCoursesCta = hero.getByRole('link', { name: /my courses/i });
+    await expect(myCoursesCta).toBeVisible({ timeout: 120_000 });
+    await myCoursesCta.click();
+    await page.waitForURL(/\/discover\?.*enrolled=true/, { timeout: 120_000 });
 
-    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-    await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
-
-    const courseLink = myCoursesGrid.getByRole('link').first();
-    const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
+    const card = page.locator('[data-testid="discover-content-card"]').first();
+    const hasCourse = await card.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasCourse) {
-      logger.info('No courses in My Courses grid — skipping navigation test');
+      logger.info('No enrolled courses — skipping navigation test');
       test.skip();
       return;
     }
 
-    await courseLink.click();
+    await card.click();
     await page.waitForURL(/\/courses\//, { timeout: 120_000 });
     await waitForAppShell(page);
 
     // Verify course about page loaded
     const courseHeading = page.getByRole('heading', { level: 1 });
     await expect(courseHeading).toBeVisible({ timeout: 30_000 });
-    logger.info('Navigated to course about page from My Courses');
+    logger.info('Navigated to course about page from the enrolled catalog');
   });
 
-  test('Checkpoint 5: Click suggested course navigates to course about', async ({ page }) => {
-    const suggestedHeading = page.getByRole('heading', {
-      name: /suggested courses|recommended/i,
-    });
+  test('Checkpoint 5: Click catalog rail card navigates to course about', async ({ page }) => {
+    const railRegion = page.getByRole('region', { name: 'Explore' });
 
-    const hasSuggested = await suggestedHeading.isVisible({ timeout: 120_000 }).catch(() => false);
+    const hasRail = await railRegion.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    if (!hasSuggested) {
-      logger.info('No Suggested Courses section — skipping');
+    if (!hasRail) {
+      logger.info('No Explore rail — skipping');
       test.skip();
       return;
     }
 
-    // Find a course card link (href contains /courses/) — not the "See More" link
-    const suggestedSection = suggestedHeading.locator('..').locator('..');
-    const courseLink = suggestedSection.locator('a[href*="/courses/"]').first();
+    // Catalog rail cards are click targets (divs) that route to the course.
+    const card = railRegion.locator('[data-testid="discover-content-card"]').first();
+    const hasCard = await card.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    const hasLink = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!hasLink) {
-      logger.info('No suggested course card links found — skipping');
+    if (!hasCard) {
+      logger.info('No catalog rail cards found — skipping');
       test.skip();
       return;
     }
 
-    await courseLink.click();
-    await page.waitForURL(/\/courses\//, { timeout: 120_000 });
+    await card.click();
+    await page.waitForURL(/\/(courses|programs)\//, { timeout: 120_000 });
     await waitForAppShell(page);
 
     const courseHeading = page.getByRole('heading', { level: 1 });
     await expect(courseHeading).toBeVisible({ timeout: 120_000 });
-    logger.info('Navigated to course about page from Suggested Courses');
+    logger.info('Navigated to content page from the catalog rail');
   });
 
-  test('Checkpoint 6: Profile Sidebar shows stats', async ({ page }) => {
-    const sidebar = page
-      .getByLabel('Profile Sidebar')
-      .or(page.locator('[data-testid="profile-sidebar"]'))
-      .first();
+  test('Checkpoint 6: Activity Overview band is NOT on the home page', async ({ page }) => {
+    // The stats + time-spent chart live on the profile Activity page only.
+    // Wait until the Explore rail (or its absence) settles so we assert on
+    // the fully rendered page, not a loading state.
+    const rail = page.getByRole('region', { name: 'Explore' });
+    await rail.isVisible({ timeout: 120_000 }).catch(() => false);
 
-    const hasSidebar = await sidebar.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!hasSidebar) {
-      logger.info('Profile Sidebar not found — skipping stats check');
-      test.skip();
-      return;
-    }
-
-    // Look for stat-like content: numbers, labels, or progress indicators
-    const sidebarText = await sidebar.textContent();
-
-    if (sidebarText && sidebarText.length > 0) {
-      logger.info('Profile Sidebar contains content');
-      expect(sidebarText.length).toBeGreaterThan(0);
-    } else {
-      logger.info('Profile Sidebar is empty');
-    }
+    await expect(page.getByRole('region', { name: 'Activity Overview' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: /time spent/i })).toHaveCount(0);
+    logger.info('No Activity Overview band on the home page');
   });
 
   test('Checkpoint 7: View All links are present', async ({ page }) => {

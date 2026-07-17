@@ -17,6 +17,8 @@ const mockHandleSelectFacets = vi.fn();
 const mockSetPage = vi.fn();
 
 vi.mock('@/hooks/discover/use-discover', () => ({
+  ENROLLMENT_FACET_SLUG: 'enrollment',
+  RECOMMENDED_FACET_SLUG: 'recommended',
   useDiscover: vi.fn(() => ({
     contents: [],
     facets: [],
@@ -33,15 +35,16 @@ vi.mock('@/hooks/discover/use-discover', () => ({
     handleFilterFacets: vi.fn(),
     filteredFacets: [],
     setSelectedFacets: mockSetSelectedFacets,
+    displayCards: [],
+    enrolledOnly: false,
+    enrollmentsLoading: false,
+    recommendedOnly: false,
+    recommendationsLoading: false,
   })),
 }));
 
 vi.mock('@/components/course-card-skeleton', () => ({
   CourseCardSkeleton: () => <div data-testid="course-card-skeleton" />,
-}));
-
-vi.mock('@/components/footer', () => ({
-  Footer: () => <div data-testid="footer" />,
 }));
 
 vi.mock('@/components/skeleton-multiplier', () => ({
@@ -95,11 +98,11 @@ describe('DiscoverPage', () => {
     mockGet.mockReturnValue(null);
   });
 
-  it('renders the page with heading and footer', () => {
+  it('renders no page titles (the title lives in the navbar)', () => {
     render(<DiscoverPage />);
 
-    expect(screen.getAllByText('Featured Learning Content').length).toBeGreaterThan(0);
-    expect(screen.getByTestId('footer')).toBeInTheDocument();
+    expect(screen.queryByText('Featured Learning Content')).not.toBeInTheDocument();
+    expect(screen.queryByText('Explore Content')).not.toBeInTheDocument();
   });
 
   it('shows empty box when no contents and not loading', () => {
@@ -125,6 +128,9 @@ describe('DiscoverPage', () => {
       handleFilterFacets: vi.fn(),
       filteredFacets: [],
       setSelectedFacets: mockSetSelectedFacets,
+      displayCards: [],
+      enrolledOnly: false,
+      enrollmentsLoading: false,
     } as any);
 
     render(<DiscoverPage />);
@@ -149,6 +155,9 @@ describe('DiscoverPage', () => {
       handleFilterFacets: vi.fn(),
       filteredFacets: [],
       setSelectedFacets: mockSetSelectedFacets,
+      displayCards: [],
+      enrolledOnly: false,
+      enrollmentsLoading: false,
     } as any);
 
     render(<DiscoverPage />);
@@ -159,7 +168,7 @@ describe('DiscoverPage', () => {
 
   it('renders content cards when contents are available', () => {
     vi.mocked(useDiscover).mockReturnValue({
-      contents: [{ title: 'Course 1' }, { title: 'Course 2' }] as any,
+      contents: [] as any,
       facets: [],
       contentsLoading: false,
       facetsLoading: false,
@@ -174,6 +183,12 @@ describe('DiscoverPage', () => {
       handleFilterFacets: vi.fn(),
       filteredFacets: [],
       setSelectedFacets: mockSetSelectedFacets,
+      displayCards: [
+        { title: 'Course 1', id: 'c1' },
+        { title: 'Course 2', id: 'c2' },
+      ],
+      enrolledOnly: false,
+      enrollmentsLoading: false,
     } as any);
 
     render(<DiscoverPage />);
@@ -188,12 +203,19 @@ describe('DiscoverPage', () => {
     expect(mockSetPage).toHaveBeenCalledWith(2);
   });
 
+  // The URL-seeding effect passes an updater function to setSelectedFacets;
+  // invoke it against an empty state to inspect the seeded facets.
+  const seededFacets = () => {
+    const updater = mockSetSelectedFacets.mock.calls.at(-1)?.[0];
+    return typeof updater === 'function' ? updater({}) : updater;
+  };
+
   it('sets search query from URL params', () => {
-    mockGet.mockReturnValue('react');
+    mockGet.mockImplementation((key: string) => (key === 'q' ? 'react' : null));
 
     render(<DiscoverPage />);
 
-    expect(mockSetSelectedFacets).toHaveBeenCalledWith(expect.objectContaining({ q: ['react'] }));
+    expect(seededFacets()).toEqual(expect.objectContaining({ q: ['react'] }));
   });
 
   it('clears search query when URL param is removed', () => {
@@ -201,7 +223,45 @@ describe('DiscoverPage', () => {
 
     render(<DiscoverPage />);
 
-    expect(mockSetSelectedFacets).toHaveBeenCalledWith(expect.objectContaining({ q: [] }));
+    expect(seededFacets()).toEqual(expect.objectContaining({ q: [] }));
+  });
+
+  it('seeds content and enrollment filters from URL params', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'content') return 'courses';
+      if (key === 'enrolled') return 'true';
+      return null;
+    });
+
+    render(<DiscoverPage />);
+
+    expect(seededFacets()).toEqual(
+      expect.objectContaining({ content: ['courses'], enrollment: ['Enrolled'] }),
+    );
+  });
+
+  it('seeds the Recommended term of the Access facet from the recommended URL param', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'recommended') return 'true';
+      return null;
+    });
+
+    render(<DiscoverPage />);
+
+    expect(seededFacets()).toEqual(expect.objectContaining({ enrollment: ['Recommended'] }));
+  });
+
+  it('seeds both Access terms when enrolled and recommended params are set', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'enrolled' || key === 'recommended') return 'true';
+      return null;
+    });
+
+    render(<DiscoverPage />);
+
+    expect(seededFacets()).toEqual(
+      expect.objectContaining({ enrollment: ['Enrolled', 'Recommended'] }),
+    );
   });
 
   it('renders selected facets with remove buttons', () => {
@@ -221,6 +281,9 @@ describe('DiscoverPage', () => {
       handleFilterFacets: vi.fn(),
       filteredFacets: [],
       setSelectedFacets: mockSetSelectedFacets,
+      displayCards: [],
+      enrolledOnly: false,
+      enrollmentsLoading: false,
     } as any);
 
     render(<DiscoverPage />);
@@ -229,10 +292,10 @@ describe('DiscoverPage', () => {
     expect(screen.getByText('course')).toBeInTheDocument();
   });
 
-  it('renders facets filter sidebar', () => {
+  it('renders facets filter sidebar without a "Filter By" heading', () => {
     render(<DiscoverPage />);
 
     expect(screen.getByTestId('facets-filter')).toBeInTheDocument();
-    expect(screen.getByText('Explore Content')).toBeInTheDocument();
+    expect(screen.queryByText('Filter By')).not.toBeInTheDocument();
   });
 });

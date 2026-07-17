@@ -1,24 +1,29 @@
 import { getRandomCourseImage } from '@/utils/helpers';
 import Image from 'next/image';
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { DiscoverContentCardProps } from '../types/discover';
 import { useRouter } from 'next/navigation';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 
-const PathwayDetailModal = dynamic(() =>
-  import('./pathway-detail-modal').then((m) => m.PathwayDetailModal),
-);
-
-export function DiscoverContentCard({ content }: { content: DiscoverContentCardProps }) {
+export function DiscoverContentCard({
+  content,
+  onClick,
+}: {
+  content: DiscoverContentCardProps;
+  /** Overrides the default navigation (e.g. pathway resources open a URL). */
+  onClick?: () => void;
+}) {
   const router = useRouter();
   const tenant = useTenantParam();
   const [randomImage] = useState(() => getRandomCourseImage());
-  const [selectedPathway, setSelectedPathway] = useState<any>(null);
   const handleContentClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
     switch (content.contentType) {
       case 'pathway':
-        setSelectedPathway(content);
+        router.push(`/platform/${tenant}/pathways/${content.id}`);
         break;
       case 'program':
         router.push(`/platform/${tenant}/programs/${content.id}`);
@@ -49,6 +54,20 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
             <div className="absolute bottom-2 left-2 rounded-sm bg-amber-500 px-2 py-1 text-xs text-white uppercase">
               {content.contentType}
             </div>
+            {(content.enrolled || content.recommended) && (
+              <div className="absolute top-2 right-2 flex gap-1">
+                {content.enrolled && (
+                  <div className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-2 py-0.5 text-xs font-medium text-[#1d4ed8]">
+                    Enrolled
+                  </div>
+                )}
+                {content.recommended && (
+                  <div className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-2 py-0.5 text-xs font-medium text-[#1d4ed8]">
+                    Recommended
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex flex-1 flex-col justify-between p-4 pb-6">
             <div>
@@ -59,9 +78,6 @@ export function DiscoverContentCard({ content }: { content: DiscoverContentCardP
           </div>
         </div>
       </div>
-      {selectedPathway && (
-        <PathwayDetailModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} />
-      )}
     </>
   );
 }

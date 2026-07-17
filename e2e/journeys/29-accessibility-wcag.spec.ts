@@ -54,24 +54,22 @@ test.fixme('Journey 29: Accessibility WCAG 2.1 AA', () => {
   });
 
   test('CP-4: Course about page passes axe-core scan', async ({ page }) => {
-    // Navigate to home and click into a course
-    await gotoTenantPage(page, 'home', { timeout: 120_000 });
+    // Enter a course from the enrolled catalog view
+    await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120_000 });
     await waitForAppShell(page);
 
-    const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-    const hasGrid = await myCoursesGrid
-      .waitFor({ state: 'visible', timeout: 30_000 })
+    const courseCard = page.locator('[data-testid="discover-content-card"]').first();
+    const hasCourse = await courseCard
+      .waitFor({ state: 'visible', timeout: 120_000 })
       .then(() => true)
       .catch(() => false);
 
-    if (!hasGrid) {
+    if (!hasCourse) {
       test.skip();
       return;
     }
 
-    const courseLink = myCoursesGrid.getByRole('link').first();
-    await expect(courseLink).toBeVisible({ timeout: 30_000 });
-    await courseLink.click();
+    await courseCard.click();
     await page.waitForURL(/\/courses\/.*/, { timeout: 120_000 });
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();

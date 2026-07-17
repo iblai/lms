@@ -3,16 +3,9 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, Plus } from 'lucide-react';
 import { useProfilePathways } from '@/hooks/profile/use-profile-pathways';
-
-const PathwayDetailModal = dynamic(() =>
-  import('@/components/pathway-detail-modal').then((m) => m.PathwayDetailModal),
-);
-
-const CreatePathwayModal = dynamic(() =>
-  import('@/components/create-pathway-modal').then((m) => m.CreatePathwayModal),
-);
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonPathwayBox } from '@/components/skeleton-pathway-box';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
@@ -21,8 +14,14 @@ import { getRandomCourseImage } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
+// Lazy-loaded: only fetched when the Create Pathway dialog opens.
+const CreatePathwayModal = dynamic(() =>
+  import('@/components/create-pathway-modal').then((m) => m.CreatePathwayModal),
+);
+
 export default function PathwaysPage() {
   const tenant = useTenantParam();
+  const router = useRouter();
   const { metadataLoaded, isSkillsAssignmentsFeatureHidden } = useTenantMetadata({
     org: tenant,
   });
@@ -31,7 +30,6 @@ export default function PathwaysPage() {
   const ASSIGNED_TAB = 'assigned';
   const ENROLLED_TAB = 'enrolled';
   const [activeTab, setActiveTab] = useState<'catalog' | 'assigned' | 'enrolled'>(CATALOG_TAB); // "my" or "assigned"
-  const [selectedPathway, setSelectedPathway] = useState<any>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const {
     filteredPathways,
@@ -146,7 +144,9 @@ export default function PathwaysPage() {
                 key={index}
                 data-testid="pathway-card"
                 className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-                onClick={() => setSelectedPathway(pathway)}
+                onClick={() =>
+                  router.push(`/platform/${tenant}/pathways/${(pathway as any)?.pathway_uuid}`)
+                }
               >
                 <div className="relative h-32 w-full overflow-hidden">
                   <Image
@@ -188,11 +188,6 @@ export default function PathwaysPage() {
             ))}
         </div>
       </div>
-      {/* Pathway Detail Modal */}
-      {selectedPathway && (
-        <PathwayDetailModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} />
-      )}
-
       {/* Create Pathway Dialog */}
       {createDialogOpen && (
         <CreatePathwayModal

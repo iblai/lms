@@ -2,51 +2,51 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-vi.mock('@/components/profile-sidebar', () => ({
-  ProfileSidebar: () => <div data-testid="profile-sidebar" />,
+vi.mock('@/components/home/home-hero', () => ({
+  HomeHero: () => <div data-testid="home-hero" />,
 }));
 
-vi.mock('@/components/suggested-courses', () => ({
-  SuggestedCourses: () => <div data-testid="suggested-courses" />,
-}));
-
-vi.mock('@/components/my-courses', () => ({
-  MyCourses: () => <div data-testid="my-courses" />,
-}));
-
-vi.mock('@/utils/helpers', () => ({
-  isRecommendedTabHidden: vi.fn(() => false),
+vi.mock('@/components/home/home-discover-rail', () => ({
+  HomeDiscoverRail: () => <div data-testid="home-discover-rail" />,
 }));
 
 import Dashboard from '../page';
-import { isRecommendedTabHidden } from '@/utils/helpers';
 
 describe('Dashboard (home page)', () => {
-  it('renders the profile sidebar', () => {
+  it('renders the hero band', () => {
     render(<Dashboard />);
 
-    expect(screen.getByTestId('profile-sidebar')).toBeInTheDocument();
+    expect(screen.getByTestId('home-hero')).toBeInTheDocument();
   });
 
-  it('renders MyCourses', () => {
+  it('does not render the activity overview band (lives on the profile Activity page)', () => {
     render(<Dashboard />);
 
-    expect(screen.getByTestId('my-courses')).toBeInTheDocument();
+    expect(screen.queryByTestId('home-activity-overview')).not.toBeInTheDocument();
+    expect(screen.queryByText(/time spent/i)).not.toBeInTheDocument();
   });
 
-  it('renders SuggestedCourses when recommended tab is not hidden', () => {
-    vi.mocked(isRecommendedTabHidden).mockReturnValue(false);
-
+  it('does not render the My Courses section (moved to the catalog page)', () => {
     render(<Dashboard />);
 
-    expect(screen.getByTestId('suggested-courses')).toBeInTheDocument();
+    expect(screen.queryByTestId('my-courses')).not.toBeInTheDocument();
   });
 
-  it('hides SuggestedCourses when recommended tab is hidden', () => {
-    vi.mocked(isRecommendedTabHidden).mockReturnValue(true);
+  it('renders the discover rail', () => {
+    render(<Dashboard />);
 
+    expect(screen.getByTestId('home-discover-rail')).toBeInTheDocument();
+  });
+
+  it('does not render the Suggested Courses section (moved to the catalog page)', () => {
     render(<Dashboard />);
 
     expect(screen.queryByTestId('suggested-courses')).not.toBeInTheDocument();
+  });
+
+  it('does not render the old profile sidebar column', () => {
+    render(<Dashboard />);
+
+    expect(screen.queryByTestId('profile-sidebar')).not.toBeInTheDocument();
   });
 });

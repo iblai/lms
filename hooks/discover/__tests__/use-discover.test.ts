@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
+  isRecommendedTabHidden: vi.fn(() => false),
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -44,7 +45,38 @@ vi.mock('use-debounce', () => ({
   useDebouncedCallback: (fn: any) => fn,
 }));
 
+const mockEnrollments = vi.hoisted(() => ({
+  enrolledIds: new Set<string>(),
+  enrolledCards: { courses: [] as any[], programs: [] as any[], pathways: [] as any[] },
+  enrolledTotal: 0,
+  enrollmentsLoading: false,
+}));
+vi.mock('../use-user-enrollments', () => ({
+  useUserEnrollments: vi.fn(() => mockEnrollments),
+}));
+
+const mockRecommendations = vi.hoisted(() => ({
+  recommendedCourses: [] as any[],
+  allRecommendedCourses: [] as any[],
+  isLoading: false,
+  isError: undefined,
+}));
+vi.mock('../../courses/use-recommended-courses', () => ({
+  useRecommendedCourses: vi.fn(() => mockRecommendations),
+}));
+
 import { useDiscover } from '../use-discover';
+
+// The one synthetic Access facet carries both user-scoped terms.
+const ACCESS_FACET = {
+  slug: 'enrollment',
+  label: 'Access',
+  expanded: true,
+  terms: [
+    { key: 'Enrolled', count: 0 },
+    { key: 'Recommended', count: 0 },
+  ],
+};
 
 describe('useDiscover', () => {
   beforeEach(() => {
@@ -55,6 +87,12 @@ describe('useDiscover', () => {
     mockCatalog.isError = false;
     mockCatalog.pagination = mockPagination;
     mockTenantMetadata.metadata = { skills_include_community_courses: false };
+    mockEnrollments.enrolledIds = new Set<string>();
+    mockEnrollments.enrolledCards = { courses: [], programs: [], pathways: [] };
+    mockEnrollments.enrolledTotal = 0;
+    mockEnrollments.enrollmentsLoading = false;
+    mockRecommendations.recommendedCourses = [];
+    mockRecommendations.isLoading = false;
     // jsdom needs a writable href for handleSelectFacets("q", ...)
     Object.defineProperty(window, 'location', {
       value: new URL('https://app.example.com/discover'),
@@ -91,8 +129,8 @@ describe('useDiscover', () => {
     });
     expect(result.current.page).toBe(1);
     expect(result.current.contents).toEqual([]);
-    expect(result.current.facets).toEqual([]);
-    expect(result.current.filteredFacets).toEqual([]);
+    expect(result.current.facets).toEqual([ACCESS_FACET]);
+    expect(result.current.filteredFacets).toEqual([ACCESS_FACET]);
     expect(result.current.selectedFacets).toEqual({ content: ['courses'] });
   });
 
@@ -134,6 +172,97 @@ describe('useDiscover', () => {
       result.current.handleSelectFacets('language', 'en');
     });
     expect(result.current.selectedFacets.language).toEqual(['en']);
+  });
+
+  it('refetches with the facet as a search param when a facet is selected (subject)', async () => {
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    mockCatalog.handleSearch.mockClear();
+    act(() => {
+      result.current.handleSelectFacets('subject', 'business');
+    });
+    // The content fetch is debounced by 500ms.
+    await waitFor(
+      () => {
+        expect(mockCatalog.handleSearch).toHaveBeenCalledWith(
+          expect.objectContaining({ subject: ['business'] }),
+        );
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it('maps the format facet to the selfPaced search param', async () => {
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    mockCatalog.handleSearch.mockClear();
+    act(() => {
+      result.current.handleSelectFacets('format', 'instructor-led');
+    });
+    await waitFor(
+      () => {
+        expect(mockCatalog.handleSearch).toHaveBeenCalledWith(
+          expect.objectContaining({ selfPaced: ['instructor-led'] }),
+        );
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it('refetches without the facet param when a facet term is deselected', async () => {
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    act(() => {
+      result.current.handleSelectFacets('certificate', 'verified');
+    });
+    await waitFor(
+      () => {
+        expect(mockCatalog.handleSearch).toHaveBeenCalledWith(
+          expect.objectContaining({ certificate: ['verified'] }),
+        );
+      },
+      { timeout: 3000 },
+    );
+    mockCatalog.handleSearch.mockClear();
+    act(() => {
+      result.current.handleSelectFacets('certificate', 'verified');
+    });
+    await waitFor(
+      () => {
+        expect(mockCatalog.handleSearch).toHaveBeenCalled();
+      },
+      { timeout: 3000 },
+    );
+    const lastCall = mockCatalog.handleSearch.mock.calls.at(-1)?.[0];
+    expect(lastCall?.certificate).toBeUndefined();
+  });
+
+  it('hides the "other" term from the Subject facet', async () => {
+    mockCatalog.handleSearch = vi.fn(async () => ({
+      data: {
+        facets: {
+          subject: { terms: { business: 3, other: 5 } },
+          certificate: { terms: { other: 2 } },
+        },
+        results: [],
+      },
+    }));
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    const subject = result.current.facets.find((facet) => facet.slug === 'subject');
+    expect(subject?.terms.map((term) => term.key)).toEqual(['business']);
+    // Only the Subject facet hides "other" — other facets keep the term.
+    const certificate = result.current.facets.find((facet) => facet.slug === 'certificate');
+    expect(certificate?.terms.map((term) => term.key)).toEqual(['other']);
+  });
+
+  it('drops the Subject facet entirely when "other" is its only term', async () => {
+    mockCatalog.handleSearch = vi.fn(async () => ({
+      data: { facets: { subject: { terms: { other: 5 } } }, results: [] },
+    }));
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    expect(result.current.facets.find((facet) => facet.slug === 'subject')).toBeUndefined();
   });
 
   it('handleSelectFacets removes the term when already selected', async () => {
@@ -201,7 +330,7 @@ describe('useDiscover', () => {
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facetsLoading).toBe(false));
-    expect(result.current.facets).toEqual([]);
+    expect(result.current.facets).toEqual([ACCESS_FACET]);
   });
 
   it('handleToggleFacet flips the expanded flag for a single facet', async () => {
@@ -235,22 +364,25 @@ describe('useDiscover', () => {
     expect(lang!.terms).toEqual([{ key: 'english', count: 1 }]);
   });
 
-  it('handleFilterFacets falls back to all facets when search is empty', async () => {
+  it('handleFilterFacets restores the full term list when the search is cleared', async () => {
     mockCatalog.handleSearch = vi.fn(async () => ({
       data: {
-        facets: { language: { terms: { english: 1 } } },
+        facets: { language: { terms: { english: 1, french: 1 } } },
         results: [],
       },
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facets.length).toBeGreaterThan(0));
     act(() => {
+      result.current.handleFilterFacets('language', 'eng');
+    });
+    act(() => {
       result.current.handleFilterFacets('language', '');
     });
     expect(result.current.filteredFacets).toEqual(result.current.facets);
   });
 
-  it('handleFilterFacets falls back to all facets when no terms match', async () => {
+  it('handleFilterFacets shows an empty term list when nothing matches', async () => {
     mockCatalog.handleSearch = vi.fn(async () => ({
       data: {
         facets: { language: { terms: { english: 1 } } },
@@ -262,7 +394,50 @@ describe('useDiscover', () => {
     act(() => {
       result.current.handleFilterFacets('language', 'xx');
     });
-    expect(result.current.filteredFacets).toEqual(result.current.facets);
+    const lang = result.current.filteredFacets.find((f) => f.slug === 'language');
+    expect(lang!.terms).toEqual([]);
+  });
+
+  it('filtering one facet leaves the other facets untouched', async () => {
+    mockCatalog.handleSearch = vi.fn(async () => ({
+      data: {
+        facets: {
+          language: { terms: { english: 1, french: 1 } },
+          subject: { terms: { business: 2, science: 3 } },
+        },
+        results: [],
+      },
+    }));
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facets.length).toBeGreaterThan(0));
+    act(() => {
+      result.current.handleFilterFacets('language', 'eng');
+    });
+    const subject = result.current.filteredFacets.find((f) => f.slug === 'subject');
+    expect(subject!.terms.map((t) => t.key)).toEqual(['business', 'science']);
+  });
+
+  it('expanding a facet keeps another facet’s term filter intact', async () => {
+    mockCatalog.handleSearch = vi.fn(async () => ({
+      data: {
+        facets: {
+          language: { terms: { english: 1, french: 1 } },
+          subject: { terms: { business: 2 } },
+        },
+        results: [],
+      },
+    }));
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facets.length).toBeGreaterThan(0));
+    act(() => {
+      result.current.handleFilterFacets('language', 'eng');
+    });
+    act(() => {
+      result.current.handleToggleFacet('subject');
+    });
+    const lang = result.current.filteredFacets.find((f) => f.slug === 'language');
+    expect(lang!.terms).toEqual([{ key: 'english', count: 1 }]);
+    expect(result.current.filteredFacets.find((f) => f.slug === 'subject')!.expanded).toBe(true);
   });
 
   it('handleFormatContents formats a program', async () => {
@@ -375,7 +550,7 @@ describe('useDiscover', () => {
     }));
     const { result } = renderHook(() => useDiscover({}));
     await waitFor(() => expect(result.current.facetsLoading).toBe(false));
-    expect(result.current.facets).toEqual([]);
+    expect(result.current.facets).toEqual([ACCESS_FACET]);
   });
 
   it('passes selected facet params through to handleSearch', async () => {
@@ -420,6 +595,144 @@ describe('useDiscover', () => {
       skills: ['react'],
       limit: 5,
       offset: 5,
+    });
+  });
+
+  describe('displayCards (Enrolled / Recommended modes)', () => {
+    const enrolledCourseCard = {
+      title: 'Alpha Course',
+      contentType: 'course',
+      url: '/courses/c1',
+      image: '',
+      id: 'c1',
+      enrolled: true,
+    };
+    const enrolledProgramCard = {
+      title: 'Prog',
+      contentType: 'program',
+      url: '/programs/pk1',
+      image: '',
+      id: 'p1',
+      enrolled: true,
+    };
+    const recommendedCourse = {
+      type: 'course',
+      data: { name: 'Rec Course', course_id: 'r1', edx_data: { course_image_asset_path: '' } },
+    };
+
+    it('lists enrolled cards when the Enrolled filter is active, flagging recommended ones', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [enrolledCourseCard],
+        programs: [enrolledProgramCard],
+        pathways: [],
+      };
+      mockEnrollments.enrolledTotal = 2;
+      mockRecommendations.recommendedCourses = [
+        { type: 'course', data: { name: 'Alpha Course', course_id: 'c1' } },
+        { type: 'course', data: { name: 'No id' } },
+      ];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Enrolled');
+      });
+      expect(result.current.enrolledOnly).toBe(true);
+      // Default content filter is ["courses"], so only enrolled courses show.
+      expect(result.current.displayCards).toEqual([{ ...enrolledCourseCard, recommended: true }]);
+    });
+
+    it('falls back to every content type when the content filter is empty', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [enrolledCourseCard],
+        programs: [enrolledProgramCard],
+        pathways: [],
+      };
+      mockEnrollments.enrolledTotal = 2;
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({ content: [], enrollment: ['Enrolled'] });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['c1', 'p1']);
+    });
+
+    it('lists recommended courses when the Recommended filter is active', async () => {
+      mockRecommendations.recommendedCourses = [recommendedCourse];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Recommended');
+      });
+      expect(result.current.recommendedOnly).toBe(true);
+      expect(result.current.displayCards).toHaveLength(1);
+      expect(result.current.displayCards[0]).toMatchObject({
+        id: 'r1',
+        title: 'Rec Course',
+        contentType: 'course',
+        recommended: true,
+      });
+    });
+
+    it('omits recommendations when the content filter excludes courses', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [],
+        programs: [enrolledProgramCard],
+        pathways: [],
+      };
+      mockRecommendations.recommendedCourses = [recommendedCourse];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({
+          content: ['programs'],
+          enrollment: ['Enrolled', 'Recommended'],
+        });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['p1']);
+    });
+
+    it('deduplicates the Enrolled + Recommended union and drops keyless cards', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [
+          enrolledCourseCard,
+          // No id and no title — unkeyable, must be skipped.
+          { title: '', contentType: 'course', url: '', image: '', id: '', enrolled: true },
+        ],
+        programs: [],
+        pathways: [],
+      };
+      mockRecommendations.recommendedCourses = [
+        // Same id as the enrolled course — deduped.
+        { type: 'course', data: { name: 'Alpha Course', course_id: 'c1' } },
+        recommendedCourse,
+      ];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({
+          content: ['courses'],
+          enrollment: ['Enrolled', 'Recommended'],
+        });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['c1', 'r1']);
+    });
+
+    it('narrows the enrolled view by the search query, client-side', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [enrolledCourseCard, { ...enrolledCourseCard, id: 'c2', title: 'Beta Course' }],
+        programs: [],
+        pathways: [],
+      };
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({
+          content: ['courses'],
+          enrollment: ['Enrolled'],
+          q: ['beta'],
+        });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['c2']);
     });
   });
 });

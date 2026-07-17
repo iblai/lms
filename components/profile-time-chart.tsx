@@ -7,66 +7,71 @@ import {
   BarChart,
   XAxis,
   YAxis,
-  CartesianGrid,
   ResponsiveContainer,
-  Legend,
   Cell,
+  LabelList,
+  Tooltip,
 } from 'recharts';
 
-export function ProfileTimeChart() {
+/** Minutes → plain words ("45m", "7h", "7h 20m"). Empty for no activity. */
+const formatDuration = (minutes: number): string => {
+  if (!minutes || minutes < 1) return '';
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = Math.round(minutes % 60);
+  if (hours === 0) return `${remainingMinutes}m`;
+  if (remainingMinutes === 0) return `${hours}h`;
+  return `${hours}h ${remainingMinutes}m`;
+};
+
+/**
+ * Daily learning time, kept deliberately un-scientific: no axes, grid or
+ * legend — just soft bars with the day underneath and the time spent in
+ * plain words on top.
+ */
+export function ProfileTimeChart({
+  chartHeight = 256,
+}: {
+  /** Chart area height in px — the home page passes a compact one. */
+  chartHeight?: number;
+} = {}) {
   const { timeSpent: timeSpentData, timeSpentLoading } = useProfileTimeSpent();
-
-  // Custom legend renderer to center the legend and use amber color
-  const renderLegend = (props: any) => {
-    const { payload } = props;
-
-    return (
-      <div className="flex w-full justify-center pt-0 pb-4">
-        {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="mx-2 flex items-center">
-            <div className="mr-2 h-3 w-3 bg-amber-500 opacity-70"></div>
-            <span className="text-xs text-gray-600">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <div className="mb-4 border-b border-gray-200 pb-2">
       {timeSpentLoading ? (
-        <div className="flex h-64 items-center justify-center">
+        <div className="flex items-center justify-center" style={{ height: chartHeight }}>
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
         </div>
       ) : (
-        <div className="relative h-64">
+        <div className="relative" style={{ height: chartHeight }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={timeSpentData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+            <BarChart data={timeSpentData} margin={{ top: 24, right: 8, left: 8, bottom: 0 }}>
               <XAxis
                 dataKey="date"
-                axisLine={true}
-                tickLine={true}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                height={50}
+                axisLine={false}
+                tickLine={false}
+                interval={0}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                // "Tue 08/07/26" → "Tue"
+                tickFormatter={(date: string) => String(date).split(' ')[0]}
               />
-              <YAxis
-                axisLine={true}
-                tickLine={true}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                label={{
-                  value: 'Minutes',
-                  angle: -90,
-                  position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#9CA3AF', fontSize: 12 },
-                }}
-                domain={[0, 30]}
-                ticks={[0, 10, 20, 30, 40, 50]}
+              <YAxis hide domain={[0, 'auto']} />
+              <Tooltip
+                cursor={{ fill: 'rgba(59, 130, 246, 0.08)' }}
+                formatter={(value) => [
+                  formatDuration(Number(value)) || 'No activity',
+                  'Time spent',
+                ]}
               />
-              <Legend content={renderLegend} verticalAlign="top" height={36} />
-              <Bar dataKey="minutes" name="Minutes" barSize={130}>
+              <Bar dataKey="minutes" name="Time spent" radius={[6, 6, 0, 0]}>
+                <LabelList
+                  dataKey="minutes"
+                  position="top"
+                  formatter={(value: number) => formatDuration(value)}
+                  style={{ fill: '#374151', fontSize: 11, fontWeight: 500 }}
+                />
                 {timeSpentData?.map((_entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill="rgba(245, 158, 11, 0.7)" />
+                  <Cell key={`cell-${index}`} fill="rgba(59, 130, 246, 0.7)" />
                 ))}
               </Bar>
             </BarChart>

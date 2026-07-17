@@ -84,11 +84,11 @@ export default function PublicProfilePage() {
             <div className="absolute inset-0">
               <svg viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  fill="rgba(245, 158, 11, 0.1)"
+                  fill="rgba(59, 130, 246, 0.1)"
                   d="M0,100 C150,200 350,0 500,100 C650,200 850,0 1000,100 L1000,0 L0,0 Z"
                 ></path>
                 <path
-                  fill="rgba(245, 158, 11, 0.05)"
+                  fill="rgba(59, 130, 246, 0.05)"
                   d="M0,100 C150,0 350,200 500,100 C650,0 850,200 1000,100 L1000,0 L0,0 Z"
                 ></path>
               </svg>

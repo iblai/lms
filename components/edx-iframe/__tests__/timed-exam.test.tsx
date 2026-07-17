@@ -347,7 +347,7 @@ describe('TimedExam', () => {
     expect(container.querySelector('.bg-blue-50')).toBeInTheDocument();
   });
 
-  it('shows yellow style when time is low', () => {
+  it('shows the low-time (light blue) style when time is low', () => {
     const examWithLowTime = {
       ...startedExamInfo,
       exam: {
@@ -361,7 +361,7 @@ describe('TimedExam', () => {
       },
     };
     const { container } = renderTimedExam({ examInfo: examWithLowTime });
-    expect(container.querySelector('.bg-yellow-50')).toBeInTheDocument();
+    expect(container.querySelector('[class*="bg-[#dbeafe]"]')).toBeInTheDocument();
   });
 
   it('shows red style when time is critically low', () => {

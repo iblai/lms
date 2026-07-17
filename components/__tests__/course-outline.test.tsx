@@ -132,9 +132,9 @@ describe('CompletionIcon rendering', () => {
     const svgs = container.querySelectorAll('svg');
     // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
     const lessonSvg = svgs[1];
-    // Filled circle has amber fill (#f59e0b)
+    // Filled circle has amber fill (#3b82f6)
     const circle = lessonSvg.querySelector('circle');
-    expect(circle?.getAttribute('fill')).toBe('#f59e0b');
+    expect(circle?.getAttribute('fill')).toBe('#3b82f6');
     // Has a checkmark path
     const path = lessonSvg.querySelector('path');
     expect(path).toBeTruthy();
@@ -171,7 +171,7 @@ describe('CompletionIcon rendering', () => {
     expect(circles.length).toBe(2);
     // The progress arc has amber stroke
     const progressCircle = circles[1];
-    expect(progressCircle.getAttribute('stroke')).toBe('#f59e0b');
+    expect(progressCircle.getAttribute('stroke')).toBe('#3b82f6');
   });
 
   it('renders full completion when all children are complete', () => {
@@ -200,7 +200,7 @@ describe('CompletionIcon rendering', () => {
     const lessonSvg = svgs[1];
     // Full completion: amber filled circle with checkmark
     const circle = lessonSvg.querySelector('circle');
-    expect(circle?.getAttribute('fill')).toBe('#f59e0b');
+    expect(circle?.getAttribute('fill')).toBe('#3b82f6');
     const path = lessonSvg.querySelector('path');
     expect(path).toBeTruthy();
   });
@@ -353,6 +353,6 @@ describe('CompletionIcon rendering', () => {
     // Partial progress (level 5 of 7) -> two circles
     const circles = lessonSvg.querySelectorAll('circle');
     expect(circles.length).toBe(2);
-    expect(circles[1].getAttribute('stroke')).toBe('#f59e0b');
+    expect(circles[1].getAttribute('stroke')).toBe('#3b82f6');
   });
 });

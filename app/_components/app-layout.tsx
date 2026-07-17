@@ -1,13 +1,14 @@
 import { Footer as FooterBase } from '@/components/footer';
 import { NavBar as NavBarBase } from '@/components/nav-bar';
+import { AppSidebar } from '@/components/app-sidebar';
 import { isNonAuthPathname } from '@/constants/global';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useEffect } from 'react';
 import { useChatState } from '@/components/chat-button';
 import { useMediaQuery } from 'react-responsive';
 import { config } from '@/lib/config';
-import { NavigationDrawer as NavigationDrawerBase } from '@/components/navigation-drawer';
+import { SidebarInset, SidebarProvider } from '@iblai/iblai-js/web-containers/next';
 import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
@@ -32,7 +33,6 @@ const MonetizationWrapper = dynamic(
 // triggered by AppLayout updates (metadata loads, sidebar toggles) on every navigation.
 const NavBar = memo(NavBarBase);
 const Footer = memo(FooterBase);
-const NavigationDrawer = memo(NavigationDrawerBase);
 
 function DefaultPageLayout({ children }: { children: any }) {
   return (
@@ -45,7 +45,6 @@ function DefaultPageLayout({ children }: { children: any }) {
 export default function AppLayout({ children }: { children: any }) {
   const { courseMentor, setCourseMentor, setMentorSidebarHidden, mentorSidebarHidden } =
     useChatState();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const username = getUserName();
   const userIsLoggedIn = isLoggedIn();
   const { currentTenant } = useCurrentTenant();
@@ -65,9 +64,6 @@ export default function AppLayout({ children }: { children: any }) {
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const pathname = usePathname();
 
-  const handleMenuClick = useCallback(() => setSidebarOpen((open) => !open), []);
-  const handleDrawerClose = useCallback(() => setSidebarOpen(false), []);
-
   useEffect(() => {
     if (
       !(pathname.includes('/course-content/') || pathname.includes('/courses/')) &&
@@ -82,47 +78,51 @@ export default function AppLayout({ children }: { children: any }) {
     return <DefaultPageLayout>{children}</DefaultPageLayout>;
   }
 
-  // After the `/platform/{tenant}/` prefix, the next path piece identifies the
-  // active page (`/platform/main/home` → "home"). Fallback to the first
-  // segment for legacy paths.
-  const segments = pathname.split('/').filter(Boolean);
-  const tenantIdx =
-    segments[0] === 'platform' && tenant && segments[1] === tenant
-      ? 2
-      : tenant && segments[0] === tenant
-        ? 1
-        : 0;
-  const activePage = segments[tenantIdx] || 'home';
-
   return (
     <DefaultPageLayout>
       <div className="flex h-screen flex-col overflow-hidden bg-white">
-        {/* Make the NavBar sticky at the top */}
-        <div className="sticky top-0 z-40 w-full">
-          <NavBar sidebarOpen={sidebarOpen} activePage={activePage} onMenuClick={handleMenuClick} />
-        </div>
-        <NavigationDrawer isOpen={sidebarOpen} onClose={handleDrawerClose} />
-        {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && <MonetizationWrapper />}
-        <div
-          className="flex h-full flex-col items-start md:flex-row"
-          style={{ height: isMobile ? 'calc(100% - 110px)' : 'calc(100% - 125px)' }}
-        >
-          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto">
-            {children}
-            <Footer />
-          </div>
-          {config.settings.mentorEnabled() &&
-            userIsLoggedIn &&
-            metadataLoaded &&
-            isMentorAIEnabled() &&
-            !isUserMetadataLoading &&
-            userMetadata?.enable_sidebar_ai_mentor_display !== false &&
-            !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
-              <div className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}>
-                <ChatButton isMobile={isMobile} />
+        {/* Main part: left sidebar + inner main content (navbar lives inside).
+            The sidebar is the cross-SPA PlatformSidebar shell, so it lives
+            inside the SDK's SidebarProvider and the content sits in the
+            matching SidebarInset. The Footer lives at the bottom of the
+            inset so it sits to the RIGHT of the sidebar instead of
+            overlaying it. */}
+        <SidebarProvider defaultOpen={false} className="min-h-0 flex-1">
+          {userIsLoggedIn && <AppSidebar />}
+          <SidebarInset
+            asChild
+            className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white"
+          >
+            <div>
+              <div className="z-40 w-full shrink-0">
+                <NavBar />
               </div>
-            )}
-        </div>
+              {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && (
+                <MonetizationWrapper />
+              )}
+              <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
+                <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto">
+                  {children}
+                </div>
+                {config.settings.mentorEnabled() &&
+                  userIsLoggedIn &&
+                  metadataLoaded &&
+                  isMentorAIEnabled() &&
+                  !isUserMetadataLoading &&
+                  userMetadata?.enable_sidebar_ai_mentor_display !== false &&
+                  !(pathname.includes('/course-content/') && pathname.endsWith('/agent')) && (
+                    <div
+                      className={`${isMobile ? 'fixed right-0 bottom-0 z-50 pb-30' : 'h-full'} `}
+                    >
+                      <ChatButton isMobile={isMobile} />
+                    </div>
+                  )}
+              </div>
+              {/* Footer: bottom of the inset (right of the sidebar) */}
+              <Footer />
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
       </div>
     </DefaultPageLayout>
   );

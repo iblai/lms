@@ -83,21 +83,16 @@ export async function navigateToHome(page: Page): Promise<void> {
 }
 
 /**
- * Navigate to a course about page from home by clicking a course card.
+ * Navigate to a course about page via the enrolled catalog view.
  * Returns the course heading text.
  */
 export async function navigateToCourseFromHome(page: Page): Promise<string> {
-  await navigateToHome(page);
+  await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120_000 });
+  await waitForAppShell(page);
 
-  const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-  await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
-
-  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-  await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
-
-  const courseLink = myCoursesGrid.getByRole('link').first();
-  await expect(courseLink).toBeVisible({ timeout: 120_000 });
-  await courseLink.click();
+  const courseCard = page.locator('[data-testid="discover-content-card"]').first();
+  await expect(courseCard).toBeVisible({ timeout: 120_000 });
+  await courseCard.click();
 
   await page.waitForURL(/\/courses\/.*/, { timeout: 120_000 });
 
