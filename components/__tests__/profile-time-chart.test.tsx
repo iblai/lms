@@ -15,12 +15,22 @@ vi.mock('@/hooks/profile/use-profile-timespent', () => ({
   useProfileTimeSpent: () => mockUseProfileTimeSpent(),
 }));
 
+// Captures the props recharts components receive so tests can exercise
+// the tickFormatter / tooltip formatter callbacks directly.
+const capturedProps = vi.hoisted(() => ({ xAxis: null as any, tooltip: null as any }));
+
 vi.mock('recharts', () => ({
   Bar: ({ children }: any) => <div data-testid="bar">{children}</div>,
   BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
-  XAxis: () => <div data-testid="x-axis" />,
+  XAxis: (props: any) => {
+    capturedProps.xAxis = props;
+    return <div data-testid="x-axis" />;
+  },
   YAxis: () => <div data-testid="y-axis" />,
-  Tooltip: () => <div data-testid="tooltip" />,
+  Tooltip: (props: any) => {
+    capturedProps.tooltip = props;
+    return <div data-testid="tooltip" />;
+  },
   LabelList: ({ formatter }: any) => (
     <div data-testid="label-list">{formatter ? formatter(80) : null}</div>
   ),
@@ -89,5 +99,51 @@ describe('ProfileTimeChart', () => {
     });
     const { container } = render(<ProfileTimeChart />);
     expect(container.querySelector('.animate-spin')).not.toBeInTheDocument();
+  });
+
+  it('formats X axis ticks to just the day ("Tue 08/07/26" → "Tue")', () => {
+    mockUseProfileTimeSpent.mockReturnValue({
+      timeSpent: [{ date: 'Tue 08/07/26', minutes: 10 }],
+      timeSpentLoading: false,
+    });
+    render(<ProfileTimeChart />);
+    expect(capturedProps.xAxis.tickFormatter('Tue 08/07/26')).toBe('Tue');
+  });
+
+  it('formats tooltip values in plain words for minutes-only durations', () => {
+    mockUseProfileTimeSpent.mockReturnValue({
+      timeSpent: [{ date: 'Mon 06/07/26', minutes: 45 }],
+      timeSpentLoading: false,
+    });
+    render(<ProfileTimeChart />);
+    expect(capturedProps.tooltip.formatter(45)).toEqual(['45m', 'Time spent']);
+  });
+
+  it('formats tooltip values for whole-hour durations', () => {
+    mockUseProfileTimeSpent.mockReturnValue({
+      timeSpent: [{ date: 'Mon 06/07/26', minutes: 120 }],
+      timeSpentLoading: false,
+    });
+    render(<ProfileTimeChart />);
+    expect(capturedProps.tooltip.formatter(120)).toEqual(['2h', 'Time spent']);
+  });
+
+  it('formats tooltip values for mixed hour-and-minute durations', () => {
+    mockUseProfileTimeSpent.mockReturnValue({
+      timeSpent: [{ date: 'Mon 06/07/26', minutes: 80 }],
+      timeSpentLoading: false,
+    });
+    render(<ProfileTimeChart />);
+    expect(capturedProps.tooltip.formatter(80)).toEqual(['1h 20m', 'Time spent']);
+  });
+
+  it('shows "No activity" in the tooltip for zero or sub-minute values', () => {
+    mockUseProfileTimeSpent.mockReturnValue({
+      timeSpent: [{ date: 'Mon 06/07/26', minutes: 0 }],
+      timeSpentLoading: false,
+    });
+    render(<ProfileTimeChart />);
+    expect(capturedProps.tooltip.formatter(0)).toEqual(['No activity', 'Time spent']);
+    expect(capturedProps.tooltip.formatter(0.5)).toEqual(['No activity', 'Time spent']);
   });
 });

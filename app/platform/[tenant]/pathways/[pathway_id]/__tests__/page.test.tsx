@@ -47,13 +47,15 @@ const mockGetUserEnrolledPathways = vi.fn();
 const mockGetPathwayCompletion = vi.fn();
 const mockGetPathwayList = vi.fn();
 const mockCreateEnrollment = vi.fn();
+// Mutable so individual tests can flip the mutation flags (e.g. isError).
+const mockEnrollmentMutationState = { isError: false, isSuccess: false };
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   useLazyGetUserEnrolledPathwaysQuery: () => [mockGetUserEnrolledPathways, { isLoading: false }],
   useLazyGetPathwayCompletionQuery: () => [mockGetPathwayCompletion],
   useLazyGetPathwayListQuery: () => [mockGetPathwayList],
   useCreateCatalogPathwaySelfEnrollmentMutation: () => [
     mockCreateEnrollment,
-    { isError: false, isSuccess: false },
+    mockEnrollmentMutationState,
   ],
 }));
 
@@ -64,6 +66,9 @@ vi.mock('@/components/default-empty-box', () => ({
 }));
 
 import PathwayDetailPage from '../page';
+import { toast } from 'sonner';
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
+import { handleNotLoggedInAction } from '@/utils/helpers';
 
 const pathwayFixture = {
   pathway_uuid: 'uuid-1',
@@ -98,6 +103,8 @@ const renderPage = async () => {
 describe('PathwayDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.assign(mockEnrollmentMutationState, { isError: false, isSuccess: false });
+    vi.mocked(isLoggedIn).mockReturnValue(true);
     mockHandleSearch.mockResolvedValue({
       data: { results: [{ type: 'pathway', data: pathwayFixture }] },
     });
@@ -197,5 +204,65 @@ describe('PathwayDetailPage', () => {
       'src',
       'https://lms.example.com/banner.jpg',
     );
+  });
+
+  it('shows an error toast when the enrollment request rejects', async () => {
+    mockCreateEnrollment.mockRejectedValue(new Error('network error'));
+    await renderPage();
+    fireEvent.click(screen.getByTestId('pathway-page-cta'));
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Failed to enroll into pathway');
+    });
+    // The submit flag resets so the CTA is clickable again.
+    expect(screen.getByTestId('pathway-page-cta')).toHaveTextContent('Enroll Now');
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('shows an error toast when the mutation reports an error state', async () => {
+    Object.assign(mockEnrollmentMutationState, { isError: true });
+    await renderPage();
+    fireEvent.click(screen.getByTestId('pathway-page-cta'));
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Failed to enroll into pathway');
+    });
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('hides the progress section when the completion fetch fails', async () => {
+    mockGetPathwayCompletion.mockRejectedValue(new Error('completion error'));
+    await renderPage();
+    await waitFor(() => expect(mockGetPathwayCompletion).toHaveBeenCalled());
+    expect(screen.queryByText('Progress')).not.toBeInTheDocument();
+  });
+
+  it('treats the user as not enrolled when the enrollment status fetch fails', async () => {
+    mockGetUserEnrolledPathways.mockRejectedValue(new Error('status error'));
+    await renderPage();
+    await waitFor(() => expect(mockGetUserEnrolledPathways).toHaveBeenCalled());
+    expect(screen.getByTestId('pathway-page-cta')).toBeInTheDocument();
+  });
+
+  it('shows the empty box when the pathway fetch throws', async () => {
+    mockHandleSearch.mockRejectedValue(new Error('search error'));
+    render(<PathwayDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('empty-box')).toHaveTextContent('No pathway data found.');
+    });
+    expect(mockGetPathwayList).not.toHaveBeenCalled();
+  });
+
+  it('sends logged-out users to the login flow when the CTA is clicked', async () => {
+    vi.mocked(isLoggedIn).mockReturnValue(false);
+    await renderPage();
+    fireEvent.click(screen.getByTestId('pathway-page-cta'));
+    expect(handleNotLoggedInAction).toHaveBeenCalledWith('test-tenant');
+    expect(mockCreateEnrollment).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the random image when the banner image fails to load', async () => {
+    await renderPage();
+    const banner = screen.getByTestId('pathway-page-banner-image');
+    fireEvent.error(banner);
+    expect(banner).toHaveAttribute('src', '/random-image.jpg');
   });
 });

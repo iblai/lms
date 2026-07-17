@@ -87,6 +87,12 @@ describe('useDiscover', () => {
     mockCatalog.isError = false;
     mockCatalog.pagination = mockPagination;
     mockTenantMetadata.metadata = { skills_include_community_courses: false };
+    mockEnrollments.enrolledIds = new Set<string>();
+    mockEnrollments.enrolledCards = { courses: [], programs: [], pathways: [] };
+    mockEnrollments.enrolledTotal = 0;
+    mockEnrollments.enrollmentsLoading = false;
+    mockRecommendations.recommendedCourses = [];
+    mockRecommendations.isLoading = false;
     // jsdom needs a writable href for handleSelectFacets("q", ...)
     Object.defineProperty(window, 'location', {
       value: new URL('https://app.example.com/discover'),
@@ -589,6 +595,144 @@ describe('useDiscover', () => {
       skills: ['react'],
       limit: 5,
       offset: 5,
+    });
+  });
+
+  describe('displayCards (Enrolled / Recommended modes)', () => {
+    const enrolledCourseCard = {
+      title: 'Alpha Course',
+      contentType: 'course',
+      url: '/courses/c1',
+      image: '',
+      id: 'c1',
+      enrolled: true,
+    };
+    const enrolledProgramCard = {
+      title: 'Prog',
+      contentType: 'program',
+      url: '/programs/pk1',
+      image: '',
+      id: 'p1',
+      enrolled: true,
+    };
+    const recommendedCourse = {
+      type: 'course',
+      data: { name: 'Rec Course', course_id: 'r1', edx_data: { course_image_asset_path: '' } },
+    };
+
+    it('lists enrolled cards when the Enrolled filter is active, flagging recommended ones', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [enrolledCourseCard],
+        programs: [enrolledProgramCard],
+        pathways: [],
+      };
+      mockEnrollments.enrolledTotal = 2;
+      mockRecommendations.recommendedCourses = [
+        { type: 'course', data: { name: 'Alpha Course', course_id: 'c1' } },
+        { type: 'course', data: { name: 'No id' } },
+      ];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Enrolled');
+      });
+      expect(result.current.enrolledOnly).toBe(true);
+      // Default content filter is ["courses"], so only enrolled courses show.
+      expect(result.current.displayCards).toEqual([{ ...enrolledCourseCard, recommended: true }]);
+    });
+
+    it('falls back to every content type when the content filter is empty', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [enrolledCourseCard],
+        programs: [enrolledProgramCard],
+        pathways: [],
+      };
+      mockEnrollments.enrolledTotal = 2;
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({ content: [], enrollment: ['Enrolled'] });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['c1', 'p1']);
+    });
+
+    it('lists recommended courses when the Recommended filter is active', async () => {
+      mockRecommendations.recommendedCourses = [recommendedCourse];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Recommended');
+      });
+      expect(result.current.recommendedOnly).toBe(true);
+      expect(result.current.displayCards).toHaveLength(1);
+      expect(result.current.displayCards[0]).toMatchObject({
+        id: 'r1',
+        title: 'Rec Course',
+        contentType: 'course',
+        recommended: true,
+      });
+    });
+
+    it('omits recommendations when the content filter excludes courses', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [],
+        programs: [enrolledProgramCard],
+        pathways: [],
+      };
+      mockRecommendations.recommendedCourses = [recommendedCourse];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({
+          content: ['programs'],
+          enrollment: ['Enrolled', 'Recommended'],
+        });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['p1']);
+    });
+
+    it('deduplicates the Enrolled + Recommended union and drops keyless cards', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [
+          enrolledCourseCard,
+          // No id and no title — unkeyable, must be skipped.
+          { title: '', contentType: 'course', url: '', image: '', id: '', enrolled: true },
+        ],
+        programs: [],
+        pathways: [],
+      };
+      mockRecommendations.recommendedCourses = [
+        // Same id as the enrolled course — deduped.
+        { type: 'course', data: { name: 'Alpha Course', course_id: 'c1' } },
+        recommendedCourse,
+      ];
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({
+          content: ['courses'],
+          enrollment: ['Enrolled', 'Recommended'],
+        });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['c1', 'r1']);
+    });
+
+    it('narrows the enrolled view by the search query, client-side', async () => {
+      mockEnrollments.enrolledCards = {
+        courses: [enrolledCourseCard, { ...enrolledCourseCard, id: 'c2', title: 'Beta Course' }],
+        programs: [],
+        pathways: [],
+      };
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      act(() => {
+        result.current.setSelectedFacets({
+          content: ['courses'],
+          enrollment: ['Enrolled'],
+          q: ['beta'],
+        });
+      });
+      expect(result.current.displayCards.map((card) => card.id)).toEqual(['c2']);
     });
   });
 });
