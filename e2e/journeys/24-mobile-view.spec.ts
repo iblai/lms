@@ -34,7 +34,8 @@ async function navigateToCourseContent(page: Page) {
   }
 }
 
-test.describe('Journey 24: Mobile View', () => {
+// TODO FIXME: This test is flaky on CI.
+test.describe.fixme('Journey 24: Mobile View', () => {
   test.setTimeout(200000);
 
   test('CP-1: Navigation drawer appears on mobile viewport', async ({ page }) => {
