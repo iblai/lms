@@ -51,38 +51,38 @@ describe('useUserEnrollments', () => {
         username: 'test-user',
         query: { page_size: 100, platform_key: 'test-tenant' },
       },
-      { skip: false },
+      { skip: false, refetchOnMountOrArgChange: 120 },
     );
     expect(mockProgramsQuery).toHaveBeenCalledWith(
       { username: 'test-user', platform_key: 'test-tenant' },
-      { skip: false },
+      { skip: false, refetchOnMountOrArgChange: 120 },
     );
     expect(mockPathwaysQuery).toHaveBeenCalledWith(
       { username: 'test-user', platform_key: 'test-tenant' },
-      { skip: false },
+      { skip: false, refetchOnMountOrArgChange: 120 },
     );
   });
 
   it('skips every query when the user is not logged in', () => {
     mockIsLoggedIn.mockReturnValue(false);
     renderHook(() => useUserEnrollments({ tenant: 'test-tenant' }));
-    expect(mockCoursesQuery.mock.calls[0][1]).toEqual({ skip: true });
-    expect(mockProgramsQuery.mock.calls[0][1]).toEqual({ skip: true });
-    expect(mockPathwaysQuery.mock.calls[0][1]).toEqual({ skip: true });
+    expect(mockCoursesQuery.mock.calls[0][1]).toMatchObject({ skip: true });
+    expect(mockProgramsQuery.mock.calls[0][1]).toMatchObject({ skip: true });
+    expect(mockPathwaysQuery.mock.calls[0][1]).toMatchObject({ skip: true });
   });
 
   it('skips and falls back to an empty username when there is no username', () => {
     mockGetUserName.mockReturnValue(null as any);
     renderHook(() => useUserEnrollments({ tenant: 'test-tenant' }));
     expect(mockCoursesQuery.mock.calls[0][0].username).toBe('');
-    expect(mockCoursesQuery.mock.calls[0][1]).toEqual({ skip: true });
+    expect(mockCoursesQuery.mock.calls[0][1]).toMatchObject({ skip: true });
   });
 
   it('skips every query when there is no tenant', () => {
     renderHook(() => useUserEnrollments({ tenant: '' }));
-    expect(mockCoursesQuery.mock.calls[0][1]).toEqual({ skip: true });
-    expect(mockProgramsQuery.mock.calls[0][1]).toEqual({ skip: true });
-    expect(mockPathwaysQuery.mock.calls[0][1]).toEqual({ skip: true });
+    expect(mockCoursesQuery.mock.calls[0][1]).toMatchObject({ skip: true });
+    expect(mockProgramsQuery.mock.calls[0][1]).toMatchObject({ skip: true });
+    expect(mockPathwaysQuery.mock.calls[0][1]).toMatchObject({ skip: true });
   });
 
   it('builds course cards, hiding unnamed courses but keeping their ids', () => {

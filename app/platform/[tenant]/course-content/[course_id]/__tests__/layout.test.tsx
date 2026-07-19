@@ -1388,7 +1388,9 @@ describe('CourseContentLayout', () => {
     });
 
     it('does not show the hint before the 600ms delay elapses', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
+      // No shouldAdvanceTime here: this test asserts the hint is absent just
+      // under the threshold, so the clock must only move when advanced explicitly.
+      vi.useFakeTimers();
       try {
         await setupAgentTab();
         render(

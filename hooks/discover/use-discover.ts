@@ -1,10 +1,10 @@
 import { getUserName, isRecommendedTabHidden } from '@/utils/helpers';
-import { usePersonnalizedCatalog } from '../search/use-personnalized-catalog';
+import { usePersonnalizedCatalogQuery } from '../search/use-personnalized-catalog';
 import { useRecommendedCourses } from '../courses/use-recommended-courses';
 import { useEffect, useMemo, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';
 import _ from 'lodash';
-import { useDebouncedCallback } from 'use-debounce';
+import { useDebounce } from 'use-debounce';
 import { config } from '@/lib/config';
 import { DiscoverContent } from '@/types/discover';
 import { DiscoverContentCardProps } from '@/types/discover';
@@ -26,15 +26,24 @@ export const RECOMMENDED_FACET_TERM = 'Recommended';
  * recommendations endpoint caps `limit` at 20). */
 const RECOMMENDATIONS_LIMIT = 20;
 
-export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
+export const useDiscover = ({
+  limit = 12,
+  initialFacets,
+}: {
+  limit?: number;
+  /**
+   * Deep-linked facets (q / content / enrollment) known at mount time.
+   * Seeding them here — instead of only via an effect after mount — lets
+   * the very first search subscription use the right params, so no
+   * throwaway default-args request fires first.
+   */
+  initialFacets?: Record<string, string[]>;
+}) => {
   const router = useRouter();
   const tenant = useTenantParam();
   const isUserLoggedIn = isLoggedIn();
-  const { metadata } = useTenantMetadata({
+  const { metadata, isLoading: metadataLoading } = useTenantMetadata({
     org: tenant,
-  });
-  const { handleSearch, isError, pagination } = usePersonnalizedCatalog({
-    isLoggedIn: isUserLoggedIn,
   });
   const { enrolledIds, enrolledCards, enrolledTotal, enrollmentsLoading } = useUserEnrollments({
     tenant,
@@ -56,16 +65,12 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
   const [facets, setFacets] = useState<CourseFacet[]>([]);
   const [filteredFacets, setFilteredFacets] = useState<CourseFacet[]>([]);
 
-  const [contents, setContents] = useState<DiscoverContent[]>([]);
-
   const [page, setPage] = useState<number>(1);
 
-  const [facetsLoading, setFacetsLoading] = useState<boolean>(false);
-  const [contentsLoading, setContentsLoading] = useState<boolean>(false);
-
-  const [selectedFacets, setSelectedFacets] = useState<Record<string, string[]>>({
+  const [selectedFacets, setSelectedFacets] = useState<Record<string, string[]>>(() => ({
     content: ['courses'],
-  });
+    ...initialFacets,
+  }));
 
   //const [facetQuery, setContentQuery] = useState<string>("")
 
@@ -89,20 +94,6 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
       ...(recommendationsEnabled ? [{ key: RECOMMENDED_FACET_TERM, count: recommendedCount }] : []),
     ],
   });
-
-  // Keep the synthetic facet's counts in sync — both when the user data
-  // lands and when the facet fetch itself completes (whichever finishes
-  // last).
-  useEffect(() => {
-    const syncCount = (list: CourseFacet[]) =>
-      list.map((facet) =>
-        facet.slug === ENROLLMENT_FACET_SLUG
-          ? buildAccessFacet(enrolledTotal, recommendedCourses.length)
-          : facet,
-      );
-    setFacets(syncCount);
-    setFilteredFacets(syncCount);
-  }, [enrolledTotal, recommendedCourses.length, facetsLoading]);
 
   const handleSelectFacets = (facetSlug: string, term: string) => {
     if (facetSlug === 'q') {
@@ -129,98 +120,108 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
     setPage(1);
   };
 
-  const handleFetchData = async (onlyFacets = false) => {
-    if (onlyFacets) {
-      setFacetsLoading(true);
-    } else {
-      setContentsLoading(true);
-    }
-    try {
-      const response = await (onlyFacets
-        ? handleSearch({
-            username: getUserName(),
-            returnFacet: true,
-            ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
-          })
-        : handleSearch({
-            username: getUserName(),
-            limit,
-            offset: (page - 1) * limit,
-            ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
-            ...(!_.isEmpty(selectedFacets?.q) && {
-              query: selectedFacets?.q[0],
-            }),
-            ...(!_.isEmpty(selectedFacets?.content) && {
-              content: selectedFacets?.content,
-            }),
-            ...(!_.isEmpty(selectedFacets?.language) && {
-              language: selectedFacets?.language,
-            }),
-            ...(!_.isEmpty(selectedFacets?.level) && {
-              level: selectedFacets?.level,
-            }),
-            ...(!_.isEmpty(selectedFacets?.provider) && {
-              provider: selectedFacets?.provider,
-            }),
-            ...(!_.isEmpty(selectedFacets?.topics) && {
-              topics: selectedFacets?.topics,
-            }),
-            ...(!_.isEmpty(selectedFacets?.tags) && {
-              tags: selectedFacets?.tags,
-            }),
-            ...(!_.isEmpty(selectedFacets?.promotion) && {
-              promotion: selectedFacets?.promotion,
-            }),
-            ...(!_.isEmpty(selectedFacets?.['course duration']) && {
-              duration: selectedFacets?.['course duration'],
-            }),
-            ...(!_.isEmpty(selectedFacets?.certificate) && {
-              certificate: selectedFacets?.certificate,
-            }),
-            // The "Format" facet (self-paced / instructor-led) maps to the
-            // endpoint's `self_paced` parameter.
-            ...(!_.isEmpty(selectedFacets?.format) && {
-              selfPaced: selectedFacets?.format,
-            }),
-            ...(!_.isEmpty(selectedFacets?.price) && {
-              price: selectedFacets?.price.at(-1),
-            }),
-            ...(!_.isEmpty(selectedFacets?.subject) && {
-              subject: selectedFacets?.subject,
-            }),
-            ...(!_.isEmpty(selectedFacets?.skills) && {
-              skills: selectedFacets?.skills,
-            }),
-          }));
-      if (isError) {
-        throw new Error('Error fetching data');
-      }
-      const allFacets = response?.data?.facets;
-      if (onlyFacets) {
-        // The synthetic Access facet (Enrolled / Recommended) leads the
-        // list — logged-in users can narrow the catalog down to their own
-        // enrollments or their recommendations.
-        const formattedFacets = isUserLoggedIn
-          ? [
-              buildAccessFacet(enrolledTotal, recommendedCourses.length),
-              ...handleFormatFacets(allFacets),
-            ]
-          : handleFormatFacets(allFacets);
-        setFacets(formattedFacets);
-        setFilteredFacets(formattedFacets);
-        setFacetsLoading(false);
-      } else {
-        setContents(response?.data?.results);
-        setContentsLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-      setFacets([]);
-      setFilteredFacets([]);
-      setFacetsLoading(false);
-      setContentsLoading(false);
-    }
-  };
+  // Every selected facet except the synthetic client-side ones (Enrolled /
+  // Recommended) is a server-side search parameter — a change to any of
+  // them (subject, format, certificate, level, …) produces new search args
+  // and therefore a refetch, not just the query and content type.
+  const searchFacetsKey = JSON.stringify(
+    Object.fromEntries(
+      Object.entries(selectedFacets ?? {}).filter(([slug]) => slug !== ENROLLMENT_FACET_SLUG),
+    ),
+  );
+
+  const contentSearchParams = useMemo(
+    () => ({
+      username: getUserName(),
+      limit,
+      offset: (page - 1) * limit,
+      ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
+      ...(!_.isEmpty(selectedFacets?.q) && {
+        query: selectedFacets?.q[0],
+      }),
+      ...(!_.isEmpty(selectedFacets?.content) && {
+        content: selectedFacets?.content,
+      }),
+      ...(!_.isEmpty(selectedFacets?.language) && {
+        language: selectedFacets?.language,
+      }),
+      ...(!_.isEmpty(selectedFacets?.level) && {
+        level: selectedFacets?.level,
+      }),
+      ...(!_.isEmpty(selectedFacets?.provider) && {
+        provider: selectedFacets?.provider,
+      }),
+      ...(!_.isEmpty(selectedFacets?.topics) && {
+        topics: selectedFacets?.topics,
+      }),
+      ...(!_.isEmpty(selectedFacets?.tags) && {
+        tags: selectedFacets?.tags,
+      }),
+      ...(!_.isEmpty(selectedFacets?.promotion) && {
+        promotion: selectedFacets?.promotion,
+      }),
+      ...(!_.isEmpty(selectedFacets?.['course duration']) && {
+        duration: selectedFacets?.['course duration'],
+      }),
+      ...(!_.isEmpty(selectedFacets?.certificate) && {
+        certificate: selectedFacets?.certificate,
+      }),
+      // The "Format" facet (self-paced / instructor-led) maps to the
+      // endpoint's `self_paced` parameter.
+      ...(!_.isEmpty(selectedFacets?.format) && {
+        selfPaced: selectedFacets?.format,
+      }),
+      ...(!_.isEmpty(selectedFacets?.price) && {
+        price: selectedFacets?.price.at(-1),
+      }),
+      ...(!_.isEmpty(selectedFacets?.subject) && {
+        subject: selectedFacets?.subject,
+      }),
+      ...(!_.isEmpty(selectedFacets?.skills) && {
+        skills: selectedFacets?.skills,
+      }),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchFacetsKey, page, limit, metadata?.skills_include_community_courses, tenant],
+  );
+
+  // Soften rapid facet toggling like the old imperative debounce did; the
+  // first value is emitted immediately, so the initial load is not delayed.
+  const [debouncedContentSearchParams] = useDebounce(contentSearchParams, 500, {
+    equalityFn: _.isEqual,
+  });
+
+  const facetSearchParams = useMemo(
+    () => ({
+      username: getUserName(),
+      returnFacet: true,
+      ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
+    }),
+    [metadata?.skills_include_community_courses, tenant],
+  );
+
+  // Wait for tenant metadata before subscribing: it decides whether the
+  // search is tenant-scoped, and fetching earlier would fire a throwaway
+  // request under the wrong cache key.
+  const searchesSkipped = metadataLoading;
+  const contentsQuery = usePersonnalizedCatalogQuery({
+    params: debouncedContentSearchParams,
+    isLoggedIn: isUserLoggedIn,
+    skip: searchesSkipped,
+  });
+  const facetsQuery = usePersonnalizedCatalogQuery({
+    params: facetSearchParams,
+    isLoggedIn: isUserLoggedIn,
+    skip: searchesSkipped,
+  });
+
+  const contents: DiscoverContent[] = contentsQuery.data?.results ?? [];
+  /** True only while there is nothing to render yet — cached payloads
+   * display instantly and background refreshes never re-trigger it. */
+  const contentsLoading = contentsQuery.isLoading;
+  const facetsLoading = facetsQuery.isLoading;
+  const isError = contentsQuery.isError || facetsQuery.isError;
+  const pagination = contentsQuery.pagination;
 
   const handleToggleFacet = (slug: string) => {
     // Toggle each list in place so expanding one facet doesn't clobber
@@ -292,9 +293,43 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
     }
   };
 
-  const handleFetchSearchContents = useDebouncedCallback(() => {
-    handleFetchData();
-  }, 500);
+  // Format the facet payload whenever a fresh one lands. The synthetic
+  // Access facet (Enrolled / Recommended) leads the list — logged-in users
+  // can narrow the catalog down to their own enrollments or their
+  // recommendations.
+  useEffect(() => {
+    if (facetsQuery.isError) {
+      setFacets([]);
+      setFilteredFacets([]);
+      return;
+    }
+    if (!facetsQuery.data) return;
+    const allFacets = facetsQuery.data.facets;
+    const formattedFacets = isUserLoggedIn
+      ? [
+          buildAccessFacet(enrolledTotal, recommendedCourses.length),
+          ...handleFormatFacets(allFacets),
+        ]
+      : handleFormatFacets(allFacets);
+    setFacets(formattedFacets);
+    setFilteredFacets(formattedFacets);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [facetsQuery.data, facetsQuery.isError, isUserLoggedIn]);
+
+  // Keep the synthetic facet's counts in sync — both when the user data
+  // lands and when the facet fetch itself completes (whichever finishes
+  // last).
+  useEffect(() => {
+    const syncCount = (list: CourseFacet[]) =>
+      list.map((facet) =>
+        facet.slug === ENROLLMENT_FACET_SLUG
+          ? buildAccessFacet(enrolledTotal, recommendedCourses.length)
+          : facet,
+      );
+    setFacets(syncCount);
+    setFilteredFacets(syncCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enrolledTotal, recommendedCourses.length, facetsLoading]);
 
   const handleFormatContents = ({ type, data }: DiscoverContent): DiscoverContentCardProps => {
     switch (type) {
@@ -416,25 +451,6 @@ export const useDiscover = ({ limit = 12 }: { limit?: number }) => {
       ),
     );
   };
-
-  useEffect(() => {
-    handleFetchData(true);
-  }, []);
-
-  // Every selected facet except the synthetic client-side ones (Enrolled /
-  // Recommended) is a server-side search parameter — refetch whenever any
-  // of them changes (subject, format, certificate, level, …), not just the
-  // query and content type.
-  const searchFacetsKey = JSON.stringify(
-    Object.fromEntries(
-      Object.entries(selectedFacets ?? {}).filter(([slug]) => slug !== ENROLLMENT_FACET_SLUG),
-    ),
-  );
-
-  useEffect(() => {
-    handleFetchSearchContents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchFacetsKey, page]);
 
   return {
     contents,
