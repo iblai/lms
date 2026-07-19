@@ -10,6 +10,13 @@ import { DiscoverContentCardProps } from '@/types/discover';
 
 const ENROLLED_COURSES_PAGE_SIZE = 100;
 
+/**
+ * Remounts within this window render straight from the cache with no
+ * request at all; older cache entries still render instantly while a
+ * silent background refresh runs (seconds).
+ */
+const ENROLLMENTS_REFRESH_AFTER_SECONDS = 120;
+
 export type EnrolledContentType = 'courses' | 'programs' | 'pathways';
 
 /**
@@ -29,15 +36,15 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
       username: username ?? '',
       query: { page_size: ENROLLED_COURSES_PAGE_SIZE, platform_key: tenant },
     },
-    { skip },
+    { skip, refetchOnMountOrArgChange: ENROLLMENTS_REFRESH_AFTER_SECONDS },
   );
   const programsQ = useGetUserEnrolledProgramsQuery(
     { username: username ?? '', platform_key: tenant },
-    { skip },
+    { skip, refetchOnMountOrArgChange: ENROLLMENTS_REFRESH_AFTER_SECONDS },
   );
   const pathwaysQ = useGetUserCatalogPathwaysQuery(
     { username: username ?? '', platform_key: tenant },
-    { skip },
+    { skip, refetchOnMountOrArgChange: ENROLLMENTS_REFRESH_AFTER_SECONDS },
   );
 
   const enrolledCards = useMemo<Record<EnrolledContentType, DiscoverContentCardProps[]>>(() => {

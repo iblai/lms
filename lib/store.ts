@@ -13,7 +13,10 @@ import {
   skillsReducer,
   authApiSlice,
   auditLogsApiSlice,
+  searchApiSlice,
+  customAiSearchApiSlice,
 } from '@iblai/iblai-js/data-layer';
+import { CATALOG_CACHE_SECONDS } from '@/lib/constants';
 // @ts-ignore
 import { monetizationSlice } from '@iblai/iblai-js/web-utils';
 import { CareerSlice } from '@/services/career';
@@ -24,6 +27,23 @@ import { rbacSlice } from '@/features/rbac';
 import { tenantSlice } from '@/features/tenant';
 import { mentorSlice } from '@/features/mentor';
 import { StudioSlice } from '@/services/studio';
+
+// The catalog search and recommendations power Home's Explore rail and the
+// Discover page — keep their caches warm past the RTK Query 60s default so
+// returning to those pages renders instantly instead of refetching behind
+// a loader.
+searchApiSlice.enhanceEndpoints({
+  endpoints: {
+    getPersonnalizedSearch: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+    getCatalogSearch: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+  },
+});
+customAiSearchApiSlice.enhanceEndpoints({
+  endpoints: {
+    getRecommendationsAiSearch: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+  },
+});
+
 export const store = configureStore({
   reducer: {
     [SkillsSlice.reducerPath]: SkillsSlice.reducer,

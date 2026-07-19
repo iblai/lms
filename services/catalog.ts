@@ -7,7 +7,7 @@ import {
 } from '@/types/catalog';
 import { PathwayEnrollmentPlus, ProgramEnrollmentPlus } from '@iblai/iblai-api';
 import { iblFetchBaseQuery } from '@/lib/utils';
-import { SERVICES } from '@/lib/constants';
+import { SERVICES, CATALOG_CACHE_SECONDS } from '@/lib/constants';
 
 // Define a service using a base URL and expected endpoints
 export const CatalogSlice = createApi({
@@ -34,6 +34,9 @@ export const CatalogSlice = createApi({
         service: SERVICES.DM,
         includeCredentials: false,
       }),
+      // Feeds the catalog pages' Enrolled pills — keep it warm so revisits
+      // render instantly from cache.
+      keepUnusedDataFor: CATALOG_CACHE_SECONDS,
     }),
     getUserCatalogPathways: builder.query<
       PathwayEnrollmentPlus[],
@@ -44,6 +47,9 @@ export const CatalogSlice = createApi({
         service: SERVICES.DM,
         includeCredentials: false,
       }),
+      // Feeds the catalog pages' Enrolled pills — keep it warm so revisits
+      // render instantly from cache.
+      keepUnusedDataFor: CATALOG_CACHE_SECONDS,
     }),
 
     getUserAssignedPathways: builder.query<UserAssignedPathwaysResponse, { user_id: number }>({

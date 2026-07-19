@@ -15,9 +15,36 @@ import { Button } from '@/components/ui/button';
 import { DiscoverFacetsFilter } from '@/components/discover-facets-filter';
 import { DiscoverFilterDrawer } from '@/components/discover-filter-drawer';
 import { FacetFilterContext } from '@/contexts/facet-filter-context';
+/**
+ * Deep-link params → facet seed: `q` (navbar search), `content`
+ * (courses|programs|pathways), and `enrolled=true` / `recommended=true`
+ * (both terms of the one synthetic Access facet).
+ */
+const facetsFromSearchParams = (searchParams: URLSearchParams) => {
+  const contentParam = searchParams.get('content');
+  const enrolledParam = searchParams.get('enrolled');
+  const recommendedParam = searchParams.get('recommended');
+  return {
+    q: searchParams.get('q') ? [decodeURIComponent(searchParams.get('q') || '')] : [],
+    ...(contentParam !== null && {
+      content: contentParam ? contentParam.split(',').filter(Boolean) : [],
+    }),
+    ...((enrolledParam !== null || recommendedParam !== null) && {
+      enrollment: [
+        ...(enrolledParam === 'true' ? ['Enrolled'] : []),
+        ...(recommendedParam === 'true' ? ['Recommended'] : []),
+      ],
+    }),
+  };
+};
+
 export default function DiscoverPage() {
   const [limit] = useState<number>(12);
   const searchParams = useSearchParams();
+  // Seed once at mount so the very first catalog request already carries
+  // the deep-linked filters; the effect below keeps later URL changes in
+  // sync.
+  const [initialFacets] = useState(() => facetsFromSearchParams(searchParams));
   const {
     facets,
     contentsLoading,
@@ -39,31 +66,17 @@ export default function DiscoverPage() {
     recommendationsLoading,
   } = useDiscover({
     limit,
+    initialFacets,
   });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
-  // Seed the filters from the URL: `q` (navbar search), `content`
-  // (courses|programs|pathways), `enrolled=true` (the sidebar's Courses /
-  // Programs / Pathways entries deep-link the user's enrollments) and
-  // `recommended=true` on this centralized catalog page.
+  // Keep the filters in sync with URL changes after mount (the navbar
+  // search pushes a new `q`, the sidebar's Courses / Programs / Pathways
+  // entries deep-link the user's enrollments).
   useEffect(() => {
-    const contentParam = searchParams.get('content');
-    const enrolledParam = searchParams.get('enrolled');
-    const recommendedParam = searchParams.get('recommended');
     setSelectedFacets((previous) => ({
       ...previous,
-      q: searchParams.get('q') ? [decodeURIComponent(searchParams.get('q') || '')] : [],
-      ...(contentParam !== null && {
-        content: contentParam ? contentParam.split(',').filter(Boolean) : [],
-      }),
-      // Both deep-link params feed the one Access facet (terms Enrolled /
-      // Recommended).
-      ...((enrolledParam !== null || recommendedParam !== null) && {
-        enrollment: [
-          ...(enrolledParam === 'true' ? ['Enrolled'] : []),
-          ...(recommendedParam === 'true' ? ['Recommended'] : []),
-        ],
-      }),
+      ...facetsFromSearchParams(searchParams),
     }));
   }, [searchParams, setSelectedFacets]);
 

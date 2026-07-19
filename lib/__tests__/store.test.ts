@@ -128,6 +128,12 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
     reducer: (state = {}) => state,
     middleware: createMockMiddleware(),
   },
+  searchApiSlice: {
+    enhanceEndpoints: vi.fn(),
+  },
+  customAiSearchApiSlice: {
+    enhanceEndpoints: vi.fn(),
+  },
 }));
 
 describe('store', () => {

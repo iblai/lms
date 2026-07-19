@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Menu } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { UserProfileButton } from './header/profile/user-profile-button';
@@ -12,16 +12,13 @@ import { useSidebar } from '@iblai/iblai-js/web-containers/next';
 import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { useGetUserEnrolledCoursesQuery } from '@/services/courses';
+import { useCourseMetadata } from '@/hooks/courses/use-course-metadata';
 import {
   useGetUserCatalogPathwaysQuery,
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
-
-/** Max enrolled courses fetched when resolving the current course's name. */
-const COURSE_LOOKUP_PAGE_SIZE = 50;
 
 /** Shared navbar page-title rendering (course / program / catalog). */
 function NavbarTitle({ label, className }: { label: string; className?: string }) {
@@ -38,32 +35,39 @@ function NavbarTitle({ label, className }: { label: string; className?: string }
 /**
  * Current course title — shown in the navbar's left cluster on the
  * course ABOUT page (`/courses/<id>`) and the course DETAIL pages
- * (`/course-content/<id>/…`). Resolves the name from the learner's
- * enrollments, falling back to a label derived from the course id.
+ * (`/course-content/<id>/…`). Resolves the name from the course
+ * metadata endpoint (cached per course, works for un-enrolled courses
+ * too), falling back to a label derived from the course id.
  */
-function CourseTitle({ tenant }: { tenant: string }) {
+function CourseTitle() {
   const pathname = usePathname();
-  const username = getUserName();
 
   const match = pathname?.match(/\/(courses|course-content)\/([^/]+)(\/.*)?$/);
   const courseId = match?.[2] ? decodeURIComponent(match[2]) : undefined;
 
-  const { data } = useGetUserEnrolledCoursesQuery(
-    {
-      username: username ?? '',
-      query: { page_size: COURSE_LOOKUP_PAGE_SIZE, platform_key: tenant },
-    },
-    { skip: !courseId || !username },
-  );
+  const { handleFetchCourseMetaData } = useCourseMetadata();
+  const [title, setTitle] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!courseId) return;
+    let cancelled = false;
+    setTitle(undefined);
+    handleFetchCourseMetaData(courseId).then((courseMetaData) => {
+      // The hook resolves to {} when the metadata request fails.
+      if (!cancelled) setTitle((courseMetaData as { title?: string } | undefined)?.title);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId]);
 
   if (!courseId) return null;
 
-  const current = (data?.results ?? []).find((course) => course.course_id === courseId);
-  // Fallback when the opened course isn't in the enrollments (e.g. an
-  // un-enrolled about page): derive a readable label from the course id
-  // (`course-v1:org+NUM+RUN` → "NUM RUN").
+  // Fallback while the metadata loads or when it has no title: derive a
+  // readable label from the course id (`course-v1:org+NUM+RUN` → "NUM RUN").
   const fallbackLabel = courseId.split(':').pop()?.split('+').slice(1).join(' ') || courseId;
-  const label = current?.course_name || fallbackLabel;
+  const label = title || fallbackLabel;
 
   return <NavbarTitle label={label} />;
 }
@@ -199,7 +203,7 @@ export function NavBar() {
       )}
 
       {/* Current course / program / pathway title on their detail pages */}
-      {isUserLoggedIn && isCoursePage && <CourseTitle tenant={tenant} />}
+      {isUserLoggedIn && isCoursePage && <CourseTitle />}
       {isUserLoggedIn && isProgramPage && <ProgramTitle tenant={tenant} />}
       {isUserLoggedIn && isPathwayPage && <PathwayTitle tenant={tenant} />}
 
