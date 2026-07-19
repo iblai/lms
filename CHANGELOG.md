@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.49.2](https://github.com/iblai/lms/compare/skills-v0.49.1...skills-v0.49.2) (2026-07-19)
+
+### Bug Fixes
+
+* revamp optimization ([c282e80](https://github.com/iblai/lms/commit/c282e80b9e60aeb8e7baf4f5e1c84c992d6a41db))
+* revamp optimization > test coverage ([cff2a8a](https://github.com/iblai/lms/commit/cff2a8a176eb6deef9ed2886b402ea3b21d1beba))
+* revamp optimization > test coverage ([d3cfb60](https://github.com/iblai/lms/commit/d3cfb60330b8644a1a7090bd445f4e037b2c8f48))
+
 ## [0.49.1](https://github.com/iblai/lms/compare/skills-v0.49.0...skills-v0.49.1) (2026-07-17)
 
 ### Bug Fixes
