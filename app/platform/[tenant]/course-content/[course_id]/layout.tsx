@@ -22,7 +22,7 @@ import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context'
 import { getUserId, getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
-import { CourseOutlineSidebar } from '@/components/course-outline-sidebar';
+import { CourseOutlineSidebar, CourseOutlineToggle } from '@/components/course-outline-sidebar';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
@@ -53,6 +53,10 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useMediaQuery } from 'react-responsive';
 import { cn } from '@/lib/utils';
+
+// Safety net for mentor unit notifications when the course iframe never fires
+// a load event (e.g. an exam gate keeps it unmounted).
+const EDX_IFRAME_LOAD_FALLBACK_MS = 15_000;
 
 export default function CourseContentLayout({
   children,
@@ -231,6 +235,41 @@ export default function CourseContentLayout({
     }
   }, [searchParams, courseOutline]);
 
+  // Tracks whether the (hidden) course iframe has already fired a load event,
+  // so a notification whose other conditions resolve late can go out right away.
+  const edxIframeLoadedRef = useRef(false);
+  useEffect(() => {
+    const handleIframeLoaded = () => {
+      edxIframeLoadedRef.current = true;
+    };
+    window.addEventListener('edx-iframe:loaded', handleIframeLoaded);
+    return () => window.removeEventListener('edx-iframe:loaded', handleIframeLoaded);
+  }, []);
+
+  // Defers the toast + mentor:unit-switched dispatch until the hidden course
+  // iframe has loaded, so the mentor never reacts to a unit that isn't
+  // rendered yet. The fallback timer covers subsections that never mount the
+  // iframe (e.g. exam gates). Returns a cleanup that cancels the notification.
+  const notifyMentorOnceIframeLoaded = (message: string, alreadyLoaded = false) => {
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+    const send = () => {
+      clearTimeout(fallbackTimer);
+      window.removeEventListener('edx-iframe:loaded', send);
+      toast.success(message);
+      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
+    };
+    if (alreadyLoaded) {
+      send();
+      return undefined;
+    }
+    window.addEventListener('edx-iframe:loaded', send, { once: true });
+    fallbackTimer = setTimeout(send, EDX_IFRAME_LOAD_FALLBACK_MS);
+    return () => {
+      clearTimeout(fallbackTimer);
+      window.removeEventListener('edx-iframe:loaded', send);
+    };
+  };
+
   const previousUnitIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     const unitId = currentCourseInfo?.id;
@@ -238,12 +277,14 @@ export default function CourseContentLayout({
       previousUnitIdRef.current = unitId;
       return;
     }
-    if (previousUnitIdRef.current && previousUnitIdRef.current !== unitId) {
-      const message = `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`;
-      toast.success(message);
-      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
-    }
+    const previousUnitId = previousUnitIdRef.current;
     previousUnitIdRef.current = unitId;
+    if (previousUnitId && previousUnitId !== unitId) {
+      // Always wait for the *next* load: switching units remounts the iframe.
+      return notifyMentorOnceIframeLoaded(
+        `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`,
+      );
+    }
   }, [currentCourseInfo?.id, currentTab]);
 
   const unitLoadedScheduledRef = useRef(false);
@@ -260,11 +301,7 @@ export default function CourseContentLayout({
       return;
     }
     unitLoadedScheduledRef.current = true;
-    setTimeout(() => {
-      const message = `Loaded "${unitName}"`;
-      toast.success(message);
-      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
-    }, 4000);
+    return notifyMentorOnceIframeLoaded(`Loaded "${unitName}"`, edxIframeLoadedRef.current);
   }, [currentCourseInfo?.id, currentCourseInfo?.display_name, currentTab, mentorSpinnerHidden]);
 
   const toggleModule = (moduleId: string) => {
@@ -697,6 +734,8 @@ export default function CourseContentLayout({
                   </div>
                 </div>
                 <div className="flex items-center bg-gray-50 px-4 py-2">
+                  {/* md+ collapses/expands the inline sidebar from the same spot */}
+                  <CourseOutlineToggle />
                   <button
                     onClick={() => setCourseOutlineDrawerOpen(true)} // Open the new course outline drawer
                     className="mr-2 -ml-2 p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:hidden" // Mobile only; tablet/laptop use the inline collapsible sidebar

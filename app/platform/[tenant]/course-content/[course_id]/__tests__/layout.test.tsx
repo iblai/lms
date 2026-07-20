@@ -140,6 +140,7 @@ vi.mock('@/components/course-outline', () => ({
 // confirm the layout mounts it.
 vi.mock('@/components/course-outline-sidebar', () => ({
   CourseOutlineSidebar: () => <div data-testid="course-outline-sidebar">CourseOutlineSidebar</div>,
+  CourseOutlineToggle: () => <div data-testid="course-outline-toggle">CourseOutlineToggle</div>,
 }));
 
 // Mock CourseOutlineDrawer
@@ -1004,7 +1005,45 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
+
+      // The notification is deferred until the hidden course iframe reports
+      // it has loaded the new unit.
+      expect(toast.success).not.toHaveBeenCalled();
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
       expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+    });
+
+    it('falls back to firing the switch toast after 15s when the iframe never loads', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        const { toast } = await import('sonner');
+        const { setUnit } = await mockUnitLayout({
+          pathname: '/course-content/course-v1:test+course+2024/agent',
+          initialUnit: unitA,
+        });
+
+        const { rerender } = render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        setUnit(unitB);
+        mockState.searchParams = new URLSearchParams('unit_id=unit-B');
+        rerender(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        expect(toast.success).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(15_000);
+        expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('does NOT fire the toast when the unit changes on a non-agent tab', async () => {
@@ -1028,11 +1067,14 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
       expect(toast.success).not.toHaveBeenCalled();
     });
   });
 
-  describe('initial unit load on /agent dispatches "Loaded" 4s after the mentor spinner is hidden', () => {
+  describe('initial unit load on /agent dispatches "Loaded" once the mentor spinner is hidden and the course iframe has loaded', () => {
     const unit = { id: 'unit-1', display_name: 'Intro Unit' };
     const outline = {
       id: 'course-root',
@@ -1080,14 +1122,69 @@ describe('CourseContentLayout', () => {
       mentorState.spinnerHidden = false;
     });
 
-    it('fires toast + custom event 4s after spinnerHidden becomes true on the agent tab', async () => {
+    it('fires toast + custom event once the course iframe loads on the agent tab', async () => {
+      const { toast } = await import('sonner');
+      await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
+      mentorState.spinnerHidden = true;
+
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'mentor:unit-switched' }),
+      );
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
+
+      const eventCall = dispatchSpy.mock.calls.find(
+        ([e]) => (e as CustomEvent).type === 'mentor:unit-switched',
+      );
+      expect(eventCall).toBeDefined();
+      const event = eventCall![0] as CustomEvent<{ message: string }>;
+      expect(event.detail.message).toBe('Loaded "Intro Unit"');
+    });
+
+    it('fires immediately when the iframe had already loaded before the spinner hid', async () => {
+      const { toast } = await import('sonner');
+      await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
+      mentorState.spinnerHidden = false;
+
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // Iframe loads while the mentor spinner is still visible.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).not.toHaveBeenCalled();
+
+      mentorState.spinnerHidden = true;
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
+    });
+
+    it('falls back to firing after 15s when the iframe never loads', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       try {
         const { toast } = await import('sonner');
         await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
         mentorState.spinnerHidden = true;
-
-        const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
 
         render(
           <CourseContentLayout params={defaultParams}>
@@ -1095,23 +1192,11 @@ describe('CourseContentLayout', () => {
           </CourseContentLayout>,
         );
 
-        expect(toast.success).not.toHaveBeenCalled();
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'mentor:unit-switched' }),
-        );
-
-        await vi.advanceTimersByTimeAsync(3999);
+        await vi.advanceTimersByTimeAsync(14_999);
         expect(toast.success).not.toHaveBeenCalled();
 
         await vi.advanceTimersByTimeAsync(1);
         expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
-
-        const eventCall = dispatchSpy.mock.calls.find(
-          ([e]) => (e as CustomEvent).type === 'mentor:unit-switched',
-        );
-        expect(eventCall).toBeDefined();
-        const event = eventCall![0] as CustomEvent<{ message: string }>;
-        expect(event.detail.message).toBe('Loaded "Intro Unit"');
       } finally {
         vi.useRealTimers();
       }
@@ -1158,42 +1243,41 @@ describe('CourseContentLayout', () => {
     });
 
     it('only schedules the "Loaded" toast once even if the component re-renders', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        const { toast } = await import('sonner');
-        await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
-        mentorState.spinnerHidden = true;
+      const { toast } = await import('sonner');
+      await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
+      mentorState.spinnerHidden = true;
 
-        const { rerender } = render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
 
-        // Force several extra renders before the timer fires.
-        for (let i = 0; i < 3; i++) {
-          rerender(
-            <CourseContentLayout params={defaultParams}>
-              <div>children {i}</div>
-            </CourseContentLayout>,
-          );
-        }
-
-        await vi.advanceTimersByTimeAsync(4000);
-        expect(toast.success).toHaveBeenCalledTimes(1);
-        expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
-
-        // Trigger more renders after the timer has already fired.
+      // Force several extra renders before the iframe reports loaded.
+      for (let i = 0; i < 3; i++) {
         rerender(
           <CourseContentLayout params={defaultParams}>
-            <div>children final</div>
+            <div>children {i}</div>
           </CourseContentLayout>,
         );
-        await vi.advanceTimersByTimeAsync(4000);
-        expect(toast.success).toHaveBeenCalledTimes(1);
-      } finally {
-        vi.useRealTimers();
       }
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).toHaveBeenCalledTimes(1);
+      expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
+
+      // More renders and iframe loads after it already fired change nothing.
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children final</div>
+        </CourseContentLayout>,
+      );
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -265,6 +265,29 @@ describe('EdxIframe - JWT PostMessage', () => {
     expect(mockRefetchCourseOutline).toHaveBeenCalledWith(false);
   });
 
+  it('dispatches edx-iframe:loaded on window when the iframe loads', async () => {
+    const { container } = renderEdxIframe();
+
+    await waitFor(
+      () => {
+        const iframe = container.querySelector('iframe');
+        expect(iframe).toBeInTheDocument();
+      },
+      { timeout: 1000 },
+    );
+
+    const loadedListener = vi.fn();
+    window.addEventListener('edx-iframe:loaded', loadedListener);
+    try {
+      await act(async () => {
+        fireEvent.load(container.querySelector('iframe')!);
+      });
+      expect(loadedListener).toHaveBeenCalledTimes(1);
+    } finally {
+      window.removeEventListener('edx-iframe:loaded', loadedListener);
+    }
+  });
+
   it('rejects messages from wrong origin', async () => {
     const testToken = 'test-jwt-token-12345';
     localStorage.setItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY, testToken);

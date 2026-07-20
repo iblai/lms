@@ -193,6 +193,9 @@ export const EdxIframe = () => {
               onLoad={() => {
                 setFetchingIframeData(false);
                 refetchCourseOutline(false);
+                // The agent tab keeps this iframe hidden and defers its mentor
+                // unit notifications until the iframe has actually loaded.
+                window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
               }}
               id="edx-iframe"
               title="Forum InnerWare"
