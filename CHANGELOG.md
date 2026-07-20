@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.50.1](https://github.com/iblai/lms/compare/skills-v0.50.0...skills-v0.50.1) (2026-07-20)
+
+### CI
+
+* **e2e:** prune old docker images on stg deploy so the box never fills ([a13a46f](https://github.com/iblai/lms/commit/a13a46f9b1f10e3b40db9285eff5fd819cf8162c))
+
 ## [0.50.0](https://github.com/iblai/lms/compare/skills-v0.49.3...skills-v0.50.0) (2026-07-20)
 
 ### Features
