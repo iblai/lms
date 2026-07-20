@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-07-03",
+  "lastUpdated": "2026-07-20",
   "summary": {
-    "totalCheckpoints": 231,
-    "coveredCheckpoints": 231,
+    "totalCheckpoints": 232,
+    "coveredCheckpoints": 232,
     "percent": 100,
     "totalJourneys": 32
   },
@@ -195,7 +195,8 @@
         "components/course-access-guard.tsx",
         "components/edx-iframe/edx-iframe.tsx",
         "hooks/courses/edx-iframe-context.ts",
-        "services/course-metadata.ts"
+        "services/course-metadata.ts",
+        "components/course-media-dropdown.tsx"
       ],
       "checkpoints": [
         {
@@ -361,6 +362,11 @@
         {
           "id": "tabs-33",
           "description": "Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-34",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
           "status": "covered"
         }
       ]

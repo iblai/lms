@@ -47,6 +47,11 @@ vi.mock('lucide-react', () => ({
   CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
   Maximize: () => <span data-testid="maximize">Maximize</span>,
   X: () => <span data-testid="dismiss-x">×</span>,
+  // Used by the unit media dropdown rendered in the tabs row.
+  Projector: () => <span data-testid="projector">Projector</span>,
+  FileText: () => <span data-testid="file-text">FileText</span>,
+  Library: () => <span data-testid="library">Library</span>,
+  PlaySquare: () => <span data-testid="play-square">PlaySquare</span>,
 }));
 
 // Mock helpers

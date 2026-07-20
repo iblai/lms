@@ -1061,6 +1061,60 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Agent tab fullscreen toggle expands the chat and the floating bubble restores it');
   });
 
+  test('Checkpoint 34: Unit media dropdown lists pdf/video/media-catalog blocks and previews them on the Agent tab', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The dropdown only renders when the current unit actually has pdf,
+    // video, or ibl-media-catalog blocks, so its absence is not a failure.
+    const mediaTrigger = page.getByTestId('course-media-dropdown-trigger');
+    const hasMedia = await mediaTrigger.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasMedia) {
+      logger.info('Current unit has no media blocks — skipping');
+      test.skip();
+      return;
+    }
+
+    await mediaTrigger.click();
+
+    // Each entry shows the block display name plus its human-readable type.
+    const items = page.getByTestId('course-media-dropdown-item');
+    await expect(items.first()).toBeVisible({ timeout: 15_000 });
+    const itemText = (await items.first().innerText()).trim();
+    expect(itemText.length).toBeGreaterThan(0);
+    expect(itemText).toMatch(/PDF|Video|Media catalog/);
+
+    // On the Agent tab a selection opens the student_view_url in an overlay.
+    await items.first().click();
+    const preview = page.getByTestId('course-media-preview');
+    await expect(preview).toBeVisible({ timeout: 15_000 });
+    await expect(preview.locator('iframe')).toBeAttached({ timeout: 15_000 });
+
+    await page.keyboard.press('Escape');
+    await expect(preview).toBeHidden({ timeout: 15_000 });
+
+    logger.info('Unit media dropdown lists media blocks and previews them on the Agent tab');
+  });
+
   // ── Admin Configuration tab (moved here from the course about page) ──────────
   //
   // Configuration is now a course-content route (`/course-content/<id>/configuration`)
