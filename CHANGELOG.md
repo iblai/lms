@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.3](https://github.com/iblai/lms/compare/skills-v0.49.2...skills-v0.49.3) (2026-07-20)
+
+### Bug Fixes
+
+* empty state label for playwright fixed and course display name preferred to title on navbar ([6672cd9](https://github.com/iblai/lms/commit/6672cd9343ae4827361938205ede6527155d1a50))
+* empty state label for playwright fixed and course display name preferred to title on navbar ([3fffff6](https://github.com/iblai/lms/commit/3fffff6eceb2fc37b66f7d62c18bd4f46af197f4))
+
 ## [0.49.2](https://github.com/iblai/lms/compare/skills-v0.49.1...skills-v0.49.2) (2026-07-19)
 
 ### Bug Fixes
