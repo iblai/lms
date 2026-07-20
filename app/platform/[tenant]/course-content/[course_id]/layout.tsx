@@ -26,6 +26,7 @@ import { CourseOutlineSidebar } from '@/components/course-outline-sidebar';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
+import { CourseMediaDropdown } from '@/components/course-media-dropdown';
 // @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
@@ -165,9 +166,12 @@ export default function CourseContentLayout({
   const autoplayToggleVisible =
     course?.agent_autoplay === true && metadata?.enable_course_voice_autoplay === true;
 
+  // Needed on both agent (mentor xblock detection + media preview) and course
+  // (media scroll-to) tabs.
+  const blockDetailsTab = currentTab === 'agent' || currentTab === 'course';
   const { data: courseBlockDetails } = useGetCourseBlockDetailsQuery(
     { blockId: currentUnitID || '', username: getUserName() },
-    { skip: !currentUnitID || currentTab !== 'agent' },
+    { skip: !currentUnitID || !blockDetailsTab },
   );
   const hasMentorXblock = Object.values(courseBlockDetails?.blocks ?? {}).some(
     (block) => block.type === 'ibl_mentor_xblock',
@@ -521,6 +525,12 @@ export default function CourseContentLayout({
                           <CirclePlay className="h-5 w-5" />
                         )}
                       </button>
+                    )}
+                    {blockDetailsTab && (
+                      <CourseMediaDropdown
+                        blocks={courseBlockDetails?.blocks}
+                        currentTab={currentTab}
+                      />
                     )}
                     {fullscreenToggleVisible && (
                       <button
