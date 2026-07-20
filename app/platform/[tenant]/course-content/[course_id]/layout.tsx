@@ -251,23 +251,25 @@ export default function CourseContentLayout({
   // rendered yet. The fallback timer covers subsections that never mount the
   // iframe (e.g. exam gates). Returns a cleanup that cancels the notification.
   const notifyMentorOnceIframeLoaded = (message: string, alreadyLoaded = false) => {
-    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
-    const send = () => {
-      clearTimeout(fallbackTimer);
-      window.removeEventListener('edx-iframe:loaded', send);
+    const dispatch = () => {
       toast.success(message);
       window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
     };
     if (alreadyLoaded) {
-      send();
+      dispatch();
       return undefined;
     }
-    window.addEventListener('edx-iframe:loaded', send, { once: true });
-    fallbackTimer = setTimeout(send, EDX_IFRAME_LOAD_FALLBACK_MS);
-    return () => {
+    const cancel = () => {
       clearTimeout(fallbackTimer);
       window.removeEventListener('edx-iframe:loaded', send);
     };
+    const send = () => {
+      cancel();
+      dispatch();
+    };
+    const fallbackTimer = setTimeout(send, EDX_IFRAME_LOAD_FALLBACK_MS);
+    window.addEventListener('edx-iframe:loaded', send, { once: true });
+    return cancel;
   };
 
   const previousUnitIdRef = useRef<string | undefined>(undefined);
