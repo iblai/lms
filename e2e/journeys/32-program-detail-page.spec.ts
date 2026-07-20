@@ -63,7 +63,7 @@ test.describe('Journey 32: Program Detail Page', () => {
     await waitForAppShell(page);
 
     const allCards = page.getByTestId('discover-content-card');
-    const empty = page.getByText(/no content found/i).first();
+    const empty = page.getByText(/no (enrolled |recommended )?content found/i).first();
     await expect(allCards.first().or(empty)).toBeVisible({ timeout: 120_000 });
 
     // Each card has a small uppercase badge in the bottom-left displaying
