@@ -66,6 +66,7 @@ import {
   redirectToAuthSpa,
   redirectToAuthSpaJoinTenant,
   hasNonExpiredAuthToken,
+  isJwtExpired,
   isInIframe,
   deleteCookie,
   getDomainParts,
@@ -499,19 +500,67 @@ describe('helpers utility functions', () => {
     });
   });
 
+  // Builds a base64url-encoded JWT (header.payload.sig) for the given claims.
+  const makeJwt = (claims: Record<string, unknown>): string => {
+    const encode = (obj: Record<string, unknown>) =>
+      btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(claims)}.sig`;
+  };
+  const futureExpJwt = () => makeJwt({ exp: Math.floor((Date.now() + 60 * 60 * 1000) / 1000) });
+
+  describe('isJwtExpired', () => {
+    it('should treat a token with a future exp as not expired', () => {
+      expect(isJwtExpired(futureExpJwt())).toBe(false);
+    });
+
+    it('should treat a token with a past exp as expired', () => {
+      const past = makeJwt({ exp: Math.floor((Date.now() - 1000) / 1000) });
+      expect(isJwtExpired(past)).toBe(true);
+    });
+
+    it('should treat a token without an exp claim as non-expiring', () => {
+      expect(isJwtExpired(makeJwt({ sub: 'user-1' }))).toBe(false);
+    });
+
+    it('should treat a malformed token as expired', () => {
+      expect(isJwtExpired('not-a-jwt')).toBe(true);
+      expect(isJwtExpired('')).toBe(true);
+    });
+  });
+
   describe('hasNonExpiredAuthToken', () => {
-    it('should return false when token is not defined', () => {
+    it('should return false when the edx token is not defined', () => {
       localStorage.clear();
+      localStorage.setItem('axd_token', 'valid-token');
+      expect(hasNonExpiredAuthToken()).toBe(false);
+    });
+
+    it('should return false when the edx token is expired', () => {
+      localStorage.clear();
+      localStorage.setItem(
+        'edx_jwt_token',
+        makeJwt({ exp: Math.floor((Date.now() - 1000) / 1000) }),
+      );
+      localStorage.setItem('axd_token', 'valid-token');
+      expect(hasNonExpiredAuthToken()).toBe(false);
+    });
+
+    it('should return false when the axd token is not defined', () => {
+      localStorage.clear();
+      localStorage.setItem('edx_jwt_token', futureExpJwt());
       expect(hasNonExpiredAuthToken()).toBe(false);
     });
 
     it('should return true when token expiry is not defined', () => {
+      localStorage.clear();
+      localStorage.setItem('edx_jwt_token', futureExpJwt());
       localStorage.setItem('axd_token', 'valid-token');
       expect(hasNonExpiredAuthToken()).toBe(true);
     });
 
     it('should return false when token is expired', () => {
       window.localStorage.clear();
+      localStorage.setItem('edx_jwt_token', futureExpJwt());
       const pastDate = new Date(Date.now() - 1000).toISOString();
       localStorage.setItem('axd_token', 'valid-token');
       localStorage.setItem('axd_token_expires', pastDate);
@@ -520,6 +569,7 @@ describe('helpers utility functions', () => {
 
     it('should return true when token is not expired', () => {
       window.localStorage.clear();
+      localStorage.setItem('edx_jwt_token', futureExpJwt());
       const futureDate = new Date(Date.now() + 1000 * 60 * 60).toISOString();
       localStorage.setItem('axd_token', 'valid-token');
       localStorage.setItem('axd_token_expires', futureDate);
@@ -527,6 +577,8 @@ describe('helpers utility functions', () => {
     });
 
     it('should return false for invalid date', () => {
+      localStorage.clear();
+      localStorage.setItem('edx_jwt_token', futureExpJwt());
       localStorage.setItem('axd_token', 'valid-token');
       localStorage.setItem('axd_token_expires', 'invalid-date');
       expect(hasNonExpiredAuthToken()).toBe(false);
