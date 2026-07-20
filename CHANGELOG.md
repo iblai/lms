@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.50.0](https://github.com/iblai/lms/compare/skills-v0.49.3...skills-v0.50.0) (2026-07-20)
+
+### Features
+
+* media list dropdown on agent course mode ([811fea2](https://github.com/iblai/lms/commit/811fea25db8b073dd1fef7f9ac293633282f4acf))
+
 ## [0.49.3](https://github.com/iblai/lms/compare/skills-v0.49.2...skills-v0.49.3) (2026-07-20)
 
 ### Bug Fixes
