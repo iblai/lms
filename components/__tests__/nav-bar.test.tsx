@@ -52,14 +52,16 @@ vi.mock('@/services/core', () => ({
 
 // Course metadata by course key — the navbar resolves the course title
 // through useCourseMetadata (cached metadata endpoint), not the
-// enrollments list.
-const mockCourseTitles: Record<string, string> = {
-  'course-v1:main+AAA+2026': 'Course Alpha',
-  'course-v1:main+BBB+2026': 'Course Beta',
+// enrollments list. `display_name` wins over `title` when both are present.
+const mockCourseMetadata: Record<string, { display_name?: string; title?: string }> = {
+  'course-v1:main+AAA+2026': { display_name: 'Course Alpha', title: 'Alpha (title)' },
+  'course-v1:main+BBB+2026': { display_name: 'Course Beta' },
+  // Older metadata shape: only `title`.
+  'course-v1:main+CCC+2026': { title: 'Course Gamma' },
 };
 
-const mockHandleFetchCourseMetaData = vi.fn(async (courseKey: string) =>
-  mockCourseTitles[courseKey] ? { title: mockCourseTitles[courseKey] } : {},
+const mockHandleFetchCourseMetaData = vi.fn(
+  async (courseKey: string) => mockCourseMetadata[courseKey] ?? {},
 );
 
 vi.mock('@/hooks/courses/use-course-metadata', () => ({
@@ -175,8 +177,8 @@ describe('NavBar', () => {
     vi.mocked(parseMarkdownLinks).mockReturnValue([]);
     // Re-pin after clearAllMocks so per-test overrides (e.g. the
     // never-resolving promise) don't leak into later tests.
-    mockHandleFetchCourseMetaData.mockImplementation(async (courseKey: string) =>
-      mockCourseTitles[courseKey] ? { title: mockCourseTitles[courseKey] } : {},
+    mockHandleFetchCourseMetaData.mockImplementation(
+      async (courseKey: string) => mockCourseMetadata[courseKey] ?? {},
     );
   });
 
@@ -323,18 +325,32 @@ describe('NavBar', () => {
       expect(mockHandleFetchCourseMetaData).toHaveBeenCalledWith('course-v1:main+AAA+2026');
     });
 
+    it('prefers display_name over title when the metadata has both', async () => {
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
+      expect(await screen.findByRole('heading', { name: 'Course Alpha' })).toBeInTheDocument();
+      expect(screen.queryByText('Alpha (title)')).not.toBeInTheDocument();
+    });
+
+    it('falls back to title when the metadata has no display_name', async () => {
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+CCC+2026';
+      render(<NavBar />);
+      expect(await screen.findByRole('heading', { name: 'Course Gamma' })).toBeInTheDocument();
+    });
+
     it('shows the current course name on course-content detail pages', async () => {
       mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/progress';
       render(<NavBar />);
       expect(await screen.findByRole('heading', { name: 'Course Beta' })).toBeInTheDocument();
     });
 
-    it('shows the id-derived label while the metadata is loading', () => {
+    it('renders no title while the metadata is loading', () => {
       mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
-      // Never resolves within this test — the fallback label must show.
+      // Never resolves within this test — the slot must stay empty rather
+      // than showing a label derived from the course id.
       mockHandleFetchCourseMetaData.mockReturnValue(new Promise(() => {}) as any);
       render(<NavBar />);
-      expect(screen.getByRole('heading', { name: 'AAA 2026' })).toBeInTheDocument();
+      expect(screen.queryByTestId('navbar-page-title')).not.toBeInTheDocument();
     });
 
     it('does not render the old enrolled-courses dropdown', async () => {
@@ -345,11 +361,15 @@ describe('NavBar', () => {
       expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
     });
 
-    it('falls back to an id-derived label when the metadata has no title', async () => {
+    it('renders no title when the metadata has neither display_name nor title', async () => {
       mockPathname = '/platform/test-tenant/courses/course-v1:other+XYZ+2026';
       render(<NavBar />);
-      expect(await screen.findByRole('heading', { name: 'XYZ 2026' })).toBeInTheDocument();
-      expect(mockHandleFetchCourseMetaData).toHaveBeenCalledWith('course-v1:other+XYZ+2026');
+      await vi.waitFor(() =>
+        expect(mockHandleFetchCourseMetaData).toHaveBeenCalledWith('course-v1:other+XYZ+2026'),
+      );
+      // No id-derived fallback — the raw id reads as noise.
+      expect(screen.queryByTestId('navbar-page-title')).not.toBeInTheDocument();
+      expect(screen.queryByText('XYZ 2026')).not.toBeInTheDocument();
     });
   });
 

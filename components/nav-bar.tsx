@@ -54,7 +54,10 @@ function CourseTitle() {
     setTitle(undefined);
     handleFetchCourseMetaData(courseId).then((courseMetaData) => {
       // The hook resolves to {} when the metadata request fails.
-      if (!cancelled) setTitle((courseMetaData as { title?: string } | undefined)?.title);
+      if (!cancelled) {
+        const meta = courseMetaData as { display_name?: string; title?: string } | undefined;
+        setTitle(meta?.display_name || meta?.title);
+      }
     });
     return () => {
       cancelled = true;
@@ -62,14 +65,11 @@ function CourseTitle() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  if (!courseId) return null;
+  // Render nothing until the metadata resolves — a label derived from the
+  // course id reads as noise, so an empty slot is preferable.
+  if (!courseId || !title) return null;
 
-  // Fallback while the metadata loads or when it has no title: derive a
-  // readable label from the course id (`course-v1:org+NUM+RUN` → "NUM RUN").
-  const fallbackLabel = courseId.split(':').pop()?.split('+').slice(1).join(' ') || courseId;
-  const label = title || fallbackLabel;
-
-  return <NavbarTitle label={label} />;
+  return <NavbarTitle label={title} />;
 }
 
 /**
