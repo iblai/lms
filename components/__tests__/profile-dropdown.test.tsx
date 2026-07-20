@@ -5,7 +5,15 @@ import React from 'react';
 
 vi.mock('next/link', () => ({
   default: ({ href, children, onClick, ...props }: any) => (
-    <a href={href} onClick={onClick} {...props}>
+    <a
+      href={href}
+      onClick={(e: React.MouseEvent) => {
+        // Real Link does client-side navigation; jsdom cannot navigate.
+        e.preventDefault();
+        onClick?.(e);
+      }}
+      {...props}
+    >
       {children}
     </a>
   ),
