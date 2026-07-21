@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.50.2](https://github.com/iblai/lms/compare/skills-v0.50.1...skills-v0.50.2) (2026-07-21)
+
+### Bug Fixes
+
+* unit switching improved on course load + redundant course display on course content page ([09dd8e1](https://github.com/iblai/lms/commit/09dd8e19c266024cc6c6aca6d7d32ca3e3f3c3b2))
+* unit switching improved on course load + redundant course display on course content page ([e39dfba](https://github.com/iblai/lms/commit/e39dfbac0ef60f415d2e155263a53865f66e23c7))
+* unit switching improved on course load + redundant course display on course content page ([54b8ca2](https://github.com/iblai/lms/commit/54b8ca2e703e5063b389761335b7cea70490529d))
+
 ## [0.50.1](https://github.com/iblai/lms/compare/skills-v0.50.0...skills-v0.50.1) (2026-07-20)
 
 ### CI
