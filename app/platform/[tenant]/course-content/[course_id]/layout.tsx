@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { use, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import {
   ChevronRight,
@@ -26,7 +27,13 @@ import { CourseOutlineSidebar, CourseOutlineToggle } from '@/components/course-o
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
-import { CourseMediaDropdown } from '@/components/course-media-dropdown';
+import {
+  CourseMediaDropdown,
+  CourseMediaMenuItems,
+  CourseMediaPreviewDialog,
+  getUnitMediaBlocks,
+} from '@/components/course-media-dropdown';
+import type { CourseBlockDetailsBlock } from '@/types/courses';
 // @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
@@ -40,7 +47,7 @@ import {
   useTenantMetadata,
 } from '@iblai/iblai-js/web-utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
+import { MONETIZATION_CLOSE_PAYLOAD, NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 import { config } from '@/lib/config';
 import { selectMentorSpinnerHidden } from '@/features/mentor';
 import {
@@ -182,9 +189,20 @@ export default function CourseContentLayout({
   );
   const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
   const fullscreenToggleVisible = currentTab === 'agent';
+  const unitMediaVisible =
+    blockDetailsTab && getUnitMediaBlocks(courseBlockDetails?.blocks).length > 0;
 
-  // One-time informative hint shown above the Learn/Assess switcher the first
-  // time it becomes available. Persisted so it doesn't nag on every visit.
+  // Mobile collapses every course control into a single 3-dot popover.
+  // Controlled so actions inside (fullscreen, media) can close it; the media
+  // preview dialog lives OUTSIDE the popover, which unmounts its children as
+  // soon as focus moves into the (body-portaled) dialog.
+  const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
+  const [mobileMediaPreviewBlock, setMobileMediaPreviewBlock] =
+    useState<CourseBlockDetailsBlock | null>(null);
+
+  // One-time informative hint shown under the Learn/Assess switcher (which
+  // lives in the navbar) the first time it becomes available. Persisted so it
+  // doesn't nag on every visit.
   const [agentModeHintDismissed, setAgentModeHintDismissed] = useLocalStorage<boolean>(
     'skills:agent-mode-hint-dismissed',
     false,
@@ -194,6 +212,16 @@ export default function CourseContentLayout({
     },
   );
   const [agentModeHintOpen, setAgentModeHintOpen] = useState(false);
+
+  // Navbar slot (rendered empty by the NavBar on every page) that the course
+  // controls below portal into, so they sit left of the navbar search bar
+  // while their state stays in this layout. Resolved in an effect: the NavBar
+  // lives in an ancestor layout, so the slot is in the DOM by the time
+  // effects run.
+  const [navbarControlsSlot, setNavbarControlsSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setNavbarControlsSlot(document.getElementById(NAVBAR_COURSE_CONTROLS_ID));
+  }, []);
   const dismissAgentModeHint = () => {
     setAgentModeHintOpen(false);
     setAgentModeHintDismissed(true);
@@ -540,136 +568,164 @@ export default function CourseContentLayout({
                       </a>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 pr-4">
-                    {autoplayToggleVisible && (
-                      <button
-                        type="button"
-                        onClick={() => setAgentAutoplay(!agentAutoplayOn)}
-                        role="switch"
-                        aria-checked={agentAutoplayOn}
-                        aria-label={
-                          agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
-                        }
-                        title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
-                        data-testid="agent-autoplay-toggle"
-                        className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
-                          agentAutoplayOn
-                            ? 'text-amber-600 hover:text-amber-700'
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        {agentAutoplayOn ? (
-                          <CirclePause className="h-5 w-5" />
-                        ) : (
-                          <CirclePlay className="h-5 w-5" />
-                        )}
-                      </button>
-                    )}
-                    {blockDetailsTab && (
-                      <CourseMediaDropdown
-                        blocks={courseBlockDetails?.blocks}
-                        currentTab={currentTab}
-                      />
-                    )}
-                    {fullscreenToggleVisible && (
-                      <button
-                        type="button"
-                        onClick={() => setAgentFullscreen(true)}
-                        aria-label="Enter fullscreen"
-                        title="Fullscreen"
-                        data-testid="agent-fullscreen-toggle"
-                        className="rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                      >
-                        <Maximize className="h-5 w-5" />
-                      </button>
-                    )}
-                    {assessmentToggleVisible && (
-                      <Popover
-                        open={agentModeHintOpen}
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            dismissAgentModeHint();
-                          }
-                        }}
-                      >
-                        <PopoverAnchor asChild>
-                          <div
-                            className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
-                            role="group"
-                            aria-label="Agent display mode"
+                  {/* Course controls (autoplay, media dropdown, fullscreen,
+                      Learn/Assess) render in the top navbar — left of the
+                      search bar — via the NavBar's portal slot; their state
+                      stays in this layout. */}
+                  {navbarControlsSlot &&
+                    createPortal(
+                      <div className="flex items-center gap-3">
+                        {autoplayToggleVisible && (
+                          <button
+                            type="button"
+                            onClick={() => setAgentAutoplay(!agentAutoplayOn)}
+                            role="switch"
+                            aria-checked={agentAutoplayOn}
+                            aria-label={
+                              agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
+                            }
+                            title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
+                            data-testid="agent-autoplay-toggle"
+                            className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
+                              agentAutoplayOn
+                                ? 'text-amber-600 hover:text-amber-700'
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`}
                           >
-                            <span
-                              className={
-                                agentMode === 'learning' ? 'font-medium text-amber-600' : ''
-                              }
-                            >
-                              Learn
-                            </span>
-                            <Switch
-                              checked={agentMode === 'assessment'}
-                              onCheckedChange={(checked) =>
-                                setAgentMode(checked ? 'assessment' : 'learning')
-                              }
-                              aria-label="Toggle assessment mode"
-                              className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                            {agentAutoplayOn ? (
+                              <CirclePause className="h-5 w-5" />
+                            ) : (
+                              <CirclePlay className="h-5 w-5" />
+                            )}
+                          </button>
+                        )}
+                        {unitMediaVisible && (
+                          <div className="hidden items-center md:flex">
+                            <CourseMediaDropdown
+                              blocks={courseBlockDetails?.blocks}
+                              currentTab={currentTab}
                             />
-                            <span
-                              className={
-                                agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                          </div>
+                        )}
+                        {fullscreenToggleVisible && (
+                          <button
+                            type="button"
+                            onClick={() => setAgentFullscreen(true)}
+                            aria-label="Enter fullscreen"
+                            title="Fullscreen"
+                            data-testid="agent-fullscreen-toggle"
+                            className="hidden rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex"
+                          >
+                            <Maximize className="h-5 w-5" />
+                          </button>
+                        )}
+                        {assessmentToggleVisible && (
+                          <Popover
+                            open={agentModeHintOpen}
+                            onOpenChange={(open) => {
+                              if (!open) {
+                                dismissAgentModeHint();
                               }
+                            }}
+                          >
+                            <PopoverAnchor asChild>
+                              <div
+                                className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
+                                role="group"
+                                aria-label="Agent display mode"
+                              >
+                                <span
+                                  className={
+                                    agentMode === 'learning' ? 'font-medium text-amber-600' : ''
+                                  }
+                                >
+                                  Learn
+                                </span>
+                                <Switch
+                                  checked={agentMode === 'assessment'}
+                                  onCheckedChange={(checked) =>
+                                    setAgentMode(checked ? 'assessment' : 'learning')
+                                  }
+                                  aria-label="Toggle assessment mode"
+                                  className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                                />
+                                <span
+                                  className={
+                                    agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                                  }
+                                >
+                                  Assess
+                                </span>
+                              </div>
+                            </PopoverAnchor>
+                            <PopoverContent
+                              side="bottom"
+                              align="end"
+                              sideOffset={10}
+                              className="w-64 p-3"
+                              onOpenAutoFocus={(event) => event.preventDefault()}
                             >
-                              Assess
-                            </span>
-                          </div>
-                        </PopoverAnchor>
-                        <PopoverContent
-                          side="top"
-                          align="end"
-                          sideOffset={10}
-                          className="w-64 p-3"
-                          onOpenAutoFocus={(event) => event.preventDefault()}
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="flex-1 text-xs text-gray-600">
-                              <p className="mb-1 font-medium text-gray-900">Two ways to learn</p>
-                              <p>
-                                Use this switch to move between{' '}
-                                <span className="font-medium text-amber-600">Learn</span> mode,
-                                where the agent teaches you, and{' '}
-                                <span className="font-medium text-amber-600">Assess</span> mode,
-                                where it quizzes you on what you&apos;ve covered.
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={dismissAgentModeHint}
-                              aria-label="Dismiss"
-                              className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <div className="mt-2 flex justify-end">
-                            <button
-                              type="button"
-                              onClick={dismissAgentModeHint}
-                              className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                            >
-                              Got it
-                            </button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 text-xs text-gray-600">
+                                  <p className="mb-1 font-medium text-gray-900">
+                                    Two ways to learn
+                                  </p>
+                                  <p>
+                                    Use this switch to move between{' '}
+                                    <span className="font-medium text-amber-600">Learn</span> mode,
+                                    where the agent teaches you, and{' '}
+                                    <span className="font-medium text-amber-600">Assess</span> mode,
+                                    where it quizzes you on what you&apos;ve covered.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={dismissAgentModeHint}
+                                  aria-label="Dismiss"
+                                  className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <div className="mt-2 flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={dismissAgentModeHint}
+                                  className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                >
+                                  Got it
+                                </button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>,
+                      navbarControlsSlot,
                     )}
-                    {(assessmentToggleVisible || autoplayToggleVisible) && (
-                      <Popover>
+                  {/* Preview for media picked from the mobile controls popover;
+                      kept out of the popover so closing it doesn't unmount the
+                      dialog. */}
+                  <CourseMediaPreviewDialog
+                    block={mobileMediaPreviewBlock}
+                    onClose={() => setMobileMediaPreviewBlock(null)}
+                  />
+                  <div className="flex items-center gap-3 pr-4">
+                    {/* Mobile-only (trigger is md:hidden) 3-dot menu bundling
+                        the course controls, sitting left of the prev/next unit
+                        buttons; desktop shows them inline in the navbar via
+                        the portal above. */}
+                    {(assessmentToggleVisible ||
+                      autoplayToggleVisible ||
+                      fullscreenToggleVisible ||
+                      unitMediaVisible) && (
+                      <Popover open={mobileControlsOpen} onOpenChange={setMobileControlsOpen}>
                         <PopoverTrigger
                           className="rounded p-1 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none md:hidden"
                           aria-label="Agent display options"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </PopoverTrigger>
-                        <PopoverContent align="end" className="w-auto p-3">
+                        <PopoverContent align="end" className="w-48 p-2">
                           <div className="flex flex-col gap-3">
                             {autoplayToggleVisible && (
                               <div
@@ -697,6 +753,30 @@ export default function CourseContentLayout({
                                   className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
                                 />
                               </div>
+                            )}
+                            {unitMediaVisible && (
+                              <CourseMediaMenuItems
+                                blocks={courseBlockDetails?.blocks}
+                                currentTab={currentTab}
+                                onAction={(previewBlock) => {
+                                  setMobileControlsOpen(false);
+                                  setMobileMediaPreviewBlock(previewBlock);
+                                }}
+                              />
+                            )}
+                            {fullscreenToggleVisible && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMobileControlsOpen(false);
+                                  setAgentFullscreen(true);
+                                }}
+                                data-testid="agent-fullscreen-popover-button"
+                                className="flex items-center gap-2 rounded p-1 text-left text-xs text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                              >
+                                <Maximize className="h-4 w-4 text-gray-500" />
+                                <span>Fullscreen</span>
+                              </button>
                             )}
                             {assessmentToggleVisible && (
                               <div

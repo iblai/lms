@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useMediaQuery } from 'react-responsive';
 
 import { UserProfileButton } from './header/profile/user-profile-button';
 import { getUserName, parseMarkdownLinks, redirectToAuthSpaJoinTenant } from '@/utils/helpers';
@@ -18,13 +19,23 @@ import {
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 import { config } from '@/lib/config';
+import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 
 /** Shared navbar page-title rendering (course / program / catalog). */
-function NavbarTitle({ label, className }: { label: string; className?: string }) {
+function NavbarTitle({
+  label,
+  className,
+  style,
+}: {
+  label: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <h1
       className={`truncate text-lg font-medium text-[var(--navbar-text)] sm:text-xl ${className ?? ''}`}
+      style={style}
       data-testid="navbar-page-title"
     >
       {label}
@@ -41,9 +52,13 @@ function NavbarTitle({ label, className }: { label: string; className?: string }
  */
 function CourseTitle() {
   const pathname = usePathname();
+  // Tablet/desktop per the app's mobile cutoff (see e.g. the course layout's
+  // isMobile check).
+  const isTabletUp = useMediaQuery({ minWidth: 769 });
 
   const match = pathname?.match(/\/(courses|course-content)\/([^/]+)(\/.*)?$/);
   const courseId = match?.[2] ? decodeURIComponent(match[2]) : undefined;
+  const isCourseContentPage = match?.[1] === 'course-content';
 
   const { handleFetchCourseMetaData } = useCourseMetadata();
   const [title, setTitle] = useState<string | undefined>(undefined);
@@ -69,7 +84,15 @@ function CourseTitle() {
   // course id reads as noise, so an empty slot is preferable.
   if (!courseId || !title) return null;
 
-  return <NavbarTitle label={title} />;
+  // Course-content pages nudge the title left on tablet/desktop to line up
+  // with the content below. Inline style + media-query hook rather than a
+  // Tailwind utility.
+  return (
+    <NavbarTitle
+      label={title}
+      style={isCourseContentPage && isTabletUp ? { marginLeft: -11 } : undefined}
+    />
+  );
 }
 
 /**
@@ -189,7 +212,12 @@ export function NavBar() {
   // links. The old Home / Profile / Recommended / Discover links moved
   // to the sidebar.
   const leftCluster = (
-    <div className="flex h-16 min-w-0 items-center overflow-hidden pl-4 sm:pl-6 md:h-20">
+    // w-screen over-sizes the cluster so the shell's content-sized left
+    // wrapper (shrinkable: min-w-0 + overflow-hidden) expands to fill all
+    // space up to the invariant search bar, then both shrink back to exactly
+    // that space — landing the course-controls slot at its right edge
+    // directly left of the search.
+    <div className="flex h-16 w-screen min-w-0 items-center overflow-hidden pl-4 sm:pl-6 md:h-20">
       {/* Mobile hamburger — opens the PlatformSidebar mobile sheet, which
           only renders for logged-in users, so hide it when logged out. */}
       {isUserLoggedIn && (
@@ -230,6 +258,11 @@ export function NavBar() {
           ))}
         </nav>
       )}
+
+      {/* Slot the course-content layout portals its course controls into
+          (autoplay, media dropdown, fullscreen, Learn/Assess). Empty — and
+          therefore zero-width — on every other page. */}
+      <div id={NAVBAR_COURSE_CONTROLS_ID} className="mr-3 ml-auto flex shrink-0 items-center" />
     </div>
   );
 

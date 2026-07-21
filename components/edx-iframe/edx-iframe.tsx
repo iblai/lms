@@ -205,7 +205,7 @@ export const EdxIframe = () => {
                 isAssessmentFullscreen
                   ? 'h-full w-full'
                   : isAssessmentMode
-                    ? 'h-[calc(100vh-258px)] w-full md:h-[calc(100vh-260px)] lg:h-[calc(100vh-250px)]'
+                    ? 'h-[calc(100vh-255px)] w-full md:h-[calc(100vh-257px)] lg:h-[calc(100vh-247px)]'
                     : undefined
               }
               style={
