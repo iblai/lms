@@ -90,6 +90,9 @@ import { config } from '@/lib/config';
 describe('useCourseDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks keeps mockReturnValue, so restore the default explicitly
+    // or an iframe test leaks `true` into every test that follows.
+    (inIframe as ReturnType<typeof vi.fn>).mockReturnValue(false);
     mockHandleFetchCourseMetaData.mockResolvedValue(null);
     mockHandleFetchCourseCompletionOutlines.mockResolvedValue({});
     mockHandleFetchCourseEligibility.mockResolvedValue({});

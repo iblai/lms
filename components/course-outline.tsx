@@ -102,10 +102,7 @@ export const CourseOutline = () => {
     currentLesson,
   } = useContext(CourseOutlineContext);
   return (
-    <div
-      className="h-full overflow-y-auto md:h-[calc(100%-35px)]"
-      style={{ scrollbarWidth: 'none' }}
-    >
+    <div className="h-full overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
       {courseOutlineLoading ? (
         <SkeletonMultiplier multiplier={8} Skeleton={SkeletonCourseOutline} />
       ) : (

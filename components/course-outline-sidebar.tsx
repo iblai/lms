@@ -1,12 +1,11 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useMediaQuery } from 'react-responsive';
 
 import { CourseOutline } from '@/components/course-outline';
-import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 
 export const OUTLINE_COLLAPSED_KEY = 'course-outline-collapsed';
@@ -16,9 +15,9 @@ const BOOLEAN_STORAGE = {
   deserializer: (value: string) => value === 'true',
 };
 
-export const CourseOutlineSidebar = () => {
-  const { course } = useContext(CourseOutlineContext);
-
+// Shared between the sidebar and the toggle — useLocalStorage broadcasts a
+// 'local-storage' event on set, so every instance of this hook stays in sync.
+const useOutlineCollapsed = () => {
   const [mounted, setMounted] = useState(false);
   // Expanded by default — the user has to explicitly collapse the outline.
   const [collapsed, setCollapsed] = useLocalStorage<boolean>(OUTLINE_COLLAPSED_KEY, false, {
@@ -26,71 +25,53 @@ export const CourseOutlineSidebar = () => {
     ...BOOLEAN_STORAGE,
   });
 
-  // The collapse feature is available at every width from md (768px) upwards;
-  // below md the outline lives in the drawer (handled in the layout).
-  const isWide = useMediaQuery({ minWidth: 768 });
-
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const showFull = isWide && !collapsed;
-  const showRail = isWide && collapsed;
-  const showCollapseControl = isWide;
+  return { mounted, collapsed, setCollapsed };
+};
 
-  const railClass = !mounted ? 'hidden' : showRail ? 'flex' : 'hidden';
-  const fullClass = !mounted ? 'hidden md:block' : showFull ? 'block' : 'hidden';
-  const collapseBtnClass = mounted && showCollapseControl ? 'inline-flex' : 'hidden';
-
-  const handleExpand = () => {
-    setCollapsed(false);
-  };
-
-  const handleCollapse = () => {
-    setCollapsed(true);
-  };
+// Lives in the course header row of the layout (same spot as the mobile drawer
+// opener), so the sidebar itself doesn't need a header row to host a control.
+export const CourseOutlineToggle = () => {
+  const { mounted, collapsed, setCollapsed } = useOutlineCollapsed();
+  const showAsCollapsed = mounted && collapsed;
 
   return (
-    <>
-      {/* Collapsed rail — md (768px) and up, while collapsed */}
-      <div
-        className={`${railClass} w-12 flex-shrink-0 flex-col items-center border-r border-gray-200 pt-2`}
-        data-testid="course-outline-rail"
-      >
-        <button
-          type="button"
-          onClick={handleExpand}
-          className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-          aria-label="Expand course outline"
-          title="Show course outline"
-          data-testid="expand-course-outline"
-        >
-          <PanelLeftOpen className="h-5 w-5" />
-        </button>
-      </div>
+    <button
+      type="button"
+      onClick={() => setCollapsed(!collapsed)}
+      className="mr-2 -ml-2 hidden p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:inline-flex"
+      aria-label={showAsCollapsed ? 'Expand course outline' : 'Collapse course outline'}
+      title={showAsCollapsed ? 'Show course outline' : 'Hide course outline'}
+      data-testid="toggle-course-outline"
+    >
+      {showAsCollapsed ? (
+        <PanelLeftOpen className="h-5 w-5" />
+      ) : (
+        <PanelLeftClose className="h-5 w-5" />
+      )}
+    </button>
+  );
+};
 
-      {/* Expanded outline — full sidebar */}
-      <div
-        className={`${fullClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200 pl-4`}
-        style={{ scrollbarWidth: 'none' }}
-        data-testid="course-outline-sidebar"
-      >
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          <h2 className="font-semibold text-gray-800">{course?.display_name}</h2>
-          <button
-            type="button"
-            onClick={handleCollapse}
-            className={`-mr-1 ${collapseBtnClass} rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none`}
-            aria-label="Collapse course outline"
-            title="Hide course outline"
-            data-testid="collapse-course-outline"
-          >
-            <PanelLeftClose className="h-5 w-5" />
-          </button>
-        </div>
+export const CourseOutlineSidebar = () => {
+  const { mounted, collapsed } = useOutlineCollapsed();
 
-        <CourseOutline />
-      </div>
-    </>
+  // The outline is available at every width from md (768px) upwards; below md
+  // it lives in the drawer (handled in the layout).
+  const isWide = useMediaQuery({ minWidth: 768 });
+
+  const visibleClass = !mounted ? 'hidden md:block' : isWide && !collapsed ? 'block' : 'hidden';
+
+  return (
+    <div
+      className={`${visibleClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200 pl-4`}
+      style={{ scrollbarWidth: 'none' }}
+      data-testid="course-outline-sidebar"
+    >
+      <CourseOutline />
+    </div>
   );
 };
