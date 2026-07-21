@@ -85,6 +85,39 @@ export function buildTwitter(input: OgTwitterInput): Metadata['twitter'] {
   };
 }
 
+/**
+ * Full Metadata for a public entity "about" page (course / program / pathway):
+ * the entity title/description/image become the meta title/description/image,
+ * with a canonical URL, article-type Open Graph, Twitter card, and robots gated
+ * on whether the tenant is public.
+ */
+export function buildEntityMetadata(params: {
+  title: string;
+  description?: string;
+  image?: string;
+  canonicalUrl?: string;
+  siteName?: string;
+  isPublic: boolean;
+}): Metadata {
+  const images = params.image ? [params.image] : [];
+  const description = params.description || SEO_DEFAULTS.description;
+  return {
+    title: params.title,
+    description,
+    ...(params.canonicalUrl && { alternates: { canonical: params.canonicalUrl } }),
+    robots: buildRobots(params.isPublic),
+    openGraph: buildOpenGraph({
+      title: params.title,
+      description,
+      images,
+      siteName: params.siteName,
+      url: params.canonicalUrl,
+      type: 'article',
+    }),
+    twitter: buildTwitter({ title: params.title, description, images }),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // JSON-LD structured data builders (schema.org). Each returns a plain object
 // to be serialized inside a <script type="application/ld+json"> tag.
