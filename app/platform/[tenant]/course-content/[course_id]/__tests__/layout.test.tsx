@@ -2024,6 +2024,19 @@ describe('CourseContentLayout', () => {
       expect(screen.getByTestId('course-media-preview')).toBeInTheDocument();
     });
 
+    it('portals the desktop controls into the navbar slot but keeps the 3-dot in the tabs row', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+
+      const slot = document.getElementById(NAVBAR_COURSE_CONTROLS_ID)!;
+      expect(slot.contains(screen.getByTestId('agent-fullscreen-toggle'))).toBe(true);
+      expect(slot.contains(screen.getByTestId('course-media-dropdown-trigger'))).toBe(true);
+      // The mobile 3-dot trigger renders beside the unit navigator instead.
+      expect(slot.contains(screen.getByLabelText('Agent display options'))).toBe(false);
+    });
+
     it('hides the 3-dot trigger when no control is available (course tab, no media)', async () => {
       await setTab('course');
       mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });

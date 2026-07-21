@@ -46,7 +46,12 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogDescription: ({ children }: any) => <p>{children}</p>,
 }));
 
-import { CourseMediaDropdown, getUnitMediaBlocks } from '../course-media-dropdown';
+import {
+  CourseMediaDropdown,
+  CourseMediaMenuItems,
+  CourseMediaPreviewDialog,
+  getUnitMediaBlocks,
+} from '../course-media-dropdown';
 import type { CourseBlockDetailsBlock } from '@/types/courses';
 
 const block = (
@@ -203,5 +208,111 @@ describe('CourseMediaDropdown', () => {
 
       expect(toastError).toHaveBeenCalledWith('Course content is still loading');
     });
+  });
+});
+
+// Flat variant for the mobile course-controls popover; same selection rules
+// as the dropdown, but the preview dialog is owned by the caller (the course
+// layout) via onAction.
+describe('CourseMediaMenuItems', () => {
+  const onAction = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    document.getElementById('edx-iframe')?.remove();
+  });
+
+  it('renders nothing when the unit has no media blocks', () => {
+    const { container } = render(
+      <CourseMediaMenuItems
+        blocks={blocksFixture([block('problem', 'Checkboxes')])}
+        currentTab="agent"
+        onAction={onAction}
+      />,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('lists each media block with its display name and human-readable type', () => {
+    render(<CourseMediaMenuItems blocks={mediaBlocks} currentTab="agent" onAction={onAction} />);
+
+    expect(screen.getByText('Media')).toBeInTheDocument();
+    const items = screen.getAllByTestId('course-media-menu-item');
+    expect(items).toHaveLength(3);
+    expect(items.map((i) => i.textContent)).toEqual([
+      'Intro VideoVideo',
+      'Sample PDF FilePDF',
+      'Media ResourceMedia catalog',
+    ]);
+  });
+
+  it('on the agent tab, hands the block to onAction for the caller-owned preview', () => {
+    render(<CourseMediaMenuItems blocks={mediaBlocks} currentTab="agent" onAction={onAction} />);
+    fireEvent.click(screen.getAllByTestId('course-media-menu-item')[1]);
+
+    expect(onAction).toHaveBeenCalledWith(
+      expect.objectContaining({ display_name: 'Sample PDF File' }),
+    );
+    expect(toastError).not.toHaveBeenCalled();
+  });
+
+  it('on the agent tab, warns and skips onAction when the block has no preview url', () => {
+    render(
+      <CourseMediaMenuItems
+        blocks={blocksFixture([block('pdf', 'Broken PDF', { student_view_url: undefined })])}
+        currentTab="agent"
+        onAction={onAction}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('course-media-menu-item'));
+
+    expect(toastError).toHaveBeenCalledWith('This resource has no preview available');
+    expect(onAction).not.toHaveBeenCalled();
+  });
+
+  it('on the course tab, posts SCROLL_TO and calls onAction with null (no preview)', () => {
+    const iframe = attachEdxIframe();
+    const postMessage = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+    render(<CourseMediaMenuItems blocks={mediaBlocks} currentTab="course" onAction={onAction} />);
+    fireEvent.click(screen.getAllByTestId('course-media-menu-item')[2]);
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: 'SCROLL_TO', id: 'block@Media Resource' },
+      'https://learn.example.org',
+    );
+    expect(onAction).toHaveBeenCalledWith(null);
+  });
+
+  it('on the course tab, warns and skips onAction when the course iframe has not mounted', () => {
+    render(<CourseMediaMenuItems blocks={mediaBlocks} currentTab="course" onAction={onAction} />);
+    fireEvent.click(screen.getAllByTestId('course-media-menu-item')[0]);
+
+    expect(toastError).toHaveBeenCalledWith('Course content is still loading');
+    expect(onAction).not.toHaveBeenCalled();
+  });
+});
+
+describe('CourseMediaPreviewDialog', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders nothing when no block is set', () => {
+    render(<CourseMediaPreviewDialog block={null} onClose={vi.fn()} />);
+    expect(screen.queryByTestId('course-media-preview')).not.toBeInTheDocument();
+  });
+
+  it('previews the block student_view_url in the flex-column overlay', () => {
+    render(<CourseMediaPreviewDialog block={block('pdf', 'Sample PDF File')} onClose={vi.fn()} />);
+
+    const dialog = screen.getByTestId('course-media-preview');
+    expect(dialog).toHaveStyle({ display: 'flex', flexDirection: 'column' });
+    const iframe = dialog.querySelector('iframe') as HTMLIFrameElement;
+    expect(iframe).toHaveAttribute('src', 'https://learn.example.org/xblock/Sample PDF File');
   });
 });

@@ -21,6 +21,12 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+// Controls the CourseTitle tablet/desktop check (react-responsive).
+const mockIsTabletUp = vi.hoisted(() => ({ current: true }));
+vi.mock('react-responsive', () => ({
+  useMediaQuery: vi.fn(() => mockIsTabletUp.current),
+}));
+
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
@@ -158,11 +164,13 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { parseMarkdownLinks } from '@/utils/helpers';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 
 describe('NavBar', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockPathname = '/platform/test-tenant/home';
+    mockIsTabletUp.current = true;
     const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
     vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
@@ -361,6 +369,28 @@ describe('NavBar', () => {
       expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
     });
 
+    it('nudges the title left by 11px on course-content pages on tablet/desktop', async () => {
+      mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/course';
+      render(<NavBar />);
+      const title = await screen.findByRole('heading', { name: 'Course Beta' });
+      expect(title).toHaveStyle({ marginLeft: '-11px' });
+    });
+
+    it('keeps the default title alignment on course-content pages on mobile', async () => {
+      mockIsTabletUp.current = false;
+      mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/course';
+      render(<NavBar />);
+      const title = await screen.findByRole('heading', { name: 'Course Beta' });
+      expect(title.style.marginLeft).toBe('');
+    });
+
+    it('does not nudge the title on the course ABOUT page', async () => {
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
+      const title = await screen.findByRole('heading', { name: 'Course Alpha' });
+      expect(title.style.marginLeft).toBe('');
+    });
+
     it('renders no title when the metadata has neither display_name nor title', async () => {
       mockPathname = '/platform/test-tenant/courses/course-v1:other+XYZ+2026';
       render(<NavBar />);
@@ -370,6 +400,23 @@ describe('NavBar', () => {
       // No id-derived fallback — the raw id reads as noise.
       expect(screen.queryByTestId('navbar-page-title')).not.toBeInTheDocument();
       expect(screen.queryByText('XYZ 2026')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('course controls portal slot', () => {
+    it('renders the (empty) slot the course layout portals its controls into, inside the left cluster', () => {
+      render(<NavBar />);
+      const slot = document.getElementById(NAVBAR_COURSE_CONTROLS_ID);
+      expect(slot).toBeInTheDocument();
+      expect(slot).toBeEmptyDOMElement();
+      expect(screen.getByTestId('left-slot').contains(slot)).toBe(true);
+    });
+
+    it('renders the slot on course-content pages too (same node, filled by the layout)', async () => {
+      mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/agent';
+      render(<NavBar />);
+      await screen.findByRole('heading', { name: 'Course Beta' });
+      expect(document.getElementById(NAVBAR_COURSE_CONTROLS_ID)).toBeInTheDocument();
     });
   });
 
