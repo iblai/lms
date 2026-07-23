@@ -25,6 +25,7 @@ vi.mock('@/hooks/discover/use-discover', () => ({
     contentsLoading: false,
     facetsLoading: false,
     isError: false,
+    catalogEmpty: false,
     handleToggleFacet: vi.fn(),
     selectedFacets: {},
     isFacetTermSelected: vi.fn(),
@@ -89,8 +90,41 @@ vi.mock('@/components/discover-filter-drawer', () => ({
   DiscoverFilterDrawer: () => <div data-testid="filter-drawer" />,
 }));
 
+// Reads Redux (rbac) + localStorage + tenant metadata; page tests render
+// without providers.
+vi.mock('@/components/no-courses-empty-box', () => ({
+  NoCoursesEmptyBox: () => <div data-testid="no-courses-empty-box" />,
+}));
+
 import DiscoverPage from '../page';
 import { useDiscover } from '@/hooks/discover/use-discover';
+
+/** The default hook state with overrides — for tests that vary one axis. */
+const discoverState = (overrides: Record<string, any> = {}) =>
+  ({
+    contents: [],
+    facets: [],
+    contentsLoading: false,
+    facetsLoading: false,
+    isError: false,
+    catalogEmpty: false,
+    handleToggleFacet: vi.fn(),
+    selectedFacets: {},
+    isFacetTermSelected: vi.fn(),
+    handleSelectFacets: mockHandleSelectFacets,
+    handleFormatContents: vi.fn((c: any) => c),
+    pagination: { total_pages: 1, count: 0 },
+    setPage: mockSetPage,
+    handleFilterFacets: vi.fn(),
+    filteredFacets: [],
+    setSelectedFacets: mockSetSelectedFacets,
+    displayCards: [],
+    enrolledOnly: false,
+    enrollmentsLoading: false,
+    recommendedOnly: false,
+    recommendationsLoading: false,
+    ...overrides,
+  }) as any;
 
 describe('DiscoverPage', () => {
   beforeEach(() => {
@@ -105,10 +139,64 @@ describe('DiscoverPage', () => {
     expect(screen.queryByText('Explore Content')).not.toBeInTheDocument();
   });
 
-  it('shows empty box when no contents and not loading', () => {
+  it('shows the no-courses box when the catalog is empty with no active filters', () => {
     render(<DiscoverPage />);
 
-    expect(screen.getByTestId('empty-box')).toHaveTextContent('No content found.');
+    expect(screen.getByTestId('no-courses-empty-box')).toBeInTheDocument();
+    expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
+  });
+
+  it('shows the no-courses box instead of "No enrolled content found" when the catalog is globally empty', () => {
+    vi.mocked(useDiscover).mockReturnValue(
+      discoverState({
+        catalogEmpty: true,
+        enrolledOnly: true,
+        selectedFacets: { enrollment: ['Enrolled'] },
+      }),
+    );
+
+    render(<DiscoverPage />);
+
+    expect(screen.getByTestId('no-courses-empty-box')).toBeInTheDocument();
+    expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
+  });
+
+  it('shows the no-courses box when the catalog is globally empty with other filters applied', () => {
+    vi.mocked(useDiscover).mockReturnValue(
+      discoverState({
+        catalogEmpty: true,
+        selectedFacets: { subject: ['Math'] },
+      }),
+    );
+
+    render(<DiscoverPage />);
+
+    expect(screen.getByTestId('no-courses-empty-box')).toBeInTheDocument();
+    expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
+  });
+
+  it('keeps "No enrolled content found" when filters match nothing but the catalog has content', () => {
+    vi.mocked(useDiscover).mockReturnValue(
+      discoverState({
+        catalogEmpty: false,
+        enrolledOnly: true,
+        selectedFacets: { enrollment: ['Enrolled'] },
+      }),
+    );
+
+    render(<DiscoverPage />);
+
+    expect(screen.getByTestId('empty-box')).toHaveTextContent('No enrolled content found.');
+    expect(screen.queryByTestId('no-courses-empty-box')).not.toBeInTheDocument();
+  });
+
+  it('defers the empty state until the catalog probe resolves', () => {
+    vi.mocked(useDiscover).mockReturnValue(discoverState({ facetsLoading: true }));
+
+    render(<DiscoverPage />);
+
+    expect(screen.queryByTestId('no-courses-empty-box')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
   });
 
   it('shows empty box on error', () => {
@@ -136,6 +224,7 @@ describe('DiscoverPage', () => {
     render(<DiscoverPage />);
 
     expect(screen.getByTestId('empty-box')).toHaveTextContent('No content found.');
+    expect(screen.queryByTestId('no-courses-empty-box')).not.toBeInTheDocument();
   });
 
   it('shows skeletons when loading', () => {
@@ -290,6 +379,9 @@ describe('DiscoverPage', () => {
 
     expect(screen.getByText('type:')).toBeInTheDocument();
     expect(screen.getByText('course')).toBeInTheDocument();
+    // Filtered-empty is "no match", not "no courses" — keep the plain box.
+    expect(screen.getByTestId('empty-box')).toHaveTextContent('No content found.');
+    expect(screen.queryByTestId('no-courses-empty-box')).not.toBeInTheDocument();
   });
 
   it('renders facets filter sidebar without a "Filter By" heading', () => {

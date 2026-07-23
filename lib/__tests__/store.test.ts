@@ -134,6 +134,20 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
   customAiSearchApiSlice: {
     enhanceEndpoints: vi.fn(),
   },
+  catalogApiSlice: {
+    enhanceEndpoints: vi.fn(),
+  },
+  skillsApiSlice: {
+    enhanceEndpoints: vi.fn(),
+  },
+}));
+
+// Avoid importing the real web-utils bundle (its axios import doesn't resolve
+// under the yalc-linked package layout) — the store only needs the reducer.
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  monetizationSlice: {
+    reducer: (state = {}) => state,
+  },
 }));
 
 describe('store', () => {
@@ -215,6 +229,24 @@ describe('store', () => {
 
     // Cleanup
     unsubscribe();
+  });
+
+  it('extends cache retention for the profile skills queries', async () => {
+    await import('../store');
+    const { catalogApiSlice, skillsApiSlice } = await import('@iblai/iblai-js/data-layer');
+    const { CATALOG_CACHE_SECONDS } = await import('../constants');
+
+    expect(catalogApiSlice.enhanceEndpoints).toHaveBeenCalledWith({
+      endpoints: {
+        getUserReportedSkills: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+        getUserDesiredSkills: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+      },
+    });
+    expect(skillsApiSlice.enhanceEndpoints).toHaveBeenCalledWith({
+      endpoints: {
+        getUserEarnedSkills: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+      },
+    });
   });
 
   it('middleware is correctly configured', async () => {

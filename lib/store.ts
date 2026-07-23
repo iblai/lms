@@ -15,6 +15,8 @@ import {
   auditLogsApiSlice,
   searchApiSlice,
   customAiSearchApiSlice,
+  catalogApiSlice,
+  skillsApiSlice,
 } from '@iblai/iblai-js/data-layer';
 import { CATALOG_CACHE_SECONDS } from '@/lib/constants';
 // @ts-ignore
@@ -41,6 +43,24 @@ searchApiSlice.enhanceEndpoints({
 customAiSearchApiSlice.enhanceEndpoints({
   endpoints: {
     getRecommendationsAiSearch: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+  },
+});
+
+// The profile skills queries (earned / self-reported / desired) power the
+// Skills page and the sidebar Skills dialog. With the RTK Query 60s default,
+// every reopen refetches behind a skeleton — keep them warm so reopening
+// renders instantly. Add/update/delete mutations invalidate the
+// `reported-skills` / `desired-skills` tags, so cached data still refreshes
+// after a write.
+catalogApiSlice.enhanceEndpoints({
+  endpoints: {
+    getUserReportedSkills: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+    getUserDesiredSkills: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
+  },
+});
+skillsApiSlice.enhanceEndpoints({
+  endpoints: {
+    getUserEarnedSkills: { keepUnusedDataFor: CATALOG_CACHE_SECONDS },
   },
 });
 

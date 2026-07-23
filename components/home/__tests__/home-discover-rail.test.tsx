@@ -52,6 +52,12 @@ vi.mock('@/components/skeleton-multiplier', () => ({
   ),
 }));
 
+// Reads Redux (rbac) + localStorage + tenant metadata; rail tests render
+// without providers.
+vi.mock('@/components/no-courses-empty-box', () => ({
+  NoCoursesEmptyBox: () => <div data-testid="no-courses-empty-box" />,
+}));
+
 import { HomeDiscoverRail } from '../home-discover-rail';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
@@ -150,15 +156,18 @@ describe('HomeDiscoverRail', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders nothing when the catalog is empty', () => {
+  it('shows only the no-courses box (no Explore heading or See More) when the catalog is empty', () => {
     mockUseDiscover.mockReturnValue(discoverState({ contents: [] }));
-    const { container } = render(<HomeDiscoverRail />);
-    expect(container).toBeEmptyDOMElement();
+    render(<HomeDiscoverRail />);
+    expect(screen.getByTestId('no-courses-empty-box')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Explore' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /See More/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('discover-content-card')).not.toBeInTheDocument();
   });
 
-  it('renders nothing when contents are missing entirely', () => {
+  it('shows the no-courses box when contents are missing entirely', () => {
     mockUseDiscover.mockReturnValue(discoverState({ contents: undefined }));
-    const { container } = render(<HomeDiscoverRail />);
-    expect(container).toBeEmptyDOMElement();
+    render(<HomeDiscoverRail />);
+    expect(screen.getByTestId('no-courses-empty-box')).toBeInTheDocument();
   });
 });

@@ -140,6 +140,7 @@ describe('useDiscover', () => {
     expect(result.current).toHaveProperty('contentsLoading');
     expect(result.current).toHaveProperty('facetsLoading');
     expect(result.current).toHaveProperty('isError');
+    expect(result.current).toHaveProperty('catalogEmpty');
     expect(result.current).toHaveProperty('handleToggleFacet');
     expect(result.current).toHaveProperty('handleSelectFacets');
     expect(result.current).toHaveProperty('selectedFacets');
@@ -591,6 +592,43 @@ describe('useDiscover', () => {
         limit: 5,
         offset: 5,
       });
+    });
+  });
+
+  describe('catalogEmpty (unfiltered probe)', () => {
+    it('is true when the probe returns zero items and no facet terms', async () => {
+      mockCatalogQuery.facetsData = { count: 0, facets: {} };
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      expect(result.current.catalogEmpty).toBe(true);
+    });
+
+    it('is false when the catalog has items', async () => {
+      mockCatalogQuery.facetsData = { count: 3, facets: {} };
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      expect(result.current.catalogEmpty).toBe(false);
+    });
+
+    it('is false when facet terms carry content even without a count field', async () => {
+      mockCatalogQuery.facetsData = { facets: { language: { en: 5 } } };
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      expect(result.current.catalogEmpty).toBe(false);
+    });
+
+    it('is false while the probe is still loading', () => {
+      mockCatalogQuery.facetsData = undefined;
+      const { result } = renderHook(() => useDiscover({}));
+      expect(result.current.facetsLoading).toBe(true);
+      expect(result.current.catalogEmpty).toBe(false);
+    });
+
+    it('is false when the probe errored', async () => {
+      mockCatalogQuery.isError = true;
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+      expect(result.current.catalogEmpty).toBe(false);
     });
   });
 

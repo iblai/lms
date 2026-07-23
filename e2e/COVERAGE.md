@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-07-20 | 232 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-07-22 | 232 checkpoints | 32 journeys | 100% covered
 
 ## How This Works
 
@@ -44,7 +44,7 @@ When adding a new page or modifying an existing user flow:
 **Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`
 
 - [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
-- [x] Explore rail displays catalog cards or hides when empty
+- [x] Explore rail displays catalog cards; an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)
 - [x] My Courses CTA opens the enrolled catalog view
 - [x] Clicking an enrolled catalog card navigates to the course about page
 - [x] Clicking a catalog rail card navigates to the content page

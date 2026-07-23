@@ -236,26 +236,22 @@ describe('ProfileSkillsContent', () => {
     expect(screen.getAllByTestId('skeleton-multiplier').length).toBeGreaterThan(0);
   });
 
-  it('shows DefaultEmptyBox when self-reported skills error', () => {
+  it('shows a single DefaultEmptyBox when self-reported skills error', () => {
     mockHookState({ selfReportedSkillsError: true });
     render(<ProfileSkillsContent />);
-    const emptyBoxes = screen.getAllByTestId('default-empty-box');
-    expect(
-      emptyBoxes.some((el) =>
-        el.textContent?.includes("You don't have any self-reported skills yet."),
-      ),
-    ).toBe(true);
+    const emptyBoxes = screen
+      .getAllByTestId('default-empty-box')
+      .filter((el) => el.textContent?.includes("You don't have any self-reported skills yet."));
+    expect(emptyBoxes).toHaveLength(1);
   });
 
-  it('shows DefaultEmptyBox when self-reported skills succeed but are empty', () => {
+  it('shows a single DefaultEmptyBox when self-reported skills succeed but are empty', () => {
     mockHookState({ selfReportedSkillsSuccess: true, selfReportedSkills: { skills: [] } });
     render(<ProfileSkillsContent />);
-    const emptyBoxes = screen.getAllByTestId('default-empty-box');
-    expect(
-      emptyBoxes.some((el) =>
-        el.textContent?.includes("You don't have any self-reported skills yet."),
-      ),
-    ).toBe(true);
+    const emptyBoxes = screen
+      .getAllByTestId('default-empty-box')
+      .filter((el) => el.textContent?.includes("You don't have any self-reported skills yet."));
+    expect(emptyBoxes).toHaveLength(1);
   });
 
   it('renders self-reported SkillBox lists (mobile and desktop) when skills exist', () => {
@@ -371,22 +367,22 @@ describe('ProfileSkillsContent', () => {
     expect(screen.getAllByTestId('skeleton-multiplier').length).toBeGreaterThan(0);
   });
 
-  it('shows DefaultEmptyBox when desired skills error', () => {
+  it('shows a single DefaultEmptyBox when desired skills error', () => {
     mockHookState({ desiredSkillsError: true });
     render(<ProfileSkillsContent />);
-    const emptyBoxes = screen.getAllByTestId('default-empty-box');
-    expect(
-      emptyBoxes.some((el) => el.textContent?.includes("You don't have any desired skills yet.")),
-    ).toBe(true);
+    const emptyBoxes = screen
+      .getAllByTestId('default-empty-box')
+      .filter((el) => el.textContent?.includes("You don't have any desired skills yet."));
+    expect(emptyBoxes).toHaveLength(1);
   });
 
-  it('shows DefaultEmptyBox when desired skills succeed but are empty', () => {
+  it('shows a single DefaultEmptyBox when desired skills succeed but are empty', () => {
     mockHookState({ desiredSkillsSuccess: true, desiredSkills: { skills: [] } });
     render(<ProfileSkillsContent />);
-    const emptyBoxes = screen.getAllByTestId('default-empty-box');
-    expect(
-      emptyBoxes.some((el) => el.textContent?.includes("You don't have any desired skills yet.")),
-    ).toBe(true);
+    const emptyBoxes = screen
+      .getAllByTestId('default-empty-box')
+      .filter((el) => el.textContent?.includes("You don't have any desired skills yet."));
+    expect(emptyBoxes).toHaveLength(1);
   });
 
   it('renders desired SkillBox lists without ratings when skills exist', () => {

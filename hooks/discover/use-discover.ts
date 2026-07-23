@@ -293,6 +293,20 @@ export const useDiscover = ({
     }
   };
 
+  /**
+   * The unfiltered catalog probe (the facet query) resolved to nothing at
+   * all — zero matching items and no facet term with content behind it.
+   * Distinct from "the current filters matched nothing": when this is true
+   * no filter combination can produce results, so empty states should show
+   * the create-course / contact-support box rather than a filter-specific
+   * message. False while the probe is still loading or errored.
+   */
+  const catalogEmpty =
+    !facetsLoading &&
+    !facetsQuery.isError &&
+    (facetsQuery.data?.count ?? 0) === 0 &&
+    handleFormatFacets(facetsQuery.data?.facets ?? {}).length === 0;
+
   // Format the facet payload whenever a fresh one lands. The synthetic
   // Access facet (Enrolled / Recommended) leads the list — logged-in users
   // can narrow the catalog down to their own enrollments or their
@@ -459,6 +473,7 @@ export const useDiscover = ({
     contentsLoading,
     facetsLoading,
     isError,
+    catalogEmpty,
     handleToggleFacet,
     handleSelectFacets,
     selectedFacets,

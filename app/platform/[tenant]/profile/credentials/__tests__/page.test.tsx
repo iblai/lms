@@ -53,7 +53,7 @@ describe('CredentialsPage', () => {
     vi.clearAllMocks();
   });
 
-  it('renders credentials heading with count', () => {
+  it('renders credentials heading without a count', () => {
     vi.mocked(useProfileCredentials).mockReturnValue({
       filteredCredentials: [{ entityId: 'cred-1' }, { entityId: 'cred-2' }],
       isLoading: false,
@@ -62,7 +62,20 @@ describe('CredentialsPage', () => {
 
     render(<CredentialsPage />);
 
-    expect(screen.getByText('Credentials (2)')).toBeInTheDocument();
+    expect(screen.getByText('Credentials')).toBeInTheDocument();
+    expect(screen.queryByText(/Credentials \(\d+\)/)).not.toBeInTheDocument();
+  });
+
+  it('shows empty box on error', () => {
+    vi.mocked(useProfileCredentials).mockReturnValue({
+      filteredCredentials: [],
+      isLoading: false,
+      isError: true,
+    } as any);
+
+    render(<CredentialsPage />);
+
+    expect(screen.getByTestId('empty-box')).toHaveTextContent('No credentials found.');
   });
 
   it('renders search input', () => {

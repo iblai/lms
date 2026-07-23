@@ -39,13 +39,10 @@ export function ProfileCredentialsContent() {
       </div>
 
       {/* Credentials Heading */}
-      <h2 className="mb-4 text-lg font-medium text-gray-700">
-        Credentials ({filteredCredentials.length})
-      </h2>
-      {(!isLoading && isError) ||
-        (!isLoading && !isError && filteredCredentials?.length === 0 && (
-          <DefaultEmptyBox message="No credentials found." className="w-full" />
-        ))}
+      <h2 className="mb-4 text-lg font-medium text-gray-700">Credentials</h2>
+      {!isLoading && (isError || filteredCredentials?.length === 0) && (
+        <DefaultEmptyBox message="No credentials found." className="w-full" />
+      )}
       {/* Credentials Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {/* Credential Cards */}

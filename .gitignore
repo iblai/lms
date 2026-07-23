@@ -10,6 +10,8 @@ out/
 build/
 dist/
 
+.local-packages/
+
 # env files
 .env
 .env.local
