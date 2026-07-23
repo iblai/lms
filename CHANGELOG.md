@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.51.0](https://github.com/iblai/lms/compare/skills-v0.50.2...skills-v0.51.0) (2026-07-23)
+
+### Features
+
+* empty courses tenant use case with course creation functionality ([2d28f36](https://github.com/iblai/lms/commit/2d28f3651bdb419eca8505111a0d5af690ed8d39))
+* empty courses tenant use case with course creation functionality > test coverage ([ad00191](https://github.com/iblai/lms/commit/ad001911bcbb3fa1d4256a46c5d0fe83b6b1c3f2))
+* empty courses tenant use case with course creation functionality > test coverage ([a4d1088](https://github.com/iblai/lms/commit/a4d1088d63da64a298c57ebeba5216529efce640))
+* iblai-js version updated ([e875708](https://github.com/iblai/lms/commit/e8757082a0dd51630327fafedadefa57671a6dbf))
+* skills box color updated to revamp color ([344730a](https://github.com/iblai/lms/commit/344730a5ab4e5a04b905f8c072c0e41e24bf83e1))
+
+### Bug Fixes
+
+* course content cta buttons moved to navbar + various consistencies issyes fixed ([4a9f8e0](https://github.com/iblai/lms/commit/4a9f8e0f1ed0722edb959a2b3fb46bb8cc8fa87e))
+* course content cta buttons moved to navbar + various consistencies issyes fixed > test coverage ([b399cb6](https://github.com/iblai/lms/commit/b399cb6209be4b46a6a2dd0b8e00d237e8d9c7c6))
+
 ## [0.50.2](https://github.com/iblai/lms/compare/skills-v0.50.1...skills-v0.50.2) (2026-07-21)
 
 ### Bug Fixes
