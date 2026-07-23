@@ -17,6 +17,7 @@ vi.mock('@/lib/config', () => ({
       lms: () => 'https://lms.example.com',
       legacyLmsUrl: () => 'https://lms.example.com',
       studio: () => 'https://api.example.com/studio',
+      studioUrl: () => 'https://studio.example.com',
     },
   },
 }));
