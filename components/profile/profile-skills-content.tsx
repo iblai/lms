@@ -151,20 +151,8 @@ export function ProfileSkillsContent() {
             {selfReportedSkillsLoading && (
               <SkeletonMultiplier Skeleton={SkeletonSkillBox} multiplier={6} />
             )}
-            {!selfReportedSkillsLoading && selfReportedSkillsError && (
-              <DefaultEmptyBox
-                className="w-full"
-                message="You don't have any self-reported skills yet."
-              />
-            )}
-            {!selfReportedSkillsLoading &&
-              selfReportedSkillsSuccess &&
-              _.isEmpty(selfReportedSkills?.skills) && (
-                <DefaultEmptyBox
-                  className="w-full"
-                  message="You don't have any self-reported skills yet."
-                />
-              )}
+            {/* Empty/error states are rendered once at the section level below —
+                not here — so mobile doesn't show a duplicate box. */}
             {!selfReportedSkillsLoading &&
               selfReportedSkillsSuccess &&
               !_.isEmpty(selfReportedSkills?.skills) &&
@@ -284,20 +272,8 @@ export function ProfileSkillsContent() {
               {desiredSkillsLoading && (
                 <SkeletonMultiplier Skeleton={SkeletonSkillBox} multiplier={6} />
               )}
-              {!desiredSkillsLoading && desiredSkillsError && (
-                <DefaultEmptyBox
-                  className="w-full"
-                  message="You don't have any desired skills yet."
-                />
-              )}
-              {!desiredSkillsLoading &&
-                desiredSkillsSuccess &&
-                _.isEmpty(desiredSkills?.skills) && (
-                  <DefaultEmptyBox
-                    className="w-full"
-                    message="You don't have any desired skills yet."
-                  />
-                )}
+              {/* Empty/error states are rendered once at the card level above —
+                  not here — so mobile doesn't show a duplicate box. */}
               {!desiredSkillsLoading &&
                 desiredSkillsSuccess &&
                 !_.isEmpty(desiredSkills?.skills) &&

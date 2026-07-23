@@ -101,12 +101,12 @@ describe('AgentTab page', () => {
   it('uses full viewport height on the agent tab, shrinking when activeTab is agent', () => {
     const { container: agentContainer } = renderAgentTab('agent');
     const agentWrapper = agentContainer.firstChild as HTMLElement;
-    expect(agentWrapper.className).toContain('h-[calc(100vh-203px)]');
+    expect(agentWrapper.className).toContain('h-[calc(100vh-223px)]');
 
     const { container: courseContainer } = renderAgentTab('course');
     const courseWrapper = courseContainer.firstChild as HTMLElement;
     // When not on the agent tab, the layout reserves less vertical space.
-    expect(courseWrapper.className).toContain('h-[calc(100vh-162px)]');
+    expect(courseWrapper.className).toContain('h-[calc(100vh-182px)]');
   });
 
   it('does not render the fullscreen exit button when not in fullscreen', () => {
@@ -120,7 +120,7 @@ describe('AgentTab page', () => {
     // Fullscreen pins the container over the whole viewport instead of the calc heights.
     expect(wrapper.className).toContain('fixed');
     expect(wrapper.className).toContain('inset-0');
-    expect(wrapper.className).not.toContain('h-[calc(100vh-203px)]');
+    expect(wrapper.className).not.toContain('h-[calc(100vh-223px)]');
     expect(getByTestId('agent-fullscreen-exit')).toBeInTheDocument();
   });
 

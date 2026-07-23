@@ -180,19 +180,40 @@ vi.mock('@/components/ui/switch', () => ({
 }));
 
 // The Popover mock shares the controlling `open` prop with its content via a
-// context so the agent-mode hint popover (which is `open`-controlled) can be
-// asserted as shown/hidden. Uncontrolled popovers (open===undefined, e.g. the
-// mobile 3-dot menu) always render their content, matching the prior behavior.
+// context so controlled popovers (the agent-mode hint, the mobile 3-dot
+// controls menu) can be asserted as shown/hidden; the trigger toggles them
+// through `onOpenChange` like the real component. Uncontrolled popovers
+// (open===undefined) always render their content.
 vi.mock('@/components/ui/popover', async () => {
   const ReactActual = await vi.importActual<typeof React>('react');
-  const PopoverOpenContext = ReactActual.createContext<boolean | undefined>(undefined);
+  const PopoverOpenContext = ReactActual.createContext<{
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }>({});
   return {
-    Popover: ({ children, open }: any) =>
-      ReactActual.createElement(PopoverOpenContext.Provider, { value: open }, children),
-    PopoverTrigger: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
+    Popover: ({ children, open, onOpenChange }: any) =>
+      ReactActual.createElement(
+        PopoverOpenContext.Provider,
+        { value: { open, onOpenChange } },
+        children,
+      ),
+    PopoverTrigger: ({ children, onClick, ...rest }: any) => {
+      const { open, onOpenChange } = ReactActual.useContext(PopoverOpenContext);
+      return (
+        <button
+          {...rest}
+          onClick={(event: React.MouseEvent) => {
+            onClick?.(event);
+            onOpenChange?.(!open);
+          }}
+        >
+          {children}
+        </button>
+      );
+    },
     PopoverAnchor: ({ children }: any) => <>{children}</>,
     PopoverContent: ({ children }: any) => {
-      const open = ReactActual.useContext(PopoverOpenContext);
+      const { open } = ReactActual.useContext(PopoverOpenContext);
       if (open === false) return null;
       return <div data-testid="agent-mode-popover">{children}</div>;
     },
@@ -267,12 +288,20 @@ vi.mock('react', async () => {
 import CourseContentLayout from '../layout';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 
 describe('CourseContentLayout', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // The course controls (autoplay, media, fullscreen, Learn/Assess) portal
+    // into the navbar slot, which the (unrendered-here) NavBar provides in the
+    // real app — recreate it so the portal has a mount point.
+    document.getElementById(NAVBAR_COURSE_CONTROLS_ID)?.remove();
+    const navbarControlsSlot = document.createElement('div');
+    navbarControlsSlot.id = NAVBAR_COURSE_CONTROLS_ID;
+    document.body.appendChild(navbarControlsSlot);
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mockCheckRbacPermission.mockReturnValue(false);
     vi.mocked(useCourseDetail).mockReturnValue({
@@ -1192,10 +1221,12 @@ describe('CourseContentLayout', () => {
           </CourseContentLayout>,
         );
 
-        await vi.advanceTimersByTimeAsync(14_999);
+        // 14s (not 14.999s): shouldAdvanceTime lets real elapsed time tick the
+        // mock clock too, so a 1ms margin flakes under load.
+        await vi.advanceTimersByTimeAsync(14_000);
         expect(toast.success).not.toHaveBeenCalled();
 
-        await vi.advanceTimersByTimeAsync(1);
+        await vi.advanceTimersByTimeAsync(1_000);
         expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
       } finally {
         vi.useRealTimers();
@@ -1785,7 +1816,9 @@ describe('CourseContentLayout', () => {
       // Mobile 3-dot trigger renders even when only autoplay is visible.
       expect(screen.getAllByTestId('more-vertical').length).toBeGreaterThan(0);
 
-      // Popover content includes the Autoplay label + its own switch.
+      // Popover content (opened via the trigger) includes the Autoplay label
+      // + its own switch.
+      fireEvent.click(screen.getByLabelText('Agent display options'));
       const popover = screen.getByTestId('agent-mode-popover');
       expect(popover).toHaveTextContent('Autoplay');
       expect(screen.getByTestId('agent-autoplay-popover-switch')).toHaveAttribute(
@@ -1867,6 +1900,7 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
+      fireEvent.click(screen.getByLabelText('Agent display options'));
       fireEvent.click(screen.getByTestId('agent-autoplay-popover-switch'));
 
       const autoplayEvent = dispatchSpy.mock.calls
@@ -1900,6 +1934,7 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
+      fireEvent.click(screen.getByLabelText('Agent display options'));
       const desktopToggle = screen.getByTestId('agent-autoplay-toggle');
       const popoverSwitch = screen.getByTestId('agent-autoplay-popover-switch');
 
@@ -1910,6 +1945,105 @@ describe('CourseContentLayout', () => {
 
       expect(desktopToggle).toHaveAttribute('aria-checked', 'true');
       expect(popoverSwitch).toHaveAttribute('aria-checked', 'true');
+    });
+  });
+
+  // Mobile 3-dot controls popover: the media and fullscreen rows (autoplay
+  // and the Learn/Assess switch rows are covered in their describes above).
+  describe('mobile controls popover (media + fullscreen)', () => {
+    const blockDetailsWithMedia = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+        'pdf-block': {
+          id: 'pdf-block',
+          type: 'pdf',
+          display_name: 'Course PDF',
+          student_view_url: 'https://lms.example.com/xblock/pdf-block',
+        },
+      },
+    };
+
+    const setTab = async (tab: 'agent' | 'course') => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${tab}`);
+    };
+
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    it('lists the media and fullscreen rows on the agent tab', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+
+      expect(screen.getByTestId('agent-fullscreen-popover-button')).toBeInTheDocument();
+      const items = screen.getAllByTestId('course-media-menu-item');
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveTextContent('Course PDF');
+    });
+
+    it('lists media but no fullscreen row on the course tab', async () => {
+      await setTab('course');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+
+      expect(screen.getAllByTestId('course-media-menu-item')).toHaveLength(1);
+      expect(screen.queryByTestId('agent-fullscreen-popover-button')).not.toBeInTheDocument();
+    });
+
+    it('closes the popover when the fullscreen row is clicked', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+      fireEvent.click(screen.getByTestId('agent-fullscreen-popover-button'));
+
+      expect(screen.queryByTestId('agent-fullscreen-popover-button')).not.toBeInTheDocument();
+    });
+
+    it('selecting a media item on the agent tab closes the popover and opens the preview dialog', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+      fireEvent.click(screen.getByTestId('course-media-menu-item'));
+
+      // Popover closed, preview (rendered outside it) open.
+      expect(screen.queryByTestId('course-media-menu-item')).not.toBeInTheDocument();
+      expect(screen.getByTestId('course-media-preview')).toBeInTheDocument();
+    });
+
+    it('portals the desktop controls into the navbar slot but keeps the 3-dot in the tabs row', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+
+      const slot = document.getElementById(NAVBAR_COURSE_CONTROLS_ID)!;
+      expect(slot.contains(screen.getByTestId('agent-fullscreen-toggle'))).toBe(true);
+      expect(slot.contains(screen.getByTestId('course-media-dropdown-trigger'))).toBe(true);
+      // The mobile 3-dot trigger renders beside the unit navigator instead.
+      expect(slot.contains(screen.getByLabelText('Agent display options'))).toBe(false);
+    });
+
+    it('hides the 3-dot trigger when no control is available (course tab, no media)', async () => {
+      await setTab('course');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });
+
+      renderLayout();
+
+      expect(screen.queryByLabelText('Agent display options')).not.toBeInTheDocument();
     });
   });
 

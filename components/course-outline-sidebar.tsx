@@ -67,7 +67,7 @@ export const CourseOutlineSidebar = () => {
 
   return (
     <div
-      className={`${visibleClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200 pl-4`}
+      className={`${visibleClass} w-72 flex-shrink-0 overflow-y-auto border-r border-gray-200`}
       style={{ scrollbarWidth: 'none' }}
       data-testid="course-outline-sidebar"
     >

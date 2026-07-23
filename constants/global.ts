@@ -21,3 +21,11 @@ export const isNonAuthPathname = (pathname: string): boolean => {
 export const MONETIZATION_CLOSE_PAYLOAD = {
   redirect_402: 'redirect_402',
 };
+
+/**
+ * DOM id of the navbar slot the course-content layout portals its
+ * course controls (autoplay, media dropdown, fullscreen, Learn/Assess)
+ * into. Rendered (empty) by the NavBar on every page; filled only while
+ * a course-content layout is mounted.
+ */
+export const NAVBAR_COURSE_CONTROLS_ID = 'navbar-course-controls';

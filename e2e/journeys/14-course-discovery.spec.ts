@@ -14,10 +14,16 @@ test.describe('Journey 14: Course Discovery', () => {
     await gotoTenantPage(page, 'discover', { timeout: 60_000 });
     await waitForAppShell(page);
 
-    // DiscoverContentCard uses data-testid="discover-content-card". Empty state:
-    // "No content found." / "No enrolled content found." / "No recommended content found."
+    // DiscoverContentCard uses data-testid="discover-content-card". Empty states:
+    // "No content found." / "No enrolled content found." / "No recommended
+    // content found." for filtered views; a truly empty catalog shows the
+    // no-courses box ("No courses available…" / "No courses have been created yet.").
     const contentCard = page.locator('[data-testid="discover-content-card"]').first();
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
 
     const loaded = contentCard.or(emptyState);
     await expect(loaded).toBeVisible({ timeout: 120_000 });
@@ -33,7 +39,11 @@ test.describe('Journey 14: Course Discovery', () => {
 
     // After search, results should update — either showing matches or "no content found"
     const contentCard = page.locator('[data-testid="discover-content-card"]').first();
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
 
     await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
@@ -47,7 +57,11 @@ test.describe('Journey 14: Course Discovery', () => {
 
     // Wait for content to finish loading first
     const contentCard = page.locator('[data-testid="discover-content-card"]').first();
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
     await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
     // Facet filters use data-testid="facet-filter" in the sidebar (hidden on mobile: "hidden md:block").
@@ -69,7 +83,11 @@ test.describe('Journey 14: Course Discovery', () => {
 
     // Wait for catalog to load
     const contentCard = page.locator('[data-testid="discover-content-card"]');
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
     await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
 
     const hasCards = await contentCard
@@ -112,7 +130,11 @@ test.describe('Journey 14: Course Discovery', () => {
 
     // Wait for filtered results (likely empty)
     const contentCard = page.locator('[data-testid="discover-content-card"]').first();
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
     await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
     // Clear the search by navigating without query param
@@ -133,7 +155,11 @@ test.describe('Journey 14: Course Discovery', () => {
     await waitForAppShell(page);
 
     const contentCard = page.locator('[data-testid="discover-content-card"]').first();
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
     await expect(contentCard.or(emptyState)).toBeVisible({ timeout: 120_000 });
 
     const hasCards = await contentCard.isVisible().catch(() => false);
@@ -186,7 +212,11 @@ test.describe('Journey 14: Course Discovery', () => {
     await waitForAppShell(page);
 
     const contentCard = page.locator('[data-testid="discover-content-card"]');
-    const emptyState = page.getByText(/no (enrolled |recommended )?content found/i).first();
+    const emptyState = page
+      .getByText(
+        /no (enrolled |recommended )?content found|no courses (available|have been created)/i,
+      )
+      .first();
     await expect(contentCard.first().or(emptyState)).toBeVisible({ timeout: 120_000 });
 
     const hasCards = await contentCard

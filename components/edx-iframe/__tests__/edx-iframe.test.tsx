@@ -414,9 +414,9 @@ describe('EdxIframe - JWT PostMessage', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement;
       // Inline height is dropped so the Tailwind responsive classes can take over.
       expect(iframe.style.height).toBe('');
-      expect(iframe.className).toContain('h-[calc(100vh-258px)]');
-      expect(iframe.className).toContain('md:h-[calc(100vh-260px)]');
-      expect(iframe.className).toContain('lg:h-[calc(100vh-250px)]');
+      expect(iframe.className).toContain('h-[calc(100vh-255px)]');
+      expect(iframe.className).toContain('md:h-[calc(100vh-257px)]');
+      expect(iframe.className).toContain('lg:h-[calc(100vh-247px)]');
     });
 
     it('stretches the wrapper and iframe to full height in assessment fullscreen mode', async () => {
@@ -440,7 +440,7 @@ describe('EdxIframe - JWT PostMessage', () => {
       // Fullscreen wins over the responsive assessment heights: h-full + 100% inline.
       expect(iframe.className).toContain('h-full');
       expect(iframe.className).toContain('w-full');
-      expect(iframe.className).not.toContain('h-[calc(100vh-258px)]');
+      expect(iframe.className).not.toContain('h-[calc(100vh-255px)]');
       expect(iframe.style.height).toBe('100%');
       expect(iframe.style.width).toBe('100%');
     });

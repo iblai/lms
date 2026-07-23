@@ -44,7 +44,7 @@ export default function AgentTab() {
           ? 'fixed inset-0 z-50 h-screen bg-white p-4'
           : cn(
               'px-6 pt-6 pb-0',
-              activeTab === 'agent' ? 'h-[calc(100vh-203px)]' : 'h-[calc(100vh-162px)]',
+              activeTab === 'agent' ? 'h-[calc(100vh-223px)]' : 'h-[calc(100vh-182px)]',
             ),
       )}
     >

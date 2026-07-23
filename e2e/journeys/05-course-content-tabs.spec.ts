@@ -1038,7 +1038,8 @@ test.describe('Journey 05: Course Content Tabs', () => {
     // The mentor web component should mount before we exercise fullscreen.
     await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 60_000 });
 
-    // The fullscreen control lives in the tabs row, to the right of the autoplay icon.
+    // The fullscreen control lives in the top navbar (left of the search bar),
+    // to the right of the autoplay icon.
     const enterFullscreen = page.getByRole('button', { name: 'Enter fullscreen' });
     await expect(enterFullscreen).toBeVisible({ timeout: 30_000 });
     await enterFullscreen.click();

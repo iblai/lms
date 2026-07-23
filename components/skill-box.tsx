@@ -34,7 +34,7 @@ export const SkillBox = ({ skill, onSkillClick, showRating = true }: SkillBoxPro
               cy="50"
               r="40"
               fill="none"
-              stroke="#F8B43A"
+              className="stroke-amber-500"
               strokeWidth="10"
               strokeDasharray="251.2"
               strokeDashoffset={(100 - ((skill.level || 1) / 5) * 100) * 2.512}

@@ -93,7 +93,7 @@
         },
         {
           "id": "home-02",
-          "description": "Explore rail displays catalog cards or hides when empty",
+          "description": "Explore rail displays catalog cards; an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)",
           "status": "covered"
         },
         {

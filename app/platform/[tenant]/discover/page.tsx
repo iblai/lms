@@ -12,6 +12,7 @@ import { DiscoverContentCard } from '@/components/discover-content-card';
 import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { NoCoursesEmptyBox } from '@/components/no-courses-empty-box';
 import { DiscoverFacetsFilter } from '@/components/discover-facets-filter';
 import { DiscoverFilterDrawer } from '@/components/discover-filter-drawer';
 import { FacetFilterContext } from '@/contexts/facet-filter-context';
@@ -50,6 +51,7 @@ export default function DiscoverPage() {
     contentsLoading,
     facetsLoading,
     isError,
+    catalogEmpty,
     handleToggleFacet,
     selectedFacets,
     isFacetTermSelected,
@@ -82,6 +84,10 @@ export default function DiscoverPage() {
 
   /** Either user-scoped filter is on — cards come from user endpoints. */
   const userContentOnly = enrolledOnly || recommendedOnly;
+  /** Any facet term (incl. navbar search `q`) narrows the catalog. */
+  const hasActiveFilters = Object.values(selectedFacets ?? {}).some(
+    (terms) => (terms?.length ?? 0) > 0,
+  );
   const cardsBusy =
     contentsLoading ||
     (enrolledOnly && enrollmentsLoading) ||
@@ -127,7 +133,7 @@ export default function DiscoverPage() {
             }}
           >
             <div className="w-full pb-16">
-              <div className="mb-4 flex items-center justify-end md:hidden">
+              <div className="mb-4 flex items-center justify-end gap-2 md:hidden">
                 <Button variant="outline" size="sm" onClick={() => setFilterDrawerOpen(true)}>
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
@@ -173,18 +179,29 @@ export default function DiscoverPage() {
                   })}
                 </div>
               )}
-              {((!cardsBusy && isError && !userContentOnly) ||
-                (!cardsBusy && displayCards?.length === 0)) && (
-                <DefaultEmptyBox
-                  message={
-                    enrolledOnly
-                      ? 'No enrolled content found.'
-                      : recommendedOnly
-                        ? 'No recommended content found.'
-                        : 'No content found.'
-                  }
-                />
-              )}
+              {/* Wait for the unfiltered catalog probe (`facetsLoading`)
+                  before picking an empty state, so a filter-specific
+                  message never flashes when the catalog is truly empty. */}
+              {!cardsBusy &&
+                !facetsLoading &&
+                ((isError && !userContentOnly) || displayCards?.length === 0) &&
+                (catalogEmpty || (!userContentOnly && !isError && !hasActiveFilters) ? (
+                  // A truly empty catalog: no filter combination (enrolled,
+                  // recommended, search, facets) can match anything — invite
+                  // admins to create the first course, others to contact
+                  // support.
+                  <NoCoursesEmptyBox />
+                ) : (
+                  <DefaultEmptyBox
+                    message={
+                      enrolledOnly
+                        ? 'No enrolled content found.'
+                        : recommendedOnly
+                          ? 'No recommended content found.'
+                          : 'No content found.'
+                    }
+                  />
+                ))}
 
               {/* Course Grid */}
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden min-[450px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">

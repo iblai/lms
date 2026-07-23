@@ -61,6 +61,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           dispatch(setAccessCheckResponse(error402Response as unknown as AccessCheckResponse));
         },
       },
+      config.urls.studioUrl(),
     );
     setReady(true);
   };
