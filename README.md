@@ -123,8 +123,11 @@ One codebase, six platforms — Agentic LMS runs natively everywhere your learne
 
 **Latest macOS build:** [Agentic LMS app-v1.0.15 (Universal .dmg)](https://github.com/iblai/lms/releases/download/app-v1.0.15/Agentic.LMS_1.0.15_universal.dmg) · [all versions](docs/DOWNLOADS.md)
 
-Signed & notarized universal build (Intel + Apple Silicon), published
-automatically on `src-tauri` changes. Full history in [docs/DOWNLOADS.md](docs/DOWNLOADS.md).
+**Latest Windows build:** _first self-signed build pending — it will appear here after the next `src-tauri` change._ · [all versions](docs/DOWNLOADS.md)
+
+Signed & notarized universal macOS build (Intel + Apple Silicon); self-signed
+Windows installers (Intel x64 + ARM64). Published automatically on `src-tauri`
+changes. Full history in [docs/DOWNLOADS.md](docs/DOWNLOADS.md).
 
 ---
 

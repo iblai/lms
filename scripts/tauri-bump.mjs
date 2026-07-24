@@ -24,6 +24,7 @@ if (!['patch', 'minor', 'major'].includes(level)) {
 // Canonical GitHub repo that hosts the Releases (skillsai lives at iblai/lms).
 const RELEASES_BASE = 'https://github.com/iblai/lms/releases/download';
 const README_LATEST_RE = /^\*\*Latest macOS build:\*\*.*$/m;
+const README_WINDOWS_LATEST_RE = /^\*\*Latest Windows build:\*\*.*$/m;
 
 const confUrl = new URL('../src-tauri/tauri.conf.json', import.meta.url);
 const conf = readFileSync(confUrl, 'utf8');
@@ -46,8 +47,16 @@ const productName = JSON.parse(conf).productName;
 const tag = `app-v${version}`;
 // GitHub rewrites spaces in uploaded release-asset names to dots, so mirror that
 // when composing the link (e.g. "Agentic LMS" -> "Agentic.LMS...").
-const dmg = `${productName.replace(/ /g, '.')}_${version}_universal.dmg`;
+const assetBase = productName.replace(/ /g, '.');
+const dmg = `${assetBase}_${version}_universal.dmg`;
 const url = `${RELEASES_BASE}/${tag}/${encodeURIComponent(dmg)}`;
+// Windows NSIS installers, one per architecture. Tauri names them
+// `<productName>_<version>_<arch>-setup.exe` (arch = x64 | arm64); GitHub
+// rewrites the space in the uploaded asset name to a dot, same as the DMG.
+const winX64 = `${assetBase}_${version}_x64-setup.exe`;
+const winArm64 = `${assetBase}_${version}_arm64-setup.exe`;
+const winX64Url = `${RELEASES_BASE}/${tag}/${encodeURIComponent(winX64)}`;
+const winArm64Url = `${RELEASES_BASE}/${tag}/${encodeURIComponent(winArm64)}`;
 const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
 
 // 2) docs/DOWNLOADS.md — prepend a row under the table header (newest first).
@@ -61,17 +70,29 @@ if (headerIdx < 0 || !/^\s*\|[\s:|-]+\|\s*$/.test(lines[sepIdx] ?? '')) {
   console.error('tauri-bump: Downloads table not found in docs/DOWNLOADS.md');
   process.exit(1);
 }
-lines.splice(sepIdx + 1, 0, `| ${tag} | ${date} | [macOS (Universal)](${url}) |`);
+lines.splice(
+  sepIdx + 1,
+  0,
+  `| ${tag} | ${date} | [macOS (Universal)](${url}) · [Windows x64](${winX64Url}) · [Windows arm64](${winArm64Url}) |`,
+);
 writeFileSync(downloadsUrl, lines.join('\n'));
 
 // 3) README.md — update the single "Latest macOS build" line.
 const readmeUrl = new URL('../README.md', import.meta.url);
 const readme = readFileSync(readmeUrl, 'utf8');
 const latest = `**Latest macOS build:** [${productName} ${tag} (Universal .dmg)](${url}) · [all versions](docs/DOWNLOADS.md)`;
+const latestWindows = `**Latest Windows build:** [${productName} ${tag} (x64 .exe)](${winX64Url}) · [ARM64 .exe](${winArm64Url}) · [all versions](docs/DOWNLOADS.md)`;
 if (!README_LATEST_RE.test(readme)) {
   console.error('tauri-bump: "Latest macOS build" line not found in README.md');
   process.exit(1);
 }
-writeFileSync(readmeUrl, readme.replace(README_LATEST_RE, latest));
+if (!README_WINDOWS_LATEST_RE.test(readme)) {
+  console.error('tauri-bump: "Latest Windows build" line not found in README.md');
+  process.exit(1);
+}
+writeFileSync(
+  readmeUrl,
+  readme.replace(README_LATEST_RE, latest).replace(README_WINDOWS_LATEST_RE, latestWindows),
+);
 
 console.log(version);

@@ -38,6 +38,17 @@
       "entitlements": "entitlements.mac.plist",
       "exceptionDomain": null
     },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.digicert.com",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    },
     "iOS": {
       "developmentTeam": "L4FWRM8W5Z"
     }
