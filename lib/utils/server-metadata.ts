@@ -5,7 +5,9 @@ const DEFAULT_APP_INFORMATION = {
   metaTitle: 'skillsAI',
   favicon: '/favicon.ico',
   description: 'Build Your Skills with AI',
-  logo: '/skills-logo.png',
+  // Dynamic 1200x630 social card (app/opengraph-image.tsx) — used when a tenant
+  // has no custom display_logo. Replaces the previously broken /skills-logo.png.
+  logo: '/opengraph-image',
 };
 
 interface AppWebConfig {
@@ -217,6 +219,67 @@ export function extractTenantFromCookies(cookieString: string | null): string | 
   }
 
   return null;
+}
+
+/**
+ * Global SEO index override. Some deployments (e.g. a single public marketing
+ * tenant) want indexing on regardless of the per-tenant flag. Set
+ * NEXT_PUBLIC_SEO_INDEXABLE=true to force pages indexable everywhere.
+ */
+function seoIndexOverride(): boolean {
+  return (
+    process.env.NEXT_PUBLIC_SEO_INDEXABLE === 'true' ||
+    process.env.NEXT_PUBLIC_SEO_INDEXABLE === '1'
+  );
+}
+
+interface PublicPlatformConfig {
+  platform_key?: string;
+  /** When true, the tenant allows anonymous self-linking, i.e. it is public. */
+  allow_self_linking?: boolean;
+}
+
+/**
+ * Fetches the tenant's public platform config. This is the same
+ * `allow_self_linking` signal the client-side SelfLinkingGuard uses, exposed by
+ * a public (no-auth) endpoint so it can be read in Server Components.
+ */
+export async function fetchPublicPlatformConfig(
+  platformKey: string,
+): Promise<PublicPlatformConfig | null> {
+  try {
+    const url = `${config.urls.dm()}/api/core/users/platforms/config/public/?platform_key=${encodeURIComponent(
+      platformKey,
+    )}`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) return null;
+    return (await response.json()) as PublicPlatformConfig;
+  } catch (error) {
+    console.error('Failed to fetch public platform config:', error);
+    return null;
+  }
+}
+
+/**
+ * Resolves whether the current tenant is publicly accessible (and therefore
+ * indexable), for SEO decisions in Server Components. A tenant is public when
+ * its public platform config has `allow_self_linking: true`. Defaults to
+ * private (noindex) when the tenant or flag is unknown, unless the global
+ * NEXT_PUBLIC_SEO_INDEXABLE override is set.
+ */
+export async function fetchTenantSeoFlags(
+  tenantKey: string | null,
+): Promise<{ isPublic: boolean; platformName: string | null }> {
+  const override = seoIndexOverride();
+  // Crawlers don't send tenant cookies, so fall back to the main platform key
+  // to resolve the primary tenant on the shared domain.
+  const resolvedKey = tenantKey || config.settings.mainPlatformKey();
+  if (!resolvedKey) {
+    return { isPublic: override, platformName: null };
+  }
+  const publicConfig = await fetchPublicPlatformConfig(resolvedKey);
+  const isPublic = publicConfig?.allow_self_linking === true || override;
+  return { isPublic, platformName: null };
 }
 
 // Check if we're in a development environment

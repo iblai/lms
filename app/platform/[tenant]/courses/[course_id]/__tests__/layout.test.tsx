@@ -43,13 +43,15 @@ vi.mock('@/components/self-linking-guard', () => ({
   SelfLinkingGuard: ({ children }: any) => <>{children}</>,
 }));
 
-import CourseLayout from '../layout';
+// The client half of the layout (provider + guards + param decoding) moved to
+// CourseLayoutClient when layout.tsx became a server component for SEO metadata.
+import { CourseLayoutClient as CourseLayout } from '../_components/course-layout-client';
 import {
   CourseDetailProvider,
   useCourseDetailContext,
 } from '@/hooks/courses/course-detail-context';
 
-describe('CourseLayout', () => {
+describe('CourseLayoutClient', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
 
   beforeEach(() => {
