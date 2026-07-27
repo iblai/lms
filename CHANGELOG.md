@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.52.0](https://github.com/iblai/lms/compare/skills-v0.51.0...skills-v0.52.0) (2026-07-27)
+
+### Features
+
+* **security:** nonce-based CSP middleware via @iblai/iblai-js/security ([d5b3e4f](https://github.com/iblai/lms/commit/d5b3e4fc369a43c7b6b2f42f5b64b14bf7ba0010))
+
 ## [0.51.0](https://github.com/iblai/lms/compare/skills-v0.50.2...skills-v0.51.0) (2026-07-23)
 
 ### Features
