@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.52.1](https://github.com/iblai/lms/compare/skills-v0.52.0...skills-v0.52.1) (2026-07-28)
+
+### Bug Fixes
+
+* **security:** allow *.iblai.org / *.iblai.tech in the enforced CSP ([6f6b697](https://github.com/iblai/lms/commit/6f6b6977b87627123f7c3f7bc0afc9c189b07ef1))
+
+### Chores
+
+* **ci:** remove Claude from GitHub Actions; require local pre-push review ([68e977a](https://github.com/iblai/lms/commit/68e977afc5ba05ce879f9d5f2806c1c0ccda5854))
+* **deps:** bump @iblai/iblai-js 1.27.1 -> 2.1.0 ([aefa447](https://github.com/iblai/lms/commit/aefa4475f0630caa1bad496ac30d4d69749009f1))
+* **security:** bump @iblai/iblai-js to 2.2.1 — CSP enforces by default ([d28ac8e](https://github.com/iblai/lms/commit/d28ac8e06463300f550808e51a31a31e2666bd91))
+
 ## [0.52.0](https://github.com/iblai/lms/compare/skills-v0.51.0...skills-v0.52.0) (2026-07-27)
 
 ### Features
