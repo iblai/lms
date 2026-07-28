@@ -15,12 +15,14 @@ dist/
 # env files
 .env
 .env.local
-.env.development
 .env.development.local
 .env.test.local
 .env.production.local
 .env.von
 *.local
+# .env.development is a committed, non-secret dev default (keeps the CSP
+# report-only for `next dev` so enforcement doesn't block HMR).
+!.env.development
 
 # debug logs
 npm-debug.log*

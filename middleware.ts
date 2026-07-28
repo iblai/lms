@@ -8,10 +8,10 @@ import { applyCsp } from '@iblai/iblai-js/security/next';
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
-  // Attach the per-request, nonce-based Content-Security-Policy. Report-only by
-  // default (set CSP_MODE=enforce once violation reports are clean). applyCsp
-  // stamps the nonce onto these same request headers — preserving x-pathname —
-  // and returns the response carrying the CSP header.
+  // Attach the per-request, nonce-based Content-Security-Policy. @iblai/iblai-js
+  // @2.x ENFORCES by default; local dev is report-only via .env.development
+  // (CSP_MODE=report-only). applyCsp stamps the nonce onto these same request
+  // headers — preserving x-pathname — and returns the response with the header.
   return applyCsp(request, { requestHeaders });
 }
 
