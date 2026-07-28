@@ -18,11 +18,12 @@ bash ./scripts/check-test-coverage.sh
 echo "Checking E2E journey coverage for changed files..."
 node e2e/scripts/check-journey-coverage.mjs --no-regress
 
-if command -v claude >/dev/null 2>&1; then
-	echo "Claude is reviewing your code..."
-	claude --print "/code-review"
-else
-
-	echo "OpenCode is reviewing your code..."
-	opencode run --command "code-review"
+# Claude code review runs locally (moved off GitHub Actions — no Claude in CI).
+# Required: the push is blocked without the `claude` CLI (no OpenCode fallback).
+if ! command -v claude >/dev/null 2>&1; then
+	echo "ERROR: 'claude' CLI not found. Install it to run the required pre-push review."
+	echo "       https://docs.claude.com/en/docs/claude-code"
+	exit 1
 fi
+echo "Claude is reviewing your code..."
+claude --print "/code-review"
