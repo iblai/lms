@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.1](https://github.com/iblai/lms/compare/skills-v0.54.0...skills-v0.54.1) (2026-07-29)
+
+### Bug Fixes
+
+* **ci:** pin PR e2e to stg1 and fail fast when the runner is offline ([d82973d](https://github.com/iblai/lms/commit/d82973d9211e84ea942de90fdc26a863686fb0d8)), closes [os#361](https://github.com/iblai/os/issues/361)
+
 ## [0.54.0](https://github.com/iblai/lms/compare/skills-v0.53.1...skills-v0.54.0) (2026-07-29)
 
 ### Features
