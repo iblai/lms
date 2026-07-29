@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.0](https://github.com/iblai/lms/compare/skills-v0.53.1...skills-v0.54.0) (2026-07-29)
+
+### Features
+
+* **ci:** use stg2 as overflow when stg1 is busy ([112aa8e](https://github.com/iblai/lms/commit/112aa8e81e99626a40aee9e6650c390c1cdc99be))
+
 ## [0.53.1](https://github.com/iblai/lms/compare/skills-v0.53.0...skills-v0.53.1) (2026-07-29)
 
 ### Bug Fixes
