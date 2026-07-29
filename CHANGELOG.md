@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.2](https://github.com/iblai/lms/compare/skills-v0.54.1...skills-v0.54.2) (2026-07-29)
+
+### Bug Fixes
+
+* **ci:** run the e2e gate on a hosted runner ([e4a0d33](https://github.com/iblai/lms/commit/e4a0d339f73cf46dc925890b9127d0c9dc0c3289))
+
 ## [0.54.1](https://github.com/iblai/lms/compare/skills-v0.54.0...skills-v0.54.1) (2026-07-29)
 
 ### Bug Fixes
