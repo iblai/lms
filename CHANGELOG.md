@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.54.3](https://github.com/iblai/lms/compare/skills-v0.54.2...skills-v0.54.3) (2026-07-29)
+
+### Bug Fixes
+
+* **ci:** a skipped e2e is not a failure ([3fb1afd](https://github.com/iblai/lms/commit/3fb1afd2eaa4981bc901d88a9dc697e8da703f87))
+* **ci:** queue guard must tell an offline runner from a busy one ([c229ddf](https://github.com/iblai/lms/commit/c229ddfa1479c3bcabf83bfef6c464bd954def7b)), closes [os#390](https://github.com/iblai/os/issues/390)
+
 ## [0.54.2](https://github.com/iblai/lms/compare/skills-v0.54.1...skills-v0.54.2) (2026-07-29)
 
 ### Bug Fixes
