@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.53.0](https://github.com/iblai/lms/compare/skills-v0.52.1...skills-v0.53.0) (2026-07-29)
+
+### Features
+
+* **pr-e2e:** stream progress + publish the report link on the PR ([77418bb](https://github.com/iblai/lms/commit/77418bb65c4a575e2bb7f3ad0bc7be033a31b04a))
+
+### Bug Fixes
+
+* **pr-e2e:** pass merge_sha so the suite and app image share one commit ([e0b8d4e](https://github.com/iblai/lms/commit/e0b8d4ecc08089d527a7f3dc8aaa0d499dee0851))
+
+### CI
+
+* **e2e:** run PR e2e on the central pipeline instead of OCI container instances ([988808e](https://github.com/iblai/lms/commit/988808e7fd28417a9e299e8fc255e0ba7ffb7eba))
+
 ## [0.52.1](https://github.com/iblai/lms/compare/skills-v0.52.0...skills-v0.52.1) (2026-07-28)
 
 ### Bug Fixes
