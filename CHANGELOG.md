@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.53.1](https://github.com/iblai/lms/compare/skills-v0.53.0...skills-v0.53.1) (2026-07-29)
+
+### Bug Fixes
+
+* **ci:** run-name claimed 4 browsers when only chrome runs ([d7ae227](https://github.com/iblai/lms/commit/d7ae22730ae3292dd3a759fd2e6a389364209cef))
+
 ## [0.53.0](https://github.com/iblai/lms/compare/skills-v0.52.1...skills-v0.53.0) (2026-07-29)
 
 ### Features
