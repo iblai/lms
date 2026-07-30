@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.4](https://github.com/iblai/lms/compare/skills-v0.54.3...skills-v0.54.4) (2026-07-30)
+
+### Bug Fixes
+
+* **ci:** push PR images to ECR instead of OCIR ([b8f5f94](https://github.com/iblai/lms/commit/b8f5f943a4ae1ac13a676d7b23897733e4fefea1))
+
 ## [0.54.3](https://github.com/iblai/lms/compare/skills-v0.54.2...skills-v0.54.3) (2026-07-29)
 
 ### Bug Fixes
