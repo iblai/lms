@@ -16,6 +16,15 @@ import { StoreProvider } from '@/providers/store-provider';
 
 const openSans = Open_Sans({ subsets: ['latin'] });
 
+// ibl.ai default icon set, served when no tenant-specific favicon override is set.
+const DEFAULT_ICONS: Metadata['icons'] = [
+  { rel: 'icon', url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
+  { rel: 'icon', url: '/icon.svg', type: 'image/svg+xml' },
+  { rel: 'icon', url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+  { rel: 'icon', url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+  { rel: 'apple-touch-icon', url: '/apple-touch-icon.png' },
+];
+
 // Force all pages to be dynamically rendered on the client
 // This prevents the "window is not defined" error during build
 export const dynamic = 'force-dynamic';
@@ -69,12 +78,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: metadata.title,
       description: metadata.description,
       generator: 'ibl.ai',
-      icons: [
-        {
-          rel: 'icon',
-          url: faviconPath,
-        },
-      ],
+      // Use the full ibl.ai icon set for the default favicon; fall back to a
+      // single icon when a tenant provides a custom favicon override.
+      icons: faviconPath === '/favicon.ico' ? DEFAULT_ICONS : [{ rel: 'icon', url: faviconPath }],
       ...(baseUrl && { metadataBase: new URL(baseUrl) }),
       openGraph: {
         title: metadata.title,
@@ -115,12 +121,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: 'skillsAI',
         description: 'Build Your Skills with AI',
         generator: 'ibl.ai',
-        icons: [
-          {
-            rel: 'icon',
-            url: '/favicon.ico',
-          },
-        ],
+        icons: DEFAULT_ICONS,
         ...(baseUrl && { metadataBase: new URL(baseUrl) }),
       };
     } catch {
@@ -128,12 +129,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: 'skillsAI',
         description: 'Build Your Skills with AI',
         generator: 'ibl.ai',
-        icons: [
-          {
-            rel: 'icon',
-            url: '/favicon.ico',
-          },
-        ],
+        icons: DEFAULT_ICONS,
       };
     }
   }
