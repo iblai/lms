@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.7](https://github.com/iblai/lms/compare/skills-v0.54.6...skills-v0.54.7) (2026-07-30)
+
+### Bug Fixes
+
+* **ci:** queue time must not count against the execution timeout ([0d7dd45](https://github.com/iblai/lms/commit/0d7dd459505138b4d51919f2aa61d5bbd4e908bd)), closes [os#367](https://github.com/iblai/os/issues/367)
+
 ## [0.54.6](https://github.com/iblai/lms/compare/skills-v0.54.5...skills-v0.54.6) (2026-07-30)
 
 ### Bug Fixes
