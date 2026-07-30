@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.6](https://github.com/iblai/lms/compare/skills-v0.54.5...skills-v0.54.6) (2026-07-30)
+
+### Bug Fixes
+
+* **ci:** cancel the dispatched run when the caller is cancelled ([8b71864](https://github.com/iblai/lms/commit/8b7186465240c08a814e2d119dd21e64c13efedd)), closes [os#394](https://github.com/iblai/os/issues/394)
+
 ## [0.54.5](https://github.com/iblai/lms/compare/skills-v0.54.4...skills-v0.54.5) (2026-07-30)
 
 ### Bug Fixes
