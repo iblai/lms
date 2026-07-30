@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.54.5](https://github.com/iblai/lms/compare/skills-v0.54.4...skills-v0.54.5) (2026-07-30)
+
+### Bug Fixes
+
+* **ci:** make the e2e queue survive three concurrent PRs ([f20a34b](https://github.com/iblai/lms/commit/f20a34b90bd3a2d11a91ece4d63db8435a4ba95e)), closes [os#390](https://github.com/iblai/os/issues/390) [#394](https://github.com/iblai/lms/issues/394) [#390](https://github.com/iblai/lms/issues/390) [#367](https://github.com/iblai/lms/issues/367)
+* **ci:** stagger the dispatch so N waiters do not collide ([ccea440](https://github.com/iblai/lms/commit/ccea440bd645bf5ec823a426d7e974ffdc3fc4f0))
+
 ## [0.54.4](https://github.com/iblai/lms/compare/skills-v0.54.3...skills-v0.54.4) (2026-07-30)
 
 ### Bug Fixes
