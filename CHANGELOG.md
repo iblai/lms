@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.8](https://github.com/iblai/lms/compare/skills-v0.54.7...skills-v0.54.8) (2026-07-30)
+
+### Bug Fixes
+
+* **pr-e2e:** make the eviction retry reachable and kill orphaned central runs ([97956bc](https://github.com/iblai/lms/commit/97956bc3d94b08e647d33613a8384781e505d7b7)), closes [os#367](https://github.com/iblai/os/issues/367) [os#394](https://github.com/iblai/os/issues/394)
+
 ## [0.54.7](https://github.com/iblai/lms/compare/skills-v0.54.6...skills-v0.54.7) (2026-07-30)
 
 ### Bug Fixes
