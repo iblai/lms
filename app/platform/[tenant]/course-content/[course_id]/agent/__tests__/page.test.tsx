@@ -22,26 +22,40 @@ import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 const mockSetActiveTab = vi.fn();
 const mockSetAgentFullscreen = vi.fn();
 
+const Harness = ({
+  activeTab = 'course',
+  agentMode = 'learning',
+  agentFullscreen = false,
+}: {
+  activeTab?: string;
+  agentMode?: 'learning' | 'assessment';
+  agentFullscreen?: boolean;
+}) => (
+  <EdxIframeContext.Provider
+    value={
+      {
+        setActiveTab: mockSetActiveTab,
+        activeTab,
+        agentMode,
+        agentFullscreen,
+        setAgentFullscreen: mockSetAgentFullscreen,
+      } as any
+    }
+  >
+    <AgentTab />
+  </EdxIframeContext.Provider>
+);
+
 const renderAgentTab = (
   activeTab: string = 'course',
   agentMode: 'learning' | 'assessment' = 'learning',
   agentFullscreen: boolean = false,
 ) =>
-  render(
-    <EdxIframeContext.Provider
-      value={
-        {
-          setActiveTab: mockSetActiveTab,
-          activeTab,
-          agentMode,
-          agentFullscreen,
-          setAgentFullscreen: mockSetAgentFullscreen,
-        } as any
-      }
-    >
-      <AgentTab />
-    </EdxIframeContext.Provider>,
-  );
+  render(<Harness activeTab={activeTab} agentMode={agentMode} agentFullscreen={agentFullscreen} />);
+
+// `className.toContain('hidden')` is ambiguous now that the hidden state uses
+// `overflow-hidden`, so assert on exact class tokens instead.
+const classes = (el: Element | null | undefined) => Array.from(el?.classList ?? []);
 
 describe('AgentTab page', () => {
   beforeEach(() => {
@@ -54,24 +68,57 @@ describe('AgentTab page', () => {
     expect(await findByTestId('course-agent-chat')).toBeInTheDocument();
   });
 
-  it('hides EdxIframe and shows CourseAgentChat in learning mode', () => {
+  it('hides EdxIframe with visibility, not display, in learning mode', () => {
+    const { getByTestId } = renderAgentTab('agent', 'learning');
+    const iframeWrapper = getByTestId('edx-iframe').parentElement;
+    // `hidden` (display:none) would drop the iframe's rendering box; `invisible`
+    // (visibility:hidden) keeps it laid out and painted.
+    expect(classes(iframeWrapper)).toContain('invisible');
+    expect(classes(iframeWrapper)).not.toContain('hidden');
+    expect(iframeWrapper).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('keeps the hidden EdxIframe out of the flex flow so the chat keeps full height', () => {
     const { getByTestId } = renderAgentTab('agent', 'learning');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     const chatWrapper = getByTestId('course-agent-chat').parentElement;
-    expect(iframeWrapper?.className).toContain('hidden');
-    expect(iframeWrapper?.className).not.toContain('min-h-0');
-    expect(chatWrapper?.className).toContain('min-h-0');
-    expect(chatWrapper?.className).not.toContain('hidden');
+    // Absolutely positioned: an in-flow `invisible` box would still claim a flex
+    // slot and halve the chat's height.
+    expect(classes(iframeWrapper)).toEqual(
+      expect.arrayContaining(['absolute', 'inset-0', 'pointer-events-none']),
+    );
+    expect(classes(iframeWrapper)).not.toContain('flex-1');
+    expect(classes(chatWrapper)).toEqual(expect.arrayContaining(['min-h-0', 'flex-1']));
+    expect(classes(chatWrapper)).not.toContain('hidden');
   });
 
-  it('shows EdxIframe and hides CourseAgentChat in assessment mode', () => {
+  it('anchors the out-of-flow EdxIframe to the page container', () => {
+    const { container } = renderAgentTab('agent', 'learning');
+    // `absolute inset-0` on the iframe wrapper needs a positioned ancestor,
+    // otherwise it escapes to the nearest one further up the tree.
+    expect(classes(container.firstChild as HTMLElement)).toContain('relative');
+  });
+
+  it('shows EdxIframe in flow and hides CourseAgentChat in assessment mode', () => {
     const { getByTestId } = renderAgentTab('agent', 'assessment');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     const chatWrapper = getByTestId('course-agent-chat').parentElement;
-    expect(iframeWrapper?.className).toContain('min-h-0');
-    expect(iframeWrapper?.className).not.toContain('hidden');
-    expect(chatWrapper?.className).toContain('hidden');
-    expect(chatWrapper?.className).not.toContain('min-h-0');
+    expect(classes(iframeWrapper)).toEqual(expect.arrayContaining(['min-h-0', 'flex-1']));
+    expect(classes(iframeWrapper)).not.toContain('invisible');
+    expect(classes(iframeWrapper)).not.toContain('absolute');
+    expect(iframeWrapper).not.toHaveAttribute('aria-hidden', 'true');
+    expect(classes(chatWrapper)).toContain('hidden');
+    expect(classes(chatWrapper)).not.toContain('min-h-0');
+  });
+
+  it('keeps the same EdxIframe node mounted across mode switches', () => {
+    const { getByTestId, rerender } = render(<Harness activeTab="agent" agentMode="learning" />);
+    const iframe = getByTestId('edx-iframe');
+    rerender(<Harness activeTab="agent" agentMode="assessment" />);
+    // Same DOM node, not a remount — the iframe must not reload when it is revealed.
+    expect(getByTestId('edx-iframe')).toBe(iframe);
+    rerender(<Harness activeTab="agent" agentMode="learning" />);
+    expect(getByTestId('edx-iframe')).toBe(iframe);
   });
 
   it('defaults to learning mode when agentMode is undefined', () => {
@@ -83,7 +130,8 @@ describe('AgentTab page', () => {
       </EdxIframeContext.Provider>,
     );
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
-    expect(iframeWrapper?.className).toContain('hidden');
+    expect(classes(iframeWrapper)).toContain('invisible');
+    expect(classes(iframeWrapper)).not.toContain('hidden');
   });
 
   it('announces agent as the active tab on mount', () => {
