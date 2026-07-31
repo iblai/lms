@@ -169,9 +169,15 @@ function ImageUrlInput({
 }) {
   const [previewError, setPreviewError] = useState(false);
 
-  useEffect(() => {
+  // Reset during render (not in an effect) when the URL actually changes.
+  // An effect would also fire on mount, and `error` can land before React
+  // flushes passive effects — clobbering the fallback for an image that
+  // fails immediately (cached 404, bad data URI).
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
     setPreviewError(false);
-  }, [value]);
+  }
 
   return (
     <div className="space-y-2">

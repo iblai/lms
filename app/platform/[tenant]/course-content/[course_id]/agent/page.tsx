@@ -39,7 +39,7 @@ export default function AgentTab() {
   return (
     <div
       className={cn(
-        'flex w-full flex-col',
+        'relative flex w-full flex-col',
         agentFullscreen
           ? 'fixed inset-0 z-50 h-screen bg-white p-4'
           : cn(
@@ -60,7 +60,19 @@ export default function AgentTab() {
           <Minimize2 className="h-5 w-5" />
         </button>
       )}
-      <div className={cn(assessmentMode ? 'min-h-0 flex-1' : 'hidden')}>
+      {/* Kept mounted and laid out when not in assessment mode — `invisible` instead of
+          `hidden` so the iframe keeps its rendering box (display:none makes browsers drop
+          the iframe's layout/paint state). Pulled out of flow so it doesn't take space
+          from the chat below. */}
+      <div
+        className={cn(
+          'min-h-0',
+          assessmentMode
+            ? 'flex-1'
+            : 'pointer-events-none invisible absolute inset-0 overflow-hidden',
+        )}
+        aria-hidden={!assessmentMode}
+      >
         <EdxIframe />
       </div>
       <div className={cn(assessmentMode ? 'hidden' : 'min-h-0 flex-1')}>
