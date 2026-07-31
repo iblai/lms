@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.55.0](https://github.com/iblai/lms/compare/skills-v0.54.8...skills-v0.55.0) (2026-07-31)
+
+### Features
+
+* edxiframe display mode updated from display none to visibility hidden ([2951aba](https://github.com/iblai/lms/commit/2951ababe5e7cbc5749bbfbb415a1f8b6cd15574))
+* edxiframe display mode updated from display none to visibility hidden > test coverage ([d764271](https://github.com/iblai/lms/commit/d76427184436e32eea3c000f131d029cc97c343b))
+* failing test issue fixed ([6024442](https://github.com/iblai/lms/commit/6024442650dbfaa0d8605693b029690438b17371))
+
 ## [0.54.8](https://github.com/iblai/lms/compare/skills-v0.54.7...skills-v0.54.8) (2026-07-30)
 
 ### Bug Fixes
