@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.57.2](https://github.com/iblai/lms/compare/skills-v0.57.1...skills-v0.57.2) (2026-08-04)
+
+### Bug Fixes
+
+* **pr-e2e:** never infer which runner executes the dispatched run ([2c6f402](https://github.com/iblai/lms/commit/2c6f402258a9fc970304d49c37e5fc49d96823e9)), closes [os#407](https://github.com/iblai/os/issues/407) [os#407](https://github.com/iblai/os/issues/407)
+
 ## [0.57.1](https://github.com/iblai/lms/compare/skills-v0.57.0...skills-v0.57.1) (2026-08-04)
 
 ### Bug Fixes
