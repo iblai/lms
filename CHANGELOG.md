@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.57.1](https://github.com/iblai/lms/compare/skills-v0.57.0...skills-v0.57.1) (2026-08-04)
+
+### Bug Fixes
+
+* **pr-e2e:** stop the dispatch live-lock and never lose a report ([e03431e](https://github.com/iblai/lms/commit/e03431e5c8cd884cb8b03daad239e24ef7fc294c)), closes [os#405](https://github.com/iblai/os/issues/405)
+
 ## [0.57.0](https://github.com/iblai/lms/compare/skills-v0.56.0...skills-v0.57.0) (2026-08-04)
 
 ### Features
