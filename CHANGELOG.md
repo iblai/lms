@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.57.0](https://github.com/iblai/lms/compare/skills-v0.56.0...skills-v0.57.0) (2026-08-04)
+
+### Features
+
+* **ios:** use the blue ibl.ai logo for the iOS app icon ([f53e898](https://github.com/iblai/lms/commit/f53e898df5a1cbefbc6d0efade6157b9ae47ed22))
+
+### Chores
+
+* **tauri:** release app-v1.0.16 ([d90cdde](https://github.com/iblai/lms/commit/d90cddef81371cf25cbda759f9c0eea97543000c))
+
 ## [0.56.0](https://github.com/iblai/lms/compare/skills-v0.55.0...skills-v0.56.0) (2026-08-04)
 
 ### Features
