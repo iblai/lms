@@ -8,11 +8,22 @@ import { ClientLayout } from '@/components/client-layout';
 import Script from 'next/script';
 import {
   fetchAppMetadata,
+  fetchTenantSeoFlags,
   extractTenantFromCookies,
   isDevelopment,
   logEnvironmentInfo,
 } from '@/lib/utils/server-metadata';
 import { StoreProvider } from '@/providers/store-provider';
+import {
+  getSiteUrl,
+  absoluteUrl,
+  buildRobots,
+  buildOpenGraph,
+  buildTwitter,
+  organizationLd,
+  webSiteLd,
+} from '@/lib/utils/seo';
+import { JsonLd } from '@/components/json-ld';
 
 const openSans = Open_Sans({ subsets: ['latin'] });
 
@@ -46,8 +57,11 @@ export async function generateMetadata(): Promise<Metadata> {
       });
     }
 
-    // Fetch metadata based on custom domain or tenant
-    const metadata = await fetchAppMetadata(host, tenantKey);
+    // Fetch metadata + SEO flags based on custom domain or tenant
+    const [metadata, seoFlags] = await Promise.all([
+      fetchAppMetadata(host, tenantKey),
+      fetchTenantSeoFlags(tenantKey),
+    ]);
 
     // Debug logging in development
     if (isDevelopment) {
@@ -65,10 +79,17 @@ export async function generateMetadata(): Promise<Metadata> {
         ? metadata.favicon
         : `/${metadata.favicon}`;
 
+    const siteName = seoFlags.platformName || metadata.title;
+    // Prefer the tenant logo for social cards; fall back to the dynamic OG image.
+    const ogImage =
+      absoluteUrl(metadata.logo, baseUrl) || absoluteUrl('/opengraph-image', baseUrl) || '';
+    const ogImages = ogImage ? [ogImage] : [];
+
     const metadataResult: Metadata = {
       title: metadata.title,
       description: metadata.description,
       generator: 'ibl.ai',
+      applicationName: siteName,
       icons: [
         {
           rel: 'icon',
@@ -76,18 +97,20 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
       ...(baseUrl && { metadataBase: new URL(baseUrl) }),
-      openGraph: {
+      robots: buildRobots(seoFlags.isPublic),
+      openGraph: buildOpenGraph({
         title: metadata.title,
         description: metadata.description,
-        images: [
-          {
-            url: metadata.logo.startsWith('http')
-              ? metadata.logo
-              : `${baseUrl || ''}${metadata.logo.startsWith('/') ? metadata.logo : `/${metadata.logo}`}`,
-            alt: metadata.title,
-          },
-        ],
-      },
+        images: ogImages,
+        siteName,
+        url: baseUrl,
+        type: 'website',
+      }),
+      twitter: buildTwitter({
+        title: metadata.title,
+        description: metadata.description,
+        images: ogImages,
+      }),
     };
 
     // Debug: Log the final metadata object being returned
@@ -144,6 +167,30 @@ export const viewport = {
   initialScale: 1,
 };
 
+/** Builds site-wide Organization + WebSite structured data for the current tenant. */
+async function getSiteJsonLd(): Promise<object[]> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get('host') || headersList.get('x-forwarded-host') || '';
+    const protocol = headersList.get('x-forwarded-proto') || 'https';
+    const baseUrl = getSiteUrl(host, protocol);
+    const tenantKey = extractTenantFromCookies(headersList.get('cookie'));
+
+    const [metadata, seoFlags] = await Promise.all([
+      fetchAppMetadata(host, tenantKey),
+      fetchTenantSeoFlags(tenantKey),
+    ]);
+    const name = seoFlags.platformName || metadata.title;
+    const logo = absoluteUrl(metadata.logo, baseUrl);
+
+    const ld: object[] = [organizationLd({ name, url: baseUrl, logo })];
+    if (baseUrl) ld.push(webSiteLd({ name, url: baseUrl }));
+    return ld;
+  } catch {
+    return [];
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -154,9 +201,12 @@ export default async function RootLayout({
     logEnvironmentInfo();
   }
 
+  const siteJsonLd = await getSiteJsonLd();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${openSans.className} flex h-screen flex-col overflow-hidden`}>
+        {siteJsonLd.length > 0 && <JsonLd data={siteJsonLd} />}
         <Script src="/env.js" strategy="afterInteractive" />
         <StoreProvider>
           <Providers>
