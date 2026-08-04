@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.56.0](https://github.com/iblai/lms/compare/skills-v0.55.0...skills-v0.56.0) (2026-08-04)
+
+### Features
+
+* **seo:** public course & program about pages (Phase 2) + allow_self_linking gate ([71458d9](https://github.com/iblai/lms/commit/71458d9c83b7cdc6b0b885c434570608ed9a4933))
+* **seo:** tenant-aware metadata foundation (robots, sitemap, OG, JSON-LD) ([d315519](https://github.com/iblai/lms/commit/d3155192627b56c7afa0d80005e85be166f09f63))
+
 ## [0.55.0](https://github.com/iblai/lms/compare/skills-v0.54.8...skills-v0.55.0) (2026-07-31)
 
 ### Features
