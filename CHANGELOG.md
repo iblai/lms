@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.60.0](https://github.com/iblai/lms/compare/skills-v0.59.1...skills-v0.60.0) (2026-08-05)
+
+### Features
+
+* **ci:** pass PR_E2E_LABEL_TOKEN so /retest can actually trigger a run ([dd00fe2](https://github.com/iblai/lms/commit/dd00fe2baee5fc62eb354c8df0ec4042e09885b0))
+
 ## [0.59.1](https://github.com/iblai/lms/compare/skills-v0.59.0...skills-v0.59.1) (2026-08-05)
 
 ### Bug Fixes
