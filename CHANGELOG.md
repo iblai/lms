@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.59.1](https://github.com/iblai/lms/compare/skills-v0.59.0...skills-v0.59.1) (2026-08-05)
+
+### Bug Fixes
+
+* **ci:** pr-e2e commands need pull-requests: write to reply ([4416ac9](https://github.com/iblai/lms/commit/4416ac95c0d2baa6d25d8d86a6c5ed709d228f06))
+
 ## [0.59.0](https://github.com/iblai/lms/compare/skills-v0.58.0...skills-v0.59.0) (2026-08-05)
 
 ### Features
