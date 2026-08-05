@@ -25,6 +25,7 @@ import { getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
 import { Spinner } from '@/components/spinner';
+import { SkillsTimeTrackingProvider } from '@/hooks/use-time-tracking';
 
 declare global {
   interface Window {
@@ -156,6 +157,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         onLoadPlatformPermissions={onLoadPlatformpermissions}
         fallback={spinnerFallback}
       >
+        <SkillsTimeTrackingProvider />
         {children}
       </TenantProvider>
     </AuthProvider>
