@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.59.0](https://github.com/iblai/lms/compare/skills-v0.58.0...skills-v0.59.0) (2026-08-05)
+
+### Features
+
+* **ci:** slash commands for PR e2e — /retest, /status, /report, /cancel ([7260608](https://github.com/iblai/lms/commit/7260608aec0b3066d4eea7b22a692e8625cd914f))
+
 ## [0.58.0](https://github.com/iblai/lms/compare/skills-v0.57.2...skills-v0.58.0) (2026-08-05)
 
 ### Features
