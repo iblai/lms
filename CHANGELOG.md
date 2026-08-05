@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.58.0](https://github.com/iblai/lms/compare/skills-v0.57.2...skills-v0.58.0) (2026-08-05)
+
+### Features
+
+* **pr-e2e:** call iblai/pr-e2e-action@v1 instead of an in-repo copy ([d522813](https://github.com/iblai/lms/commit/d5228137bc4f1ff487a7f448bf1faa72c5b47303))
+
+### Bug Fixes
+
+* **pr-e2e:** keep cancellation cleanup as a job step ([ce866fe](https://github.com/iblai/lms/commit/ce866feed7f9f072711b4eeec84b5092c076285e)), closes [os#394](https://github.com/iblai/os/issues/394)
+
 ## [0.57.2](https://github.com/iblai/lms/compare/skills-v0.57.1...skills-v0.57.2) (2026-08-04)
 
 ### Bug Fixes
