@@ -8,6 +8,8 @@ import { applyCsp } from '@iblai/iblai-js/security/next';
 // these first-party domains explicitly or enforcement blocks their XHR/iframes.
 const IBL_ALT_HTTP = ['https://*.iblai.org', 'https://*.iblai.tech'];
 const IBL_ALT_WS = ['wss://*.iblai.org', 'wss://*.iblai.tech'];
+// Customer/partner institution domains served from their own host (SSO/LMS/API).
+const PARTNER_HTTP = ['https://*.syr.edu']; // Syracuse University
 
 // Server components don't have direct access to the request URL/pathname.
 // Forward the pathname as a header so layouts can read it via `headers()` and
@@ -22,8 +24,8 @@ export function middleware(request: NextRequest) {
   // headers — preserving x-pathname — and returns the response with the header.
   return applyCsp(request, {
     requestHeaders,
-    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS],
-    frameSrc: IBL_ALT_HTTP, // edX content is embedded in iframes on these hosts
+    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...PARTNER_HTTP],
+    frameSrc: [...IBL_ALT_HTTP, ...PARTNER_HTTP], // edX + partner content in iframes
   });
 }
 
