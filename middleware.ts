@@ -9,7 +9,13 @@ import { applyCsp } from '@iblai/iblai-js/security/next';
 const IBL_ALT_HTTP = ['https://*.iblai.org', 'https://*.iblai.tech'];
 const IBL_ALT_WS = ['wss://*.iblai.org', 'wss://*.iblai.tech'];
 // Customer/partner institution domains served from their own host (SSO/LMS/API).
-const PARTNER_HTTP = ['https://*.syr.edu']; // Syracuse University
+// Override via CSP_PARTNER_HOSTS (comma/space-separated); defaults to Syracuse
+// when unset. Read at request time so it isn't frozen at module load / build time.
+const DEFAULT_PARTNER_HOSTS = ['https://*.syr.edu']; // Syracuse University
+const partnerHosts = () => {
+  const raw = process.env.CSP_PARTNER_HOSTS?.trim();
+  return raw ? raw.split(/[\s,]+/).filter(Boolean) : DEFAULT_PARTNER_HOSTS;
+};
 
 // Server components don't have direct access to the request URL/pathname.
 // Forward the pathname as a header so layouts can read it via `headers()` and
@@ -18,14 +24,15 @@ const PARTNER_HTTP = ['https://*.syr.edu']; // Syracuse University
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
+  const partners = partnerHosts();
   // Attach the per-request, nonce-based Content-Security-Policy. @iblai/iblai-js
   // @2.x ENFORCES by default; local dev is report-only via .env.development
   // (CSP_MODE=report-only). applyCsp stamps the nonce onto these same request
   // headers — preserving x-pathname — and returns the response with the header.
   return applyCsp(request, {
     requestHeaders,
-    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...PARTNER_HTTP],
-    frameSrc: [...IBL_ALT_HTTP, ...PARTNER_HTTP], // edX + partner content in iframes
+    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners],
+    frameSrc: [...IBL_ALT_HTTP, ...partners], // edX + partner content in iframes
   });
 }
 
