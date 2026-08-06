@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.61.0](https://github.com/iblai/lms/compare/skills-v0.60.0...skills-v0.61.0) (2026-08-06)
+
+### Features
+
+* **seo:** default page title/branding to "ibl.ai | Agentic LMS" ([22ddb95](https://github.com/iblai/lms/commit/22ddb9502f4dc25afc4ed3c54c83c1d374d74bab))
+
 ## [0.60.0](https://github.com/iblai/lms/compare/skills-v0.59.1...skills-v0.60.0) (2026-08-05)
 
 ### Features

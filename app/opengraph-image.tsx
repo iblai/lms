@@ -7,7 +7,7 @@ import { SEO_DEFAULTS } from '@/lib/utils/seo';
 // tenant's title/description so shared links get a branded, on-brand preview
 // even without a bespoke OG image asset. Per-entity pages can override this.
 export const runtime = 'nodejs';
-export const alt = 'skillsAI — Build Your Skills with AI';
+export const alt = 'ibl.ai | Agentic LMS — Build Your Skills with AI';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

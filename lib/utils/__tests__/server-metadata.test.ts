@@ -16,7 +16,7 @@ import {
 } from '../server-metadata';
 
 const DEFAULTS = {
-  title: 'skillsAI',
+  title: 'ibl.ai | Agentic LMS',
   favicon: '/favicon.ico',
   description: 'Build Your Skills with AI',
   // Mirrors DEFAULT_APP_INFORMATION.logo in ../server-metadata: the dynamic
