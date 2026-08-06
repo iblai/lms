@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.64.0](https://github.com/iblai/lms/compare/skills-v0.63.0...skills-v0.64.0) (2026-08-06)
+
+### Features
+
+* **csp:** make partner CSP hosts configurable via CSP_PARTNER_HOSTS ([f9a3ff0](https://github.com/iblai/lms/commit/f9a3ff00d3b212bf95e20b788cb760c63803c064))
+
+### Bug Fixes
+
+* **csp:** allow wss:// partner origins in connect-src ([3d38f58](https://github.com/iblai/lms/commit/3d38f588fa4377536cd27ba3acf1bade46bc0899))
+
 ## [0.63.0](https://github.com/iblai/lms/compare/skills-v0.62.0...skills-v0.63.0) (2026-08-06)
 
 ### Features
