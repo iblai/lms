@@ -25,13 +25,19 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
   const partners = partnerHosts();
+  // connect-src also needs the wss:// origin of each https:// partner host —
+  // browsers don't treat an https:// source as covering wss:// to the same host
+  // (e.g. Syracuse's wss://asgi.data.ai.syr.edu needs wss://*.syr.edu).
+  const partnerWs = partners
+    .filter((h) => h.startsWith('https://'))
+    .map((h) => `wss://${h.slice('https://'.length)}`);
   // Attach the per-request, nonce-based Content-Security-Policy. @iblai/iblai-js
   // @2.x ENFORCES by default; local dev is report-only via .env.development
   // (CSP_MODE=report-only). applyCsp stamps the nonce onto these same request
   // headers — preserving x-pathname — and returns the response with the header.
   return applyCsp(request, {
     requestHeaders,
-    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners],
+    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners, ...partnerWs],
     frameSrc: [...IBL_ALT_HTTP, ...partners], // edX + partner content in iframes
   });
 }
