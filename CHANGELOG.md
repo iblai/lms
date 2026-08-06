@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.63.0](https://github.com/iblai/lms/compare/skills-v0.62.0...skills-v0.63.0) (2026-08-06)
+
+### Features
+
+* **csp:** allow *.syr.edu as a partner host (connect-src, frame-src) ([0f6b10a](https://github.com/iblai/lms/commit/0f6b10aebce6fe2b1e6b4a0cabdd9a5dee1892b1))
+
 ## [0.62.0](https://github.com/iblai/lms/compare/skills-v0.61.0...skills-v0.62.0) (2026-08-06)
 
 ### Features
