@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.62.0](https://github.com/iblai/lms/compare/skills-v0.61.0...skills-v0.62.0) (2026-08-06)
+
+### Features
+
+* analytics sdk memory menu items integration ([bc6ca5f](https://github.com/iblai/lms/commit/bc6ca5f82f485e2e6d8b817151ea8cffd160a696))
+* analytics sdk memory menu items integration > e2e test coverage updated ([f542591](https://github.com/iblai/lms/commit/f5425918ad15e5281fc0402506e02ed52f798959))
+* analytics sdk memory menu items integration > test coverage ([43ce77d](https://github.com/iblai/lms/commit/43ce77df731ec1be4ede1710205d0956e130ee4e))
+
 ## [0.61.0](https://github.com/iblai/lms/compare/skills-v0.60.0...skills-v0.61.0) (2026-08-06)
 
 ### Features
