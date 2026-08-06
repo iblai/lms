@@ -112,9 +112,27 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogDescription: ({ children }: any) => <p>{children}</p>,
 }));
 
+// `getVisibleAnalyticsTabs` is stubbed rather than run for real — the SDK owns
+// (and tests) the watcher rule; here we only care that the sidebar honours
+// whatever it returns. Defaults to every tab; override per test to narrow.
+const ALL_TABS = [
+  '',
+  'users',
+  'courses',
+  'programs',
+  'topics',
+  'transcripts',
+  'financial',
+  'audit',
+  'monetization',
+  'reports',
+];
+const mockGetVisibleAnalyticsTabs = vi.hoisted(() => vi.fn());
+
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: vi.fn(() => true),
   useTenantMetadata: vi.fn(() => ({ metadata: {} })),
+  getVisibleAnalyticsTabs: mockGetVisibleAnalyticsTabs,
 }));
 
 vi.mock('@iblai/iblai-js/web-containers', () => ({
@@ -233,6 +251,7 @@ describe('AppSidebar', () => {
     mockPathname = '/platform/test-tenant/home';
     mockSearch = '';
     mockRbacPermissions = [];
+    mockGetVisibleAnalyticsTabs.mockReturnValue(ALL_TABS);
     vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(isDiscoverEnabled).mockReturnValue(true);
     vi.mocked(config.settings.aiAnalyticsHeaderMenuEnabled).mockReturnValue(true);
@@ -442,6 +461,23 @@ describe('AppSidebar', () => {
         expect(within(menu).getByText(label)).toHaveAttribute('href', href);
       }
       expect(within(menu).getByText('Overview')).toHaveAttribute('data-exact', 'true');
+    });
+
+    it('narrows the analytics menu to the tabs the SDK allows (pure watcher)', () => {
+      mockRbacPermissions = ['/platforms/test-tenant/#can_view_analytics'];
+      mockGetVisibleAnalyticsTabs.mockReturnValue(['courses', 'programs', 'reports']);
+
+      render(<AppSidebar />);
+      const menu = screen.getByTestId('menu-analytics');
+      const base = '/platform/test-tenant/analytics';
+
+      expect(within(menu).getByText('Courses')).toHaveAttribute('href', `${base}/courses`);
+      expect(within(menu).getByText('Programs')).toHaveAttribute('href', `${base}/programs`);
+      expect(within(menu).getByText('Data Reports')).toHaveAttribute('href', `${base}/reports`);
+
+      for (const label of ['Overview', 'Users', 'Topics', 'Transcripts', 'Costs', 'Audit']) {
+        expect(within(menu).queryByText(label)).not.toBeInTheDocument();
+      }
     });
 
     it('force-opens the Analytics accordion when deep-linked into analytics', () => {
