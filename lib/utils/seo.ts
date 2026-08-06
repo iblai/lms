@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
  */
 
 export const SEO_DEFAULTS = {
-  siteName: 'skillsAI',
+  siteName: 'ibl.ai | Agentic LMS',
   description: 'Build Your Skills with AI',
   /** Twitter handle for the card `site`/`creator`. */
   twitterSite: '@iblai',

@@ -2,7 +2,7 @@ import { config } from '@/lib/config';
 
 // Server-safe default app information for skillsAI
 const DEFAULT_APP_INFORMATION = {
-  metaTitle: 'skillsAI',
+  metaTitle: 'ibl.ai | Agentic LMS',
   favicon: '/favicon.ico',
   description: 'Build Your Skills with AI',
   // Dynamic 1200x630 social card (app/opengraph-image.tsx) — used when a tenant

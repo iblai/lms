@@ -16,10 +16,10 @@ import {
 } from '../server-metadata';
 
 const DEFAULTS = {
-  title: 'skillsAI',
+  title: 'ibl.ai | Agentic LMS',
   favicon: '/favicon.ico',
   description: 'Build Your Skills with AI',
-  logo: '/skills-logo.png',
+  logo: '/opengraph-image',
 };
 
 describe('fetchAppMetadata', () => {

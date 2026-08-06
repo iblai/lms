@@ -135,7 +135,7 @@ export async function generateMetadata(): Promise<Metadata> {
       const baseUrl = host ? `${protocol}://${host}` : undefined;
 
       return {
-        title: 'skillsAI',
+        title: 'ibl.ai | Agentic LMS',
         description: 'Build Your Skills with AI',
         generator: 'ibl.ai',
         icons: [
@@ -148,7 +148,7 @@ export async function generateMetadata(): Promise<Metadata> {
       };
     } catch {
       return {
-        title: 'skillsAI',
+        title: 'ibl.ai | Agentic LMS',
         description: 'Build Your Skills with AI',
         generator: 'ibl.ai',
         icons: [
