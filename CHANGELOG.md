@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.65.0](https://github.com/iblai/lms/compare/skills-v0.64.0...skills-v0.65.0) (2026-08-10)
+
+### Features
+
+* **os-builds:** Windows installers + mentorai-style download README ([169dd86](https://github.com/iblai/lms/commit/169dd86e4a93dc690424e46b976d58aac8e64c5e))
+
+### Chores
+
+* **os-builds:** add iOS version-bump helper for Agentic LMS ([5822fb1](https://github.com/iblai/lms/commit/5822fb1171720afa0be4afbc4ece66e6a5399d90))
+* **tauri:** release app-v1.0.17 ([1b37c0c](https://github.com/iblai/lms/commit/1b37c0ca8c14b8c23a5d47ecff34fefd3bbe710b))
+
 ## [0.64.0](https://github.com/iblai/lms/compare/skills-v0.63.0...skills-v0.64.0) (2026-08-06)
 
 ### Features
