@@ -100,31 +100,22 @@ Whether you're an enterprise building an internal upskilling program, a universi
 
 ---
 
-## Available On
+### ⬇️ Get Agentic LMS
 
-<div align="center">
+<a href="https://lms.ibl.ai"><img src="https://img.shields.io/badge/Use_it_on_the_Web-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Use it on the Web" height="42"></a>
+&nbsp;
+<a href="https://github.com/iblai/lms/releases/download/app-v1.0.16/Agentic.LMS_1.0.16_universal.dmg"><img src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" height="42"></a>
+&nbsp;
+<a href="https://github.com/iblai/lms/releases/download/app-v1.0.16/Agentic.LMS_1.0.16_x64-setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="42"></a>
 
-| Platform    | Status                                                                       |
-| ----------- | ---------------------------------------------------------------------------- |
-| **Web**     | Production at [lms.ibl.ai](https://lms.ibl.ai) — works on any modern browser |
-| **macOS**   | Native desktop app — [download the latest build](#download)                  |
-| **iOS**     | Native mobile app — available on iPhone and iPad                             |
-| **Android** | Native mobile app — available on phones and tablets                          |
-| **Windows** | Native desktop app                                                           |
-| **Linux**   | Native desktop app                                                           |
+<a href="https://apps.apple.com/us/app/agentic-lms/id6726998914"><img src="https://img.shields.io/badge/Download_for_iOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for iOS" height="42"></a>
+&nbsp;
+<a href="https://play.google.com/store/apps/details?id=ai.ibl.skillsai"><img src="https://img.shields.io/badge/Download_for_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download for Android" height="42"></a>
 
-</div>
+<sub>Windows ARM64 · older builds · Linux → [all downloads](docs/DOWNLOADS.md)</sub>
 
-One codebase, six platforms — Agentic LMS runs natively everywhere your learners are.
-
----
-
-## Download
-
-**Latest macOS build:** [Agentic LMS app-v1.0.16 (Universal .dmg)](https://github.com/iblai/lms/releases/download/app-v1.0.16/Agentic.LMS_1.0.16_universal.dmg) · [all versions](docs/DOWNLOADS.md)
-
-Signed & notarized universal build (Intel + Apple Silicon), published
-automatically on `src-tauri` changes. Full history in [docs/DOWNLOADS.md](docs/DOWNLOADS.md).
+Signed & notarized macOS (universal) + self-signed Windows (x64/arm64) builds are
+published automatically on `src-tauri` changes. Full history in [docs/DOWNLOADS.md](docs/DOWNLOADS.md).
 
 ---
 
