@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.65.2](https://github.com/iblai/lms/compare/skills-v0.65.1...skills-v0.65.2) (2026-08-10)
+
+### Bug Fixes
+
+* **readme:** point download buttons at app-v1.0.17 (fix 404s) ([6c5f7da](https://github.com/iblai/lms/commit/6c5f7da427d0aee79285e076c005678110dd60a7)), closes [#207](https://github.com/iblai/lms/issues/207)
+
 ## [0.65.1](https://github.com/iblai/lms/compare/skills-v0.65.0...skills-v0.65.1) (2026-08-10)
 
 ### Documentation
