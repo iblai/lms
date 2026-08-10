@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.65.1](https://github.com/iblai/lms/compare/skills-v0.65.0...skills-v0.65.1) (2026-08-10)
+
+### Documentation
+
+* **readme:** move download buttons into the top hero (match mentorai) ([0e33c63](https://github.com/iblai/lms/commit/0e33c63ab94622ea82bcf9ad7a0e9e5f3724dcb4))
+
 ## [0.65.0](https://github.com/iblai/lms/compare/skills-v0.64.0...skills-v0.65.0) (2026-08-10)
 
 ### Features
