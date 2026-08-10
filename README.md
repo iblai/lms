@@ -16,6 +16,22 @@
 
 _Deployed at [lms.ibl.ai](https://lms.ibl.ai)_
 
+<br>
+
+### ⬇️ Get Agentic LMS
+
+<a href="https://lms.ibl.ai"><img src="https://img.shields.io/badge/Use_it_on_the_Web-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Use it on the Web" height="42"></a>
+&nbsp;
+<a href="https://github.com/iblai/lms/releases/download/app-v1.0.16/Agentic.LMS_1.0.16_universal.dmg"><img src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" height="42"></a>
+&nbsp;
+<a href="https://github.com/iblai/lms/releases/download/app-v1.0.16/Agentic.LMS_1.0.16_x64-setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="42"></a>
+
+<a href="https://apps.apple.com/us/app/agentic-lms/id6726998914"><img src="https://img.shields.io/badge/Download_for_iOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for iOS" height="42"></a>
+&nbsp;
+<a href="https://play.google.com/store/apps/details?id=ai.ibl.skillsai"><img src="https://img.shields.io/badge/Download_for_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download for Android" height="42"></a>
+
+<sub>Windows ARM64 · older builds · Linux → [all downloads](docs/DOWNLOADS.md)</sub>
+
 </div>
 
 ---
@@ -97,25 +113,6 @@ Whether you're an enterprise building an internal upskilling program, a universi
 - **White-labeling** — custom themes, logos, and advanced CSS per tenant
 - **AI mentor sidebar** — embedded conversational AI assistant for learner support
 - **Configurable onboarding** — skill self-assessment and profile setup flows
-
----
-
-### ⬇️ Get Agentic LMS
-
-<a href="https://lms.ibl.ai"><img src="https://img.shields.io/badge/Use_it_on_the_Web-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Use it on the Web" height="42"></a>
-&nbsp;
-<a href="https://github.com/iblai/lms/releases/download/app-v1.0.17/Agentic.LMS_1.0.17_universal.dmg"><img src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" height="42"></a>
-&nbsp;
-<a href="https://github.com/iblai/lms/releases/download/app-v1.0.17/Agentic.LMS_1.0.17_x64-setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="42"></a>
-
-<a href="https://apps.apple.com/us/app/agentic-lms/id6726998914"><img src="https://img.shields.io/badge/Download_for_iOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for iOS" height="42"></a>
-&nbsp;
-<a href="https://play.google.com/store/apps/details?id=ai.ibl.skillsai"><img src="https://img.shields.io/badge/Download_for_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download for Android" height="42"></a>
-
-<sub>Windows ARM64 · older builds · Linux → [all downloads](docs/DOWNLOADS.md)</sub>
-
-Signed & notarized macOS (universal) + self-signed Windows (x64/arm64) builds are
-published automatically on `src-tauri` changes. Full history in [docs/DOWNLOADS.md](docs/DOWNLOADS.md).
 
 ---
 
