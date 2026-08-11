@@ -133,6 +133,8 @@ SOURCE_FILES=()
 for file in ${CHANGED_FILES}; do
   [[ -f "${file}" ]] || continue
   [[ "${file}" =~ \.(ts|tsx|js|jsx|mjs|cjs)$ ]] || continue
+  # Skip Claude Code agent worktrees (duplicate checkouts of this repo)
+  [[ "${file}" == .claude/worktrees/* ]] && continue
   # Skip test, spec, type, config, and setup files
   if [[ "${file}" =~ (\.test\.|\.spec\.|\.d\.ts$|__tests__|__mocks__|stories\.|types?\.ts$|constants?\.ts$|index\.ts$|vitest\.|\.config\.) ]]; then
     continue
