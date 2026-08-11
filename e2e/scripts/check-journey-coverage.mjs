@@ -39,6 +39,8 @@ const JOURNEYS_DIR = join(REPO_ROOT, 'e2e', 'journeys');
 
 /** Files intentionally excluded from E2E coverage requirements. */
 const EXCLUDED_PATTERNS = [
+  // Claude Code agent worktrees — duplicate checkouts of this repo
+  /^\.claude\/worktrees\//,
   /\/layout\.tsx$/,
   /\/loading\.tsx$/,
   /\/not-found\.tsx$/,

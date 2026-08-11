@@ -26,7 +26,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./__tests__/vitest.setup.ts'],
     environment: 'jsdom',
-    exclude: ['node_modules/**', 'e2e/**', '.opencode/**'],
+    // `.claude/worktrees/**` holds agent worktrees — full copies of this repo,
+    // so every suite in them would otherwise run a second time.
+    exclude: ['node_modules/**', 'e2e/**', '.opencode/**', '.claude/worktrees/**'],
     server: {
       deps: {
         // Inline only the yalc-linked @iblai SDK packages so Vite transforms
@@ -49,6 +51,9 @@ export default defineConfig({
       exclude: [
         // Playwright E2E tests (not unit coverage)
         'e2e/**',
+
+        // Claude Code agent worktrees (duplicate checkouts of this repo)
+        '.claude/worktrees/**',
 
         'node_modules/**',
         '.next/**',
