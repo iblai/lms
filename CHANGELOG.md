@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.66.0](https://github.com/iblai/lms/compare/skills-v0.65.2...skills-v0.66.0) (2026-08-11)
+
+### Features
+
+* home course display settings sdk integration ([f1cfb2b](https://github.com/iblai/lms/commit/f1cfb2bdfd2442280b2a2c8f25afd944833933ad))
+* home course display settings sdk integration ([772a715](https://github.com/iblai/lms/commit/772a71529f061196af51724308369cf419167f02))
+* home course display settings sdk integration > iblai-js version updated + makefile update ([00a9d9a](https://github.com/iblai/lms/commit/00a9d9ab733da1d5591774da64e127965e8120f4))
+* ignore claude worktrees from prepush scripts ([5fec192](https://github.com/iblai/lms/commit/5fec192a112a42c8f4d7f43a1913d4db0c8dd003))
+
 ## [0.65.2](https://github.com/iblai/lms/compare/skills-v0.65.1...skills-v0.65.2) (2026-08-10)
 
 ### Bug Fixes
