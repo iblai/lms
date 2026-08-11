@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-07-22 | 232 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-08-11 | 233 checkpoints | 32 journeys | 100% covered
 
 ## How This Works
 
@@ -39,18 +39,19 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 3: Home Dashboard (8 checkpoints) — `journeys/03-home-dashboard.spec.ts`
+## Journey 3: Home Dashboard (9 checkpoints) — `journeys/03-home-dashboard.spec.ts`
 
 **Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`
 
 - [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
-- [x] Explore rail displays catalog cards; an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)
+- [x] Courses rail displays cards for the tenant's `lms_dashboard_courses_display` mode (catalog / enrolled / recommended); an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)
 - [x] My Courses CTA opens the enrolled catalog view
 - [x] Clicking an enrolled catalog card navigates to the course about page
-- [x] Clicking a catalog rail card navigates to the content page
+- [x] Clicking a courses rail card navigates to the content page
 - [x] Activity Overview band is absent from the home page (stats live on profile Activity)
 - [x] "View All" or "See more" links in course sections navigate to appropriate pages
 - [x] Home page loads without console errors
+- [x] Courses rail heading matches the tenant's `lms_dashboard_courses_display` setting and its "See More" opens Discover on the same filter (`enrolled=true` / `recommended=true` / unfiltered catalog)
 
 ---
 

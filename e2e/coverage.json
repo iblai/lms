@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-07-20",
+  "lastUpdated": "2026-08-11",
   "summary": {
-    "totalCheckpoints": 232,
-    "coveredCheckpoints": 232,
+    "totalCheckpoints": 233,
+    "coveredCheckpoints": 233,
     "percent": 100,
     "totalJourneys": 32
   },
@@ -38,7 +38,7 @@
     },
     {
       "id": "onboarding-first-time-user",
-      "name": "Onboarding \u2014 First-Time User",
+      "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": [
         "app/start/page.tsx",
@@ -93,7 +93,7 @@
         },
         {
           "id": "home-02",
-          "description": "Explore rail displays catalog cards; an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)",
+          "description": "Courses rail displays cards for the tenant's lms_dashboard_courses_display mode (catalog / enrolled / recommended); an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)",
           "status": "covered"
         },
         {
@@ -108,7 +108,7 @@
         },
         {
           "id": "home-05",
-          "description": "Clicking a catalog rail card navigates to the content page",
+          "description": "Clicking a courses rail card navigates to the content page",
           "status": "covered"
         },
         {
@@ -124,6 +124,11 @@
         {
           "id": "home-08",
           "description": "Home page loads without console errors",
+          "status": "covered"
+        },
+        {
+          "id": "home-09",
+          "description": "Courses rail heading matches the tenant's lms_dashboard_courses_display setting and its \"See More\" opens Discover on the same filter (enrolled=true / recommended=true / unfiltered catalog)",
           "status": "covered"
         }
       ]
@@ -167,7 +172,7 @@
     },
     {
       "id": "course-content-tabs",
-      "name": "Course Content \u2014 Tab Navigation & Iframes",
+      "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
@@ -366,7 +371,7 @@
         },
         {
           "id": "tabs-34",
-          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
           "status": "covered"
         }
       ]
@@ -417,7 +422,7 @@
     },
     {
       "id": "profile-skills",
-      "name": "Profile \u2014 Skills",
+      "name": "Profile — Skills",
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
@@ -455,7 +460,7 @@
     },
     {
       "id": "profile-credentials",
-      "name": "Profile \u2014 Credentials",
+      "name": "Profile — Credentials",
       "spec": "08-profile-credentials.spec.ts",
       "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
@@ -488,7 +493,7 @@
     },
     {
       "id": "profile-pathways",
-      "name": "Profile \u2014 Pathways",
+      "name": "Profile — Pathways",
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": [
         "app/profile/pathways/page.tsx",
@@ -524,7 +529,7 @@
     },
     {
       "id": "profile-programs",
-      "name": "Profile \u2014 Programs",
+      "name": "Profile — Programs",
       "spec": "10-profile-programs.spec.ts",
       "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
@@ -565,7 +570,7 @@
         },
         {
           "id": "prog-08",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates content",
+          "description": "Tab switching About → Courses → Settings updates content",
           "status": "covered"
         },
         {
@@ -582,7 +587,7 @@
     },
     {
       "id": "profile-courses",
-      "name": "Profile \u2014 Courses",
+      "name": "Profile — Courses",
       "spec": "11-profile-courses.spec.ts",
       "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
@@ -610,7 +615,7 @@
     },
     {
       "id": "profile-public",
-      "name": "Profile \u2014 Public",
+      "name": "Profile — Public",
       "spec": "12-profile-public.spec.ts",
       "sourceFiles": ["app/profile/public/page.tsx"],
       "checkpoints": [
@@ -851,7 +856,7 @@
     },
     {
       "id": "analytics-content",
-      "name": "Analytics Content \u2014 Courses & Programs",
+      "name": "Analytics Content — Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
       "sourceFiles": [
         "app/analytics/courses/page.tsx",
@@ -1065,7 +1070,7 @@
     },
     {
       "id": "navigation-navbar",
-      "name": "Navigation \u2014 NavBar & Sidebar",
+      "name": "Navigation — NavBar & Sidebar",
       "spec": "22-navigation-navbar.spec.ts",
       "sourceFiles": [
         "components/nav-bar.tsx",
@@ -1217,7 +1222,7 @@
     },
     {
       "id": "chat-embed",
-      "name": "Chat Embed \u2014 Mentor Widget",
+      "name": "Chat Embed — Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
       "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
@@ -1354,7 +1359,7 @@
     },
     {
       "id": "accessibility-wcag",
-      "name": "Accessibility \u2014 WCAG 2.1 AA",
+      "name": "Accessibility — WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
@@ -1418,7 +1423,7 @@
     },
     {
       "id": "course-access-guard-tenant-redirect",
-      "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
+      "name": "Course Access Guard — Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
       "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
       "checkpoints": [
@@ -1476,7 +1481,7 @@
         },
         {
           "id": "pdp-05",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates aria-selected and tab content",
+          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
           "status": "covered"
         },
         {

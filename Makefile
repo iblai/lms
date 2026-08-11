@@ -341,3 +341,6 @@ help:
 
 yalc-refresh:
 	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers && yalc add @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers 
+
+yalc-remove:
+	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers
