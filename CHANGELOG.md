@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.66.1](https://github.com/iblai/lms/compare/skills-v0.66.0...skills-v0.66.1) (2026-08-11)
+
+### Bug Fixes
+
+* minor ui consistency i.e margin/padding/font-size issues solved ([0c6c83c](https://github.com/iblai/lms/commit/0c6c83cb8d9443fcd386724464763179ae03e265))
+
 ## [0.66.0](https://github.com/iblai/lms/compare/skills-v0.65.2...skills-v0.66.0) (2026-08-11)
 
 ### Features
