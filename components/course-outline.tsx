@@ -124,12 +124,12 @@ export const CourseOutline = () => {
             </button>
 
             {expandedModule === module.id && module.children && (
-              <div className="pr-2 pb-2 pl-6">
+              <div className="pl-6">
                 {module.children.map((lesson) => (
                   <div key={lesson.id}>
                     <button
                       onClick={() => toggleLesson(lesson.id)}
-                      className={`mb-1 flex w-full items-center justify-between rounded-sm p-2 text-left text-sm ${
+                      className={`flex w-full items-center justify-between rounded-sm p-3 text-left text-sm ${
                         currentChapter === lesson.id
                           ? 'bg-amber-50 text-amber-700'
                           : 'text-gray-600 hover:bg-gray-50'
@@ -153,12 +153,12 @@ export const CourseOutline = () => {
                     {lesson.children &&
                       lesson.children.length > 0 &&
                       expandedLessons.includes(lesson.id) && (
-                        <div className="pr-2 pb-2 pl-6">
+                        <div className="pl-6">
                           {lesson.children.map((sublesson) => (
                             <button
                               key={sublesson.id}
                               onClick={() => selectLesson(sublesson.id)}
-                              className={`mb-1 flex w-full items-center rounded-sm p-2 text-left text-sm ${
+                              className={`flex w-full items-center p-3 text-left text-sm ${
                                 currentLesson === sublesson.id
                                   ? 'bg-amber-50 text-amber-700'
                                   : 'text-gray-600 hover:bg-gray-50'

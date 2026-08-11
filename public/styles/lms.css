@@ -563,3 +563,15 @@ body .fa {
 main:has([data-block-mode='assessment']) > .xblock > :not(.vert-mod) {
   display: none !important;
 }
+
+/* main course unit title */
+.hd.hd-2.unit-title{
+  font-size: 20px!important;
+}
+
+
+
+/* submain course unit title */
+.xmodule_display.xmodule_AboutBlock h1, .xmodule_display.xmodule_CourseInfoBlock h1, .xmodule_display.xmodule_HtmlBlock h1, .xmodule_display.xmodule_StaticTabBlock h1{
+  font-size: 19px!important;
+}
