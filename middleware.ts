@@ -8,6 +8,14 @@ import { applyCsp } from '@iblai/iblai-js/security/next';
 // these first-party domains explicitly or enforcement blocks their XHR/iframes.
 const IBL_ALT_HTTP = ['https://*.iblai.org', 'https://*.iblai.tech'];
 const IBL_ALT_WS = ['wss://*.iblai.org', 'wss://*.iblai.tech'];
+// Customer/partner institution domains served from their own host (SSO/LMS/API).
+// Override via CSP_PARTNER_HOSTS (comma/space-separated); defaults to Syracuse
+// when unset. Read at request time so it isn't frozen at module load / build time.
+const DEFAULT_PARTNER_HOSTS = ['https://*.syr.edu']; // Syracuse University
+const partnerHosts = () => {
+  const raw = process.env.CSP_PARTNER_HOSTS?.trim();
+  return raw ? raw.split(/[\s,]+/).filter(Boolean) : DEFAULT_PARTNER_HOSTS;
+};
 
 // Server components don't have direct access to the request URL/pathname.
 // Forward the pathname as a header so layouts can read it via `headers()` and
@@ -16,14 +24,21 @@ const IBL_ALT_WS = ['wss://*.iblai.org', 'wss://*.iblai.tech'];
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
+  const partners = partnerHosts();
+  // connect-src also needs the wss:// origin of each https:// partner host —
+  // browsers don't treat an https:// source as covering wss:// to the same host
+  // (e.g. Syracuse's wss://asgi.data.ai.syr.edu needs wss://*.syr.edu).
+  const partnerWs = partners
+    .filter((h) => h.startsWith('https://'))
+    .map((h) => `wss://${h.slice('https://'.length)}`);
   // Attach the per-request, nonce-based Content-Security-Policy. @iblai/iblai-js
   // @2.x ENFORCES by default; local dev is report-only via .env.development
   // (CSP_MODE=report-only). applyCsp stamps the nonce onto these same request
   // headers — preserving x-pathname — and returns the response with the header.
   return applyCsp(request, {
     requestHeaders,
-    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS],
-    frameSrc: IBL_ALT_HTTP, // edX content is embedded in iframes on these hosts
+    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners, ...partnerWs],
+    frameSrc: [...IBL_ALT_HTTP, ...partners], // edX + partner content in iframes
   });
 }
 

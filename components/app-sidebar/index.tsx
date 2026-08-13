@@ -29,7 +29,13 @@ import type {
   PlatformSidebarNavIcon,
   PlatformSidebarSectionConfig,
 } from '@iblai/iblai-js/web-containers/next';
-import { isLoggedIn, Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import {
+  getVisibleAnalyticsTabs,
+  isLoggedIn,
+  Tenant,
+  useTenantMetadata,
+  type AnalyticsTab,
+} from '@iblai/iblai-js/web-utils';
 
 import { cn } from '@/lib/utils';
 import {
@@ -235,23 +241,49 @@ export function AppSidebar() {
 
   const analyticsMenu = React.useMemo<PlatformSidebarMenu>(() => {
     const base = `/platform/${tenant}/analytics`;
+    // Each row is tagged with the analytics tab it opens so the list can be
+    // narrowed to what this viewer may reach. A pure watcher (holds
+    // `/watchedgroups/#list`, not a tenant admin) gets Courses, Programs and
+    // Data Reports only; everyone else keeps the full list, as before.
+    const visibleTabs = getVisibleAnalyticsTabs(rbacPermissions, currentTenant);
+    const rows: ReadonlyArray<{ tab: AnalyticsTab; item: PlatformSidebarMenu['items'][number] }> = [
+      { tab: '', item: { id: 'analytics-overview', label: 'Overview', href: base, exact: true } },
+      { tab: 'users', item: { id: 'analytics-users', label: 'Users', href: `${base}/users` } },
+      {
+        tab: 'courses',
+        item: { id: 'analytics-courses', label: 'Courses', href: `${base}/courses` },
+      },
+      {
+        tab: 'programs',
+        item: { id: 'analytics-programs', label: 'Programs', href: `${base}/programs` },
+      },
+      { tab: 'topics', item: { id: 'analytics-topics', label: 'Topics', href: `${base}/topics` } },
+      {
+        tab: 'transcripts',
+        item: { id: 'analytics-transcripts', label: 'Transcripts', href: `${base}/transcripts` },
+      },
+      {
+        tab: 'memory',
+        item: { id: 'analytics-memory', label: 'Memory', href: `${base}/memory` },
+      },
+      {
+        tab: 'financial',
+        item: { id: 'analytics-costs', label: 'Costs', href: `${base}/financial` },
+      },
+      { tab: 'audit', item: { id: 'analytics-audit', label: 'Audit', href: `${base}/audit` } },
+      {
+        tab: 'reports',
+        item: { id: 'analytics-reports', label: 'Data Reports', href: `${base}/reports` },
+      },
+    ];
+
     return {
       id: 'analytics',
       label: 'Analytics',
       icon: LineChart,
-      items: [
-        { id: 'analytics-overview', label: 'Overview', href: base, exact: true },
-        { id: 'analytics-users', label: 'Users', href: `${base}/users` },
-        { id: 'analytics-courses', label: 'Courses', href: `${base}/courses` },
-        { id: 'analytics-programs', label: 'Programs', href: `${base}/programs` },
-        { id: 'analytics-topics', label: 'Topics', href: `${base}/topics` },
-        { id: 'analytics-transcripts', label: 'Transcripts', href: `${base}/transcripts` },
-        { id: 'analytics-costs', label: 'Costs', href: `${base}/financial` },
-        { id: 'analytics-audit', label: 'Audit', href: `${base}/audit` },
-        { id: 'analytics-reports', label: 'Data Reports', href: `${base}/reports` },
-      ],
+      items: rows.filter(({ tab }) => visibleTabs.includes(tab)).map(({ item }) => item),
     };
-  }, [tenant]);
+  }, [tenant, rbacPermissions, currentTenant]);
 
   // Analytics is visible to users with the RBAC permission OR watchers
   // (same rule main applied to the old navbar's AI Analytics link).
@@ -435,6 +467,7 @@ export function AppSidebar() {
         authUrl={config.urls.auth()}
         currentSpa={config.settings.appName() || 'skills'}
         platformBaseDomain={config.settings.platformBaseDomain()}
+        showGradebookTab={true}
       />
 
       {inviteOpen && (

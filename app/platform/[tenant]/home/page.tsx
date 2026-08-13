@@ -7,8 +7,9 @@ import { HomeDiscoverRail } from '@/components/home/home-discover-rail';
  * Home — the landing page. A full-width column of bands:
  *
  *   1. Hero greeting with the primary jumping-off points,
- *   2. Explore rail (Discover page endpoint; enrollments and
- *      recommendations live on the centralized catalog page).
+ *   2. Courses rail into the Discover page, showing the catalog, the
+ *      user's enrollments or their recommendations depending on the
+ *      tenant's `lms_dashboard_courses_display` setting.
  *
  * The Activity Overview (stats + time-spent chart) lives on the profile
  * Activity page only — it is intentionally NOT shown here.

@@ -6,3 +6,4 @@ build
 pnpm-lock.yaml
 CHANGELOG.md
 src-tauri/target
+.claude/worktrees

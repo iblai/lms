@@ -1,5 +1,136 @@
 # Changelog
 
+## [0.67.0](https://github.com/iblai/lms/compare/skills-v0.66.1...skills-v0.67.0) (2026-08-12)
+
+### Features
+
+* bumped iblai-js to 2.3.14 ([d63df23](https://github.com/iblai/lms/commit/d63df23a9f20108316431e82bdf9192f1fa45b6a))
+
+## [0.66.1](https://github.com/iblai/lms/compare/skills-v0.66.0...skills-v0.66.1) (2026-08-11)
+
+### Bug Fixes
+
+* minor ui consistency i.e margin/padding/font-size issues solved ([0c6c83c](https://github.com/iblai/lms/commit/0c6c83cb8d9443fcd386724464763179ae03e265))
+
+## [0.66.0](https://github.com/iblai/lms/compare/skills-v0.65.2...skills-v0.66.0) (2026-08-11)
+
+### Features
+
+* home course display settings sdk integration ([f1cfb2b](https://github.com/iblai/lms/commit/f1cfb2bdfd2442280b2a2c8f25afd944833933ad))
+* home course display settings sdk integration ([772a715](https://github.com/iblai/lms/commit/772a71529f061196af51724308369cf419167f02))
+* home course display settings sdk integration > iblai-js version updated + makefile update ([00a9d9a](https://github.com/iblai/lms/commit/00a9d9ab733da1d5591774da64e127965e8120f4))
+* ignore claude worktrees from prepush scripts ([5fec192](https://github.com/iblai/lms/commit/5fec192a112a42c8f4d7f43a1913d4db0c8dd003))
+
+## [0.65.2](https://github.com/iblai/lms/compare/skills-v0.65.1...skills-v0.65.2) (2026-08-10)
+
+### Bug Fixes
+
+* **readme:** point download buttons at app-v1.0.17 (fix 404s) ([6c5f7da](https://github.com/iblai/lms/commit/6c5f7da427d0aee79285e076c005678110dd60a7)), closes [#207](https://github.com/iblai/lms/issues/207)
+
+## [0.65.1](https://github.com/iblai/lms/compare/skills-v0.65.0...skills-v0.65.1) (2026-08-10)
+
+### Documentation
+
+* **readme:** move download buttons into the top hero (match mentorai) ([0e33c63](https://github.com/iblai/lms/commit/0e33c63ab94622ea82bcf9ad7a0e9e5f3724dcb4))
+
+## [0.65.0](https://github.com/iblai/lms/compare/skills-v0.64.0...skills-v0.65.0) (2026-08-10)
+
+### Features
+
+* **os-builds:** Windows installers + mentorai-style download README ([169dd86](https://github.com/iblai/lms/commit/169dd86e4a93dc690424e46b976d58aac8e64c5e))
+
+### Chores
+
+* **os-builds:** add iOS version-bump helper for Agentic LMS ([5822fb1](https://github.com/iblai/lms/commit/5822fb1171720afa0be4afbc4ece66e6a5399d90))
+* **tauri:** release app-v1.0.17 ([1b37c0c](https://github.com/iblai/lms/commit/1b37c0ca8c14b8c23a5d47ecff34fefd3bbe710b))
+
+## [0.64.0](https://github.com/iblai/lms/compare/skills-v0.63.0...skills-v0.64.0) (2026-08-06)
+
+### Features
+
+* **csp:** make partner CSP hosts configurable via CSP_PARTNER_HOSTS ([f9a3ff0](https://github.com/iblai/lms/commit/f9a3ff00d3b212bf95e20b788cb760c63803c064))
+
+### Bug Fixes
+
+* **csp:** allow wss:// partner origins in connect-src ([3d38f58](https://github.com/iblai/lms/commit/3d38f588fa4377536cd27ba3acf1bade46bc0899))
+
+## [0.63.0](https://github.com/iblai/lms/compare/skills-v0.62.0...skills-v0.63.0) (2026-08-06)
+
+### Features
+
+* **csp:** allow *.syr.edu as a partner host (connect-src, frame-src) ([0f6b10a](https://github.com/iblai/lms/commit/0f6b10aebce6fe2b1e6b4a0cabdd9a5dee1892b1))
+
+## [0.62.0](https://github.com/iblai/lms/compare/skills-v0.61.0...skills-v0.62.0) (2026-08-06)
+
+### Features
+
+* analytics sdk memory menu items integration ([bc6ca5f](https://github.com/iblai/lms/commit/bc6ca5f82f485e2e6d8b817151ea8cffd160a696))
+* analytics sdk memory menu items integration > e2e test coverage updated ([f542591](https://github.com/iblai/lms/commit/f5425918ad15e5281fc0402506e02ed52f798959))
+* analytics sdk memory menu items integration > test coverage ([43ce77d](https://github.com/iblai/lms/commit/43ce77df731ec1be4ede1710205d0956e130ee4e))
+
+## [0.61.0](https://github.com/iblai/lms/compare/skills-v0.60.0...skills-v0.61.0) (2026-08-06)
+
+### Features
+
+* **seo:** default page title/branding to "ibl.ai | Agentic LMS" ([22ddb95](https://github.com/iblai/lms/commit/22ddb9502f4dc25afc4ed3c54c83c1d374d74bab))
+
+## [0.60.0](https://github.com/iblai/lms/compare/skills-v0.59.1...skills-v0.60.0) (2026-08-05)
+
+### Features
+
+* **ci:** pass PR_E2E_LABEL_TOKEN so /retest can actually trigger a run ([dd00fe2](https://github.com/iblai/lms/commit/dd00fe2baee5fc62eb354c8df0ec4042e09885b0))
+
+## [0.59.1](https://github.com/iblai/lms/compare/skills-v0.59.0...skills-v0.59.1) (2026-08-05)
+
+### Bug Fixes
+
+* **ci:** pr-e2e commands need pull-requests: write to reply ([4416ac9](https://github.com/iblai/lms/commit/4416ac95c0d2baa6d25d8d86a6c5ed709d228f06))
+
+## [0.59.0](https://github.com/iblai/lms/compare/skills-v0.58.0...skills-v0.59.0) (2026-08-05)
+
+### Features
+
+* **ci:** slash commands for PR e2e — /retest, /status, /report, /cancel ([7260608](https://github.com/iblai/lms/commit/7260608aec0b3066d4eea7b22a692e8625cd914f))
+
+## [0.58.0](https://github.com/iblai/lms/compare/skills-v0.57.2...skills-v0.58.0) (2026-08-05)
+
+### Features
+
+* **pr-e2e:** call iblai/pr-e2e-action@v1 instead of an in-repo copy ([d522813](https://github.com/iblai/lms/commit/d5228137bc4f1ff487a7f448bf1faa72c5b47303))
+
+### Bug Fixes
+
+* **pr-e2e:** keep cancellation cleanup as a job step ([ce866fe](https://github.com/iblai/lms/commit/ce866feed7f9f072711b4eeec84b5092c076285e)), closes [os#394](https://github.com/iblai/os/issues/394)
+
+## [0.57.2](https://github.com/iblai/lms/compare/skills-v0.57.1...skills-v0.57.2) (2026-08-04)
+
+### Bug Fixes
+
+* **pr-e2e:** never infer which runner executes the dispatched run ([2c6f402](https://github.com/iblai/lms/commit/2c6f402258a9fc970304d49c37e5fc49d96823e9)), closes [os#407](https://github.com/iblai/os/issues/407) [os#407](https://github.com/iblai/os/issues/407)
+
+## [0.57.1](https://github.com/iblai/lms/compare/skills-v0.57.0...skills-v0.57.1) (2026-08-04)
+
+### Bug Fixes
+
+* **pr-e2e:** stop the dispatch live-lock and never lose a report ([e03431e](https://github.com/iblai/lms/commit/e03431e5c8cd884cb8b03daad239e24ef7fc294c)), closes [os#405](https://github.com/iblai/os/issues/405)
+
+## [0.57.0](https://github.com/iblai/lms/compare/skills-v0.56.0...skills-v0.57.0) (2026-08-04)
+
+### Features
+
+* **ios:** use the blue ibl.ai logo for the iOS app icon ([f53e898](https://github.com/iblai/lms/commit/f53e898df5a1cbefbc6d0efade6157b9ae47ed22))
+
+### Chores
+
+* **tauri:** release app-v1.0.16 ([d90cdde](https://github.com/iblai/lms/commit/d90cddef81371cf25cbda759f9c0eea97543000c))
+
+## [0.56.0](https://github.com/iblai/lms/compare/skills-v0.55.0...skills-v0.56.0) (2026-08-04)
+
+### Features
+
+* **seo:** public course & program about pages (Phase 2) + allow_self_linking gate ([71458d9](https://github.com/iblai/lms/commit/71458d9c83b7cdc6b0b885c434570608ed9a4933))
+* **seo:** tenant-aware metadata foundation (robots, sitemap, OG, JSON-LD) ([d315519](https://github.com/iblai/lms/commit/d3155192627b56c7afa0d80005e85be166f09f63))
+
 ## [0.55.0](https://github.com/iblai/lms/compare/skills-v0.54.8...skills-v0.55.0) (2026-07-31)
 
 ### Features
