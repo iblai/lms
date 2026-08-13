@@ -17,7 +17,8 @@ overrides:
   brace-expansion: 5.0.6
   postcss: 8.5.15
   ws: 8.20.1
-  '@hono/node-server': 1.19.13
+  '
+  hono/node-server': 1.19.13
 
 importers:
 
@@ -8560,7 +8561,6 @@ snapshots:
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-
   '@iblai/data-layer@1.12.4(@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@19.2.14)(react@19.1.0)(redux@5.0.1))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-redux@9.2.0(@types/react@19.2.14)(react@19.1.0)(redux@5.0.1))(react@19.1.0)':
     dependencies:
       '@iblai/iblai-api': 4.166.0-ai
