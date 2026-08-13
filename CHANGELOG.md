@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.68.0](https://github.com/iblai/lms/compare/skills-v0.67.0...skills-v0.68.0) (2026-08-13)
+
+### Features
+
+* **time-tracking:** track course/unit time via the SDK provider ([e687669](https://github.com/iblai/lms/commit/e687669a7c1a1c32e6b6e8a211463551758cb16b))
+
+### Chores
+
+* updates pnpm lock file ([9085ee5](https://github.com/iblai/lms/commit/9085ee5730eebb9d43477d7098a26d2ff1f03276))
+
 ## [0.67.0](https://github.com/iblai/lms/compare/skills-v0.66.1...skills-v0.67.0) (2026-08-12)
 
 ### Features
