@@ -17,6 +17,23 @@ const partnerHosts = () => {
   return raw ? raw.split(/[\s,]+/).filter(Boolean) : DEFAULT_PARTNER_HOSTS;
 };
 
+// Immutable-static CDN origin (e.g. assets.ibl.ai), when static assets are
+// served cross-origin from it. Derived from the SAME NEXT_PUBLIC_ASSET_CDN that
+// next.config.mjs bakes into assetPrefix, so the CSP and the emitted asset URLs
+// can't drift. Accepts a bare host or full URL; [] when unset (assets are
+// same-origin, so this is a no-op). The gap it closes is style-src + font-src
+// (script-src/img-src already allow it via strict-dynamic / `https:`).
+const assetCdnOrigin = (): string[] => {
+  let cdn = process.env.NEXT_PUBLIC_ASSET_CDN?.trim();
+  if (!cdn) return [];
+  if (!/^https?:\/\//i.test(cdn)) cdn = `https://${cdn}`;
+  try {
+    return [new URL(cdn).origin];
+  } catch {
+    return [];
+  }
+};
+
 // Server components don't have direct access to the request URL/pathname.
 // Forward the pathname as a header so layouts can read it via `headers()` and
 // branch on the current route (used to fetch the public platform-membership
@@ -31,13 +48,18 @@ export function middleware(request: NextRequest) {
   const partnerWs = partners
     .filter((h) => h.startsWith('https://'))
     .map((h) => `wss://${h.slice('https://'.length)}`);
+  const assetCdn = assetCdnOrigin();
   // Attach the per-request, nonce-based Content-Security-Policy. @iblai/iblai-js
   // @2.x ENFORCES by default; local dev is report-only via .env.development
   // (CSP_MODE=report-only). applyCsp stamps the nonce onto these same request
   // headers — preserving x-pathname — and returns the response with the header.
   return applyCsp(request, {
     requestHeaders,
-    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners, ...partnerWs],
+    // CDN-hosted CSS + fonts are cross-origin; style-src/font-src don't get the
+    // strict-dynamic/`https:` fallback, so allow the CDN origin explicitly.
+    styleSrc: assetCdn,
+    fontSrc: assetCdn,
+    connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners, ...partnerWs, ...assetCdn],
     frameSrc: [...IBL_ALT_HTTP, ...partners], // edX + partner content in iframes
   });
 }
