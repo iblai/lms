@@ -1,12 +1,14 @@
 import { useMemo } from 'react';
 import { isLoggedIn } from '@iblai/iblai-js/web-utils';
-import { getUserName } from '@/utils/helpers';
+import { getUserName, resolveLmsAssetUrl } from '@/utils/helpers';
 import { useGetUserEnrolledCoursesQuery } from '@/services/courses';
 import {
   useGetUserCatalogPathwaysQuery,
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
+import { useCourseImages } from '@/hooks/courses/use-course-images';
 import { DiscoverContentCardProps } from '@/types/discover';
+import { CustomProgramEnrollmentPlus } from '@/types/program';
 
 const ENROLLED_COURSES_PAGE_SIZE = 100;
 
@@ -47,6 +49,21 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
     { skip, refetchOnMountOrArgChange: ENROLLMENTS_REFRESH_AFTER_SECONDS },
   );
 
+  /**
+   * The enrollment endpoint returns no artwork, so the course cards' images
+   * come from each course's metadata — without it every enrolled card falls
+   * back to a random placeholder while the same course shows its real image
+   * in the catalog.
+   */
+  const enrolledCourseIds = useMemo(
+    () =>
+      (coursesQ.data?.results ?? [])
+        .filter((course) => course.course_name)
+        .map((course) => course.course_id),
+    [coursesQ.data],
+  );
+  const courseImages = useCourseImages(enrolledCourseIds);
+
   const enrolledCards = useMemo<Record<EnrolledContentType, DiscoverContentCardProps[]>>(() => {
     const courses = (coursesQ.data?.results ?? [])
       .filter((course) => course.course_name)
@@ -54,7 +71,7 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
         title: course.course_name,
         contentType: 'course',
         url: `/courses/${course.course_id}`,
-        image: '',
+        image: courseImages[course.course_id] ?? '',
         id: course.course_id,
         enrolled: true,
       }));
@@ -66,7 +83,9 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
         title: program.name || program.program_id || '',
         contentType: 'program',
         url: `/programs/${program.program_key}`,
-        image: '',
+        image: resolveLmsAssetUrl(
+          (program as CustomProgramEnrollmentPlus).program_metadata?.card_image,
+        ),
         id: program.program_id || program.program_key || '',
         enrolled: true,
       }));
@@ -84,13 +103,15 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
         title: pathway.name || pathway.pathway_id || '',
         contentType: 'pathway',
         url: '',
-        image: '',
+        image: resolveLmsAssetUrl(
+          pathway.metadata?.course_image_asset_path || pathway.metadata?.banner_image_asset_path,
+        ),
         id: pathway.pathway_uuid || pathway.pathway_id || '',
         enrolled: true,
       }));
 
     return { courses, programs, pathways };
-  }, [coursesQ.data, programsQ.data, pathwaysQ.data]);
+  }, [coursesQ.data, programsQ.data, pathwaysQ.data, courseImages]);
 
   const enrolledIds = useMemo(() => {
     const ids = new Set<string>();

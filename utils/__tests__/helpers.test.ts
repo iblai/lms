@@ -6,6 +6,7 @@ vi.mock('@/lib/config', () => ({
   config: {
     urls: {
       auth: () => 'https://auth.example.com',
+      lms: () => 'https://lms.example.com',
     },
     settings: {
       appName: () => 'skills',
@@ -58,6 +59,7 @@ import {
   getUserEmail,
   getRandomCourseImage,
   getContentImage,
+  resolveLmsAssetUrl,
   slugify,
   getMonthsData,
   getDiscoverFacetsToHide,
@@ -292,6 +294,26 @@ describe('helpers utility functions', () => {
     it('should return random course image if no path provided', () => {
       const image = getContentImage('');
       expect(image).toMatch(/^\/images\/courses\/c\ds\.jpeg$/);
+    });
+  });
+
+  describe('resolveLmsAssetUrl', () => {
+    it('prepends the LMS url to an asset path', () => {
+      expect(resolveLmsAssetUrl('/asset-v1:org+course+run+type@asset+block@image.jpg')).toBe(
+        'https://lms.example.com/asset-v1:org+course+run+type@asset+block@image.jpg',
+      );
+    });
+
+    it('leaves an absolute url untouched', () => {
+      expect(resolveLmsAssetUrl('https://cdn.example.com/image.jpg')).toBe(
+        'https://cdn.example.com/image.jpg',
+      );
+    });
+
+    it('returns an empty string for a missing path', () => {
+      expect(resolveLmsAssetUrl('')).toBe('');
+      expect(resolveLmsAssetUrl(null)).toBe('');
+      expect(resolveLmsAssetUrl(undefined)).toBe('');
     });
   });
 
