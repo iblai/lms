@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.68.1](https://github.com/iblai/lms/compare/skills-v0.68.0...skills-v0.68.1) (2026-08-14)
+
+### Bug Fixes
+
+* image broken for enrolled courses ([2cc7a90](https://github.com/iblai/lms/commit/2cc7a90a836cf21c4623ba0423e71ad2de5f8857))
+
 ## [0.68.0](https://github.com/iblai/lms/compare/skills-v0.67.0...skills-v0.68.0) (2026-08-13)
 
 ### Features
