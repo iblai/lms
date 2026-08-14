@@ -5,6 +5,13 @@ import '@testing-library/jest-dom';
 const mockGetUserName = vi.hoisted(() => vi.fn(() => 'test-user'));
 vi.mock('@/utils/helpers', () => ({
   getUserName: mockGetUserName,
+  resolveLmsAssetUrl: (path?: string | null) =>
+    !path ? '' : String(path).startsWith('http') ? String(path) : `https://lms.test${path}`,
+}));
+
+const mockUseCourseImages = vi.hoisted(() => vi.fn(() => ({}) as Record<string, string>));
+vi.mock('@/hooks/courses/use-course-images', () => ({
+  useCourseImages: mockUseCourseImages,
 }));
 
 const mockIsLoggedIn = vi.hoisted(() => vi.fn(() => true));
@@ -34,6 +41,7 @@ describe('useUserEnrollments', () => {
     mockCoursesQuery.mockReturnValue({ data: undefined, isLoading: false });
     mockProgramsQuery.mockReturnValue({ data: undefined, isLoading: false });
     mockPathwaysQuery.mockReturnValue({ data: undefined, isLoading: false });
+    mockUseCourseImages.mockReturnValue({});
   });
 
   it('returns empty enrollments when no query has data', () => {
@@ -112,6 +120,28 @@ describe('useUserEnrollments', () => {
     expect(result.current.enrolledTotal).toBe(1);
   });
 
+  it('takes course card images from the course metadata lookup', () => {
+    mockCoursesQuery.mockReturnValue({
+      data: {
+        results: [
+          { course_id: 'course-1', course_name: 'Course One' },
+          { course_id: 'course-2', course_name: 'Course Two' },
+          // Unnamed courses are hidden, so their image is never looked up.
+          { course_id: 'course-3', course_name: '' },
+        ],
+      },
+      isLoading: false,
+    });
+    mockUseCourseImages.mockReturnValue({ 'course-1': 'https://lms.test/one.png' });
+
+    const { result } = renderHook(() => useUserEnrollments({ tenant: 'test-tenant' }));
+
+    expect(mockUseCourseImages).toHaveBeenCalledWith(['course-1', 'course-2']);
+    expect(result.current.enrolledCards.courses[0].image).toBe('https://lms.test/one.png');
+    // Still resolving (or imageless) — the card falls back to a placeholder.
+    expect(result.current.enrolledCards.courses[1].image).toBe('');
+  });
+
   it('builds program cards with title and id fallbacks', () => {
     mockProgramsQuery.mockReturnValue({
       data: [
@@ -137,6 +167,8 @@ describe('useUserEnrollments', () => {
     });
     expect(programs[1]).toMatchObject({ title: 'prog-2', id: 'prog-2' });
     expect(programs[2]).toMatchObject({ title: 'Program Three', id: 'key-3' });
+    // No card image in the payload — the card falls back to a placeholder.
+    expect(programs[0].image).toBe('');
     // Both program ids and program keys count as enrolled ids.
     expect(result.current.enrolledIds.has('prog-1')).toBe(true);
     expect(result.current.enrolledIds.has('key-1')).toBe(true);
@@ -176,6 +208,50 @@ describe('useUserEnrollments', () => {
     expect(result.current.enrolledIds.has('path-1')).toBe(true);
     expect(result.current.enrolledIds.has('path-2')).toBe(true);
     expect(result.current.enrolledTotal).toBe(3);
+  });
+
+  it('resolves program and pathway card images against the LMS', () => {
+    mockProgramsQuery.mockReturnValue({
+      data: [
+        {
+          name: 'Relative',
+          program_id: 'prog-1',
+          program_metadata: { card_image: '/card.png' },
+        },
+        {
+          name: 'Absolute',
+          program_id: 'prog-2',
+          program_metadata: { card_image: 'https://cdn.example.com/card.png' },
+        },
+      ],
+      isLoading: false,
+    });
+    mockPathwaysQuery.mockReturnValue({
+      data: [
+        {
+          pathway_uuid: 'uuid-1',
+          name: 'Course image',
+          metadata: { course_image_asset_path: '/pathway.png' },
+        },
+        {
+          pathway_uuid: 'uuid-2',
+          name: 'Banner fallback',
+          metadata: { banner_image_asset_path: '/banner.png' },
+        },
+      ],
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useUserEnrollments({ tenant: 'test-tenant' }));
+
+    expect(result.current.enrolledCards.programs.map((program) => program.image)).toEqual([
+      'https://lms.test/card.png',
+      'https://cdn.example.com/card.png',
+    ]);
+    expect(result.current.enrolledCards.pathways.map((pathway) => pathway.image)).toEqual([
+      'https://lms.test/pathway.png',
+      'https://lms.test/banner.png',
+    ]);
   });
 
   it('sums enrolledTotal across content types', () => {
