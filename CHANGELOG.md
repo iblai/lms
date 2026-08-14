@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.69.0](https://github.com/iblai/lms/compare/skills-v0.68.1...skills-v0.69.0) (2026-08-14)
+
+### Features
+
+* **deploy:** immutable, deployment-ID static hosting via AWS S3 + CloudFront ([44c7929](https://github.com/iblai/lms/commit/44c79293fa45cc93b48d6bcab8dc4d611836b955))
+
 ## [0.68.1](https://github.com/iblai/lms/compare/skills-v0.68.0...skills-v0.68.1) (2026-08-14)
 
 ### Bug Fixes
