@@ -293,6 +293,12 @@ import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 describe('CourseContentLayout', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
 
+  // CourseContentTabs renders an aria-hidden copy of every label to measure its
+  // natural width, so a plain text query matches each tab twice. Tabs are always
+  // anchors, and role queries skip the aria-hidden measurement row.
+  const tabLink = (name: string) => screen.getByRole('link', { name });
+  const queryTabLink = (name: string) => screen.queryByRole('link', { name });
+
   beforeEach(() => {
     vi.clearAllMocks();
     // The course controls (autoplay, media, fullscreen, Learn/Assess) portal
@@ -357,11 +363,11 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
-    expect(screen.getByText('Progress')).toBeInTheDocument();
-    expect(screen.getByText('Dates')).toBeInTheDocument();
-    expect(screen.getByText('Discussion')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
+    expect(tabLink('Progress')).toBeInTheDocument();
+    expect(tabLink('Dates')).toBeInTheDocument();
+    expect(tabLink('Discussion')).toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is not true', () => {
@@ -385,8 +391,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('hides Course tab when course.course_content_mode is false', () => {
@@ -410,8 +416,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
-    expect(screen.queryByText('Course')).not.toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
+    expect(queryTabLink('Course')).not.toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is null', () => {
@@ -435,8 +441,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Course tab when course.course_content_mode is null', () => {
@@ -460,7 +466,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Course tab when both course_content_mode and agent_content_mode are false', () => {
@@ -484,8 +490,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('hides Agent tab for non-admin when agent_content_mode_audience is admins-only', () => {
@@ -516,8 +522,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Agent tab for admin when agent_content_mode_audience is admins-only', () => {
@@ -548,7 +554,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
   });
 
   it('hides Course tab for non-admin when course_content_mode_audience is admins-only', () => {
@@ -579,8 +585,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Course')).not.toBeInTheDocument();
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(queryTabLink('Course')).not.toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
   });
 
   it('hides Agent tab from a non-watcher when agent_content_mode_audience is watchers-only', () => {
@@ -612,8 +618,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Agent tab to a watcher (RBAC granted) when agent_content_mode_audience is watchers-only', () => {
@@ -645,7 +651,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
     expect(mockCheckRbacPermission).toHaveBeenCalledWith({}, '/watchedgroups/#list');
   });
 
@@ -659,7 +665,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Instructor')).not.toBeInTheDocument();
+    expect(queryTabLink('Instructor')).not.toBeInTheDocument();
   });
 
   it('shows Instructor tab when user is platform admin', () => {
@@ -672,7 +678,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Instructor')).toBeInTheDocument();
+    expect(tabLink('Instructor')).toBeInTheDocument();
   });
 
   describe('Authoring tab (platform admin only)', () => {
@@ -686,7 +692,7 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(screen.getByText('Authoring')).toBeInTheDocument();
+      expect(tabLink('Authoring')).toBeInTheDocument();
     });
 
     it('hides Authoring tab for non-admin users', () => {
@@ -699,7 +705,7 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(screen.queryByText('Authoring')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
     });
 
     it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
@@ -2075,27 +2081,27 @@ describe('CourseContentLayout', () => {
     it('shows Learning Info only when the course has learning_info', () => {
       courseDetailWith({ learning_info: ['Understand X'] });
       renderLayout();
-      const link = screen.getByText('Learning Info').closest('a');
+      const link = tabLink('Learning Info');
       expect(link).toHaveAttribute('href', expect.stringContaining('/learning-info'));
     });
 
     it('hides Learning Info when learning_info is empty', () => {
       courseDetailWith({ learning_info: [] });
       renderLayout();
-      expect(screen.queryByText('Learning Info')).not.toBeInTheDocument();
+      expect(queryTabLink('Learning Info')).not.toBeInTheDocument();
     });
 
     it('shows Instructors only when the course has instructors', () => {
       courseDetailWith({ instructor_info: { instructors: [{ name: 'Ada' }] } });
       renderLayout();
-      const link = screen.getByText('Instructors').closest('a');
+      const link = tabLink('Instructors');
       expect(link).toHaveAttribute('href', expect.stringContaining('/instructors'));
     });
 
     it('hides Instructors when the instructors list is empty', () => {
       courseDetailWith({ instructor_info: { instructors: [] } });
       renderLayout();
-      expect(screen.queryByText('Instructors')).not.toBeInTheDocument();
+      expect(queryTabLink('Instructors')).not.toBeInTheDocument();
     });
 
     it('shows Configuration for a platform admin', () => {
@@ -2103,7 +2109,7 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      const link = screen.getByText('Configuration').closest('a');
+      const link = tabLink('Configuration');
       expect(link).toHaveAttribute('href', expect.stringContaining('/configuration'));
     });
 
@@ -2112,14 +2118,14 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: false },
       } as any);
       renderLayout();
-      expect(screen.queryByText('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
     });
 
     it('shows Analytics only when the user has the can_view_analytics permission', () => {
       mockCheckRbacPermission.mockImplementation(((_perms: any, resource: string) =>
         resource.includes('can_view_analytics')) as any);
       renderLayout();
-      const link = screen.getByText('Analytics').closest('a');
+      const link = tabLink('Analytics');
       expect(link).toHaveAttribute('href', expect.stringContaining('/analytics'));
     });
 
@@ -2129,7 +2135,7 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      expect(screen.queryByText('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
     });
   });
 
