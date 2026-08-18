@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.69.2](https://github.com/iblai/lms/compare/skills-v0.69.1...skills-v0.69.2) (2026-08-18)
+
+### Bug Fixes
+
+* course tab overlapping issue > test coverage ([e37b188](https://github.com/iblai/lms/commit/e37b188d971cc7e08cf0ebc1e31489e6128c00a2))
+* course tabs overlapping issue fixed ([9179b80](https://github.com/iblai/lms/commit/9179b802106ec16c0bad21a57067085a371c7885))
+
 ## [0.69.1](https://github.com/iblai/lms/compare/skills-v0.69.0...skills-v0.69.1) (2026-08-18)
 
 ### Chores
