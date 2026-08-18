@@ -362,7 +362,7 @@ When adding a new page or modifying an existing user flow:
 **Source files:** `components/app-sidebar/index.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
 
 - [x] Sidebar mobile sheet opens via the navbar hamburger and displays menu items on mobile viewport (375×812)
-- [x] Course nav tabs container is horizontally scrollable on mobile (overflow-x-auto, w-full)
+- [x] Course nav tabs never overflow their container; tabs that don't fit collapse into the 3-dot overflow menu and stay reachable
 - [x] EdX iframe container has course-edx-iframe-container class and correct active-tab class per tab
 - [x] Mobile viewport: non-course tabs (Progress, Dates, Discussion) have no padding on iframe container
 - [x] Mobile viewport: Course tab retains padding on iframe container

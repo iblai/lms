@@ -1,6 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { gotoTenantPage, waitForAppShell, waitForLoaderToDisappear } from '../utils/navigation';
+import {
+  getCourseContentTab,
+  gotoTenantPage,
+  waitForAppShell,
+  waitForLoaderToDisappear,
+} from '../utils/navigation';
 
 /**
  * Helper: Navigate from /home → first course → Access Course → course content tabs.
@@ -369,10 +374,10 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
-    const isAdmin = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    // Admin-gated tabs may sit behind the tab row's overflow menu.
+    const instructorTab = await getCourseContentTab(page, 'Instructor');
 
-    if (!isAdmin) {
+    if (!instructorTab) {
       logger.info('Authoring tab is admin-gated like Instructor — skipping for non-admin');
       test.skip();
       return;
@@ -383,11 +388,12 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const parts = url.pathname.split('/').filter(Boolean);
     const courseId = decodeURIComponent(parts[3] || '');
 
-    const authoringTab = page.getByRole('link', { name: 'Authoring' });
-    await expect(authoringTab).toBeVisible({ timeout: 10000 });
-    await expect(authoringTab).toHaveAttribute('target', '_blank');
+    const authoringTab = await getCourseContentTab(page, 'Authoring');
+    expect(authoringTab).not.toBeNull();
+    await expect(authoringTab!).toBeVisible({ timeout: 10000 });
+    await expect(authoringTab!).toHaveAttribute('target', '_blank');
 
-    const href = await authoringTab.getAttribute('href');
+    const href = await authoringTab!.getAttribute('href');
     expect(href).toBeTruthy();
     expect(href).toContain(`/course/${courseId}`);
     logger.info(`Authoring tab points at studio: ${href}`);
@@ -401,10 +407,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
-    const hasInstructor = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    const instructorTab = await getCourseContentTab(page, 'Instructor');
 
-    if (!hasInstructor) {
+    if (!instructorTab) {
       logger.info('Instructor tab not available — expected for some courses');
       test.skip();
       return;
@@ -1130,9 +1135,8 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const ready = await navigateToCourseContent(page);
     if (!ready) return false;
 
-    const configTab = page.getByRole('link', { name: 'Configuration', exact: true }).first();
-    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
-    if (!isAdmin) return false;
+    const configTab = await getCourseContentTab(page, 'Configuration');
+    if (!configTab) return false;
 
     await configTab.click();
     await page.waitForURL(/\/course-content\/.+\/configuration/, { timeout: 30_000 });
@@ -1151,10 +1155,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const configTab = page.getByRole('link', { name: 'Configuration', exact: true }).first();
-    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    const configTab = await getCourseContentTab(page, 'Configuration');
 
-    if (!isAdmin) {
+    if (!configTab) {
       logger.info('Configuration tab not visible — user is not a platform admin; skipping');
       test.skip();
       return;
@@ -1328,10 +1331,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const learningInfoTab = page.getByRole('link', { name: 'Learning Info', exact: true }).first();
-    const hasTab = await learningInfoTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const learningInfoTab = await getCourseContentTab(page, 'Learning Info');
 
-    if (!hasTab) {
+    if (!learningInfoTab) {
       logger.info('Learning Info tab not present — course has no learning_info; skipping');
       test.skip();
       return;
@@ -1355,10 +1357,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorsTab = page.getByRole('link', { name: 'Instructors', exact: true }).first();
-    const hasTab = await instructorsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const instructorsTab = await getCourseContentTab(page, 'Instructors');
 
-    if (!hasTab) {
+    if (!instructorsTab) {
       logger.info('Instructors tab not present — course has no instructor_info; skipping');
       test.skip();
       return;
@@ -1383,10 +1384,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const analyticsTab = page.getByRole('link', { name: 'Analytics', exact: true }).first();
-    const hasTab = await analyticsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const analyticsTab = await getCourseContentTab(page, 'Analytics');
 
-    if (!hasTab) {
+    if (!analyticsTab) {
       logger.info('Analytics tab not present — user lacks can_view_analytics; skipping');
       test.skip();
       return;

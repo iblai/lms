@@ -1190,7 +1190,7 @@
         },
         {
           "id": "mob-02",
-          "description": "Course tabs scrollable on mobile",
+          "description": "Course tabs collapse into the overflow menu instead of overlapping",
           "status": "covered"
         },
         {
