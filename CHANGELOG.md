@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.69.1](https://github.com/iblai/lms/compare/skills-v0.69.0...skills-v0.69.1) (2026-08-18)
+
+### Chores
+
+* bumped iblai-js to 2.5.0 ([1d93bfc](https://github.com/iblai/lms/commit/1d93bfcf6fa07fceabf4ce6d594ef7d55d2801b6))
+
 ## [0.69.0](https://github.com/iblai/lms/compare/skills-v0.68.1...skills-v0.69.0) (2026-08-14)
 
 ### Features
