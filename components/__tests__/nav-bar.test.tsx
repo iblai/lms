@@ -517,7 +517,11 @@ describe('NavBar', () => {
   // The single /onboarding route runs the admin setup flow or the tenant's user
   // onboarding; this switch is how an admin moves between them, and it writes
   // the choice to the URL the page reads.
-  describe('onboarding flow switch', () => {
+  //
+  // Skipped while the switch itself is parked: `onboardingFlowSwitch` in
+  // components/nav-bar.tsx renders null and its JSX is commented out. Un-skip
+  // together with that block.
+  describe.skip('onboarding flow switch', () => {
     const switchControl = () => screen.queryByRole('switch', { name: 'Show admin setup flow' });
 
     it('is offered to an admin on the onboarding route, naming both flows', () => {
