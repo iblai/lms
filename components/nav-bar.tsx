@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from 'react-responsive';
 
 import { UserProfileButton } from './header/profile/user-profile-button';
@@ -19,18 +19,19 @@ import {
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 import { config } from '@/lib/config';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+// Parked with the onboarding flow switch below (see `onboardingFlowSwitch`).
+// import { Label } from '@/components/ui/label';
+// import { Switch } from '@/components/ui/switch';
 import {
   NAVBAR_COURSE_CONTROLS_ID,
   NAVBAR_ONBOARDING_HEADER_ID,
-  ONBOARDING_ADMIN_FLOW,
-  ONBOARDING_FLOW_PARAM,
-  ONBOARDING_USER_FLOW,
+  // ONBOARDING_ADMIN_FLOW,
+  // ONBOARDING_FLOW_PARAM,
+  // ONBOARDING_USER_FLOW,
 } from '@/constants/global';
-import { resolveOnboardingFlow } from '@/lib/onboarding-flow';
+// import { resolveOnboardingFlow } from '@/lib/onboarding-flow';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
-import { useIsAdmin } from '@/utils/localstorage';
+// import { useIsAdmin } from '@/utils/localstorage';
 
 /** Shared navbar page-title rendering (course / program / catalog). */
 function NavbarTitle({
@@ -172,8 +173,8 @@ export function NavBar() {
   });
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isAdmin = useIsAdmin();
+  // const searchParams = useSearchParams();
+  // const isAdmin = useIsAdmin();
   const { toggleSidebar } = useSidebar();
 
   const { metadata } = useTenantMetadata({ org: tenant });
@@ -218,28 +219,28 @@ export function NavBar() {
   const isCatalogPage = /\/discover\/?$/.test(pathname?.split('?')[0] ?? '');
   const isNotificationsPage = /\/notifications(\/|$)/.test(pathname?.split('?')[0] ?? '');
   const isAnalyticsPage = /\/analytics(\/|$)/.test(pathname?.split('?')[0] ?? '');
-  const isOnboardingPage = /\/onboarding\/?$/.test(pathname?.split('?')[0] ?? '');
+  // const isOnboardingPage = /\/onboarding\/?$/.test(pathname?.split('?')[0] ?? '');
 
   // Which onboarding the page is showing an admin — the member flow by default
   // when the tenant has one. The choice rides in the URL because the switch
   // lives here while the flow is rendered by the page.
-  const previewingUserOnboarding =
-    resolveOnboardingFlow({
-      isAdmin,
-      flowParam: searchParams?.get(ONBOARDING_FLOW_PARAM),
-      metadata,
-    }) === ONBOARDING_USER_FLOW;
+  // const previewingUserOnboarding =
+  //   resolveOnboardingFlow({
+  //     isAdmin,
+  //     flowParam: searchParams?.get(ONBOARDING_FLOW_PARAM),
+  //     metadata,
+  //   }) === ONBOARDING_USER_FLOW;
 
-  const handleOnboardingFlowChange = useCallback(
-    (showUserFlow: boolean) => {
-      // Always explicit: with the default depending on the tenant's setup, a
-      // bare URL would not pin the side the admin just picked.
-      const flow = showUserFlow ? ONBOARDING_USER_FLOW : ONBOARDING_ADMIN_FLOW;
-      // Replace: switching flows is not a step the Back button should retrace.
-      router.replace(`${pathname}?${ONBOARDING_FLOW_PARAM}=${flow}`);
-    },
-    [pathname, router],
-  );
+  // const handleOnboardingFlowChange = useCallback(
+  //   (showUserFlow: boolean) => {
+  //     // Always explicit: with the default depending on the tenant's setup, a
+  //     // bare URL would not pin the side the admin just picked.
+  //     const flow = showUserFlow ? ONBOARDING_USER_FLOW : ONBOARDING_ADMIN_FLOW;
+  //     // Replace: switching flows is not a step the Back button should retrace.
+  //     router.replace(`${pathname}?${ONBOARDING_FLOW_PARAM}=${flow}`);
+  //   },
+  //   [pathname, router],
+  // );
 
   // VARIABLE left cluster: mobile sidebar toggle, the current course /
   // program title on their detail pages, and tenant-configured extra
