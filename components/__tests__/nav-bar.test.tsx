@@ -4,13 +4,20 @@ import '@testing-library/jest-dom';
 import React from 'react';
 
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
 let mockPathname = '/platform/test-tenant/home';
+let mockSearchParams = new URLSearchParams();
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ tenant: 'test-tenant' }),
-  useRouter: vi.fn(() => ({ push: mockPush })),
+  useRouter: vi.fn(() => ({ push: mockPush, replace: mockReplace })),
   usePathname: vi.fn(() => mockPathname),
-  useSearchParams: vi.fn(() => new URLSearchParams()),
+  useSearchParams: vi.fn(() => mockSearchParams),
+}));
+
+const mockIsAdmin = vi.hoisted(() => ({ current: false }));
+vi.mock('@/utils/localstorage', () => ({
+  useIsAdmin: () => mockIsAdmin.current,
 }));
 
 vi.mock('next/link', () => ({
@@ -147,6 +154,18 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
       )}
     </nav>
   ),
+  // Real readers: the switch's state depends on what these say about the
+  // tenant's metadata (an admin defaults to the member flow when one exists).
+  readUserOnboardingForm: (metadata: Record<string, any> | undefined) => {
+    const form = metadata?.user_onboarding_form;
+    return {
+      enabled: form?.enabled === true,
+      sections: form?.sections ?? [],
+      agent: form?.agent ?? null,
+    };
+  },
+  hasOnboardingContent: (form: Record<string, any>) =>
+    (form.sections ?? []).some((section: any) => (section.fields?.length ?? 0) > 0) || !!form.agent,
 }));
 
 const mockToggleSidebar = vi.fn();
@@ -170,6 +189,8 @@ describe('NavBar', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockPathname = '/platform/test-tenant/home';
+    mockSearchParams = new URLSearchParams();
+    mockIsAdmin.current = false;
     mockIsTabletUp.current = true;
     const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
     vi.mocked(isLoggedIn).mockReturnValue(true);
@@ -481,6 +502,158 @@ describe('NavBar', () => {
       render(<NavBar />);
       fireEvent.click(screen.getByRole('button', { name: 'Log In' }));
       expect(redirectToAuthSpaJoinTenant).toHaveBeenCalledWith('test-tenant', undefined, true);
+    });
+  });
+
+  it('renders the onboarding header slot for the page to portal into', () => {
+    const { container } = render(<NavBar />);
+
+    const slot = container.querySelector('#navbar-onboarding-header');
+    expect(slot).not.toBeNull();
+    // Empty here — only the onboarding page fills it.
+    expect(slot!.childElementCount).toBe(0);
+  });
+
+  // The single /onboarding route runs the admin setup flow or the tenant's user
+  // onboarding; this switch is how an admin moves between them, and it writes
+  // the choice to the URL the page reads.
+  describe('onboarding flow switch', () => {
+    const switchControl = () => screen.queryByRole('switch', { name: 'Show admin setup flow' });
+
+    it('is offered to an admin on the onboarding route, naming both flows', () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      render(<NavBar />);
+
+      expect(switchControl()).toBeInTheDocument();
+      // Both sides are labelled, so the flow you are not in is the way back.
+      expect(screen.getByText('Admin')).toBeInTheDocument();
+      expect(screen.getByText('User')).toBeInTheDocument();
+    });
+
+    it('is hidden from non-admins, who only ever get the member flow', () => {
+      mockIsAdmin.current = false;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      render(<NavBar />);
+
+      expect(switchControl()).not.toBeInTheDocument();
+    });
+
+    it('is hidden away from the onboarding route', () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/home';
+
+      render(<NavBar />);
+
+      expect(switchControl()).not.toBeInTheDocument();
+    });
+
+    it('is hidden when logged out', async () => {
+      const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+      vi.mocked(isLoggedIn).mockReturnValue(false);
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      render(<NavBar />);
+
+      expect(switchControl()).not.toBeInTheDocument();
+    });
+
+    it("carries the theme blue when switched on, like the app's other switches", () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      render(<NavBar />);
+
+      expect(switchControl()!.className).toContain('data-[state=checked]:bg-[var(--primary)]');
+    });
+
+    it('rests on the member flow when the tenant has one configured', async () => {
+      const { useTenantMetadata } = await import('@iblai/iblai-js/web-utils');
+      vi.mocked(useTenantMetadata).mockReturnValue({
+        metadata: {
+          user_onboarding_form: {
+            enabled: true,
+            sections: [],
+            agent: { mentor_unique_id: 'agent-1' },
+          },
+        },
+      } as any);
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      render(<NavBar />);
+
+      // No param yet, but the page is showing the member flow — the thumb has
+      // to rest on User, or the switch would misreport where the admin is.
+      expect(switchControl()).not.toBeChecked();
+      expect(screen.getByText('User').className).toContain('font-semibold');
+    });
+
+    it('turns on the member-flow preview through the URL', () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      render(<NavBar />);
+      fireEvent.click(switchControl()!);
+
+      expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/onboarding?flow=user');
+    });
+
+    it('reflects the previewing state and switches back to the admin flow', () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+      mockSearchParams = new URLSearchParams('flow=user');
+
+      render(<NavBar />);
+
+      // Checked is the admin flow, so previewing the member flow is the off
+      // state — the thumb sits left, on the "User" label.
+      expect(switchControl()).not.toBeChecked();
+
+      fireEvent.click(switchControl()!);
+
+      // Explicit either way: with the default depending on the tenant's setup,
+      // a bare URL would not pin the side the admin just picked.
+      expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/onboarding?flow=admin');
+    });
+
+    it('emphasises whichever flow is on screen', () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      const { rerender } = render(<NavBar />);
+
+      expect(screen.getByText('Admin').className).toContain('font-semibold');
+      expect(screen.getByText('User').className).toContain('opacity-60');
+
+      mockSearchParams = new URLSearchParams('flow=user');
+      rerender(<NavBar />);
+
+      expect(screen.getByText('User').className).toContain('font-semibold');
+      expect(screen.getByText('Admin').className).toContain('opacity-60');
+    });
+
+    it('rests the thumb on the side naming the flow you are in', () => {
+      mockIsAdmin.current = true;
+      mockPathname = '/platform/test-tenant/onboarding';
+
+      const { rerender } = render(<NavBar />);
+
+      // The thumb travels left→right as `checked` goes false→true, so the
+      // labels and the polarity have to agree: User left / off, Admin right /
+      // on. Otherwise the thumb points at the flow you just left.
+      const [left, , right] = Array.from(screen.getByTestId('onboarding-flow-toggle').children);
+      expect(left).toHaveTextContent('User');
+      expect(right).toHaveTextContent('Admin');
+      expect(switchControl()).toBeChecked();
+
+      mockSearchParams = new URLSearchParams('flow=user');
+      rerender(<NavBar />);
+
+      expect(switchControl()).not.toBeChecked();
     });
   });
 });

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { isLoggedIn } from '@iblai/iblai-js/web-utils';
+
 import { useLazyGetCourseMetaDataQuery } from '@/services/course-metadata';
 import { resolveLmsAssetUrl } from '@/utils/helpers';
 
@@ -20,6 +22,7 @@ const CONCURRENCY = 6;
  * in the app costs no request at all.
  */
 export const useCourseImages = (courseIds: string[]) => {
+  const userLoggedIn = isLoggedIn();
   const [getCourseMetaData] = useLazyGetCourseMetaDataQuery();
   const [images, setImages] = useState<Record<string, string>>({});
   /** Ids already fetched — a re-render with the same ids must not refetch. */
@@ -37,8 +40,13 @@ export const useCourseImages = (courseIds: string[]) => {
       while (queue.length > 0 && !cancelled) {
         const courseId = queue.shift() as string;
         try {
-          // `true` prefers the cached value over a fresh request.
-          const { data } = await getCourseMetaData({ courseKey: courseId }, true);
+          // `true` prefers the cached value over a fresh request. The args
+          // match every other caller's so the first fetch of a course — from
+          // here or from the course page — serves all of them.
+          const { data } = await getCourseMetaData(
+            { courseKey: courseId, noAuth: !userLoggedIn },
+            true,
+          );
           const image = resolveLmsAssetUrl(data?.course_image_asset_path);
           if (!image || cancelled) continue;
           setImages((previous) => ({ ...previous, [courseId]: image }));
