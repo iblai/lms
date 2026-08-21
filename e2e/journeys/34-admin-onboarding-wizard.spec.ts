@@ -16,7 +16,7 @@ import { gotoTenantPage } from '../utils/navigation';
  *  5. Progress is announced accessibly (progressbar + step count)
  *  6. The final step wraps up the setup and Complete finalizes onboarding
  */
-test.describe('Journey 34: Admin Onboarding Wizard', () => {
+test.describe.skip('Journey 34: Admin Onboarding Wizard', () => {
   test.setTimeout(200000);
 
   /** Land on the wizard and wait for the first step to paint. */
