@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.71.0](https://github.com/iblai/lms/compare/skills-v0.70.0...skills-v0.71.0) (2026-08-21)
+
+### Features
+
+* analytics agents picker added ([b7efb27](https://github.com/iblai/lms/commit/b7efb27d45c8b7c35563a7e7601d418ac12191fc))
+* analytics agents picker added > test coverage ([722e8a1](https://github.com/iblai/lms/commit/722e8a19e701cbf2c8310f0c933cecb5a7be1159))
+* bumped iblai-js to 2.5.6 ([f4ac10e](https://github.com/iblai/lms/commit/f4ac10e354d8b9c21eba68b359a33f87a21c8b61))
+
 ## [0.70.0](https://github.com/iblai/lms/compare/skills-v0.69.2...skills-v0.70.0) (2026-08-21)
 
 ### Features
