@@ -85,6 +85,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
           onTabChange={handleTabChange}
           activeTabClassName="!text-amber-600"
           beforeDataReports={groupsFilterDropdown}
+          showPicker={true}
         >
           {children}
         </AnalyticsLayout>
