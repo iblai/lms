@@ -19,8 +19,19 @@ import {
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 import { config } from '@/lib/config';
-import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
+// Parked with the onboarding flow switch below (see `onboardingFlowSwitch`).
+// import { Label } from '@/components/ui/label';
+// import { Switch } from '@/components/ui/switch';
+import {
+  NAVBAR_COURSE_CONTROLS_ID,
+  NAVBAR_ONBOARDING_HEADER_ID,
+  // ONBOARDING_ADMIN_FLOW,
+  // ONBOARDING_FLOW_PARAM,
+  // ONBOARDING_USER_FLOW,
+} from '@/constants/global';
+// import { resolveOnboardingFlow } from '@/lib/onboarding-flow';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+// import { useIsAdmin } from '@/utils/localstorage';
 
 /** Shared navbar page-title rendering (course / program / catalog). */
 function NavbarTitle({
@@ -162,6 +173,8 @@ export function NavBar() {
   });
   const router = useRouter();
   const pathname = usePathname();
+  // const searchParams = useSearchParams();
+  // const isAdmin = useIsAdmin();
   const { toggleSidebar } = useSidebar();
 
   const { metadata } = useTenantMetadata({ org: tenant });
@@ -206,6 +219,28 @@ export function NavBar() {
   const isCatalogPage = /\/discover\/?$/.test(pathname?.split('?')[0] ?? '');
   const isNotificationsPage = /\/notifications(\/|$)/.test(pathname?.split('?')[0] ?? '');
   const isAnalyticsPage = /\/analytics(\/|$)/.test(pathname?.split('?')[0] ?? '');
+  // const isOnboardingPage = /\/onboarding\/?$/.test(pathname?.split('?')[0] ?? '');
+
+  // Which onboarding the page is showing an admin — the member flow by default
+  // when the tenant has one. The choice rides in the URL because the switch
+  // lives here while the flow is rendered by the page.
+  // const previewingUserOnboarding =
+  //   resolveOnboardingFlow({
+  //     isAdmin,
+  //     flowParam: searchParams?.get(ONBOARDING_FLOW_PARAM),
+  //     metadata,
+  //   }) === ONBOARDING_USER_FLOW;
+
+  // const handleOnboardingFlowChange = useCallback(
+  //   (showUserFlow: boolean) => {
+  //     // Always explicit: with the default depending on the tenant's setup, a
+  //     // bare URL would not pin the side the admin just picked.
+  //     const flow = showUserFlow ? ONBOARDING_USER_FLOW : ONBOARDING_ADMIN_FLOW;
+  //     // Replace: switching flows is not a step the Back button should retrace.
+  //     router.replace(`${pathname}?${ONBOARDING_FLOW_PARAM}=${flow}`);
+  //   },
+  //   [pathname, router],
+  // );
 
   // VARIABLE left cluster: mobile sidebar toggle, the current course /
   // program title on their detail pages, and tenant-configured extra
@@ -234,6 +269,11 @@ export function NavBar() {
       {isUserLoggedIn && isCoursePage && <CourseTitle />}
       {isUserLoggedIn && isProgramPage && <ProgramTitle tenant={tenant} />}
       {isUserLoggedIn && isPathwayPage && <PathwayTitle tenant={tenant} />}
+
+      {/* Slot the onboarding page portals the current step's heading into
+          (icon + title + subtitle). Empty — and therefore zero-width — on
+          every other page. */}
+      <div id={NAVBAR_ONBOARDING_HEADER_ID} className="flex min-w-0 items-center" />
 
       {/* Static page titles (the pages themselves render no heading) */}
       {isCatalogPage && <NavbarTitle label="Explore Content" />}
@@ -269,6 +309,47 @@ export function NavBar() {
   // Right-side tenant-configured links — handed to the shell's
   // `modeSwitcher` slot, which positions them right before the invariant
   // cluster. (Studio and Analytics live in the sidebar.)
+  // Labelled on both sides so it reads as a two-way switch: whichever flow is
+  // on screen, the other one is named right there to go back to.
+  //
+  // User sits left and Admin right, and the thumb travels left→right as
+  // `checked` goes false→true — so `checked` has to mean the ADMIN flow for the
+  // thumb to rest on the side naming the flow you are in. The accessible name
+  // follows that polarity rather than the `flow=user` param it is derived from.
+  const onboardingFlowSwitch = null;
+  // const onboardingFlowSwitch =
+  //   isUserLoggedIn && isAdmin && isOnboardingPage ? (
+  //     <div className="flex items-center gap-2.5" data-testid="onboarding-flow-toggle">
+  //       <Label
+  //         htmlFor="onboarding-flow-toggle-switch"
+  //         className={`cursor-pointer text-sm whitespace-nowrap text-[var(--navbar-text)] ${
+  //           previewingUserOnboarding ? 'font-semibold' : 'font-normal opacity-60'
+  //         }`}
+  //       >
+  //         User
+  //       </Label>
+  //       <Switch
+  //         id="onboarding-flow-toggle-switch"
+  //         checked={!previewingUserOnboarding}
+  //         onCheckedChange={(showAdminFlow) => handleOnboardingFlowChange(!showAdminFlow)}
+  //         aria-label="Show admin setup flow"
+  //         // The theme's blue when on, like the app's other switches. Read as a
+  //         // var rather than `bg-primary`: ThemeInitializer overwrites --primary
+  //         // with a hex colour at runtime, which Tailwind's hsl() wrapper cannot
+  //         // consume.
+  //         className="data-[state=checked]:bg-[var(--primary)]"
+  //       />
+  //       <Label
+  //         htmlFor="onboarding-flow-toggle-switch"
+  //         className={`cursor-pointer text-sm whitespace-nowrap text-[var(--navbar-text)] ${
+  //           previewingUserOnboarding ? 'font-normal opacity-60' : 'font-semibold'
+  //         }`}
+  //       >
+  //         Admin
+  //       </Label>
+  //     </div>
+  //   ) : null;
+
   const rightLinks =
     additionalRightHeaderMenuItems.length > 0 ? (
       <>
@@ -286,13 +367,23 @@ export function NavBar() {
       </>
     ) : undefined;
 
+  // The shell's `modeSwitcher` slot sits just left of the invariant right
+  // cluster (search, bell, profile) — where a page-scoped control belongs.
+  const modeSwitcher =
+    onboardingFlowSwitch || rightLinks ? (
+      <>
+        {onboardingFlowSwitch}
+        {rightLinks}
+      </>
+    ) : undefined;
+
   return (
     // Keep the banner landmark the app (and e2e) relies on; the SDK shell
     // renders the inner <nav>.
     <header className="flex-shrink-0">
       <PlatformNavbar
         left={leftCluster}
-        modeSwitcher={rightLinks}
+        modeSwitcher={modeSwitcher}
         search={discoverEnabled ? { onSubmit: handleSearchSubmit } : null}
         notifications={
           isUserLoggedIn

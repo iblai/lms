@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-08-11 | 233 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-08-20 | 244 checkpoints | 34 journeys | 100% covered
 
 ## How This Works
 
@@ -472,6 +472,31 @@ When adding a new page or modifying an existing user flow:
 - [x] Audit tab routes to /analytics/audit and the audit log view renders _(admin only)_
 - [x] Audit log filters (user search, action filter) are visible
 - [x] Audit log table (USER/ACTION/TIME) or empty state is visible
+
+---
+
+## Journey 34: Admin Onboarding Wizard (6 checkpoints) — `journeys/34-admin-onboarding-wizard.spec.ts`
+
+**Source files:** `app/platform/[tenant]/onboarding/page.tsx`
+
+- [x] Onboarding route renders the SDK wizard's organization step
+- [x] Continue is disabled until an organization is named
+- [x] Naming the organization advances to the sector step
+- [x] Selecting a sector advances to the invite step
+- [x] Wizard progress is exposed to assistive tech (progressbar `aria-valuenow`)
+- [x] Final step wraps up the setup with a Complete button that finalizes onboarding
+
+---
+
+## Journey 35: User Onboarding (5 checkpoints) — `journeys/35-user-onboarding.spec.ts`
+
+**Source files:** `app/platform/[tenant]/onboarding/page.tsx`, `components/nav-bar.tsx`
+
+- [x] Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow
+- [x] The `?flow=` param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch
+- [x] The member flow's step heading (icon, title, subtitle) is rendered in the navbar rather than above the step
+- [x] The member flow never shows the admin setup steps (organization, sector, invite)
+- [x] The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away
 
 ---
 

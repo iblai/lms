@@ -10,7 +10,7 @@ import {
   CourseProgress,
 } from '@/types/courses';
 import { iblFetchBaseQuery } from '@/lib/utils';
-import { SERVICES } from '@/lib/constants';
+import { COURSE_METADATA_CACHE_SECONDS, SERVICES } from '@/lib/constants';
 // Define a service using a base URL and expected endpoints
 export const CourseMetadataSlice = createApi({
   reducerPath: 'CourseMetadataSlice',
@@ -23,6 +23,14 @@ export const CourseMetadataSlice = createApi({
         includeCredentials: true,
         noAuth,
       }),
+      // One cache entry per course, keyed on the course alone. `noAuth` only
+      // decides whether the request carries credentials — it describes the
+      // caller, not the resource — and leaving it in the default key meant
+      // `{ courseKey }` (the card-artwork lookup) and
+      // `{ courseKey, noAuth: false }` (every other caller) resolved to two
+      // separate entries, so the same course was fetched twice.
+      serializeQueryArgs: ({ queryArgs }) => ({ courseKey: queryArgs.courseKey }),
+      keepUnusedDataFor: COURSE_METADATA_CACHE_SECONDS,
     }),
     getCourseCompletionOutlines: builder.query<CourseOutlineResponse, { courseKey: string }>({
       query: ({ courseKey }) => ({

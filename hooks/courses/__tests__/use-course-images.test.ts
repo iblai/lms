@@ -7,6 +7,10 @@ vi.mock('@/services/course-metadata', () => ({
   useLazyGetCourseMetaDataQuery: vi.fn(() => [mockGetCourseMetaData, { isLoading: false }]),
 }));
 
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  isLoggedIn: () => true,
+}));
+
 vi.mock('@/utils/helpers', () => ({
   resolveLmsAssetUrl: (path?: string | null) =>
     !path ? '' : String(path).startsWith('http') ? String(path) : `https://lms.test${path}`,
@@ -29,7 +33,12 @@ describe('useCourseImages', () => {
         'course-2': 'https://lms.test/img.png',
       }),
     );
-    expect(mockGetCourseMetaData).toHaveBeenCalledWith({ courseKey: 'course-1' }, true);
+    // Same arg shape as every other `course_metadata` caller, so the two
+    // share one RTK Query cache entry instead of fetching the course twice.
+    expect(mockGetCourseMetaData).toHaveBeenCalledWith(
+      { courseKey: 'course-1', noAuth: false },
+      true,
+    );
   });
 
   it('keeps absolute image URLs as they are', async () => {

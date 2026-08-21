@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-08-11",
+  "lastUpdated": "2026-08-20",
   "summary": {
-    "totalCheckpoints": 233,
-    "coveredCheckpoints": 233,
+    "totalCheckpoints": 244,
+    "coveredCheckpoints": 244,
     "percent": 100,
-    "totalJourneys": 32
+    "totalJourneys": 34
   },
   "journeys": [
     {
@@ -1533,6 +1533,77 @@
         {
           "id": "aud-03",
           "description": "Audit log table (USER/ACTION/TIME) or empty state is visible",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "admin-onboarding-wizard",
+      "name": "Admin Onboarding Wizard",
+      "spec": "34-admin-onboarding-wizard.spec.ts",
+      "sourceFiles": ["app/platform/[tenant]/onboarding/page.tsx"],
+      "checkpoints": [
+        {
+          "id": "adminonb-01",
+          "description": "Onboarding route renders the SDK wizard's organization step",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-02",
+          "description": "Continue is disabled until an organization is named",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-03",
+          "description": "Naming the organization advances to the sector step",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-04",
+          "description": "Selecting a sector advances to the invite step",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-05",
+          "description": "Wizard progress is exposed to assistive tech",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-06",
+          "description": "Final step wraps up the setup with a Complete button that finalizes onboarding",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "user-onboarding",
+      "name": "User Onboarding",
+      "spec": "35-user-onboarding.spec.ts",
+      "sourceFiles": ["app/platform/[tenant]/onboarding/page.tsx", "components/nav-bar.tsx"],
+      "checkpoints": [
+        {
+          "id": "useronb-01",
+          "description": "Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-02",
+          "description": "The ?flow= param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-05",
+          "description": "The member flow's step heading (icon, title, subtitle) is rendered in the navbar rather than above the step",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-03",
+          "description": "The member flow never shows the admin setup steps (organization, sector, invite)",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-04",
+          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
           "status": "covered"
         }
       ]
