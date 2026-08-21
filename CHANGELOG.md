@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.70.0](https://github.com/iblai/lms/compare/skills-v0.69.2...skills-v0.70.0) (2026-08-21)
+
+### Features
+
+* sdk onboarding integration + miscelleanous ([bc6c945](https://github.com/iblai/lms/commit/bc6c945eb5d1095fdb4a4efb699e0fd1dfe0e3b5))
+* sdk onboarding integration + test coverage ([08633c7](https://github.com/iblai/lms/commit/08633c781f8af9f7882af56ddff04935a371c6ea))
+* sdk onboarding integration + test coverage ([b401601](https://github.com/iblai/lms/commit/b401601fc738ebd53fec60bab7a397d47f402f12))
+* sdk onboarding integration + test coverage ([ee018f8](https://github.com/iblai/lms/commit/ee018f8dec4ca9e16755fd70b8bcaee7eb46d886))
+* sdk version bump ([ebdb671](https://github.com/iblai/lms/commit/ebdb6711a3b148f0e38af36abe4767860ef7ed11))
+
 ## [0.69.2](https://github.com/iblai/lms/compare/skills-v0.69.1...skills-v0.69.2) (2026-08-18)
 
 ### Bug Fixes
