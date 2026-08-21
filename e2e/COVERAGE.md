@@ -492,11 +492,11 @@ When adding a new page or modifying an existing user flow:
 
 **Source files:** `app/platform/[tenant]/onboarding/page.tsx`, `components/nav-bar.tsx`
 
-- [x] Onboarding route serves the setup flow to admins and the tenant's user onboarding form to members
-- [x] An admin can switch into the member flow and back from the navbar, with the choice carried in the URL
+- [x] Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow
+- [x] The `?flow=` param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch
 - [x] The member flow's step heading (icon, title, subtitle) is rendered in the navbar rather than above the step
 - [x] The member flow never shows the admin setup steps (organization, sector, invite)
-- [x] Previewing the member flow keeps the admin on the onboarding route instead of navigating away
+- [x] The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away
 
 ---
 

@@ -1583,12 +1583,12 @@
       "checkpoints": [
         {
           "id": "useronb-01",
-          "description": "Onboarding route serves the setup flow to admins and the tenant's user onboarding form to members",
+          "description": "Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow",
           "status": "covered"
         },
         {
           "id": "useronb-02",
-          "description": "An admin can switch into the member flow and back from the navbar, with the choice carried in the URL",
+          "description": "The ?flow= param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch",
           "status": "covered"
         },
         {
@@ -1603,7 +1603,7 @@
         },
         {
           "id": "useronb-04",
-          "description": "Previewing the member flow keeps the admin on the onboarding route instead of navigating away",
+          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
           "status": "covered"
         }
       ]
