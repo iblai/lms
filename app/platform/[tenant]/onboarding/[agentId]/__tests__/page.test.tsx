@@ -1,12 +1,14 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Same capture trick as the plain route's suite: the wizard is the SDK's, so
 // what matters here is which agent the route hands it.
-const { mockReplace, wizardProps, searchParams, routeParams } = vi.hoisted(() => ({
+const { mockReplace, wizardProps, wizardMounts, searchParams, routeParams } = vi.hoisted(() => ({
   mockReplace: vi.fn(),
   wizardProps: { current: null as Record<string, any> | null },
+  wizardMounts: { count: 0 },
   searchParams: { current: new URLSearchParams() },
   routeParams: { current: { agentId: 'agent-2' } as Record<string, unknown> },
 }));
@@ -21,6 +23,11 @@ vi.mock('next/navigation', () => ({
 vi.mock('@iblai/iblai-js/web-containers', () => ({
   OnboardingWizard: (props: Record<string, any>) => {
     wizardProps.current = props;
+    // Counted on mount only, so a changed `key` (a fresh wizard) is
+    // distinguishable from a re-render of the same one.
+    React.useEffect(() => {
+      wizardMounts.count += 1;
+    }, []);
     return <div data-testid="onboarding-wizard">{props.tenant}</div>;
   },
   StepHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
@@ -74,6 +81,7 @@ describe('OnboardingAgentPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     wizardProps.current = null;
+    wizardMounts.count = 0;
     searchParams.current = new URLSearchParams();
     routeParams.current = { agentId: 'agent-2' };
     vi.mocked(useIsAdmin).mockReturnValue(false);
@@ -142,13 +150,37 @@ describe('OnboardingAgentPage', () => {
 
   it('remounts the wizard per agent so no run inherits another', () => {
     const { rerender } = render(<OnboardingAgentPage />);
-    const first = wizardProps.current!.agentId;
+    expect(wizardMounts.count).toBe(1);
 
     routeParams.current = { agentId: 'agent-9' };
     rerender(<OnboardingAgentPage />);
 
-    expect(first).toBe('agent-2');
     expect(wizardProps.current!.agentId).toBe('agent-9');
+    // A second mount, not a re-render: the moved-to agent starts at step one
+    // with no answers carried over from the previous link.
+    expect(wizardMounts.count).toBe(2);
+  });
+
+  it('keeps the same wizard when nothing about the run changes', () => {
+    // The remount is keyed on the run, not on every render — a re-render must
+    // not throw away the member's progress.
+    const { rerender } = render(<OnboardingAgentPage />);
+    rerender(<OnboardingAgentPage />);
+
+    expect(wizardMounts.count).toBe(1);
+  });
+
+  it('remounts when an admin switches to the setup flow', () => {
+    vi.mocked(useIsAdmin).mockReturnValue(true);
+    const { rerender } = render(<OnboardingAgentPage />);
+    expect(wizardProps.current!.isAdminOnboarding).toBe(false);
+
+    searchParams.current = new URLSearchParams('flow=admin');
+    rerender(<OnboardingAgentPage />);
+
+    expect(wizardProps.current!.isAdminOnboarding).toBe(true);
+    // The two flows are different wizards; neither inherits the other's step.
+    expect(wizardMounts.count).toBe(2);
   });
 
   it('lands the member on the dashboard when they finish', () => {
