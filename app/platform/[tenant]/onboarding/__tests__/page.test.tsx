@@ -138,6 +138,13 @@ describe('OnboardingPage', () => {
     expect(wizardProps.current).toMatchObject({ tenant: 'test-tenant', username: 'jane' });
   });
 
+  it('names no agent, leaving the wizard on the tenant default', () => {
+    render(<OnboardingPage />);
+
+    // `/onboarding/<agent-id>` is the route that picks one; this one does not.
+    expect(wizardProps.current!.agentId).toBeUndefined();
+  });
+
   it('prefers the tenant display title for the brand name', () => {
     vi.mocked(useTenantMetadata).mockReturnValue({
       metadata: {

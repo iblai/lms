@@ -43,6 +43,34 @@ describe('resolveOnboardingFlow', () => {
     expect(resolveOnboardingFlow({ isAdmin: true, metadata: {} })).toBe('admin');
   });
 
+  it('forces the member flow for an admin following an agent link', () => {
+    // The link names one of the tenant's onboarding agents, so it is a
+    // member-flow link by construction — even on a tenant whose member
+    // onboarding would otherwise send an admin to the setup flow.
+    expect(resolveOnboardingFlow({ isAdmin: true, agentId: 'agent-2', metadata: {} })).toBe('user');
+    expect(resolveOnboardingFlow({ isAdmin: true, agentId: 'agent-2', metadata: turnedOff })).toBe(
+      'user',
+    );
+  });
+
+  it('still lets an admin switch to the setup flow from an agent link', () => {
+    // An explicit switch is a decision; the agent id is only a default.
+    expect(
+      resolveOnboardingFlow({
+        isAdmin: true,
+        agentId: 'agent-2',
+        flowParam: 'admin',
+        metadata: withAgent,
+      }),
+    ).toBe('admin');
+  });
+
+  it('ignores an empty agent id', () => {
+    // `/onboarding/` with nothing after it is the plain route, not a link.
+    expect(resolveOnboardingFlow({ isAdmin: true, agentId: '', metadata: {} })).toBe('admin');
+    expect(resolveOnboardingFlow({ isAdmin: true, agentId: null, metadata: {} })).toBe('admin');
+  });
+
   it('lets the param override the default either way', () => {
     expect(resolveOnboardingFlow({ isAdmin: true, flowParam: 'admin', metadata: withAgent })).toBe(
       'admin',

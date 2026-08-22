@@ -2,7 +2,6 @@
 
 import { UserProfileDropdown } from '@iblai/iblai-js/web-containers/next';
 import {
-  getTenant,
   getUserName,
   handleLogout,
   handleTenantSwitch,
@@ -14,17 +13,19 @@ import { config } from '@/lib/config';
 import { useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
 import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import { selectRbacPermissions, updateRbacPermissions } from '@/features/rbac';
+import { useTenantParam } from '@/hooks/use-tenant-param';
 
 export const UserProfileButton = () => {
   const username = getUserName();
   const email = getUserEmail();
-  const tenantKey = getTenant();
+  const tenantKey = useTenantParam();
   const { currentTenant, saveCurrentTenant } = useCurrentTenant();
   const { userTenants = [], saveUserTenants } = useUserTenants();
   const { metadata } = useTenantMetadata({ org: tenantKey });
   const isAdmin = useIsAdmin();
   const rbackPermissions = useAppSelector(selectRbacPermissions);
   const dispatch = useAppDispatch();
+  const onboardingBasePath = window.location.origin + `/platform/${tenantKey}`;
 
   const handleTenantChange = (newTenantKey: string) => {
     handleTenantSwitch(newTenantKey);
@@ -106,6 +107,7 @@ export const UserProfileButton = () => {
         metadata?.support_phone_number || config.settings.defaultSupportPhoneNumber()
       }
       enableSupportPhone={config.settings.enableSupportPhone()}
+      onboardingBasePath={onboardingBasePath}
     />
   );
 };
