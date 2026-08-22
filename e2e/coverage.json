@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-08-20",
+  "lastUpdated": "2026-08-21",
   "summary": {
-    "totalCheckpoints": 244,
-    "coveredCheckpoints": 244,
+    "totalCheckpoints": 249,
+    "coveredCheckpoints": 249,
     "percent": 100,
-    "totalJourneys": 34
+    "totalJourneys": 35
   },
   "journeys": [
     {
@@ -1579,7 +1579,11 @@
       "id": "user-onboarding",
       "name": "User Onboarding",
       "spec": "35-user-onboarding.spec.ts",
-      "sourceFiles": ["app/platform/[tenant]/onboarding/page.tsx", "components/nav-bar.tsx"],
+      "sourceFiles": [
+        "app/platform/[tenant]/onboarding/page.tsx",
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx",
+        "components/nav-bar.tsx"
+      ],
       "checkpoints": [
         {
           "id": "useronb-01",
@@ -1604,6 +1608,42 @@
         {
           "id": "useronb-04",
           "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "user-onboarding-agent-link",
+      "name": "User Onboarding — Per-Agent Links",
+      "spec": "36-user-onboarding-agent-link.spec.ts",
+      "sourceFiles": [
+        "app/platform/[tenant]/onboarding/[agentId]/page.tsx",
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "agentlink-01",
+          "description": "The agent-scoped onboarding route serves the member flow and holds the route, never an error page",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-02",
+          "description": "An agent id naming no configured agent shows the \"nothing set up\" notice rather than substituting another agent",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-03",
+          "description": "The tenant's default onboarding agent is reachable by its own per-agent link",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-04",
+          "description": "The agent-scoped route never shows the admin setup steps, even for an admin",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-05",
+          "description": "An admin can still switch to the setup flow from an agent link; a member cannot",
           "status": "covered"
         }
       ]

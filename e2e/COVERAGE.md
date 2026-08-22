@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-08-20 | 244 checkpoints | 34 journeys | 100% covered
+> Last updated: 2026-08-21 | 249 checkpoints | 35 journeys | 100% covered
 
 ## How This Works
 
@@ -490,13 +490,25 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 35: User Onboarding (5 checkpoints) — `journeys/35-user-onboarding.spec.ts`
 
-**Source files:** `app/platform/[tenant]/onboarding/page.tsx`, `components/nav-bar.tsx`
+**Source files:** `app/platform/[tenant]/onboarding/page.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`, `components/nav-bar.tsx`
 
 - [x] Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow
 - [x] The `?flow=` param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch
 - [x] The member flow's step heading (icon, title, subtitle) is rendered in the navbar rather than above the step
 - [x] The member flow never shows the admin setup steps (organization, sector, invite)
 - [x] The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away
+
+---
+
+## Journey 36: User Onboarding — Per-Agent Links (5 checkpoints) — `journeys/36-user-onboarding-agent-link.spec.ts`
+
+**Source files:** `app/platform/[tenant]/onboarding/[agentId]/page.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`
+
+- [x] The agent-scoped onboarding route serves the member flow and holds the route, never an error page
+- [x] An agent id naming no configured agent shows the "nothing set up" notice rather than substituting another agent
+- [x] The tenant's default onboarding agent is reachable by its own per-agent link
+- [x] The agent-scoped route never shows the admin setup steps, even for an admin
+- [x] An admin can still switch to the setup flow from an agent link; a member cannot
 
 ---
 
