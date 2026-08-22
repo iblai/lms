@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.72.0](https://github.com/iblai/lms/compare/skills-v0.71.0...skills-v0.72.0) (2026-08-22)
+
+### Features
+
+* sdk onboarding multiple agents integration ([acfb435](https://github.com/iblai/lms/commit/acfb435b99c66243a7cccc3f7d839f746fd91bab))
+* sdk onboarding multiple agents integration  > test coverage ([0321012](https://github.com/iblai/lms/commit/0321012d66b30ab3e7924a8e196ea3dbd65a2837))
+* sdk onboarding multiple agents integration  > test coverage ([99c4ace](https://github.com/iblai/lms/commit/99c4ace9cb297fd56c9cbe446d04962d164edebc))
+
 ## [0.71.0](https://github.com/iblai/lms/compare/skills-v0.70.0...skills-v0.71.0) (2026-08-21)
 
 ### Features
