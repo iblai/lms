@@ -89,6 +89,9 @@ export interface CourseEdxData {
   mentor_uuid?: string;
   agent_content_mode?: boolean | null;
   course_content_mode?: boolean | null;
+  // Course-level opt-in for letting the agent decide when a unit is complete.
+  // Requires the `enable_agent_based_unit_completion` tenant metadata flag too.
+  enable_agent_based_completion?: boolean | null;
   agent_autoplay?: boolean | null;
   agent_content_mode_audience?: ('learners' | 'watchers' | 'admins')[];
   course_content_mode_audience?: ('learners' | 'watchers' | 'admins')[];

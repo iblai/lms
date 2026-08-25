@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Loader2, SquarePen } from 'lucide-react';
 import _ from 'lodash';
 import { toast } from 'sonner';
@@ -10,10 +10,13 @@ import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import '@iblai/agent-ai';
 import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
-import { getUserName } from '@/utils/helpers';
+import { getUserId, getUserName } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
 import { setMentorSpinnerHidden } from '@/features/mentor';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { CourseOutlineContext } from '@/contexts/course-outline-context';
+import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
 
 export function CourseAgentChat() {
   const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
@@ -25,6 +28,24 @@ export function CourseAgentChat() {
   const [spinnerHidden, setSpinnerHidden] = useState(false);
   const mentorElementRef = useRef<HTMLElement | null>(null);
   const dispatch = useDispatch();
+  const { course, currentUnitID } = useContext(CourseOutlineContext);
+  const { courseID, activeTab, agentMode } = useContext(EdxIframeContext);
+  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({
+    course,
+    activeTab,
+    agentMode,
+    tenant,
+  });
+
+  // With edX auto-completion off, the agent is the one that marks the unit
+  // complete, so it needs the edX identifiers of what the learner is on.
+  const edxCompletionProps = unitAutoCompletionDisabled
+    ? {
+        edxCourseId: courseID || undefined,
+        edxUsageId: currentUnitID || undefined,
+        edxUserId: getUserId() ?? undefined,
+      }
+    : {};
 
   useEffect(() => {
     dispatch(setMentorSpinnerHidden(spinnerHidden));
@@ -181,6 +202,7 @@ export function CourseAgentChat() {
         theme: 'light',
         style: { height: '100%', width: '100%' },
         extraparams: 'hide-sidebar=true&hide-navbar=true',
+        ...edxCompletionProps,
       })}
     </div>
   );

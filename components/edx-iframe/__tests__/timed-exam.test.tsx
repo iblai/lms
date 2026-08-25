@@ -45,6 +45,7 @@ const buildContextValue = (overrides = {}) => ({
   setAgentMode: vi.fn(),
   agentFullscreen: false,
   setAgentFullscreen: vi.fn(),
+  disableUnitAutoCompletion: false,
   ...overrides,
 });
 

@@ -1,5 +1,5 @@
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { useContext, useEffect, useState, useRef } from 'react';
+import { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import _ from 'lodash';
@@ -29,6 +29,7 @@ export const EdxIframe = () => {
     refresher,
     agentMode,
     agentFullscreen,
+    disableUnitAutoCompletion,
   } = useContext(EdxIframeContext);
   const isAssessmentMode = agentMode === 'assessment';
   const isAssessmentFullscreen = isAssessmentMode && agentFullscreen;
@@ -90,6 +91,46 @@ export const EdxIframe = () => {
       }
     }
   }, 300);
+
+  // The MFE only honours the auto-completion config once it has loaded, so the
+  // send is gated on the load event and re-runs whenever the flag or the loaded
+  // document changes (settings can flip without a reload).
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  useEffect(() => {
+    setIframeLoaded(false);
+  }, [iframeUrl]);
+
+  // The agent decides when a unit is complete (see `useUnitAutoCompletion`,
+  // which resolves this flag), so tell the edX MFE to stop auto-completing
+  // units on view.
+  const sendUnitAutoCompletionConfig = useCallback(() => {
+    if (!disableUnitAutoCompletion) return;
+    if (!iframeLoaded || !iframeRef.current || !iframeUrl) return;
+    //TODO comment out console
+    console.log(
+      'sendUnitAutoCompletionConfig: ',
+      disableUnitAutoCompletion,
+      activeTab,
+      iframeLoaded,
+      iframeUrl,
+    );
+    try {
+      const iframeOrigin = new URL(iframeUrl).origin;
+      iframeRef.current.contentWindow?.postMessage(
+        { type: 'unit.completion.config', disable_unit_auto_completion: true },
+        iframeOrigin,
+      );
+    } catch (error) {
+      console.error('[Unit Completion PostMessage] Failed to send config:', {
+        error: error instanceof Error ? error.message : String(error),
+        iframeUrl,
+      });
+    }
+  }, [disableUnitAutoCompletion, iframeLoaded, iframeUrl]);
+
+  useEffect(() => {
+    sendUnitAutoCompletionConfig();
+  }, [sendUnitAutoCompletionConfig]);
 
   // Store iframeUrl in a ref so we can access it in the message handler
   const iframeUrlRef = useRef(iframeUrl);
@@ -192,6 +233,7 @@ export const EdxIframe = () => {
               src={iframeUrl}
               onLoad={() => {
                 setFetchingIframeData(false);
+                setIframeLoaded(true);
                 refetchCourseOutline(false);
                 // The agent tab keeps this iframe hidden and defers its mentor
                 // unit notifications until the iframe has actually loaded.

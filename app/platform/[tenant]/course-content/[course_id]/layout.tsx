@@ -20,6 +20,7 @@ import _ from 'lodash';
 import { toast } from 'sonner';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
 import { getUserId, getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
@@ -177,6 +178,17 @@ export default function CourseContentLayout({
   // enable_course_voice_autoplay tenant metadata flag and agent_autoplay flag from the course settings on studio to allow this feature
   const autoplayToggleVisible =
     course?.agent_autoplay === true && metadata?.enable_course_voice_autoplay === true;
+
+  // When the agent owns unit completion, the edX unit must stop marking itself
+  // complete on view — the agent decides instead. The EdxIframe relays this to
+  // the MFE; the agent chat forwards the edX identifiers the agent needs to
+  // complete units itself.
+  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({
+    course,
+    activeTab,
+    agentMode,
+    tenant,
+  });
 
   // Needed on both agent (mentor xblock detection + media preview) and course
   // (media scroll-to) tabs.
@@ -445,6 +457,7 @@ export default function CourseContentLayout({
       setAgentMode,
       agentFullscreen,
       setAgentFullscreen,
+      disableUnitAutoCompletion: unitAutoCompletionDisabled,
     }),
     [
       iframeUrl,
@@ -456,6 +469,7 @@ export default function CourseContentLayout({
       refresher,
       agentMode,
       agentFullscreen,
+      unitAutoCompletionDisabled,
     ],
   );
 
