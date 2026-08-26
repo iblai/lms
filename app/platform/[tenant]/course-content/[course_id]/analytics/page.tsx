@@ -10,6 +10,7 @@ import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 
 export default function AnalyticsPage() {
   const params = useParams();
@@ -20,13 +21,17 @@ export default function AnalyticsPage() {
   const { setActiveTab } = useContext(EdxIframeContext);
 
   const rbacPermissions = useAppSelector(selectRbacPermissions);
-  const canViewAnalytics = checkRbacPermission(
+  const hasAnalyticsPermission = checkRbacPermission(
     rbacPermissions,
     `/platforms/${tenant}/#can_view_analytics`,
   );
+  // Course staff (full or limited) see analytics for their own course even
+  // without the platform-wide analytics permission.
+  const { hasCourseStaffAccess, isResolved: rolesResolved } = useCourseUserRoles(courseId);
+  const canViewAnalytics = hasAnalyticsPermission || hasCourseStaffAccess;
 
   const { isSuccess, isError } = useGetDepartmentMemberCheckQuery({ platform_key: tenant });
-  const permissionsResolved = isSuccess || isError;
+  const permissionsResolved = (isSuccess || isError) && rolesResolved;
 
   useEffect(() => {
     setActiveTab('analytics');

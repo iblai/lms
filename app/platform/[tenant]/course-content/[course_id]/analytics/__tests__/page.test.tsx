@@ -40,6 +40,19 @@ vi.mock('@/services/core', () => ({
   useGetDepartmentMemberCheckQuery: (...args: any[]) => mockMemberCheck(...args),
 }));
 
+// Course-scoped roles — course staff see analytics for their own course even
+// without the platform-wide can_view_analytics permission.
+const mockCourseUserRoles = vi.fn((..._args: any[]): any => ({
+  courseRoles: [],
+  isCourseStaff: false,
+  isCourseLimitedStaff: false,
+  hasCourseStaffAccess: false,
+  isResolved: true,
+}));
+vi.mock('@/hooks/courses/use-course-user-roles', () => ({
+  useCourseUserRoles: (...args: any[]) => mockCourseUserRoles(...args),
+}));
+
 // Contexts — export real React contexts so the page's useContext works with a Provider
 vi.mock('@/contexts/course-outline-context', () => ({
   CourseOutlineContext: React.createContext<any>({ course: null }),
@@ -69,6 +82,13 @@ describe('AnalyticsPage', () => {
     vi.clearAllMocks();
     mockCheckRbacPermission.mockReturnValue(true);
     mockMemberCheck.mockReturnValue({ isSuccess: true, isError: false });
+    mockCourseUserRoles.mockReturnValue({
+      courseRoles: [],
+      isCourseStaff: false,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: false,
+      isResolved: true,
+    });
   });
 
   it('renders AnalyticsCourseDetail when the user has can_view_analytics', () => {
@@ -114,5 +134,40 @@ describe('AnalyticsPage', () => {
     expect(mockRouterPush).not.toHaveBeenCalled();
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
     expect(screen.queryByTestId('analytics-course-detail')).not.toBeInTheDocument();
+  });
+
+  it('looks up course roles for the decoded course ID', () => {
+    renderPage();
+    expect(mockCourseUserRoles).toHaveBeenCalledWith('course-v1:test+course+2024');
+  });
+
+  it('renders for course staff without the can_view_analytics permission', () => {
+    mockCheckRbacPermission.mockReturnValue(false);
+    mockCourseUserRoles.mockReturnValue({
+      courseRoles: [
+        { role: 'course-instructor', org: 'test-tenant', course: 'course-v1:test+course+2024' },
+      ],
+      isCourseStaff: true,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: true,
+      isResolved: true,
+    });
+    renderPage();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+    expect(screen.getByTestId('analytics-course-detail')).toBeInTheDocument();
+  });
+
+  it('waits for the course-role listing before redirecting a user without the permission', () => {
+    mockCheckRbacPermission.mockReturnValue(false);
+    mockCourseUserRoles.mockReturnValue({
+      courseRoles: [],
+      isCourseStaff: false,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: false,
+      isResolved: false,
+    });
+    const { container } = renderPage();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 });
