@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.73.0](https://github.com/iblai/lms/compare/skills-v0.72.0...skills-v0.73.0) (2026-08-26)
+
+### Features
+
+* course content tabs now edx course roles based ([616a36a](https://github.com/iblai/lms/commit/616a36ae6944eb05c3208fd7f2a8a51ac820c004))
+
 ## [0.72.0](https://github.com/iblai/lms/compare/skills-v0.71.0...skills-v0.72.0) (2026-08-22)
 
 ### Features
