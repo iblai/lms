@@ -69,6 +69,21 @@ vi.mock('@/services/course-metadata', () => ({
   useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
 }));
 
+// Mock the course-role hook — drives the staff-only tab gates
+const courseUserRolesState = vi.hoisted(() => ({
+  current: {
+    courseRoles: [] as any[],
+    isCourseStaff: false,
+    isCourseLimitedStaff: false,
+    hasCourseStaffAccess: false,
+    isResolved: true,
+  },
+}));
+const mockUseCourseUserRoles = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/courses/use-course-user-roles', () => ({
+  useCourseUserRoles: (...args: any[]) => mockUseCourseUserRoles(...args),
+}));
+
 // Mock useGetDepartmentMemberCheckQuery
 vi.mock('@/services/core', () => ({
   useGetDepartmentMemberCheckQuery: vi.fn(() => ({
@@ -310,6 +325,14 @@ describe('CourseContentLayout', () => {
     document.body.appendChild(navbarControlsSlot);
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mockCheckRbacPermission.mockReturnValue(false);
+    courseUserRolesState.current = {
+      courseRoles: [],
+      isCourseStaff: false,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: false,
+      isResolved: true,
+    };
+    mockUseCourseUserRoles.mockImplementation(() => courseUserRolesState.current);
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -2131,6 +2154,92 @@ describe('CourseContentLayout', () => {
 
     it('hides Analytics when the user lacks can_view_analytics (even as admin)', () => {
       // Default mockCheckRbacPermission returns false for every resource.
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('course-scoped staff roles', () => {
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    const setCourseRole = (role: string) => {
+      courseUserRolesState.current = {
+        courseRoles: [{ role, org: 'test-tenant', course: 'course-v1:test+course+2024' }],
+        isCourseStaff: role === 'course-staff' || role === 'course-instructor',
+        isCourseLimitedStaff: role === 'course-limited-staff',
+        hasCourseStaffAccess: true,
+        isResolved: true,
+      };
+    };
+
+    beforeEach(() => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+    });
+
+    it('looks up roles for the decoded course ID', () => {
+      renderLayout();
+      expect(mockUseCourseUserRoles).toHaveBeenCalledWith('course-v1:test+course+2024');
+    });
+
+    it.each(['course-staff', 'course-instructor'])(
+      'shows every staff tab — Authoring included — for %s',
+      (role) => {
+        setCourseRole(role);
+        renderLayout();
+        expect(tabLink('Instructor')).toBeInTheDocument();
+        expect(tabLink('Configuration')).toBeInTheDocument();
+        expect(tabLink('Analytics')).toBeInTheDocument();
+        expect(tabLink('Authoring')).toBeInTheDocument();
+      },
+    );
+
+    it('shows every staff tab except Authoring for course-limited-staff', () => {
+      setCourseRole('course-limited-staff');
+      renderLayout();
+      expect(tabLink('Instructor')).toBeInTheDocument();
+      expect(tabLink('Configuration')).toBeInTheDocument();
+      expect(tabLink('Analytics')).toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('keeps the staff tabs hidden for a course role that grants no staff access', () => {
+      courseUserRolesState.current = {
+        courseRoles: [
+          { role: 'course-beta-tester', org: 'test-tenant', course: 'course-v1:test+course+2024' },
+        ],
+        isCourseStaff: false,
+        isCourseLimitedStaff: false,
+        hasCourseStaffAccess: false,
+        isResolved: true,
+      };
+      renderLayout();
+      expect(queryTabLink('Instructor')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('still shows Authoring to a platform admin with no course role', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(tabLink('Authoring')).toBeInTheDocument();
+    });
+
+    it('does not grant Analytics to a platform admin lacking can_view_analytics', () => {
+      // Course staff unlock Analytics for their own course, but the platform
+      // admin path still goes through the can_view_analytics permission.
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);

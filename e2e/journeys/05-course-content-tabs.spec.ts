@@ -1374,6 +1374,67 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Instructors tab renders the instructors list');
   });
 
+  test('Checkpoint 35: layout requests the signed-in user\u2019s role listing', async ({
+    page,
+  }) => {
+    // Course-scoped roles (course-staff / course-instructor / course-limited-staff)
+    // gate the staff tabs, so the layout must fetch the role listing on mount.
+    const roleRequests: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/api/ibl/users/manage/roles/')) {
+        roleRequests.push(request.url());
+      }
+    });
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    await expect.poll(() => roleRequests.length, { timeout: 30_000 }).toBeGreaterThan(0);
+    // Looked up by the signed-in user, never by an arbitrary identity.
+    expect(roleRequests.some((url) => /[?&](username|email|user_id)=/.test(url))).toBe(true);
+    logger.info(`Role listing requested: ${roleRequests[0]}`);
+  });
+
+  test('Checkpoint 36: staff tabs appear together and Authoring stays full-staff only', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const [instructorTab, configurationTab, authoringTab] = await Promise.all([
+      getCourseContentTab(page, 'Instructor'),
+      getCourseContentTab(page, 'Configuration'),
+      getCourseContentTab(page, 'Authoring'),
+    ]);
+
+    if (!instructorTab && !configurationTab && !authoringTab) {
+      logger.info('Viewer holds no staff role on this course — no staff tabs, as expected');
+      return;
+    }
+
+    // Instructor and Configuration share one gate (platform admin OR any course
+    // staff role), so they are always shown together.
+    expect(Boolean(instructorTab)).toBe(Boolean(configurationTab));
+
+    // Authoring is the narrower gate: platform admins and full course staff get
+    // it, course-limited-staff never does. So Authoring implies the other two.
+    if (authoringTab) {
+      expect(instructorTab).not.toBeNull();
+      expect(configurationTab).not.toBeNull();
+      logger.info('Viewer is admin / full course staff — every staff tab including Authoring');
+    } else {
+      logger.info('Viewer is limited staff — staff tabs present, Authoring withheld');
+    }
+  });
+
   test('Checkpoint 32: Analytics tab (can_view_analytics) renders course analytics', async ({
     page,
   }) => {

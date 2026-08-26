@@ -6,8 +6,9 @@ import { useParams, redirect } from 'next/navigation';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 
-// Admin-only tab; keep its Dialog/Select-heavy tree out of the shared course-content bundle.
+// Staff-only tab; keep its Dialog/Select-heavy tree out of the shared course-content bundle.
 const ConfigurationTab = dynamic(
   () =>
     import('@/app/platform/[tenant]/courses/[course_id]/_components/configuration-tab').then(
@@ -32,16 +33,20 @@ export default function ConfigurationPage() {
   const { data: departmentMemberCheck, isSuccess } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
+  // Course staff (full or limited) get this tab too — hold the redirect until
+  // the course-role listing has settled, or they'd be bounced mid-fetch.
+  const { hasCourseStaffAccess, isResolved: rolesResolved } = useCourseUserRoles(courseId);
+  const canView = departmentMemberCheck?.is_platform_admin === true || hasCourseStaffAccess;
 
   useEffect(() => {
-    if (isSuccess) {
-      if (!departmentMemberCheck?.is_platform_admin) {
+    if (isSuccess && rolesResolved) {
+      if (!canView) {
         redirect(`/platform/${tenant}`);
       } else {
         setActiveTab('configuration');
       }
     }
-  }, [tenant, isSuccess, departmentMemberCheck, setActiveTab]);
+  }, [tenant, isSuccess, rolesResolved, canView, setActiveTab]);
 
   const toggleSection = (index: number | string) => {
     setExpandedSections((prev) => ({
@@ -50,7 +55,7 @@ export default function ConfigurationPage() {
     }));
   };
 
-  if (!departmentMemberCheck?.is_platform_admin) {
+  if (!canView) {
     return null;
   }
 
