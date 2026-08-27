@@ -4,7 +4,6 @@ import { useContext, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AnalyticsCourseDetail } from '@iblai/iblai-js/web-containers';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
@@ -18,7 +17,6 @@ export default function AnalyticsPage() {
   const tenant = useTenantParam();
   const courseId = decodeURIComponent(params.course_id as string);
   const { course } = useContext(CourseOutlineContext);
-  const { setActiveTab } = useContext(EdxIframeContext);
 
   const rbacPermissions = useAppSelector(selectRbacPermissions);
   const hasAnalyticsPermission = checkRbacPermission(
@@ -32,10 +30,6 @@ export default function AnalyticsPage() {
 
   const { isSuccess, isError } = useGetDepartmentMemberCheckQuery({ platform_key: tenant });
   const permissionsResolved = (isSuccess || isError) && rolesResolved;
-
-  useEffect(() => {
-    setActiveTab('analytics');
-  }, [setActiveTab]);
 
   useEffect(() => {
     if (permissionsResolved && !canViewAnalytics) {

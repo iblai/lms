@@ -67,6 +67,26 @@ import { cn } from '@/lib/utils';
 // a load event (e.g. an exam gate keeps it unmounted).
 const EDX_IFRAME_LOAD_FALLBACK_MS = 15_000;
 
+// Tab identity is derived from the route rather than pushed up from each page's
+// mount effect: an effect lands one commit *after* the new page renders, so the
+// EdxIframe it mounts would briefly see the previous tab and load that tab's URL.
+// Keys are route segments, values the tab keys used by the tab bar and by the
+// edX iframe URL builder ("discussion" is still called "forum" on the edX side).
+const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
+  agent: 'agent',
+  course: 'course',
+  progress: 'progress',
+  dates: 'dates',
+  discussion: 'forum',
+  bookmarks: 'bookmarks',
+  instructor: 'instructor',
+  instructors: 'instructors',
+  configuration: 'configuration',
+  analytics: 'analytics',
+  'learning-info': 'learning-info',
+};
+const DEFAULT_TAB = 'course';
+
 export default function CourseContentLayout({
   children,
   params,
@@ -104,6 +124,7 @@ export default function CourseContentLayout({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
+  const activeTab = ROUTE_SEGMENT_TO_TAB[currentTab ?? ''] ?? DEFAULT_TAB;
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
@@ -160,7 +181,6 @@ export default function CourseContentLayout({
   const [currentChapter, setCurrentChapter] = useState('');
 
   const [expandedLessons, setExpandedLessons] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState('course');
   const [courseOutlineDrawerOpen, setCourseOutlineDrawerOpen] = useState(false);
   const [currentlyInExamSubsection, setCurrentlyInExamSubsection] = useState(false);
   const [examInfo, setExamInfo] = useState<ExamInfo | null>(null);
@@ -442,7 +462,6 @@ export default function CourseContentLayout({
       iframeUrl,
       setIframeUrl,
       courseOutline,
-      setActiveTab,
       activeTab,
       courseID: courseId,
       currentlyInExamSubsection,

@@ -41,21 +41,10 @@ vi.mock('@/hooks/courses/use-course-user-roles', () => ({
   useCourseUserRoles: (...args: any[]) => mockCourseUserRoles(...args),
 }));
 
-vi.mock('@/hooks/courses/edx-iframe-context', () => ({
-  EdxIframeContext: React.createContext<any>({ setActiveTab: () => {} }),
-}));
-
 import ConfigurationPage from '../page';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-
-const mockSetActiveTab = vi.fn();
 
 function renderPage() {
-  return render(
-    <EdxIframeContext.Provider value={{ setActiveTab: mockSetActiveTab } as any}>
-      <ConfigurationPage />
-    </EdxIframeContext.Provider>,
-  );
+  return render(<ConfigurationPage />);
 }
 
 describe('ConfigurationPage', () => {
@@ -81,11 +70,6 @@ describe('ConfigurationPage', () => {
     renderPage();
     const tab = await screen.findByTestId('configuration-tab');
     expect(tab).toHaveAttribute('data-course-id', 'course-v1:test+course+2024');
-  });
-
-  it('announces configuration as the active tab for an admin', () => {
-    renderPage();
-    expect(mockSetActiveTab).toHaveBeenCalledWith('configuration');
   });
 
   it('renders nothing for a non-admin user', () => {

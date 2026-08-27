@@ -32,7 +32,6 @@ const buildContextValue = (overrides = {}) => ({
   iframeUrl: '',
   setIframeUrl: vi.fn(),
   courseOutline: {} as any,
-  setActiveTab: vi.fn(),
   activeTab: '',
   courseID: 'course-v1:test+101',
   currentlyInExamSubsection: false,
