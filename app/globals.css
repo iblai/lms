@@ -299,3 +299,22 @@ body {
     padding: 0;
   }
 }
+
+/* The shell's anonymous Log in button renders flat `bg-primary`. Give it the
+   same tenant-themed gradient the Enroll Now CTAs use, driven by the same
+   `--button-primary-*` tokens so a tenant theme restyles both at once. The
+   `background` shorthand paints over `bg-primary`/`hover:bg-primary/90`, so
+   the hover state is restated here as the CTAs' opacity fade. */
+header > nav .ibl-button-primary {
+  background: linear-gradient(
+    to right,
+    var(--button-primary-gradient-from),
+    var(--button-primary-gradient-to)
+  );
+  color: var(--button-primary-text);
+  transition: opacity 150ms ease;
+}
+
+header > nav .ibl-button-primary:hover {
+  opacity: var(--button-primary-hover-opacity);
+}
