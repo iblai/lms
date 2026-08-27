@@ -1,9 +1,8 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, redirect } from 'next/navigation';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
@@ -27,7 +26,6 @@ export default function ConfigurationPage() {
   const params = useParams();
   const tenant = useTenantParam();
   const courseId = decodeURIComponent(params.course_id as string);
-  const { setActiveTab } = useContext(EdxIframeContext);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
   const { data: departmentMemberCheck, isSuccess } = useGetDepartmentMemberCheckQuery({
@@ -39,14 +37,10 @@ export default function ConfigurationPage() {
   const canView = departmentMemberCheck?.is_platform_admin === true || hasCourseStaffAccess;
 
   useEffect(() => {
-    if (isSuccess && rolesResolved) {
-      if (!canView) {
-        redirect(`/platform/${tenant}`);
-      } else {
-        setActiveTab('configuration');
-      }
+    if (isSuccess && rolesResolved && !canView) {
+      redirect(`/platform/${tenant}`);
     }
-  }, [tenant, isSuccess, rolesResolved, canView, setActiveTab]);
+  }, [tenant, isSuccess, rolesResolved, canView]);
 
   const toggleSection = (index: number | string) => {
     setExpandedSections((prev) => ({
