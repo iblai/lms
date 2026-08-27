@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.73.1](https://github.com/iblai/lms/compare/skills-v0.73.0...skills-v0.73.1) (2026-08-27)
+
+### Bug Fixes
+
+* course about page > no session title & login button fix ([eeba4e3](https://github.com/iblai/lms/commit/eeba4e38faf5c973ac8af34211b9bb2df83dcb6b))
+
 ## [0.73.0](https://github.com/iblai/lms/compare/skills-v0.72.0...skills-v0.73.0) (2026-08-26)
 
 ### Features
