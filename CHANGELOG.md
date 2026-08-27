@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.73.2](https://github.com/iblai/lms/compare/skills-v0.73.1...skills-v0.73.2) (2026-08-27)
+
+### Bug Fixes
+
+* **ci:** remove the paths filter that deadlocks the required PR Validation check ([31ce6e5](https://github.com/iblai/lms/commit/31ce6e5a9a42c6f51c33dc8cabe4255a35529e5f)), closes [os#462](https://github.com/iblai/os/issues/462)
+
 ## [0.73.1](https://github.com/iblai/lms/compare/skills-v0.73.0...skills-v0.73.1) (2026-08-27)
 
 ### Bug Fixes
