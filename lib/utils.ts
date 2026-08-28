@@ -10,6 +10,7 @@ import { twMerge } from 'tailwind-merge';
 import { SERVICES } from './constants';
 import { config } from './config';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
+import { getAuthItem } from '@iblai/iblai-js/web-utils';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -65,23 +66,23 @@ function getHeaders(service: SERVICES) {
   switch (service) {
     case SERVICES.LMS:
       return {
-        Authorization: `JWT ${window.localStorage.getItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}`,
+        Authorization: `JWT ${getAuthItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}`,
       };
     case SERVICES.DM:
       return {
-        Authorization: `Token ${window.localStorage.getItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}`,
+        Authorization: `Token ${getAuthItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}`,
       };
     case SERVICES.AXD:
       return {
-        Authorization: `Token ${window.localStorage.getItem(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY)}`,
+        Authorization: `Token ${getAuthItem(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY)}`,
       };
     case SERVICES.STUDIO:
       return {
-        Authorization: `JWT ${window.localStorage.getItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}`,
+        Authorization: `JWT ${getAuthItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}`,
       };
     default:
       return {
-        Authorization: `Token ${window.localStorage.getItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}`,
+        Authorization: `Token ${getAuthItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}`,
       };
   }
 }

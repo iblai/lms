@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { Dispatch, SetStateAction } from 'react';
 
+import { getAuthItem, setAuthItem, removeAuthItem } from '@iblai/iblai-js/web-utils';
+
 import { useEventCallback } from './use-event-callback';
 import { useEventListener } from './use-event-listener';
 
@@ -78,7 +80,7 @@ export function useLocalStorage<T>(
     }
 
     try {
-      const raw = window.localStorage.getItem(key);
+      const raw = getAuthItem(key);
       return raw ? deserializer(raw) : initialValueToUse;
     } catch (error) {
       console.warn(`Error reading localStorage key “${key}”:`, error);
@@ -109,7 +111,7 @@ export function useLocalStorage<T>(
       const newValue = value instanceof Function ? value(readValue()) : value;
 
       // Save to local storage
-      window.localStorage.setItem(key, serializer(newValue));
+      setAuthItem(key, serializer(newValue));
 
       // Save state
       setStoredValue(newValue);
@@ -132,7 +134,7 @@ export function useLocalStorage<T>(
     const defaultValue = initialValue instanceof Function ? initialValue() : initialValue;
 
     // Remove the key from local storage
-    window.localStorage.removeItem(key);
+    removeAuthItem(key);
 
     // Save state with default value
     setStoredValue(defaultValue);
