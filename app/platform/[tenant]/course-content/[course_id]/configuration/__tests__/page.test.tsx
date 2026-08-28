@@ -1,12 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
 // The dynamically-imported ConfigurationTab — stub it and echo props.
 vi.mock('@/app/platform/[tenant]/courses/[course_id]/_components/configuration-tab', () => ({
   ConfigurationTab: (props: any) => (
-    <div data-testid="configuration-tab" data-course-id={props.courseId} />
+    <div
+      data-testid="configuration-tab"
+      data-course-id={props.courseId}
+      data-expanded={JSON.stringify(props.expandedSections)}
+    >
+      <button data-testid="toggle-section" onClick={() => props.toggleSection('overview')}>
+        toggle
+      </button>
+    </div>
   ),
 }));
 
@@ -41,21 +49,10 @@ vi.mock('@/hooks/courses/use-course-user-roles', () => ({
   useCourseUserRoles: (...args: any[]) => mockCourseUserRoles(...args),
 }));
 
-vi.mock('@/hooks/courses/edx-iframe-context', () => ({
-  EdxIframeContext: React.createContext<any>({ setActiveTab: () => {} }),
-}));
-
 import ConfigurationPage from '../page';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-
-const mockSetActiveTab = vi.fn();
 
 function renderPage() {
-  return render(
-    <EdxIframeContext.Provider value={{ setActiveTab: mockSetActiveTab } as any}>
-      <ConfigurationPage />
-    </EdxIframeContext.Provider>,
-  );
+  return render(<ConfigurationPage />);
 }
 
 describe('ConfigurationPage', () => {
@@ -81,11 +78,6 @@ describe('ConfigurationPage', () => {
     renderPage();
     const tab = await screen.findByTestId('configuration-tab');
     expect(tab).toHaveAttribute('data-course-id', 'course-v1:test+course+2024');
-  });
-
-  it('announces configuration as the active tab for an admin', () => {
-    renderPage();
-    expect(mockSetActiveTab).toHaveBeenCalledWith('configuration');
   });
 
   it('renders nothing for a non-admin user', () => {
@@ -128,6 +120,24 @@ describe('ConfigurationPage', () => {
       expect(mockRedirect).not.toHaveBeenCalled();
     },
   );
+
+  it('toggles a section open and closed through toggleSection', async () => {
+    renderPage();
+    const tab = await screen.findByTestId('configuration-tab');
+    expect(tab).toHaveAttribute('data-expanded', '{}');
+
+    fireEvent.click(screen.getByTestId('toggle-section'));
+    expect(screen.getByTestId('configuration-tab')).toHaveAttribute(
+      'data-expanded',
+      '{"overview":true}',
+    );
+
+    fireEvent.click(screen.getByTestId('toggle-section'));
+    expect(screen.getByTestId('configuration-tab')).toHaveAttribute(
+      'data-expanded',
+      '{"overview":false}',
+    );
+  });
 
   it('does not redirect a non-admin before the course-role listing resolves', () => {
     mockMemberCheck.mockReturnValue({ data: { is_platform_admin: false }, isSuccess: true });

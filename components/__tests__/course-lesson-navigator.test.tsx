@@ -77,7 +77,6 @@ const renderNavigator = ({
     courseID,
     iframeUrl: '',
     setIframeUrl: vi.fn(),
-    setActiveTab: vi.fn(),
     activeTab: 'course',
     currentlyInExamSubsection: false,
     setCurrentlyInExamSubsection: vi.fn(),

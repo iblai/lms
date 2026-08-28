@@ -38,21 +38,10 @@ vi.mock('@/hooks/courses/use-course-user-roles', () => ({
   useCourseUserRoles: (...args: any[]) => mockCourseUserRoles(...args),
 }));
 
-vi.mock('@/hooks/courses/edx-iframe-context', () => ({
-  EdxIframeContext: React.createContext<any>({ setActiveTab: () => {} }),
-}));
-
 import InstructorTab from '../page';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-
-const mockSetActiveTab = vi.fn();
 
 function renderPage() {
-  return render(
-    <EdxIframeContext.Provider value={{ setActiveTab: mockSetActiveTab } as any}>
-      <InstructorTab />
-    </EdxIframeContext.Provider>,
-  );
+  return render(<InstructorTab />);
 }
 
 const staffRoles = (role: string) => ({
@@ -76,9 +65,8 @@ describe('InstructorTab', () => {
     });
   });
 
-  it('announces instructor as the active tab for a platform admin', () => {
+  it('renders the course iframe for a platform admin', () => {
     renderPage();
-    expect(mockSetActiveTab).toHaveBeenCalledWith('instructor');
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(screen.getByTestId('edx-iframe')).toBeInTheDocument();
   });
@@ -87,7 +75,6 @@ describe('InstructorTab', () => {
     mockMemberCheck.mockReturnValue({ data: { is_platform_admin: false }, isSuccess: true });
     renderPage();
     expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant');
-    expect(mockSetActiveTab).not.toHaveBeenCalled();
   });
 
   it('does not redirect before the member check resolves', () => {
@@ -108,7 +95,7 @@ describe('InstructorTab', () => {
       mockCourseUserRoles.mockReturnValue(staffRoles(role));
       renderPage();
       expect(mockRedirect).not.toHaveBeenCalled();
-      expect(mockSetActiveTab).toHaveBeenCalledWith('instructor');
+      expect(screen.getByTestId('edx-iframe')).toBeInTheDocument();
     },
   );
 

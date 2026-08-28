@@ -19,23 +19,21 @@ vi.mock('@/components/chat-button', () => ({
 import AgentTab from '../page';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 
-const mockSetActiveTab = vi.fn();
 const mockSetAgentFullscreen = vi.fn();
 
+// `activeTab` is derived from the route by the course-content layout, so this
+// page always renders as the agent tab — the harness doesn't model it.
 const Harness = ({
-  activeTab = 'course',
   agentMode = 'learning',
   agentFullscreen = false,
 }: {
-  activeTab?: string;
   agentMode?: 'learning' | 'assessment';
   agentFullscreen?: boolean;
 }) => (
   <EdxIframeContext.Provider
     value={
       {
-        setActiveTab: mockSetActiveTab,
-        activeTab,
+        activeTab: 'agent',
         agentMode,
         agentFullscreen,
         setAgentFullscreen: mockSetAgentFullscreen,
@@ -47,11 +45,9 @@ const Harness = ({
 );
 
 const renderAgentTab = (
-  activeTab: string = 'course',
   agentMode: 'learning' | 'assessment' = 'learning',
   agentFullscreen: boolean = false,
-) =>
-  render(<Harness activeTab={activeTab} agentMode={agentMode} agentFullscreen={agentFullscreen} />);
+) => render(<Harness agentMode={agentMode} agentFullscreen={agentFullscreen} />);
 
 // `className.toContain('hidden')` is ambiguous now that the hidden state uses
 // `overflow-hidden`, so assert on exact class tokens instead.
@@ -69,7 +65,7 @@ describe('AgentTab page', () => {
   });
 
   it('hides EdxIframe with visibility, not display, in learning mode', () => {
-    const { getByTestId } = renderAgentTab('agent', 'learning');
+    const { getByTestId } = renderAgentTab('learning');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     // `hidden` (display:none) would drop the iframe's rendering box; `invisible`
     // (visibility:hidden) keeps it laid out and painted.
@@ -79,7 +75,7 @@ describe('AgentTab page', () => {
   });
 
   it('keeps the hidden EdxIframe out of the flex flow so the chat keeps full height', () => {
-    const { getByTestId } = renderAgentTab('agent', 'learning');
+    const { getByTestId } = renderAgentTab('learning');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     const chatWrapper = getByTestId('course-agent-chat').parentElement;
     // Absolutely positioned: an in-flow `invisible` box would still claim a flex
@@ -93,14 +89,14 @@ describe('AgentTab page', () => {
   });
 
   it('anchors the out-of-flow EdxIframe to the page container', () => {
-    const { container } = renderAgentTab('agent', 'learning');
+    const { container } = renderAgentTab('learning');
     // `absolute inset-0` on the iframe wrapper needs a positioned ancestor,
     // otherwise it escapes to the nearest one further up the tree.
     expect(classes(container.firstChild as HTMLElement)).toContain('relative');
   });
 
   it('shows EdxIframe in flow and hides CourseAgentChat in assessment mode', () => {
-    const { getByTestId } = renderAgentTab('agent', 'assessment');
+    const { getByTestId } = renderAgentTab('assessment');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     const chatWrapper = getByTestId('course-agent-chat').parentElement;
     expect(classes(iframeWrapper)).toEqual(expect.arrayContaining(['min-h-0', 'flex-1']));
@@ -112,31 +108,24 @@ describe('AgentTab page', () => {
   });
 
   it('keeps the same EdxIframe node mounted across mode switches', () => {
-    const { getByTestId, rerender } = render(<Harness activeTab="agent" agentMode="learning" />);
+    const { getByTestId, rerender } = render(<Harness agentMode="learning" />);
     const iframe = getByTestId('edx-iframe');
-    rerender(<Harness activeTab="agent" agentMode="assessment" />);
+    rerender(<Harness agentMode="assessment" />);
     // Same DOM node, not a remount — the iframe must not reload when it is revealed.
     expect(getByTestId('edx-iframe')).toBe(iframe);
-    rerender(<Harness activeTab="agent" agentMode="learning" />);
+    rerender(<Harness agentMode="learning" />);
     expect(getByTestId('edx-iframe')).toBe(iframe);
   });
 
   it('defaults to learning mode when agentMode is undefined', () => {
     const { getByTestId } = render(
-      <EdxIframeContext.Provider
-        value={{ setActiveTab: mockSetActiveTab, activeTab: 'agent' } as any}
-      >
+      <EdxIframeContext.Provider value={{ activeTab: 'agent' } as any}>
         <AgentTab />
       </EdxIframeContext.Provider>,
     );
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     expect(classes(iframeWrapper)).toContain('invisible');
     expect(classes(iframeWrapper)).not.toContain('hidden');
-  });
-
-  it('announces agent as the active tab on mount', () => {
-    renderAgentTab();
-    expect(mockSetActiveTab).toHaveBeenCalledWith('agent');
   });
 
   it('hides the sidebar mentor chat while mounted, restores on unmount', () => {
@@ -146,24 +135,21 @@ describe('AgentTab page', () => {
     expect(mockSetMentorSidebarHidden).toHaveBeenLastCalledWith(false);
   });
 
-  it('uses full viewport height on the agent tab, shrinking when activeTab is agent', () => {
-    const { container: agentContainer } = renderAgentTab('agent');
-    const agentWrapper = agentContainer.firstChild as HTMLElement;
-    expect(agentWrapper.className).toContain('h-[calc(100vh-223px)]');
-
-    const { container: courseContainer } = renderAgentTab('course');
-    const courseWrapper = courseContainer.firstChild as HTMLElement;
-    // When not on the agent tab, the layout reserves less vertical space.
-    expect(courseWrapper.className).toContain('h-[calc(100vh-182px)]');
+  it('uses a single viewport height for the agent tab', () => {
+    const { container } = renderAgentTab();
+    const wrapper = container.firstChild as HTMLElement;
+    // The height no longer depends on a context value that lands a commit late,
+    // so there is no shorter transitional height to flash through on mount.
+    expect(wrapper.className).toContain('h-[calc(100vh-223px)]');
   });
 
   it('does not render the fullscreen exit button when not in fullscreen', () => {
-    const { queryByTestId } = renderAgentTab('agent', 'learning', false);
+    const { queryByTestId } = renderAgentTab('learning', false);
     expect(queryByTestId('agent-fullscreen-exit')).not.toBeInTheDocument();
   });
 
   it('expands to cover the viewport and shows an exit button in fullscreen', () => {
-    const { container, getByTestId } = renderAgentTab('agent', 'learning', true);
+    const { container, getByTestId } = renderAgentTab('learning', true);
     const wrapper = container.firstChild as HTMLElement;
     // Fullscreen pins the container over the whole viewport instead of the calc heights.
     expect(wrapper.className).toContain('fixed');
@@ -173,7 +159,7 @@ describe('AgentTab page', () => {
   });
 
   it('exits fullscreen when the exit button is clicked', () => {
-    const { getByTestId } = renderAgentTab('agent', 'learning', true);
+    const { getByTestId } = renderAgentTab('learning', true);
     fireEvent.click(getByTestId('agent-fullscreen-exit'));
     expect(mockSetAgentFullscreen).toHaveBeenCalledWith(false);
   });
