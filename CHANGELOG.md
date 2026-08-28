@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.74.0](https://github.com/iblai/lms/compare/skills-v0.73.2...skills-v0.74.0) (2026-08-28)
+
+### Features
+
+* agent tab race condition optimization ([bb4065a](https://github.com/iblai/lms/commit/bb4065a35d9e2ab71d46abf9e12f7f166d7c825e))
+* agent tab race condition optimization > gitignore updated ([1d2fadd](https://github.com/iblai/lms/commit/1d2fadd6885e66532ad53f3f95cc3680818de608))
+* agent tab race condition updated ([9952b27](https://github.com/iblai/lms/commit/9952b27c2af525545001e283a3fd89f6c00e935f))
+
 ## [0.73.2](https://github.com/iblai/lms/compare/skills-v0.73.1...skills-v0.73.2) (2026-08-27)
 
 ### Bug Fixes
