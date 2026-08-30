@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
+import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 import { usePathname, useSearchParams } from 'next/navigation';
 import _ from 'lodash';
 import { toast } from 'sonner';
@@ -66,6 +67,26 @@ import { cn } from '@/lib/utils';
 // a load event (e.g. an exam gate keeps it unmounted).
 const EDX_IFRAME_LOAD_FALLBACK_MS = 15_000;
 
+// Tab identity is derived from the route rather than pushed up from each page's
+// mount effect: an effect lands one commit *after* the new page renders, so the
+// EdxIframe it mounts would briefly see the previous tab and load that tab's URL.
+// Keys are route segments, values the tab keys used by the tab bar and by the
+// edX iframe URL builder ("discussion" is still called "forum" on the edX side).
+const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
+  agent: 'agent',
+  course: 'course',
+  progress: 'progress',
+  dates: 'dates',
+  discussion: 'forum',
+  bookmarks: 'bookmarks',
+  instructor: 'instructor',
+  instructors: 'instructors',
+  configuration: 'configuration',
+  analytics: 'analytics',
+  'learning-info': 'learning-info',
+};
+const DEFAULT_TAB = 'course';
+
 export default function CourseContentLayout({
   children,
   params,
@@ -93,9 +114,17 @@ export default function CourseContentLayout({
   const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
+  // Course-scoped staff roles open the staff-only tabs to people who aren't
+  // platform admins: full staff (course-staff / course-instructor) get every
+  // tab, limited staff get all of them except Authoring — they run the course
+  // but can't edit it in Studio.
+  const { isCourseStaff, hasCourseStaffAccess } = useCourseUserRoles(courseId);
+  const canViewStaffTabs = isAdmin || hasCourseStaffAccess;
+  const canViewAuthoringTab = isAdmin || isCourseStaff;
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
+  const activeTab = ROUTE_SEGMENT_TO_TAB[currentTab ?? ''] ?? DEFAULT_TAB;
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
@@ -152,7 +181,6 @@ export default function CourseContentLayout({
   const [currentChapter, setCurrentChapter] = useState('');
 
   const [expandedLessons, setExpandedLessons] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState('course');
   const [courseOutlineDrawerOpen, setCourseOutlineDrawerOpen] = useState(false);
   const [currentlyInExamSubsection, setCurrentlyInExamSubsection] = useState(false);
   const [examInfo, setExamInfo] = useState<ExamInfo | null>(null);
@@ -379,7 +407,7 @@ export default function CourseContentLayout({
       { key: 'dates', label: 'Dates', href: `${courseBasePath}/dates` },
       { key: 'forum', label: 'Discussion', href: `${courseBasePath}/discussion` },
     );
-    if (departmentMemberCheck?.is_platform_admin) {
+    if (canViewStaffTabs) {
       tabs.push({ key: 'instructor', label: 'Instructor', href: `${courseBasePath}/instructor` });
     }
     if (course?.learning_info && course.learning_info.length > 0) {
@@ -396,17 +424,17 @@ export default function CourseContentLayout({
         href: `${courseBasePath}/instructors`,
       });
     }
-    if (departmentMemberCheck?.is_platform_admin) {
+    if (canViewStaffTabs) {
       tabs.push({
         key: 'configuration',
         label: 'Configuration',
         href: `${courseBasePath}/configuration`,
       });
     }
-    if (canViewAnalytics) {
+    if (canViewAnalytics || hasCourseStaffAccess) {
       tabs.push({ key: 'analytics', label: 'Analytics', href: `${courseBasePath}/analytics` });
     }
-    if (departmentMemberCheck?.is_platform_admin) {
+    if (canViewAuthoringTab) {
       tabs.push({
         key: 'authoring',
         label: 'Authoring',
@@ -421,7 +449,9 @@ export default function CourseContentLayout({
     agentTabVisible,
     courseTabVisible,
     currentCourseInfo?.id,
-    departmentMemberCheck?.is_platform_admin,
+    canViewStaffTabs,
+    canViewAuthoringTab,
+    hasCourseStaffAccess,
     course?.learning_info,
     course?.instructor_info?.instructors,
     canViewAnalytics,
@@ -432,7 +462,6 @@ export default function CourseContentLayout({
       iframeUrl,
       setIframeUrl,
       courseOutline,
-      setActiveTab,
       activeTab,
       courseID: courseId,
       currentlyInExamSubsection,

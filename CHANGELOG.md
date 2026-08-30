@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.75.1](https://github.com/iblai/lms/compare/skills-v0.75.0...skills-v0.75.1) (2026-08-30)
+
+### Bug Fixes
+
+* platform account sheet props updated ([ebf5bc5](https://github.com/iblai/lms/commit/ebf5bc5b340839101c26af45e957fbb5d64cf069))
+
+## [0.75.0](https://github.com/iblai/lms/compare/skills-v0.74.1...skills-v0.75.0) (2026-08-28)
+
+### Features
+
+* bumped iblai-js to 2.8.3 ([451fc60](https://github.com/iblai/lms/commit/451fc60faedcd3146ba67076db4b900f9fbadf9e))
+
+## [0.74.1](https://github.com/iblai/lms/compare/skills-v0.74.0...skills-v0.74.1) (2026-08-28)
+
+### Chores
+
+* bumped iblai-js to 2.7.4 ([5c78d97](https://github.com/iblai/lms/commit/5c78d97ad639f2ec8a41f1820119a4cce1971779))
+
+## [0.74.0](https://github.com/iblai/lms/compare/skills-v0.73.2...skills-v0.74.0) (2026-08-28)
+
+### Features
+
+* agent tab race condition optimization ([bb4065a](https://github.com/iblai/lms/commit/bb4065a35d9e2ab71d46abf9e12f7f166d7c825e))
+* agent tab race condition optimization > gitignore updated ([1d2fadd](https://github.com/iblai/lms/commit/1d2fadd6885e66532ad53f3f95cc3680818de608))
+* agent tab race condition updated ([9952b27](https://github.com/iblai/lms/commit/9952b27c2af525545001e283a3fd89f6c00e935f))
+
+## [0.73.2](https://github.com/iblai/lms/compare/skills-v0.73.1...skills-v0.73.2) (2026-08-27)
+
+### Bug Fixes
+
+* **ci:** remove the paths filter that deadlocks the required PR Validation check ([31ce6e5](https://github.com/iblai/lms/commit/31ce6e5a9a42c6f51c33dc8cabe4255a35529e5f)), closes [os#462](https://github.com/iblai/os/issues/462)
+
+## [0.73.1](https://github.com/iblai/lms/compare/skills-v0.73.0...skills-v0.73.1) (2026-08-27)
+
+### Bug Fixes
+
+* course about page > no session title & login button fix ([eeba4e3](https://github.com/iblai/lms/commit/eeba4e38faf5c973ac8af34211b9bb2df83dcb6b))
+
+## [0.73.0](https://github.com/iblai/lms/compare/skills-v0.72.0...skills-v0.73.0) (2026-08-26)
+
+### Features
+
+* course content tabs now edx course roles based ([616a36a](https://github.com/iblai/lms/commit/616a36ae6944eb05c3208fd7f2a8a51ac820c004))
+
 ## [0.72.0](https://github.com/iblai/lms/compare/skills-v0.71.0...skills-v0.72.0) (2026-08-22)
 
 ### Features

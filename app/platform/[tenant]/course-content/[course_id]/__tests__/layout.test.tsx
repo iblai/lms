@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -67,6 +67,21 @@ const mockUseGetCourseBlockDetailsQuery: any = vi.fn(
 );
 vi.mock('@/services/course-metadata', () => ({
   useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
+}));
+
+// Mock the course-role hook — drives the staff-only tab gates
+const courseUserRolesState = vi.hoisted(() => ({
+  current: {
+    courseRoles: [] as any[],
+    isCourseStaff: false,
+    isCourseLimitedStaff: false,
+    hasCourseStaffAccess: false,
+    isResolved: true,
+  },
+}));
+const mockUseCourseUserRoles = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/courses/use-course-user-roles', () => ({
+  useCourseUserRoles: (...args: any[]) => mockUseCourseUserRoles(...args),
 }));
 
 // Mock useGetDepartmentMemberCheckQuery
@@ -288,6 +303,7 @@ vi.mock('react', async () => {
 });
 
 import CourseContentLayout from '../layout';
+import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
@@ -312,6 +328,14 @@ describe('CourseContentLayout', () => {
     document.body.appendChild(navbarControlsSlot);
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mockCheckRbacPermission.mockReturnValue(false);
+    courseUserRolesState.current = {
+      courseRoles: [],
+      isCourseStaff: false,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: false,
+      isResolved: true,
+    };
+    mockUseCourseUserRoles.mockImplementation(() => courseUserRolesState.current);
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -953,6 +977,59 @@ describe('CourseContentLayout', () => {
       </CourseContentLayout>,
     );
     expect(screen.getByTestId('course-lesson-navigator')).toBeInTheDocument();
+  });
+
+  describe('active tab derived from the route', () => {
+    // The tab identity used to be pushed up from each page's mount effect, which
+    // landed a commit after the new page (and its EdxIframe) had already
+    // rendered against the *previous* tab. Deriving it from the pathname means a
+    // page never sees a tab value that disagrees with the URL it renders under.
+    const DEFAULT_PATHNAME = '/course-content/course-v1:test+course+2024/course';
+
+    const ActiveTabProbe = () => {
+      const { activeTab } = React.useContext(EdxIframeContext);
+      return <div data-testid="active-tab">{activeTab}</div>;
+    };
+
+    const renderAt = async (pathname: string) => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(pathname);
+      return render(
+        <CourseContentLayout params={defaultParams}>
+          <ActiveTabProbe />
+        </CourseContentLayout>,
+      );
+    };
+
+    afterEach(async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(DEFAULT_PATHNAME);
+    });
+
+    it.each([
+      ['/course-content/course-v1:test+course+2024/agent', 'agent'],
+      ['/course-content/course-v1:test+course+2024/course', 'course'],
+      ['/course-content/course-v1:test+course+2024/progress', 'progress'],
+      ['/course-content/course-v1:test+course+2024/analytics', 'analytics'],
+      // The discussion route is still called "forum" by the edX iframe URL builder.
+      ['/course-content/course-v1:test+course+2024/discussion', 'forum'],
+    ])('exposes %s as activeTab "%s" on the first render', async (pathname, expected) => {
+      const { getByTestId } = await renderAt(pathname);
+      expect(getByTestId('active-tab')).toHaveTextContent(expected);
+    });
+
+    it('falls back to the course tab for a route with no known tab segment', async () => {
+      const { getByTestId } = await renderAt('/course-content/course-v1:test+course+2024');
+      expect(getByTestId('active-tab')).toHaveTextContent('course');
+    });
+
+    it('highlights the tab matching the route', async () => {
+      await renderAt('/course-content/course-v1:test+course+2024/discussion');
+      // The mocked next/link drops aria-current, so assert the active styling —
+      // it proves the derived value lines up with the tab bar's `key`s.
+      expect(tabLink('Discussion').className).toContain('text-amber-600');
+      expect(tabLink('Agent').className).not.toContain('text-amber-600');
+    });
   });
 
   describe('unit-switch toast on the agent tab', () => {
@@ -2133,6 +2210,92 @@ describe('CourseContentLayout', () => {
 
     it('hides Analytics when the user lacks can_view_analytics (even as admin)', () => {
       // Default mockCheckRbacPermission returns false for every resource.
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('course-scoped staff roles', () => {
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    const setCourseRole = (role: string) => {
+      courseUserRolesState.current = {
+        courseRoles: [{ role, org: 'test-tenant', course: 'course-v1:test+course+2024' }],
+        isCourseStaff: role === 'course-staff' || role === 'course-instructor',
+        isCourseLimitedStaff: role === 'course-limited-staff',
+        hasCourseStaffAccess: true,
+        isResolved: true,
+      };
+    };
+
+    beforeEach(() => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+    });
+
+    it('looks up roles for the decoded course ID', () => {
+      renderLayout();
+      expect(mockUseCourseUserRoles).toHaveBeenCalledWith('course-v1:test+course+2024');
+    });
+
+    it.each(['course-staff', 'course-instructor'])(
+      'shows every staff tab — Authoring included — for %s',
+      (role) => {
+        setCourseRole(role);
+        renderLayout();
+        expect(tabLink('Instructor')).toBeInTheDocument();
+        expect(tabLink('Configuration')).toBeInTheDocument();
+        expect(tabLink('Analytics')).toBeInTheDocument();
+        expect(tabLink('Authoring')).toBeInTheDocument();
+      },
+    );
+
+    it('shows every staff tab except Authoring for course-limited-staff', () => {
+      setCourseRole('course-limited-staff');
+      renderLayout();
+      expect(tabLink('Instructor')).toBeInTheDocument();
+      expect(tabLink('Configuration')).toBeInTheDocument();
+      expect(tabLink('Analytics')).toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('keeps the staff tabs hidden for a course role that grants no staff access', () => {
+      courseUserRolesState.current = {
+        courseRoles: [
+          { role: 'course-beta-tester', org: 'test-tenant', course: 'course-v1:test+course+2024' },
+        ],
+        isCourseStaff: false,
+        isCourseLimitedStaff: false,
+        hasCourseStaffAccess: false,
+        isResolved: true,
+      };
+      renderLayout();
+      expect(queryTabLink('Instructor')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('still shows Authoring to a platform admin with no course role', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(tabLink('Authoring')).toBeInTheDocument();
+    });
+
+    it('does not grant Analytics to a platform admin lacking can_view_analytics', () => {
+      // Course staff unlock Analytics for their own course, but the platform
+      // admin path still goes through the can_view_analytics permission.
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);

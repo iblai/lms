@@ -382,6 +382,16 @@ describe('NavBar', () => {
       expect(screen.queryByTestId('navbar-page-title')).not.toBeInTheDocument();
     });
 
+    it('shows the course name on the about page while logged out', async () => {
+      // The about page is publicly reachable, so the title must not be gated
+      // on login the way the program / pathway titles are.
+      const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+      vi.mocked(isLoggedIn).mockReturnValue(false);
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
+      expect(await screen.findByRole('heading', { name: 'Course Alpha' })).toBeInTheDocument();
+    });
+
     it('does not render the old enrolled-courses dropdown', async () => {
       mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
       render(<NavBar />);

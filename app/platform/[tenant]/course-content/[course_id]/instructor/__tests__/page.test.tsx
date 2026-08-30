@@ -1,24 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-// The dynamically-imported ConfigurationTab — stub it and echo props.
-vi.mock('@/app/platform/[tenant]/courses/[course_id]/_components/configuration-tab', () => ({
-  ConfigurationTab: (props: any) => (
-    <div
-      data-testid="configuration-tab"
-      data-course-id={props.courseId}
-      data-expanded={JSON.stringify(props.expandedSections)}
-    >
-      <button data-testid="toggle-section" onClick={() => props.toggleSection('overview')}>
-        toggle
-      </button>
-    </div>
-  ),
+// The course iframe — stub it so the test stays on the access-control logic.
+vi.mock('@/components/edx-iframe/edx-iframe', () => ({
+  EdxIframe: () => <div data-testid="edx-iframe" />,
 }));
 
-// next/navigation
 const mockRedirect = vi.fn();
 vi.mock('next/navigation', () => ({
   useParams: () => ({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' }),
@@ -49,13 +38,21 @@ vi.mock('@/hooks/courses/use-course-user-roles', () => ({
   useCourseUserRoles: (...args: any[]) => mockCourseUserRoles(...args),
 }));
 
-import ConfigurationPage from '../page';
+import InstructorTab from '../page';
 
 function renderPage() {
-  return render(<ConfigurationPage />);
+  return render(<InstructorTab />);
 }
 
-describe('ConfigurationPage', () => {
+const staffRoles = (role: string) => ({
+  courseRoles: [{ role, org: 'test-tenant', course: 'course-v1:test+course+2024' }],
+  isCourseStaff: role !== 'course-limited-staff',
+  isCourseLimitedStaff: role === 'course-limited-staff',
+  hasCourseStaffAccess: true,
+  isResolved: true,
+});
+
+describe('InstructorTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMemberCheck.mockReturnValue({ data: { is_platform_admin: true }, isSuccess: true });
@@ -68,26 +65,13 @@ describe('ConfigurationPage', () => {
     });
   });
 
-  it('renders the ConfigurationTab for a platform admin', async () => {
+  it('renders the course iframe for a platform admin', () => {
     renderPage();
-    // ConfigurationTab is lazy-loaded via next/dynamic, so it resolves asynchronously.
-    expect(await screen.findByTestId('configuration-tab')).toBeInTheDocument();
+    expect(mockRedirect).not.toHaveBeenCalled();
+    expect(screen.getByTestId('edx-iframe')).toBeInTheDocument();
   });
 
-  it('passes the decoded courseId to ConfigurationTab', async () => {
-    renderPage();
-    const tab = await screen.findByTestId('configuration-tab');
-    expect(tab).toHaveAttribute('data-course-id', 'course-v1:test+course+2024');
-  });
-
-  it('renders nothing for a non-admin user', () => {
-    mockMemberCheck.mockReturnValue({ data: { is_platform_admin: false }, isSuccess: true });
-    const { container } = renderPage();
-    expect(screen.queryByTestId('configuration-tab')).not.toBeInTheDocument();
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('redirects a resolved non-admin away from the page', () => {
+  it('redirects a resolved non-staff user away from the page', () => {
     mockMemberCheck.mockReturnValue({ data: { is_platform_admin: false }, isSuccess: true });
     renderPage();
     expect(mockRedirect).toHaveBeenCalledWith('/platform/test-tenant');
@@ -105,39 +89,15 @@ describe('ConfigurationPage', () => {
   });
 
   it.each(['course-staff', 'course-instructor', 'course-limited-staff'])(
-    'renders the ConfigurationTab for a non-admin with the %s role',
-    async (role) => {
+    'admits a non-admin holding the %s role',
+    (role) => {
       mockMemberCheck.mockReturnValue({ data: { is_platform_admin: false }, isSuccess: true });
-      mockCourseUserRoles.mockReturnValue({
-        courseRoles: [{ role, org: 'test-tenant', course: 'course-v1:test+course+2024' }],
-        isCourseStaff: role !== 'course-limited-staff',
-        isCourseLimitedStaff: role === 'course-limited-staff',
-        hasCourseStaffAccess: true,
-        isResolved: true,
-      });
+      mockCourseUserRoles.mockReturnValue(staffRoles(role));
       renderPage();
-      expect(await screen.findByTestId('configuration-tab')).toBeInTheDocument();
       expect(mockRedirect).not.toHaveBeenCalled();
+      expect(screen.getByTestId('edx-iframe')).toBeInTheDocument();
     },
   );
-
-  it('toggles a section open and closed through toggleSection', async () => {
-    renderPage();
-    const tab = await screen.findByTestId('configuration-tab');
-    expect(tab).toHaveAttribute('data-expanded', '{}');
-
-    fireEvent.click(screen.getByTestId('toggle-section'));
-    expect(screen.getByTestId('configuration-tab')).toHaveAttribute(
-      'data-expanded',
-      '{"overview":true}',
-    );
-
-    fireEvent.click(screen.getByTestId('toggle-section'));
-    expect(screen.getByTestId('configuration-tab')).toHaveAttribute(
-      'data-expanded',
-      '{"overview":false}',
-    );
-  });
 
   it('does not redirect a non-admin before the course-role listing resolves', () => {
     mockMemberCheck.mockReturnValue({ data: { is_platform_admin: false }, isSuccess: true });
