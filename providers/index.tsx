@@ -13,14 +13,10 @@ import {
   handleTenantSwitch,
   LocalStorageService,
   saveUserTokens,
+  useCurrentTenant,
   useUserTenants,
 } from '@/utils/localstorage';
-import {
-  AuthProvider,
-  setAccessCheckResponse,
-  TenantProvider,
-  useCurrentTenant,
-} from '@iblai/iblai-js/web-utils';
+import { AuthProvider, setAccessCheckResponse, TenantProvider } from '@iblai/iblai-js/web-utils';
 import { getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';

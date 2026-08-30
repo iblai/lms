@@ -2075,16 +2075,21 @@ const URL_MONITOR_SCRIPT_OFFLINE: &str = r#"
                         // Restore all saved localStorage keys
                         for (var key in context) {
                             if (context.hasOwnProperty(key)) {
-                                var existingValue = sessionStorage.getItem(key) || localStorage.getItem(key);
-                                // Only restore if the value doesn't exist or is different
-                                if (!existingValue || existingValue !== context[key]) {
-                                    // Write both the localStorage seed and this tab's
-                                    // sessionStorage source-of-truth so per-tab auth
-                                    // reads (session-first) resolve offline.
-                                    localStorage.setItem(key, context[key]);
-                                    try { sessionStorage.setItem(key, context[key]); } catch (e) {}
+                                // Check each store independently: the localStorage seed
+                                // may already match while this tab's sessionStorage
+                                // source-of-truth is still empty (or vice versa), so a
+                                // combined guard would skip the store that needs writing.
+                                var localMissing = localStorage.getItem(key) !== context[key];
+                                var sessionMissing = sessionStorage.getItem(key) !== context[key];
+                                if (localMissing || sessionMissing) {
+                                    if (localMissing) {
+                                        localStorage.setItem(key, context[key]);
+                                    }
+                                    if (sessionMissing) {
+                                        try { sessionStorage.setItem(key, context[key]); } catch (e) {}
+                                    }
                                     restoredCount++;
-                                    console.log('[OfflineMode] Restored localStorage key:', key);
+                                    console.log('[OfflineMode] Restored key:', key);
                                 }
                             }
                         }
