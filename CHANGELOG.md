@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.1](https://github.com/iblai/lms/compare/skills-v0.75.0...skills-v0.75.1) (2026-08-30)
+
+### Bug Fixes
+
+* platform account sheet props updated ([ebf5bc5](https://github.com/iblai/lms/commit/ebf5bc5b340839101c26af45e957fbb5d64cf069))
+
 ## [0.75.0](https://github.com/iblai/lms/compare/skills-v0.74.1...skills-v0.75.0) (2026-08-28)
 
 ### Features
