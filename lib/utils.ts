@@ -10,7 +10,7 @@ import { twMerge } from 'tailwind-merge';
 import { SERVICES } from './constants';
 import { config } from './config';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
-import { getAuthItem } from '@iblai/iblai-js/web-utils';
+import { getAuthItem } from '@/utils/auth-storage';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

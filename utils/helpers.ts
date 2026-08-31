@@ -9,10 +9,8 @@ import {
   isTauriOfflineMode,
   LOCAL_STORAGE_KEYS,
   redirectToAuthSpa as sdkRedirectToAuthSpa,
-  getAuthItem,
-  clearPerTabSession,
-  isPerTabAuthEnabled,
 } from '@iblai/iblai-js/web-utils';
+import { getAuthItem, clearPerTabSession, isPerTabAuthEnabled } from '@/utils/auth-storage';
 
 // Set to true during any intentional navigation away from the app (tenant switch,
 // logout) to suppress concurrent auth redirects that would race and cancel it.

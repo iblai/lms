@@ -11,7 +11,7 @@ import { CourseOutlineContext } from '@/contexts/course-outline-context';
 // @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
-import { getAuthItem } from '@iblai/iblai-js/web-utils';
+import { getAuthItem } from '@/utils/auth-storage';
 import { cn } from '@/lib/utils';
 
 // Only mounted inside a timed/special-exam subsection (examInfo set); defer its chunk.

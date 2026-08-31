@@ -5,14 +5,14 @@ import { userDataSchema, tenantSchema } from '@/types/storage';
 import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { config } from '@/lib/config';
+import type { Tenant } from '@iblai/iblai-js/web-utils';
 import {
-  Tenant,
   getAuthItem,
   setAuthItem,
   removeAuthItem,
   clearPerTabSession,
   isPerTabAuthEnabled,
-} from '@iblai/iblai-js/web-utils';
+} from '@/utils/auth-storage';
 
 export class LocalStorageService implements StorageService {
   private static instance: LocalStorageService;

@@ -2,7 +2,8 @@
 
 import React, { Suspense } from 'react';
 // import { SsoLogin as SsoLoginComponent } from '@iblai/iblai-js/web-containers/next';
-import { LOCAL_STORAGE_KEYS, setAuthItem, removeAuthItem } from '@iblai/iblai-js/web-utils';
+import { LOCAL_STORAGE_KEYS } from '@iblai/iblai-js/web-utils';
+import { setAuthItem, removeAuthItem } from '@/utils/auth-storage';
 import { useSearchParams } from 'next/navigation';
 
 interface SsoLoginProps {

@@ -42,6 +42,16 @@ vi.mock(import('@iblai/iblai-js/web-utils'), async (importOriginal) => {
     ...actual,
     clearCurrentTenantCookie: vi.fn(),
     redirectToAuthSpa: vi.fn(),
+  };
+});
+
+// helpers.ts reads the per-tab flag + clears the tab session through the
+// app-local RSC-safe authStorage module (not the SDK barrel). Spy on those two
+// so the per-tab branches can be driven, keeping the real getAuthItem etc.
+vi.mock('@/utils/auth-storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/auth-storage')>();
+  return {
+    ...actual,
     isPerTabAuthEnabled: perTabMocks.isPerTabAuthEnabled,
     clearPerTabSession: perTabMocks.clearPerTabSession,
   };

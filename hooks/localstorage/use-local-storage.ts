@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { Dispatch, SetStateAction } from 'react';
 
-import { getAuthItem, setAuthItem, removeAuthItem } from '@iblai/iblai-js/web-utils';
+import { getAuthItem, setAuthItem, removeAuthItem } from '@/utils/auth-storage';
 
 import { useEventCallback } from './use-event-callback';
 import { useEventListener } from './use-event-listener';
