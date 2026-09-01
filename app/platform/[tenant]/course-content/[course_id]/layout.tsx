@@ -28,6 +28,7 @@ import { CourseOutlineSidebar, CourseOutlineToggle } from '@/components/course-o
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
+import { LessonCompletedDialog } from '@/components/lesson-completed-dialog';
 import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
 import {
   CourseMediaDropdown,
@@ -502,6 +503,9 @@ export default function CourseContentLayout({
       >
         <CourseOutlineDrawer />
         <EdxIframeContext.Provider value={edxIframeValue}>
+          {/* Listens for the mentor's `lesson.completed` relay: refreshes the
+              outline and offers to move to the next/previous unit. */}
+          <LessonCompletedDialog />
           <main className="flex flex-1 overflow-hidden">
             {/* Course sidebar (collapsible on tablet / small screens) */}
             <CourseOutlineSidebar />
