@@ -1395,7 +1395,7 @@ async fn open_external_url(app: AppHandle, url: String) -> Result<(), String> {
     println!("[ibl.ai] Opening external URL for OAuth: {}", url);
     #[cfg(target_os = "ios")]
     {
-        let (tx, rx) = oneshot::channel();
+        let (tx, rx) = tokio::sync::oneshot::channel();
         let url_for_main = url.clone();
         let app_handle = app.clone();
         app.run_on_main_thread(move || {
