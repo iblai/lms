@@ -22,6 +22,11 @@ export const EdxIframeContext = createContext<{
   setAgentMode: (mode: AgentMode) => void;
   agentFullscreen: boolean;
   setAgentFullscreen: (fullscreen: boolean) => void;
+  // True when the agent owns unit completion (tenant
+  // `enable_agent_based_unit_completion` + course `enable_agent_based_completion`
+  // + course `agent_content_mode` all on), so the edX unit must not complete
+  // itself. Told to the edX iframe over postMessage.
+  disableUnitAutoCompletion: boolean;
   //setCourseOutline: (outline:CourseOutlineChildNode[]) => void;
 }>({
   iframeUrl: '',
@@ -39,5 +44,6 @@ export const EdxIframeContext = createContext<{
   setAgentMode: () => {},
   agentFullscreen: false,
   setAgentFullscreen: () => {},
+  disableUnitAutoCompletion: false,
   //setCourseOutline: () => {},
 });

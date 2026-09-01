@@ -5,12 +5,17 @@ vi.mock('@/lib/config', () => ({
     urls: {
       dm: () => 'https://dm.example.com',
     },
+    settings: {
+      mainPlatformKey: () => 'main',
+    },
   },
 }));
 
 import {
   fetchAppMetadata,
   extractTenantFromCookies,
+  fetchPublicPlatformConfig,
+  fetchTenantSeoFlags,
   logEnvironmentInfo,
   isDevelopment,
 } from '../server-metadata';
@@ -281,5 +286,162 @@ describe('environment helpers', () => {
 
     expect(logSpy).not.toHaveBeenCalled();
     logSpy.mockRestore();
+  });
+});
+
+describe('fetchPublicPlatformConfig', () => {
+  const originalFetch = global.fetch;
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    consoleSpy.mockRestore();
+  });
+
+  it('returns the public config for a tenant', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ platform_key: 'acme', allow_self_linking: true }),
+    });
+    global.fetch = fetchSpy as unknown as typeof fetch;
+
+    await expect(fetchPublicPlatformConfig('acme')).resolves.toEqual({
+      platform_key: 'acme',
+      allow_self_linking: true,
+    });
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://dm.example.com/api/core/users/platforms/config/public/?platform_key=acme',
+      { cache: 'no-store' },
+    );
+  });
+
+  it('percent-encodes the platform key', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
+    global.fetch = fetchSpy as unknown as typeof fetch;
+
+    await fetchPublicPlatformConfig('a c/me');
+
+    expect(fetchSpy.mock.calls[0][0]).toContain('platform_key=a%20c%2Fme');
+  });
+
+  it('returns null on a non-ok response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+
+    await expect(fetchPublicPlatformConfig('acme')).resolves.toBeNull();
+    expect(consoleSpy).not.toHaveBeenCalled();
+  });
+
+  it('reports and returns null when the request throws', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(fetchPublicPlatformConfig('acme')).resolves.toBeNull();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Failed to fetch public platform config:',
+      expect.any(Error),
+    );
+  });
+});
+
+describe('fetchTenantSeoFlags', () => {
+  const originalFetch = global.fetch;
+  const originalIndexable = process.env.NEXT_PUBLIC_SEO_INDEXABLE;
+
+  const respondWith = (body: unknown) => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(body),
+    }) as unknown as typeof fetch;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete process.env.NEXT_PUBLIC_SEO_INDEXABLE;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    if (originalIndexable === undefined) {
+      delete process.env.NEXT_PUBLIC_SEO_INDEXABLE;
+    } else {
+      process.env.NEXT_PUBLIC_SEO_INDEXABLE = originalIndexable;
+    }
+    vi.restoreAllMocks();
+  });
+
+  it('is public when the tenant allows self-linking', async () => {
+    respondWith({ allow_self_linking: true });
+
+    await expect(fetchTenantSeoFlags('acme')).resolves.toEqual({
+      isPublic: true,
+      platformName: null,
+    });
+  });
+
+  it('is private when self-linking is off', async () => {
+    respondWith({ allow_self_linking: false });
+
+    await expect(fetchTenantSeoFlags('acme')).resolves.toEqual({
+      isPublic: false,
+      platformName: null,
+    });
+  });
+
+  it('falls back to the main platform key when no tenant is given', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve({ allow_self_linking: true }) });
+    global.fetch = fetchSpy as unknown as typeof fetch;
+
+    await expect(fetchTenantSeoFlags(null)).resolves.toMatchObject({ isPublic: true });
+    expect(fetchSpy.mock.calls[0][0]).toContain('platform_key=main');
+  });
+
+  it('honours the NEXT_PUBLIC_SEO_INDEXABLE override for a private tenant', async () => {
+    process.env.NEXT_PUBLIC_SEO_INDEXABLE = 'true';
+    respondWith({ allow_self_linking: false });
+
+    await expect(fetchTenantSeoFlags('acme')).resolves.toMatchObject({ isPublic: true });
+  });
+
+  it('accepts "1" as the override value', async () => {
+    process.env.NEXT_PUBLIC_SEO_INDEXABLE = '1';
+    respondWith({ allow_self_linking: false });
+
+    await expect(fetchTenantSeoFlags('acme')).resolves.toMatchObject({ isPublic: true });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // A corrupted ibl_current_tenant cookie silently falls back to the plain
+    // `tenant` cookie, so every downstream tenant lookup can quietly shift.
+    it('reports an unparseable ibl_current_tenant cookie and falls back', () => {
+      expect(extractTenantFromCookies('ibl_current_tenant=not-json; tenant=acme')).toBe('acme');
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to parse ibl_current_tenant cookie:',
+        expect.any(Error),
+      );
+    });
+
+    it('does not report a well-formed cookie', () => {
+      expect(extractTenantFromCookies('ibl_current_tenant=%7B%22key%22%3A%22acme%22%7D')).toBe(
+        'acme',
+      );
+      expect(errorSpy).not.toHaveBeenCalled();
+    });
   });
 });

@@ -24,6 +24,7 @@ export const useProfileRoles = (showToast: boolean = true) => {
       }
       return true;
     } catch (error) {
+      console.error('Failed to create catalog roles:', error);
       toast.error('Failed to create roles');
       return false;
     }

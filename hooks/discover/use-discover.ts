@@ -289,7 +289,7 @@ export const useDiscover = ({
         )
         .filter((facet) => facet.terms.length > 0);
     } catch (error) {
-      console.log(error);
+      console.error('Failed to build discover facets:', error);
       return [];
     }
   };

@@ -146,7 +146,8 @@ export async function generateMetadata(): Promise<Metadata> {
         ],
         ...(baseUrl && { metadataBase: new URL(baseUrl) }),
       };
-    } catch {
+    } catch (fallbackError) {
+      console.error('Failed to build fallback metadata:', fallbackError);
       return {
         title: 'ibl.ai | Agentic LMS',
         description: 'Build Your Skills with AI',
@@ -186,7 +187,8 @@ async function getSiteJsonLd(): Promise<object[]> {
     const ld: object[] = [organizationLd({ name, url: baseUrl, logo })];
     if (baseUrl) ld.push(webSiteLd({ name, url: baseUrl }));
     return ld;
-  } catch {
+  } catch (error) {
+    console.error('Failed to build site JSON-LD:', error);
     return [];
   }
 }

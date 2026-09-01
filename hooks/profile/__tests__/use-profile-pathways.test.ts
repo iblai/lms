@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -280,5 +280,55 @@ describe('useProfilePathways', () => {
     });
 
     expect(result.current.filteredPathways).toEqual([{ name: 'Filtered Pathway' }]);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a pathway-completions fetch failure', async () => {
+      mockGetUserEnrolledPathways.mockResolvedValue({
+        data: [{ pathway_uuid: 'uuid-1', name: 'Test' }],
+      });
+      mockGetPathwayCompletion.mockRejectedValue(new Error('Completion error'));
+
+      renderHook(() => useProfilePathways({ searchQuery: '', contentType: 'enrolled' }));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch pathway completions:',
+          expect.any(Error),
+        );
+      });
+    });
+
+    it('reports a failed enrollment check and reports the pathway as not enrolled', async () => {
+      const { result } = renderHook(() =>
+        useProfilePathways({ searchQuery: '', contentType: 'catalog' }),
+      );
+
+      mockGetUserEnrolledPathways.mockRejectedValue(new Error('network'));
+
+      let status: unknown;
+      await act(async () => {
+        status = await result.current.handleFetchSinglePathwayEnrollmentStatus({
+          pathway_uuid: 'uuid-1',
+          name: 'Test',
+        } as never);
+      });
+
+      expect(status).toBe(false);
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to check pathway enrollment:',
+        expect.any(Error),
+      );
+    });
   });
 });

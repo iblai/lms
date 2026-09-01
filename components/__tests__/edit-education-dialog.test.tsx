@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -61,7 +61,17 @@ vi.mock('@/components/ui/dialog', () => ({
 }));
 
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div data-testid="select">{children}</div>,
+  // Exposes a control the tests can use to satisfy each Select's validator,
+  // which the real Radix trigger can't drive in jsdom. The validators only
+  // check for a non-empty value.
+  Select: ({ children, onValueChange }: any) => (
+    <div data-testid="select">
+      <button type="button" data-testid="select-pick" onClick={() => onValueChange?.('selected')}>
+        pick
+      </button>
+      {children}
+    </div>
+  ),
   SelectContent: ({ children }: any) => <div>{children}</div>,
   SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
@@ -168,5 +178,69 @@ describe('EditEducationDialog', () => {
     render(<EditEducationDialog {...defaultProps} />);
     fireEvent.click(screen.getByText('Add new institution'));
     expect(defaultProps.setOpenAddInstitutionDialog).toHaveBeenCalledWith(true);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    const submit = async () => {
+      fireEvent.change(screen.getByPlaceholderText('e.g., Bachelor of Science'), {
+        target: { value: 'BSc' },
+      });
+      // Grade is required and must parse to 0-4.
+      fireEvent.change(screen.getByPlaceholderText('e.g., 3.5'), { target: { value: '3.5' } });
+      screen.getAllByTestId('select-pick').forEach((button) => fireEvent.click(button));
+      await act(async () => {
+        fireEvent.click(screen.getByText('Save'));
+      });
+    };
+
+    it('reports a failed education update alongside the toast', async () => {
+      mockUpdateUserEducation.mockRejectedValue(new Error('service down'));
+      render(<EditEducationDialog {...defaultProps} education={{ id: 1 } as any} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to update education information:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a failed education creation alongside the toast', async () => {
+      mockCreateUserEducation.mockRejectedValue(new Error('service down'));
+      render(<EditEducationDialog {...defaultProps} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to create education information:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a failed education deletion alongside the toast', async () => {
+      mockDeleteEducation.mockRejectedValue(new Error('service down'));
+      render(
+        <EditEducationDialog {...defaultProps} education={{ id: 1 } as any} onDelete={vi.fn()} />,
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Delete Education'));
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to delete education information:',
+        expect.any(Error),
+      );
+    });
   });
 });

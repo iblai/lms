@@ -105,7 +105,8 @@ export function useDefaultMentor({
           throw new Error('No mentors found');
         }
         if (!cancelled) setMentor(resolved);
-      } catch {
+      } catch (error) {
+        console.error('Failed to resolve a default mentor:', error);
         if (cancelled) return;
         setMentor(null);
         onErrorRef.current?.();

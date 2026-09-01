@@ -92,7 +92,8 @@ export default function PathwayDetailPage() {
       toast.success('Enrolled into pathway successfully');
       setEnrollmentStatus(true);
       setTimeout(() => setIsEnrollmentSubmitting(false), 500);
-    } catch {
+    } catch (error) {
+      console.error('Failed to enroll into pathway:', error);
       toast.error('Failed to enroll into pathway');
       setIsEnrollmentSubmitting(false);
     }
@@ -104,7 +105,8 @@ export default function PathwayDetailPage() {
         { pathwayUuid: pathwayId, username: getUserName() },
       ]);
       setPathwayCompletion(response.data as PathwayCompletionResponse);
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch pathway completion:', error);
       setPathwayCompletion(null);
     }
   };
@@ -119,7 +121,8 @@ export default function PathwayDetailPage() {
           response.data.findIndex((pre: any) => pre.active && pre?.pathway_uuid === pathwayId) !==
             -1,
       );
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch pathway enrollment status:', error);
       setEnrollmentStatus(false);
     }
   };
@@ -159,7 +162,8 @@ export default function PathwayDetailPage() {
         } else {
           setLoadingState('failure');
         }
-      } catch {
+      } catch (error) {
+        console.error('Failed to fetch pathway:', error);
         if (cancelled) return;
         setLoadingState('failure');
       }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 
 vi.mock('@/utils/helpers', () => ({
@@ -171,5 +171,43 @@ describe('useDefaultMentor', () => {
 
     resolveFirst({ results: [{ unique_id: 'stale-mentor' }] });
     await waitFor(() => expect(result.current.mentor).toBe('course-mentor'));
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports when no mentor can be resolved', async () => {
+      queueMentorResults({ results: [] }, { results: [] });
+
+      renderHook(() => useDefaultMentor({ tenant: 'test-tenant' }));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to resolve a default mentor:',
+          expect.objectContaining({ message: 'No mentors found' }),
+        );
+      });
+    });
+
+    it('reports when the mentor lookup rejects', async () => {
+      mockGetMentors.mockReturnValueOnce({ unwrap: () => Promise.reject(new Error('boom')) });
+
+      renderHook(() => useDefaultMentor({ tenant: 'test-tenant' }));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to resolve a default mentor:',
+          expect.any(Error),
+        );
+      });
+    });
   });
 });

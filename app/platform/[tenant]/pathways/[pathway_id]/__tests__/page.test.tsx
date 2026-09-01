@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -264,5 +264,66 @@ describe('PathwayDetailPage', () => {
     const banner = screen.getByTestId('pathway-page-banner-image');
     fireEvent.error(banner);
     expect(banner).toHaveAttribute('src', '/random-image.jpg');
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a failed enrollment alongside the toast', async () => {
+      mockCreateEnrollment.mockRejectedValue(new Error('network error'));
+      await renderPage();
+
+      fireEvent.click(screen.getByTestId('pathway-page-cta'));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to enroll into pathway:', expect.any(Error));
+      });
+    });
+
+    it('reports a failed completion fetch behind the hidden progress section', async () => {
+      mockGetPathwayCompletion.mockRejectedValue(new Error('completion error'));
+
+      await renderPage();
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch pathway completion:',
+          expect.any(Error),
+        );
+      });
+    });
+
+    it('reports a failed enrollment-status fetch', async () => {
+      mockGetUserEnrolledPathways.mockRejectedValue(new Error('status error'));
+
+      await renderPage();
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch pathway enrollment status:',
+          expect.any(Error),
+        );
+      });
+    });
+
+    // The page renders its generic failure state either way, so the report is
+    // the only thing that distinguishes "not found" from "search is down".
+    it('reports a failed pathway lookup', async () => {
+      mockHandleSearch.mockRejectedValue(new Error('search down'));
+
+      render(<PathwayDetailPage />);
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to fetch pathway:', expect.any(Error));
+      });
+    });
   });
 });

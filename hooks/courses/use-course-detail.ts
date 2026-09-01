@@ -158,6 +158,7 @@ export const useCourseDetail = (rawCourseId: string) => {
         window.location.href = checkoutSession.redirect_to;
       }
     } catch (error) {
+      console.error('Failed to create course checkout session:', error);
       setCourseButtonActionLoading(false);
       toast.error('Failed to create checkout session');
     }
@@ -178,6 +179,7 @@ export const useCourseDetail = (rawCourseId: string) => {
       setCourseButtonActionLoading(false);
       handleAccessCourse();
     } catch (error) {
+      console.error('Failed to enroll in course:', error);
       toast.error('Failed to enroll in course.');
       setCourseButtonActionLoading(false);
     }
@@ -337,7 +339,8 @@ export const useCourseDetail = (rawCourseId: string) => {
         setCourse(null);
         setCourseInfoLoadingState('failure');
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch course info:', error);
       setCourse(null);
       setCourseInfoLoadingState('failure');
     }

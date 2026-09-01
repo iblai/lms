@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -160,6 +160,28 @@ describe('NotificationsDropdown', () => {
     render(<NotificationsDropdown />);
     await waitFor(() => {
       expect(screen.getByTestId('default-empty-box')).toBeInTheDocument();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a notifications fetch failure behind the empty state', async () => {
+      mockGetNotifications.mockRejectedValue(new Error('Network error'));
+
+      render(<NotificationsDropdown />);
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to fetch notifications:', expect.any(Error));
+      });
     });
   });
 });

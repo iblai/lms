@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -216,6 +216,34 @@ describe('useProfilePrograms', () => {
     await waitFor(() => {
       expect(result.current.programCompletions).toEqual([]);
       expect(result.current.programCompletionsLoading).toBe(false);
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a program-completions fetch failure', async () => {
+      mockGetUserEnrolledPrograms.mockResolvedValue({
+        data: [{ name: 'Program 1', program_key: 'prog-1', metadata: {} }],
+      });
+      mockGetProgramCompletion.mockRejectedValue(new Error('Completion error'));
+
+      renderHook(() => useProfilePrograms({ searchQuery: '', activeTab: 'enrolled' }));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch program completions:',
+          expect.any(Error),
+        );
+      });
     });
   });
 });

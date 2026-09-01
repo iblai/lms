@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -252,6 +252,66 @@ describe('useProfileActivityStats', () => {
       const pointsStat = result.current.stats.find((s) => s.label === 'Points');
       expect(pointsStat?.loading).toBe(false);
       expect(pointsStat?.value).toBe(0);
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // Every stat falls back to 0 on failure, so without a report a broken
+    // endpoint is indistinguishable from a learner with no activity.
+    it('reports each activity stat that fails to load', async () => {
+      mockGetUserSkillsPoints.mockRejectedValue(new Error('network'));
+      mockGetUserReportedSkills.mockRejectedValue(new Error('network'));
+      mockGetUserCredentials.mockRejectedValue(new Error('network'));
+      mockGetUserEnrolledCourses.mockRejectedValue(new Error('network'));
+      mockGetUserEnrolledPrograms.mockRejectedValue(new Error('network'));
+      mockGetUserCatalogPathways.mockRejectedValue(new Error('network'));
+      mockGetPerLearnerInfo.mockRejectedValue(new Error('network'));
+      mockGetUserPerLearnerInfo.mockRejectedValue(new Error('network'));
+
+      renderHook(() => useProfileActivityStats());
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load Points activity stat:',
+          expect.any(Error),
+        );
+      });
+      for (const message of [
+        'Failed to load Skills activity stat:',
+        'Failed to load Credentials activity stat:',
+        'Failed to load Courses activity stat:',
+        'Failed to load Programs activity stat:',
+        'Failed to load Pathways activity stat:',
+        'Failed to load Assessments/Videos activity stats:',
+        'Failed to load Hours activity stat:',
+      ]) {
+        expect(errorSpy).toHaveBeenCalledWith(message, expect.any(Error));
+      }
+    });
+
+    it('names the failing request when a response comes back empty', async () => {
+      mockGetUserCredentials.mockResolvedValue({ data: null });
+
+      renderHook(() => useProfileActivityStats());
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load Credentials activity stat:',
+          expect.objectContaining({
+            message: 'Credentials request failed or returned no data',
+          }),
+        );
+      });
     });
   });
 });

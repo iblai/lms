@@ -123,6 +123,7 @@ export const usePersonnalizedCatalog = ({ isLoggedIn = true }: { isLoggedIn?: bo
       });
       return response;
     } catch (error) {
+      console.error('Failed to fetch personalized catalog:', error);
       return undefined;
     }
   };

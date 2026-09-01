@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -76,5 +76,28 @@ describe('useCatalogSearch', () => {
     });
 
     expect(mockGetCatalogSearch).toHaveBeenCalledWith([{}], true);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a catalog search failure', async () => {
+      mockGetCatalogSearch.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useCatalogSearch());
+
+      await act(async () => {
+        await result.current.handleSearch({ content: ['skills'], tenant: 'test-tenant' } as never);
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith('Catalog search request failed:', expect.any(Error));
+    });
   });
 });

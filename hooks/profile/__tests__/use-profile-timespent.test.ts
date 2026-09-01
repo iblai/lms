@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -126,5 +126,45 @@ describe('useProfileTimeSpent', () => {
 
     // Should be formatted as 'ddd DD/MM/YY'
     expect(result.current.timeSpent[0].date).toMatch(/\w{3} \d{2}\/\d{2}\/\d{2}/);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a time-spent fetch failure', async () => {
+      mockGetOverTimeActivity.mockRejectedValue(new Error('Network error'));
+
+      renderHook(() => useProfileTimeSpent());
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load profile time spent:',
+          expect.any(Error),
+        );
+      });
+    });
+
+    it('reports an empty time-spent response with a named error', async () => {
+      mockGetOverTimeActivity.mockResolvedValue({ data: null });
+
+      renderHook(() => useProfileTimeSpent());
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load profile time spent:',
+          expect.objectContaining({
+            message: 'Time-spent request failed or returned no data',
+          }),
+        );
+      });
+    });
   });
 });

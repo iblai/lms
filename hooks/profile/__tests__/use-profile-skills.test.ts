@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -343,6 +343,46 @@ describe('useProfileSkills', () => {
 
       expect(mockCreateOrUpdateUserReportedSkill).not.toHaveBeenCalled();
       expect(mockCreateOrUpdateUserDesiredSkill).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a skills-search failure alongside the toast', async () => {
+      mockHandleSearch.mockRejectedValue(new Error('Search error'));
+      const { result } = renderHook(() => useProfileSkills());
+
+      await act(async () => {
+        await result.current.handleFetchAllSkills('python');
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to fetch skills:', expect.any(Error));
+    });
+
+    it('reports a skills-creation failure alongside the toast', async () => {
+      mockCreateOrUpdateUserReportedSkill.mockRejectedValue(new Error('Create error'));
+      const { result } = renderHook(() => useProfileSkills());
+
+      await act(async () => {
+        await result.current.handleSkillsCreate({
+          skills: [{ name: 'Python' }],
+          user_id: 42,
+        } as never);
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to create user reported skills:',
+        expect.any(Error),
+      );
     });
   });
 });

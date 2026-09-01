@@ -24,11 +24,12 @@ export function NotificationsDropdown() {
         username: getUserName(),
       });
       if (isError) {
-        throw new Error();
+        throw new Error('Notifications request reported an error');
       }
       setNotifications(response?.data?.results || []);
       setFilteredNotifications(response?.data?.results || []);
     } catch (error) {
+      console.error('Failed to fetch notifications:', error);
       setNotifications([]);
       setFilteredNotifications([]);
     }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -233,5 +233,33 @@ describe('usePersonnalizedCatalogQuery', () => {
     expect(result.current.data).toEqual({ results: [{ id: 1 }], count: 1 });
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isFetching).toBe(true);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a personalized catalog failure and resolves undefined', async () => {
+      mockGetPersonnalizedSearch.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => usePersonnalizedCatalog());
+
+      let response: unknown = 'unset';
+      await act(async () => {
+        response = await result.current.handleSearch({ tenant: 'test-tenant' } as never);
+      });
+
+      expect(response).toBeUndefined();
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to fetch personalized catalog:',
+        expect.any(Error),
+      );
+    });
   });
 });

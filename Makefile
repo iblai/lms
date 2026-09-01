@@ -340,7 +340,7 @@ help:
 	@echo "    make tauri-icons      - Generate icons from source image"
 
 yalc-refresh:
-	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers && yalc add @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers 
+	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers @iblai/agent-ai && yalc add @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers @iblai/agent-ai
 
 yalc-remove:
-	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers
+	yalc remove @iblai/iblai-js @iblai/data-layer @iblai/web-utils @iblai/web-containers @iblai/agent-ai

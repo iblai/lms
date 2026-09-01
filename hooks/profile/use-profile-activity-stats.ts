@@ -81,7 +81,7 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isErrorGetUserSkillsPoints || isEmpty(response?.data?.skill_points)) {
-        throw new Error();
+        throw new Error('Skills points request failed or returned no points');
       }
       updateSingleStat({
         value:
@@ -92,7 +92,8 @@ export const useProfileActivityStats = () => {
         label,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Points activity stat:', error);
       updateSingleStat({
         value: 0,
         label,
@@ -115,7 +116,7 @@ export const useProfileActivityStats = () => {
       );
       let skillsCount = 0;
       if (isErrorGetUserDesiredSkills && isErrorGetUserReportedSkills) {
-        throw new Error();
+        throw new Error('Reported skills request failed');
       }
       if (!isErrorGetUserReportedSkills) {
         skillsCount = reportedSkills?.data?.skills?.length || 0;
@@ -137,7 +138,8 @@ export const useProfileActivityStats = () => {
         label,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Skills activity stat:', error);
       updateSingleStat({
         value: 0,
         label,
@@ -157,14 +159,15 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isErrorGetUserCredentials || isEmpty(response?.data)) {
-        throw new Error();
+        throw new Error('Credentials request failed or returned no data');
       }
       updateSingleStat({
         value: response?.data?.data?.length || 0,
         label,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Credentials activity stat:', error);
       updateSingleStat({
         value: 0,
         label,
@@ -184,14 +187,15 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isErrorGetUserEnrolledCourses || isEmpty(response.data)) {
-        throw new Error();
+        throw new Error('Enrolled courses request failed or returned no data');
       }
       updateSingleStat({
         value: response?.data?.count || 0,
         label,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Courses activity stat:', error);
       updateSingleStat({
         value: 0,
         label,
@@ -212,14 +216,15 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isEnrolledProgramsError || isEmpty(response.data)) {
-        throw new Error();
+        throw new Error('Enrolled programs request failed or returned no data');
       }
       updateSingleStat({
         value: response?.data?.length || 0,
         label,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Programs activity stat:', error);
       updateSingleStat({
         value: 0,
         label,
@@ -249,7 +254,7 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isCatalogPathwaysError || isEmpty(response.data)) {
-        throw new Error();
+        throw new Error('Catalog pathways request failed or returned no data');
       }
       const uniquePathways = filterUniquePathways(response.data);
       updateSingleStat({
@@ -257,7 +262,8 @@ export const useProfileActivityStats = () => {
         label: pathwaysLabel,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Pathways activity stat:', error);
       updateSingleStat({
         value: 0,
         label: pathwaysLabel,
@@ -283,7 +289,7 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isErrorgetPerLearnerInfo || isEmpty(response.data)) {
-        throw new Error();
+        throw new Error('Per-learner info request failed or returned no data');
       }
       updateSingleStat({
         value: response?.data?.data?.total_assessments || 0,
@@ -295,7 +301,8 @@ export const useProfileActivityStats = () => {
         label: videosLabel,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Assessments/Videos activity stats:', error);
       updateSingleStat({
         value: 0,
         label: assessmentsLabel,
@@ -323,7 +330,7 @@ export const useProfileActivityStats = () => {
         true,
       );
       if (isErrorGetUserPerLearnerInfo || isEmpty(response.data)) {
-        throw new Error();
+        throw new Error('Per-learner meta request failed or returned no data');
       }
       const totalTimeSpentSeconds = response?.data?.data?.total_time_spent;
       updateSingleStat({
@@ -331,7 +338,8 @@ export const useProfileActivityStats = () => {
         label: timeSpentLabel,
         loading: false,
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to load Hours activity stat:', error);
       updateSingleStat({
         value: 0,
         label: timeSpentLabel,

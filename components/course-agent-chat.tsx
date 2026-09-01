@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, SquarePen } from 'lucide-react';
 import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
@@ -10,10 +10,14 @@ import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import '@iblai/agent-ai';
 import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
-import { getUserName } from '@/utils/helpers';
+import { getUserId, getUserName } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
 import { setMentorSpinnerHidden } from '@/features/mentor';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { CourseOutlineContext } from '@/contexts/course-outline-context';
+import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
+import type { CourseOutlineChildNode } from '@/types/courses';
 
 export function CourseAgentChat() {
   const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
@@ -25,6 +29,46 @@ export function CourseAgentChat() {
   const [spinnerHidden, setSpinnerHidden] = useState(false);
   const mentorElementRef = useRef<HTMLElement | null>(null);
   const dispatch = useDispatch();
+  const { course, currentUnitID } = useContext(CourseOutlineContext);
+  const { courseID, activeTab, agentMode, courseOutline } = useContext(EdxIframeContext);
+  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({
+    course,
+    activeTab,
+    agentMode,
+    tenant,
+  });
+
+  // The agent names the lesson it completes, so it needs the unit's title on
+  // top of its ids. Matched on id alone: an outline that has not loaded yet —
+  // or a unit id belonging to another course — must yield no name rather than
+  // a confidently wrong one, so the agent completes an unnamed lesson instead
+  // of the wrong one.
+  const currentUnitDisplayName = useMemo(() => {
+    if (!currentUnitID) return undefined;
+    const findUnit = (node?: CourseOutlineChildNode): CourseOutlineChildNode | undefined => {
+      if (!node) return undefined;
+      if (node.id === currentUnitID) return node;
+      for (const child of node.children ?? []) {
+        const match = findUnit(child);
+        if (match) return match;
+      }
+      return undefined;
+    };
+    return findUnit(courseOutline)?.display_name || undefined;
+  }, [courseOutline, currentUnitID]);
+
+  // With edX auto-completion off, the agent is the one that marks the unit
+  // complete, so it needs the edX identifiers of what the learner is on, the
+  // unit's name, and the switch that turns lesson completion on.
+  const edxCompletionProps = unitAutoCompletionDisabled
+    ? {
+        edxCourseId: courseID || undefined,
+        edxUsageId: currentUnitID || undefined,
+        edxUserId: getUserId() ?? undefined,
+        edxDisplayName: currentUnitDisplayName,
+        enableLessonCompletion: true,
+      }
+    : {};
 
   useEffect(() => {
     dispatch(setMentorSpinnerHidden(spinnerHidden));
@@ -63,7 +107,8 @@ export function CourseAgentChat() {
           throw new Error('No mentors found');
         }
         setMentorInUse(mentor);
-      } catch {
+      } catch (error) {
+        console.error('Failed to resolve a mentor for the course agent chat:', error);
         setMentorInUse(null);
         toast.error('No mentors found');
       }
@@ -181,6 +226,7 @@ export function CourseAgentChat() {
         theme: 'light',
         style: { height: '100%', width: '100%' },
         extraparams: 'hide-sidebar=true&hide-navbar=true',
+        ...edxCompletionProps,
       })}
     </div>
   );

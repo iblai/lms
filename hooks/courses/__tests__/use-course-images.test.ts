@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -84,5 +84,33 @@ describe('useCourseImages', () => {
     await waitFor(() => expect(result.current['course-2']).toBeDefined());
 
     expect(mockGetCourseMetaData).toHaveBeenCalledTimes(2);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // The card keeps its placeholder either way, so a metadata outage is
+    // invisible in the UI.
+    it('reports a per-course metadata failure and keeps the card placeholder', async () => {
+      mockGetCourseMetaData.mockRejectedValue(new Error('network'));
+
+      const { result } = renderHook(() => useCourseImages(['course-1']));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch course metadata for card image:',
+          expect.any(Error),
+        );
+      });
+      expect(result.current).toEqual({});
+    });
   });
 });

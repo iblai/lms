@@ -1,3 +1,11 @@
+import { withSentryConfig } from '@sentry/nextjs';
+
+// Sourcemap generation is heavy (multi-GB) and only pays off if the maps are
+// actually uploaded to Sentry — which requires SENTRY_AUTH_TOKEN at build time.
+// With no token they'd be generated and thrown away, OOM-ing CI runners. Gate
+// the whole Sentry sourcemap pipeline on the token.
+const uploadSourcemaps = !!process.env.SENTRY_AUTH_TOKEN;
+
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 // ---------------------------------------------------------------------------
@@ -76,9 +84,39 @@ const nextConfig = {
     ],
   },
   transpilePackages: ['@tauri-apps/api'],
+  // Sentry's Node SDK and the OpenTelemetry instrumentation it loads rely on
+  // require-in-the-middle hooks that break when bundled — keep them external.
+  serverExternalPackages: [
+    'import-in-the-middle',
+    'require-in-the-middle',
+    '@opentelemetry/instrumentation',
+    '@sentry/node',
+    '@sentry/node-core',
+  ],
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion'],
   },
 };
 
-export default nextConfig;
+const sentryWebpackPluginOptions = {
+  silent: false,
+  org: process.env.SENTRY_ORG || 'ibl-ai',
+  project: process.env.SENTRY_PROJECT || 'lms-iblai-app',
+  widenClientFileUpload: uploadSourcemaps,
+  // Upload source maps to Sentry (requires SENTRY_AUTH_TOKEN at build time),
+  // then delete the emitted .map files so they are never served publicly. With
+  // no token the whole pipeline is disabled so `next build` doesn't generate
+  // multi-GB maps only to discard them.
+  sourcemaps: {
+    disable: !uploadSourcemaps,
+    deleteSourcemapsAfterUpload: true,
+  },
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+    automaticVercelMonitors: false,
+  },
+};
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);

@@ -26,6 +26,7 @@ import { useParams, usePathname, useRouter } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
 import { Spinner } from '@/components/spinner';
 import { SkillsTimeTrackingProvider } from '@/hooks/use-time-tracking';
+import { SentryInit } from '@/components/sentry-init';
 
 declare global {
   interface Window {
@@ -75,7 +76,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       script.src = '/env.js';
       script.async = false;
       script.onload = () => loadDataLayer();
-      script.onerror = () => loadDataLayer();
+      script.onerror = () => {
+        // Without env.js every runtime-configured URL silently falls back to a
+        // build-time default, so this is worth reporting even though the app
+        // continues to boot.
+        console.error('Failed to load /env.js; falling back to build-time config');
+        loadDataLayer();
+      };
       document.head.appendChild(script);
     }
   }, []);
@@ -124,42 +131,47 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthProvider
-      skip={isSsoLoginRoute || isVersionRoute}
-      redirectToAuthSpa={(
-        redirectTo = undefined,
-        platformKey = undefined,
-        logout = false,
-        saveRedirect = true,
-      ) => redirectToAuthSpa(redirectTo, platformKey, logout, saveRedirect)}
-      username={getUserName() || ''}
-      storageService={LocalStorageService.getInstance()}
-      middleware={middleware}
-      pathname={pathname}
-    >
-      <TenantProvider
+    <>
+      {/* Mounted past the `ready` gate so `/env.js` — the source of the runtime
+          Sentry DSN — has already been loaded by the effect above. */}
+      <SentryInit />
+      <AuthProvider
         skip={isSsoLoginRoute || isVersionRoute}
-        currentTenant={tenant || ''}
-        requestedTenant={requestedTenant || ''}
-        saveCurrentTenant={(currentTenant) => {
-          saveCurrentTenant(currentTenant);
-        }}
-        saveUserTenants={saveUserTenants}
-        saveUserTokens={(tokens) => {
-          saveUserTokens(tokens as TokenResponse);
-        }}
-        handleTenantSwitch={(tenant, saveRedirect) => handleTenantSwitch(tenant, saveRedirect)}
+        redirectToAuthSpa={(
+          redirectTo = undefined,
+          platformKey = undefined,
+          logout = false,
+          saveRedirect = true,
+        ) => redirectToAuthSpa(redirectTo, platformKey, logout, saveRedirect)}
         username={getUserName() || ''}
-        onAuthFailure={(reason) => {
-          console.error('[TenantProvider] Auth failure:', reason);
-          router.push(`/platform/${tenant}/error/403`);
-        }}
-        onLoadPlatformPermissions={onLoadPlatformpermissions}
-        fallback={spinnerFallback}
+        storageService={LocalStorageService.getInstance()}
+        middleware={middleware}
+        pathname={pathname}
       >
-        <SkillsTimeTrackingProvider />
-        {children}
-      </TenantProvider>
-    </AuthProvider>
+        <TenantProvider
+          skip={isSsoLoginRoute || isVersionRoute}
+          currentTenant={tenant || ''}
+          requestedTenant={requestedTenant || ''}
+          saveCurrentTenant={(currentTenant) => {
+            saveCurrentTenant(currentTenant);
+          }}
+          saveUserTenants={saveUserTenants}
+          saveUserTokens={(tokens) => {
+            saveUserTokens(tokens as TokenResponse);
+          }}
+          handleTenantSwitch={(tenant, saveRedirect) => handleTenantSwitch(tenant, saveRedirect)}
+          username={getUserName() || ''}
+          onAuthFailure={(reason) => {
+            console.error('[TenantProvider] Auth failure:', reason);
+            router.push(`/platform/${tenant}/error/403`);
+          }}
+          onLoadPlatformPermissions={onLoadPlatformpermissions}
+          fallback={spinnerFallback}
+        >
+          <SkillsTimeTrackingProvider />
+          {children}
+        </TenantProvider>
+      </AuthProvider>
+    </>
   );
 }
