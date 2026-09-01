@@ -1,7 +1,7 @@
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useContext, useState, useEffect } from 'react';
 import { Clock, AlertCircle } from 'lucide-react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import {
   // @ts-ignore
   useUpdateExamAttemptMutation,
@@ -172,7 +172,7 @@ export const TimedExam = () => {
             isCriticalTime
               ? 'border-red-200 bg-red-50'
               : isLowTime
-                ? 'border-yellow-200 bg-yellow-50'
+                ? 'border-[#bfdbfe] bg-[#dbeafe]'
                 : 'border-blue-200 bg-blue-50'
           }`}
         >
@@ -206,12 +206,12 @@ export const TimedExam = () => {
             <div className="flex items-center gap-2">
               <Clock
                 className={`h-5 w-5 ${
-                  isCriticalTime ? 'text-red-600' : isLowTime ? 'text-yellow-600' : 'text-blue-600'
+                  isCriticalTime ? 'text-red-600' : isLowTime ? 'text-[#2563eb]' : 'text-blue-600'
                 }`}
               />
               <span
                 className={`text-md font-mono font-semibold ${
-                  isCriticalTime ? 'text-red-700' : isLowTime ? 'text-yellow-700' : 'text-blue-700'
+                  isCriticalTime ? 'text-red-700' : isLowTime ? 'text-[#1d4ed8]' : 'text-blue-700'
                 }`}
                 aria-live="polite"
                 aria-label={`Time remaining: ${formatTimeRemaining(timeRemaining)}`}
@@ -277,7 +277,7 @@ export const TimedExam = () => {
   }
 
   // Show "ready to start" UI when no active attempt exists
-  if (_.isEmpty(examInfo?.exam?.attempt) || _.isEmpty(examInfo?.active_attempt)) {
+  if (isEmpty(examInfo?.exam?.attempt) || isEmpty(examInfo?.active_attempt)) {
     return (
       <div className="sm:p-6">
         <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 p-6">

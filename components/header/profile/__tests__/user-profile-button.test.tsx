@@ -26,6 +26,13 @@ let mockDefaultSupportPhoneNumber = '(571) 293-0242';
 let mockEnableSupportPhone = false;
 let mockTenantMetadata: { support_phone_number?: string } | undefined = undefined;
 
+// The route the button is rendered under. `useTenantParam` reads it, so this is
+// what decides which tenant the dropdown — and its onboarding links — point at.
+let mockRouteParams: Record<string, string | string[]> = { tenant: 'test-tenant' };
+vi.mock('next/navigation', () => ({
+  useParams: () => mockRouteParams,
+}));
+
 // Mock helpers
 vi.mock('@/utils/helpers', () => ({
   getTenant: () => 'test-tenant',
@@ -118,6 +125,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       </span>
       <span data-testid="default-support-phone">{String(props.defaultSupportPhone)}</span>
       <span data-testid="enable-support-phone">{String(props.enableSupportPhone)}</span>
+      <span data-testid="onboarding-base-path">{String(props.onboardingBasePath)}</span>
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
@@ -158,6 +166,7 @@ describe('UserProfileButton', () => {
     mockEnableSupportPhone = false; // Reset to support phone disabled by default
     mockTenantMetadata = undefined; // Reset to no tenant metadata
     mockUserTenants = defaultUserTenants; // Reset to default tenant list
+    mockRouteParams = { tenant: 'test-tenant' }; // Reset to the tenant in the URL
   });
 
   describe('rendering', () => {
@@ -382,6 +391,58 @@ describe('UserProfileButton', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('default-support-phone')).toHaveTextContent('(111) 222-3333');
+    });
+  });
+
+  describe('tenant from the route', () => {
+    it('uses the tenant in the URL rather than the stored one', () => {
+      // An admin viewing /platform/other-tenant/... is acting on that tenant,
+      // so the dropdown must follow the route and not the stored tenant.
+      mockRouteParams = { tenant: 'other-tenant' };
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('tenant')).toHaveTextContent('other-tenant');
+    });
+
+    it('falls back to the stored tenant outside the [tenant] segment', () => {
+      // Rendered somewhere with no tenant param — the stored tenant is all
+      // there is to go on.
+      mockRouteParams = {};
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('tenant')).toHaveTextContent('test-tenant');
+    });
+  });
+
+  describe('onboardingBasePath', () => {
+    it("points the admin panel at this app's onboarding route", () => {
+      // The SDK's Onboarding tab builds its copyable link as
+      // `<onboardingBasePath>/onboarding/<agent-id>`, so the base has to be the
+      // platform prefix of the route that renders onboarding.
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('onboarding-base-path')).toHaveTextContent(
+        `${window.location.origin}/platform/test-tenant`,
+      );
+    });
+
+    it('composes into the onboarding agent route', () => {
+      render(<UserProfileButton />);
+
+      const basePath = screen.getByTestId('onboarding-base-path').textContent;
+
+      expect(new URL(`${basePath}/onboarding/agent-2`).pathname).toBe(
+        '/platform/test-tenant/onboarding/agent-2',
+      );
+    });
+
+    it('follows the tenant in the route', () => {
+      mockRouteParams = { tenant: 'other-tenant' };
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('onboarding-base-path')).toHaveTextContent(
+        `${window.location.origin}/platform/other-tenant`,
+      );
     });
   });
 

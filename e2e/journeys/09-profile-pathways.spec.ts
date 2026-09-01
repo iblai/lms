@@ -8,7 +8,7 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
  * Validates the profile pathways page:
  *  1. Pathways page with list or empty state
  *  2. Pathway cards with name/progress
- *  3. Click pathway → modal
+ *  3. Click pathway → pathway detail page
  *  4. Modal close
  *  5. Create Pathway button (admin)
  */
@@ -71,7 +71,7 @@ test.describe('Journey 09: Profile Pathways', () => {
     }
   });
 
-  test('Checkpoint 3: Click pathway opens modal', async ({ page }) => {
+  test('Checkpoint 3: Click pathway navigates to the pathway detail page', async ({ page }) => {
     const pathwayCard = page.locator('[data-testid="pathway-card"]').first();
     const emptyState = page.getByText(/no pathways found/i).first();
 
@@ -79,30 +79,19 @@ test.describe('Journey 09: Profile Pathways', () => {
 
     const hasCards = await pathwayCard.isVisible().catch(() => false);
     if (!hasCards) {
-      logger.info('No pathway cards — skipping modal test');
+      logger.info('No pathway cards — skipping navigation test');
       test.skip();
       return;
     }
 
     await pathwayCard.click();
 
-    const modal = page.getByRole('dialog').first();
-    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (hasModal) {
-      await expect(modal).toBeVisible();
-      logger.info('Pathway detail modal opened');
-    } else {
-      const urlChanged = !page.url().endsWith('/profile/pathways');
-      if (urlChanged) {
-        logger.info('Pathway click navigated to detail page');
-      } else {
-        logger.info('No modal or navigation after clicking pathway');
-      }
-    }
+    await page.waitForURL(/\/pathways\/[^/]+/, { timeout: 60_000 });
+    expect(page.url()).toMatch(/\/pathways\/[^/]+/);
+    logger.info(`Pathway click navigated to detail page: ${page.url()}`);
   });
 
-  test('Checkpoint 4: Pathway modal closes properly', async ({ page }) => {
+  test('Checkpoint 4: Pathway detail page shows content and sidebar', async ({ page }) => {
     const pathwayCard = page.locator('[data-testid="pathway-card"]').first();
     const emptyState = page.getByText(/no pathways found/i).first();
 
@@ -115,28 +104,16 @@ test.describe('Journey 09: Profile Pathways', () => {
     }
 
     await pathwayCard.click();
+    await page.waitForURL(/\/pathways\/[^/]+/, { timeout: 60_000 });
 
-    const modal = page.getByRole('dialog').first();
-    const hasModal = await modal.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!hasModal) {
-      logger.info('No modal appeared — skipping close test');
-      test.skip();
-      return;
-    }
-
-    const closeButton = page.getByRole('button', { name: /close|×|x/i }).first();
-    const hasClose = await closeButton.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (hasClose) {
-      await closeButton.click();
-      await expect(modal).not.toBeVisible({ timeout: 10000 });
-      logger.info('Pathway modal closed');
-    } else {
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(1000);
-      logger.info('Attempted to close modal via Escape');
-    }
+    // Detail page renders the content list (cards or empty message) and
+    // the sidebar banner image, mirroring the program detail page.
+    await expect(page.getByTestId('pathway-detail-content')).toBeVisible({ timeout: 120_000 });
+    const contentCard = page.locator('[data-testid="discover-content-card"]').first();
+    const noContent = page.getByText('No courses in this pathway').first();
+    await expect(contentCard.or(noContent)).toBeVisible({ timeout: 120_000 });
+    await expect(page.getByTestId('pathway-page-banner-image')).toBeVisible({ timeout: 30_000 });
+    logger.info('Pathway detail page rendered with content and sidebar');
   });
 
   test('Checkpoint 5: Create Pathway button (admin only)', async ({ page }) => {

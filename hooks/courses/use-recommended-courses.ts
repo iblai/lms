@@ -1,9 +1,16 @@
 // @ts-ignore
-import { useLazyGetRecommendationsAiSearchQuery } from '@iblai/iblai-js/data-layer';
+import { useGetRecommendationsAiSearchQuery } from '@iblai/iblai-js/data-layer';
 import { RecommendedCourseResult } from '@/types/courses';
 import { getOrg, getTenant } from '@/utils/helpers';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+
+/**
+ * Remounts within this window render straight from the cache with no
+ * request at all; older cache entries still render instantly while a
+ * silent background refresh runs (seconds).
+ */
+const RECOMMENDATIONS_REFRESH_AFTER_SECONDS = 120;
 
 export const useRecommendedCourses = ({
   limit = 8,
@@ -16,105 +23,84 @@ export const useRecommendedCourses = ({
   forceLimit?: boolean;
   tenant?: string;
 }) => {
-  const { metadata } = useTenantMetadata({
+  const { metadata, isLoading: metadataLoading } = useTenantMetadata({
     org: getTenant(),
   });
-  const [
-    getRecommendationsAiSearch,
-    { isLoading: isLoadingRecommendedCourses, error: errorRecommendedCourses },
-  ] = useLazyGetRecommendationsAiSearchQuery();
 
-  const [userCoursesWithMetaData, setUserCoursesWithMetaData] = useState<RecommendedCourseResult[]>(
-    [],
+  const {
+    data: aiSearchResponse,
+    isLoading: isLoadingRecommendedCourses,
+    error: errorRecommendedCourses,
+  } = useGetRecommendationsAiSearchQuery(
+    {
+      params: {
+        platform_key: tenant || getTenant(),
+        recommendation_type: 'courses',
+        limit: limit,
+        platform_org: getOrg(),
+        ...(metadata?.skills_include_community_courses && { include_main_catalog: true }),
+      },
+    },
+    {
+      // Tenant metadata decides `include_main_catalog` — subscribing before
+      // it resolves would fire a throwaway request under the wrong cache
+      // key.
+      skip: metadataLoading,
+      refetchOnMountOrArgChange: RECOMMENDATIONS_REFRESH_AFTER_SECONDS,
+    },
   );
-  const [filteredCoursesWithMetaData, setFilteredCoursesWithMetaData] = useState<
-    RecommendedCourseResult[]
-  >([]);
 
-  const handleFetchCourses = async () => {
-    try {
-      setUserCoursesWithMetaData([]);
-      setFilteredCoursesWithMetaData([]);
-      const { data: aiSearchResponse } = await getRecommendationsAiSearch(
-        {
-          params: {
-            platform_key: tenant || getTenant(),
-            recommendation_type: 'courses',
-            limit: limit,
-            platform_org: getOrg(),
-            ...(search && { search_terms: search }),
-            ...(metadata?.skills_include_community_courses && { include_main_catalog: true }),
+  const userCoursesWithMetaData = useMemo<RecommendedCourseResult[]>(() => {
+    if (!Array.isArray(aiSearchResponse?.recommendations)) {
+      return [];
+    }
+    // Transform AI search recommendations to RecommendedCourseResult format
+    const transformedCourses: RecommendedCourseResult[] = aiSearchResponse.recommendations.map(
+      (rec: any) => ({
+        type: 'course',
+        data: {
+          course_id: rec.course_id,
+          name: rec.course_title,
+          platform_key: rec.platform_key,
+          edx_data: rec.edx_data,
+          data: {
+            tags: rec.domain ? [rec.domain] : null,
+            level: rec.difficulty_level,
+            custom: null,
+            topics: [],
+            subject: null,
+            industry: null,
+            job_role: null,
+            promotion: null,
+            credential: null,
+            social_team: null,
+            usage_limit: null,
+            audit_allowed: null,
+            social_channels: null,
+            certificate_type: null,
+            ...rec.edx_data,
           },
         },
-        true,
-      );
+      }),
+    );
+    return forceLimit ? transformedCourses.slice(0, limit) : transformedCourses;
+  }, [aiSearchResponse, forceLimit, limit]);
 
-      if (Array.isArray(aiSearchResponse?.recommendations)) {
-        // Transform AI search recommendations to RecommendedCourseResult format
-        const transformedCourses: RecommendedCourseResult[] = aiSearchResponse.recommendations.map(
-          (rec: any) => ({
-            type: 'course',
-            data: {
-              course_id: rec.course_id,
-              name: rec.course_title,
-              platform_key: rec.platform_key,
-              edx_data: rec.edx_data,
-              data: {
-                tags: rec.domain ? [rec.domain] : null,
-                level: rec.difficulty_level,
-                custom: null,
-                topics: [],
-                subject: null,
-                industry: null,
-                job_role: null,
-                promotion: null,
-                credential: null,
-                social_team: null,
-                usage_limit: null,
-                audit_allowed: null,
-                social_channels: null,
-                certificate_type: null,
-                ...rec.edx_data,
-              },
-            },
-          }),
-        );
-
-        const limitedRecommendedCourses = forceLimit
-          ? transformedCourses.slice(0, limit)
-          : transformedCourses;
-        setUserCoursesWithMetaData(limitedRecommendedCourses);
-        setFilteredCoursesWithMetaData(limitedRecommendedCourses);
-      }
-    } catch (error) {
-      setUserCoursesWithMetaData([]);
-      setFilteredCoursesWithMetaData([]);
-    }
-  };
-
-  const handleInPageSearch = async () => {
+  // In-page search stays client-side — it narrows the already-fetched list
+  // without refiring the endpoint.
+  const filteredCoursesWithMetaData = useMemo<RecommendedCourseResult[]>(() => {
     if (search.length > 2) {
-      const filteredCourses = userCoursesWithMetaData.filter((course: RecommendedCourseResult) =>
+      return userCoursesWithMetaData.filter((course: RecommendedCourseResult) =>
         course.data.name.toLowerCase().includes(search.toLowerCase()),
       );
-      setFilteredCoursesWithMetaData(filteredCourses);
-    } else {
-      setFilteredCoursesWithMetaData(userCoursesWithMetaData);
     }
-  };
-
-  useEffect(() => {
-    handleFetchCourses();
-  }, [metadata?.skills_include_community_courses]);
-
-  useEffect(() => {
-    handleInPageSearch();
-  }, [search]);
+    return userCoursesWithMetaData;
+  }, [search, userCoursesWithMetaData]);
 
   return {
     recommendedCourses: filteredCoursesWithMetaData,
     allRecommendedCourses: userCoursesWithMetaData,
-    isLoading: isLoadingRecommendedCourses,
+    isLoading: metadataLoading || (isLoadingRecommendedCourses && !aiSearchResponse),
     isError: errorRecommendedCourses,
   };
 };

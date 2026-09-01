@@ -22,6 +22,7 @@ vi.mock('@/lib/utils', async (importOriginal) => {
   };
 });
 
+import { COURSE_METADATA_CACHE_SECONDS } from '@/lib/constants';
 import { CourseMetadataSlice } from '../course-metadata';
 
 describe('CourseMetadataSlice', () => {
@@ -309,5 +310,62 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
     expect(capturedBaseQueryArgs[0].url).toContain(
       '/api/courses/v2/blocks/block-v1%3AOrg%2BRun%2B1%2Btype%40vertical%2Bblock%40abc?username=jane%20doe&depth=all',
     );
+  });
+});
+
+describe('getCourseMetaData caching', () => {
+  let store: ReturnType<typeof configureStore>;
+
+  beforeEach(() => {
+    capturedBaseQueryArgs = [];
+    store = configureStore({
+      reducer: {
+        [CourseMetadataSlice.reducerPath]: CourseMetadataSlice.reducer,
+      },
+      middleware: (getDefault) => getDefault().concat(CourseMetadataSlice.middleware),
+    });
+    setupListeners(store.dispatch);
+  });
+
+  it('keys the cache on the course alone, so `noAuth` variants share one entry', async () => {
+    const courseKey = 'course-v1:Org+Run+1';
+    // The card-artwork lookup and the course page historically sent different
+    // arg shapes for the same course, which the default serializer turned into
+    // two cache entries — and two requests.
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({ courseKey }),
+    );
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
+        courseKey,
+        noAuth: false,
+      }),
+    );
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
+        courseKey,
+        noAuth: true,
+      }),
+    );
+
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    const queries = (store.getState() as any)[CourseMetadataSlice.reducerPath].queries;
+    expect(Object.keys(queries)).toEqual([
+      'getCourseMetaData({"courseKey":"course-v1:Org+Run+1"})',
+    ]);
+  });
+
+  it('still fetches a different course', async () => {
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({ courseKey: 'a' }),
+    );
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({ courseKey: 'b' }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(2);
+  });
+
+  it('keeps the payload well past the RTK Query 60s default', () => {
+    expect(COURSE_METADATA_CACHE_SECONDS).toBeGreaterThan(60);
   });
 });

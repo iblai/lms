@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, SquarePen } from 'lucide-react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 // @ts-ignore
@@ -51,7 +51,7 @@ export function CourseAgentChat() {
           username: getUserName(),
           query: DEFAULT_MENTOR_NAME,
         });
-        if (_.isEmpty(response?.data?.results)) {
+        if (isEmpty(response?.data?.results)) {
           throw new Error('No mentors found');
         }
         const mentor =

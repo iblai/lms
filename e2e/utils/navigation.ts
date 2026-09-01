@@ -83,21 +83,16 @@ export async function navigateToHome(page: Page): Promise<void> {
 }
 
 /**
- * Navigate to a course about page from home by clicking a course card.
+ * Navigate to a course about page via the enrolled catalog view.
  * Returns the course heading text.
  */
 export async function navigateToCourseFromHome(page: Page): Promise<string> {
-  await navigateToHome(page);
+  await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120_000 });
+  await waitForAppShell(page);
 
-  const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-  await expect(myCoursesHeading).toBeVisible({ timeout: 120_000 });
-
-  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-  await expect(myCoursesGrid).toBeVisible({ timeout: 120_000 });
-
-  const courseLink = myCoursesGrid.getByRole('link').first();
-  await expect(courseLink).toBeVisible({ timeout: 120_000 });
-  await courseLink.click();
+  const courseCard = page.locator('[data-testid="discover-content-card"]').first();
+  await expect(courseCard).toBeVisible({ timeout: 120_000 });
+  await courseCard.click();
 
   await page.waitForURL(/\/courses\/.*/, { timeout: 120_000 });
 
@@ -224,4 +219,46 @@ export async function navigateToAdvancedSettings(page: Page): Promise<Locator> {
 
   await expect(accountDialog.getByText('Advanced CSS')).toBeVisible({ timeout: 5_000 });
   return accountDialog;
+}
+
+/**
+ * Course content tabs collapse into a 3-dot overflow menu when they don't all
+ * fit the tab row. Resolves a tab by name whether it is inline or hidden
+ * behind that menu (opening the menu when needed), or null when the tab
+ * doesn't exist for this course/user.
+ */
+export async function getCourseContentTab(
+  page: Page,
+  name: string | RegExp,
+  { exact = true, timeout = 30_000 }: { exact?: boolean; timeout?: number } = {},
+): Promise<Locator | null> {
+  const tabs = page.getByTestId('course-content-tabs');
+  await tabs.waitFor({ state: 'visible', timeout }).catch(() => null);
+
+  // Start from a closed menu so an earlier lookup can't leave it covering the row.
+  const openMenu = page.getByRole('menu').first();
+  if (await openMenu.isVisible({ timeout: 1_000 }).catch(() => false)) {
+    await page.keyboard.press('Escape');
+    await openMenu.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => null);
+  }
+
+  const inline = tabs.getByRole('link', { name, exact }).first();
+  if (await inline.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    return inline;
+  }
+
+  const overflowTrigger = page.getByTestId('course-tabs-overflow-trigger');
+  if (!(await overflowTrigger.isVisible({ timeout: 5_000 }).catch(() => false))) {
+    return null;
+  }
+
+  await overflowTrigger.click();
+  // Radix renders the overflowed tab links with role="menuitem".
+  const menuItem = page.getByRole('menuitem', { name, exact }).first();
+  if (await menuItem.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    return menuItem;
+  }
+
+  await page.keyboard.press('Escape');
+  return null;
 }

@@ -11,7 +11,7 @@ async function waitForProgramPage(page: Page): Promise<void> {
   await expect(page.getByTestId('program-detail-content')).toBeVisible({
     timeout: 120_000,
   });
-  await expect(page.getByTestId('program-page-name')).toBeVisible({
+  await expect(page.getByTestId('navbar-page-title')).toBeVisible({
     timeout: 10_000,
   });
 }
@@ -63,7 +63,7 @@ test.describe('Journey 32: Program Detail Page', () => {
     await waitForAppShell(page);
 
     const allCards = page.getByTestId('discover-content-card');
-    const empty = page.getByText(/no content found/i).first();
+    const empty = page.getByText(/no (enrolled |recommended )?content found/i).first();
     await expect(allCards.first().or(empty)).toBeVisible({ timeout: 120_000 });
 
     // Each card has a small uppercase badge in the bottom-left displaying
@@ -93,7 +93,7 @@ test.describe('Journey 32: Program Detail Page', () => {
       return;
     }
 
-    const name = page.getByTestId('program-page-name');
+    const name = page.getByTestId('navbar-page-title');
     await expect(name).toBeVisible();
     const nameText = (await name.textContent())?.trim() ?? '';
     expect(nameText.length).toBeGreaterThan(0);

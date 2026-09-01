@@ -12,7 +12,8 @@ export type UserSkillsPointResponse = {
 };
 
 export type ActivityStats = {
-  value: number;
+  /** Numeric count, or a preformatted display value (e.g. "12h"). */
+  value: number | string;
   label: string;
   loading: boolean;
 };

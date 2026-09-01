@@ -121,6 +121,17 @@ export function getContentImage(imagePath: string): string {
 }
 
 /**
+ * Resolves an image the catalog returns as either an absolute URL or an LMS
+ * asset path (`/asset-v1:…`) into something an <img> can load. Empty in,
+ * empty out — callers fall back to their own placeholder.
+ */
+export function resolveLmsAssetUrl(assetPath?: string | null): string {
+  if (!assetPath) return '';
+  const path = String(assetPath);
+  return path.startsWith('http') ? path : config.urls.lms() + path;
+}
+
+/**
  * Converts a string to a URL-friendly slug
  * @param {string} text - The string to convert to a slug
  * @returns {string} - Returns the slugified string

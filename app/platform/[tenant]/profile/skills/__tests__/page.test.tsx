@@ -11,12 +11,10 @@ vi.mock('lucide-react', () => ({
 }));
 
 // Mock lodash
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val: any) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val: any) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
+  ),
 }));
 
 // Mock useProfileSkills

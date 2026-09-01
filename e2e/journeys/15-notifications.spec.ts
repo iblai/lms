@@ -12,28 +12,17 @@ test.describe('Journey 15: Notifications', () => {
   test('CP-1: bell icon visible in NavBar', async ({ page }) => {
     // Look for the notification bell icon in the navigation bar
     const bellIcon = page
-      .getByRole('button', { name: /notification/i })
-      .or(page.locator('[class*="notification-bell"], [data-testid*="notification-bell"]'))
-      .or(
-        page
-          .locator('nav')
-          .getByRole('button')
-          .filter({ has: page.locator('[class*="bell"]') }),
-      );
-
+      .getByRole('banner')
+      .getByRole('navigation')
+      .getByRole('button', { name: /notification/i });
     await expect(bellIcon).toBeVisible({ timeout: 30_000 });
   });
 
   test('CP-2: click bell opens notification dropdown', async ({ page }) => {
     const bellIcon = page
-      .getByRole('button', { name: /notification/i })
-      .or(page.locator('[class*="notification-bell"], [data-testid*="notification-bell"]'))
-      .or(
-        page
-          .locator('nav')
-          .getByRole('button')
-          .filter({ has: page.locator('[class*="bell"]') }),
-      );
+      .getByRole('banner')
+      .getByRole('navigation')
+      .getByRole('button', { name: /notification/i });
 
     const hasBell = await bellIcon.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!hasBell) {
@@ -80,14 +69,9 @@ test.describe('Journey 15: Notifications', () => {
 
   test('CP-3: View All navigates to /notifications', async ({ page }) => {
     const bellIcon = page
-      .getByRole('button', { name: /notification/i })
-      .or(page.locator('[class*="notification-bell"], [data-testid*="notification-bell"]'))
-      .or(
-        page
-          .locator('nav')
-          .getByRole('button')
-          .filter({ has: page.locator('[class*="bell"]') }),
-      );
+      .getByRole('banner')
+      .getByRole('navigation')
+      .getByRole('button', { name: /notification/i });
 
     const hasBell = await bellIcon.isVisible({ timeout: 120_000 }).catch(() => false);
     if (!hasBell) {

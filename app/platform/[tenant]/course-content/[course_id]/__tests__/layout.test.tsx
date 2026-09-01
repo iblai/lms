@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -29,13 +29,10 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock lodash
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val: any) =>
-        !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val: any) => !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
+  ),
 }));
 
 // Mock lucide-react icons
@@ -46,6 +43,12 @@ vi.mock('lucide-react', () => ({
   CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
   CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
   Maximize: () => <span data-testid="maximize">Maximize</span>,
+  X: () => <span data-testid="dismiss-x">×</span>,
+  // Used by the unit media dropdown rendered in the tabs row.
+  Projector: () => <span data-testid="projector">Projector</span>,
+  FileText: () => <span data-testid="file-text">FileText</span>,
+  Library: () => <span data-testid="library">Library</span>,
+  PlaySquare: () => <span data-testid="play-square">PlaySquare</span>,
 }));
 
 // Mock helpers
@@ -61,6 +64,21 @@ const mockUseGetCourseBlockDetailsQuery: any = vi.fn(
 );
 vi.mock('@/services/course-metadata', () => ({
   useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
+}));
+
+// Mock the course-role hook — drives the staff-only tab gates
+const courseUserRolesState = vi.hoisted(() => ({
+  current: {
+    courseRoles: [] as any[],
+    isCourseStaff: false,
+    isCourseLimitedStaff: false,
+    hasCourseStaffAccess: false,
+    isResolved: true,
+  },
+}));
+const mockUseCourseUserRoles = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/courses/use-course-user-roles', () => ({
+  useCourseUserRoles: (...args: any[]) => mockUseCourseUserRoles(...args),
 }));
 
 // Mock useGetDepartmentMemberCheckQuery
@@ -134,6 +152,7 @@ vi.mock('@/components/course-outline', () => ({
 // confirm the layout mounts it.
 vi.mock('@/components/course-outline-sidebar', () => ({
   CourseOutlineSidebar: () => <div data-testid="course-outline-sidebar">CourseOutlineSidebar</div>,
+  CourseOutlineToggle: () => <div data-testid="course-outline-toggle">CourseOutlineToggle</div>,
 }));
 
 // Mock CourseOutlineDrawer
@@ -172,11 +191,46 @@ vi.mock('@/components/ui/switch', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/popover', () => ({
-  Popover: ({ children }: any) => <>{children}</>,
-  PopoverTrigger: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
-  PopoverContent: ({ children }: any) => <div data-testid="agent-mode-popover">{children}</div>,
-}));
+// The Popover mock shares the controlling `open` prop with its content via a
+// context so controlled popovers (the agent-mode hint, the mobile 3-dot
+// controls menu) can be asserted as shown/hidden; the trigger toggles them
+// through `onOpenChange` like the real component. Uncontrolled popovers
+// (open===undefined) always render their content.
+vi.mock('@/components/ui/popover', async () => {
+  const ReactActual = await vi.importActual<typeof React>('react');
+  const PopoverOpenContext = ReactActual.createContext<{
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }>({});
+  return {
+    Popover: ({ children, open, onOpenChange }: any) =>
+      ReactActual.createElement(
+        PopoverOpenContext.Provider,
+        { value: { open, onOpenChange } },
+        children,
+      ),
+    PopoverTrigger: ({ children, onClick, ...rest }: any) => {
+      const { open, onOpenChange } = ReactActual.useContext(PopoverOpenContext);
+      return (
+        <button
+          {...rest}
+          onClick={(event: React.MouseEvent) => {
+            onClick?.(event);
+            onOpenChange?.(!open);
+          }}
+        >
+          {children}
+        </button>
+      );
+    },
+    PopoverAnchor: ({ children }: any) => <>{children}</>,
+    PopoverContent: ({ children }: any) => {
+      const { open } = ReactActual.useContext(PopoverOpenContext);
+      if (open === false) return null;
+      return <div data-testid="agent-mode-popover">{children}</div>;
+    },
+  };
+});
 
 // Mock ExamInfo from data-layer
 vi.mock('@iblai/iblai-js/data-layer', () => ({
@@ -244,16 +298,39 @@ vi.mock('react', async () => {
 });
 
 import CourseContentLayout from '../layout';
+import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 
 describe('CourseContentLayout', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
 
+  // CourseContentTabs renders an aria-hidden copy of every label to measure its
+  // natural width, so a plain text query matches each tab twice. Tabs are always
+  // anchors, and role queries skip the aria-hidden measurement row.
+  const tabLink = (name: string) => screen.getByRole('link', { name });
+  const queryTabLink = (name: string) => screen.queryByRole('link', { name });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // The course controls (autoplay, media, fullscreen, Learn/Assess) portal
+    // into the navbar slot, which the (unrendered-here) NavBar provides in the
+    // real app — recreate it so the portal has a mount point.
+    document.getElementById(NAVBAR_COURSE_CONTROLS_ID)?.remove();
+    const navbarControlsSlot = document.createElement('div');
+    navbarControlsSlot.id = NAVBAR_COURSE_CONTROLS_ID;
+    document.body.appendChild(navbarControlsSlot);
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mockCheckRbacPermission.mockReturnValue(false);
+    courseUserRolesState.current = {
+      courseRoles: [],
+      isCourseStaff: false,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: false,
+      isResolved: true,
+    };
+    mockUseCourseUserRoles.mockImplementation(() => courseUserRolesState.current);
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -307,11 +384,11 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
-    expect(screen.getByText('Progress')).toBeInTheDocument();
-    expect(screen.getByText('Dates')).toBeInTheDocument();
-    expect(screen.getByText('Discussion')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
+    expect(tabLink('Progress')).toBeInTheDocument();
+    expect(tabLink('Dates')).toBeInTheDocument();
+    expect(tabLink('Discussion')).toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is not true', () => {
@@ -335,8 +412,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('hides Course tab when course.course_content_mode is false', () => {
@@ -360,8 +437,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
-    expect(screen.queryByText('Course')).not.toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
+    expect(queryTabLink('Course')).not.toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is null', () => {
@@ -385,8 +462,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Course tab when course.course_content_mode is null', () => {
@@ -410,7 +487,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Course tab when both course_content_mode and agent_content_mode are false', () => {
@@ -434,8 +511,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('hides Agent tab for non-admin when agent_content_mode_audience is admins-only', () => {
@@ -466,8 +543,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Agent tab for admin when agent_content_mode_audience is admins-only', () => {
@@ -498,7 +575,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
   });
 
   it('hides Course tab for non-admin when course_content_mode_audience is admins-only', () => {
@@ -529,8 +606,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Course')).not.toBeInTheDocument();
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(queryTabLink('Course')).not.toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
   });
 
   it('hides Agent tab from a non-watcher when agent_content_mode_audience is watchers-only', () => {
@@ -562,8 +639,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Agent tab to a watcher (RBAC granted) when agent_content_mode_audience is watchers-only', () => {
@@ -595,7 +672,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
     expect(mockCheckRbacPermission).toHaveBeenCalledWith({}, '/watchedgroups/#list');
   });
 
@@ -609,7 +686,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Instructor')).not.toBeInTheDocument();
+    expect(queryTabLink('Instructor')).not.toBeInTheDocument();
   });
 
   it('shows Instructor tab when user is platform admin', () => {
@@ -622,7 +699,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Instructor')).toBeInTheDocument();
+    expect(tabLink('Instructor')).toBeInTheDocument();
   });
 
   describe('Authoring tab (platform admin only)', () => {
@@ -636,7 +713,7 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(screen.getByText('Authoring')).toBeInTheDocument();
+      expect(tabLink('Authoring')).toBeInTheDocument();
     });
 
     it('hides Authoring tab for non-admin users', () => {
@@ -649,7 +726,7 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(screen.queryByText('Authoring')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
     });
 
     it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
@@ -897,6 +974,59 @@ describe('CourseContentLayout', () => {
     expect(screen.getByTestId('course-lesson-navigator')).toBeInTheDocument();
   });
 
+  describe('active tab derived from the route', () => {
+    // The tab identity used to be pushed up from each page's mount effect, which
+    // landed a commit after the new page (and its EdxIframe) had already
+    // rendered against the *previous* tab. Deriving it from the pathname means a
+    // page never sees a tab value that disagrees with the URL it renders under.
+    const DEFAULT_PATHNAME = '/course-content/course-v1:test+course+2024/course';
+
+    const ActiveTabProbe = () => {
+      const { activeTab } = React.useContext(EdxIframeContext);
+      return <div data-testid="active-tab">{activeTab}</div>;
+    };
+
+    const renderAt = async (pathname: string) => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(pathname);
+      return render(
+        <CourseContentLayout params={defaultParams}>
+          <ActiveTabProbe />
+        </CourseContentLayout>,
+      );
+    };
+
+    afterEach(async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(DEFAULT_PATHNAME);
+    });
+
+    it.each([
+      ['/course-content/course-v1:test+course+2024/agent', 'agent'],
+      ['/course-content/course-v1:test+course+2024/course', 'course'],
+      ['/course-content/course-v1:test+course+2024/progress', 'progress'],
+      ['/course-content/course-v1:test+course+2024/analytics', 'analytics'],
+      // The discussion route is still called "forum" by the edX iframe URL builder.
+      ['/course-content/course-v1:test+course+2024/discussion', 'forum'],
+    ])('exposes %s as activeTab "%s" on the first render', async (pathname, expected) => {
+      const { getByTestId } = await renderAt(pathname);
+      expect(getByTestId('active-tab')).toHaveTextContent(expected);
+    });
+
+    it('falls back to the course tab for a route with no known tab segment', async () => {
+      const { getByTestId } = await renderAt('/course-content/course-v1:test+course+2024');
+      expect(getByTestId('active-tab')).toHaveTextContent('course');
+    });
+
+    it('highlights the tab matching the route', async () => {
+      await renderAt('/course-content/course-v1:test+course+2024/discussion');
+      // The mocked next/link drops aria-current, so assert the active styling —
+      // it proves the derived value lines up with the tab bar's `key`s.
+      expect(tabLink('Discussion').className).toContain('text-amber-600');
+      expect(tabLink('Agent').className).not.toContain('text-amber-600');
+    });
+  });
+
   describe('unit-switch toast on the agent tab', () => {
     // Stable outline/unit references avoid render loops when the effect
     // syncs currentCourseInfo from the mocked getUnitToIframe.
@@ -984,7 +1114,45 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
+
+      // The notification is deferred until the hidden course iframe reports
+      // it has loaded the new unit.
+      expect(toast.success).not.toHaveBeenCalled();
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
       expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+    });
+
+    it('falls back to firing the switch toast after 15s when the iframe never loads', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        const { toast } = await import('sonner');
+        const { setUnit } = await mockUnitLayout({
+          pathname: '/course-content/course-v1:test+course+2024/agent',
+          initialUnit: unitA,
+        });
+
+        const { rerender } = render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        setUnit(unitB);
+        mockState.searchParams = new URLSearchParams('unit_id=unit-B');
+        rerender(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        expect(toast.success).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(15_000);
+        expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('does NOT fire the toast when the unit changes on a non-agent tab', async () => {
@@ -1008,11 +1176,14 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
       expect(toast.success).not.toHaveBeenCalled();
     });
   });
 
-  describe('initial unit load on /agent dispatches "Loaded" 4s after the mentor spinner is hidden', () => {
+  describe('initial unit load on /agent dispatches "Loaded" once the mentor spinner is hidden and the course iframe has loaded', () => {
     const unit = { id: 'unit-1', display_name: 'Intro Unit' };
     const outline = {
       id: 'course-root',
@@ -1060,14 +1231,69 @@ describe('CourseContentLayout', () => {
       mentorState.spinnerHidden = false;
     });
 
-    it('fires toast + custom event 4s after spinnerHidden becomes true on the agent tab', async () => {
+    it('fires toast + custom event once the course iframe loads on the agent tab', async () => {
+      const { toast } = await import('sonner');
+      await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
+      mentorState.spinnerHidden = true;
+
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'mentor:unit-switched' }),
+      );
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
+
+      const eventCall = dispatchSpy.mock.calls.find(
+        ([e]) => (e as CustomEvent).type === 'mentor:unit-switched',
+      );
+      expect(eventCall).toBeDefined();
+      const event = eventCall![0] as CustomEvent<{ message: string }>;
+      expect(event.detail.message).toBe('Loaded "Intro Unit"');
+    });
+
+    it('fires immediately when the iframe had already loaded before the spinner hid', async () => {
+      const { toast } = await import('sonner');
+      await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
+      mentorState.spinnerHidden = false;
+
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // Iframe loads while the mentor spinner is still visible.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).not.toHaveBeenCalled();
+
+      mentorState.spinnerHidden = true;
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
+    });
+
+    it('falls back to firing after 15s when the iframe never loads', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       try {
         const { toast } = await import('sonner');
         await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
         mentorState.spinnerHidden = true;
-
-        const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
 
         render(
           <CourseContentLayout params={defaultParams}>
@@ -1075,23 +1301,13 @@ describe('CourseContentLayout', () => {
           </CourseContentLayout>,
         );
 
-        expect(toast.success).not.toHaveBeenCalled();
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'mentor:unit-switched' }),
-        );
-
-        await vi.advanceTimersByTimeAsync(3999);
+        // 14s (not 14.999s): shouldAdvanceTime lets real elapsed time tick the
+        // mock clock too, so a 1ms margin flakes under load.
+        await vi.advanceTimersByTimeAsync(14_000);
         expect(toast.success).not.toHaveBeenCalled();
 
-        await vi.advanceTimersByTimeAsync(1);
+        await vi.advanceTimersByTimeAsync(1_000);
         expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
-
-        const eventCall = dispatchSpy.mock.calls.find(
-          ([e]) => (e as CustomEvent).type === 'mentor:unit-switched',
-        );
-        expect(eventCall).toBeDefined();
-        const event = eventCall![0] as CustomEvent<{ message: string }>;
-        expect(event.detail.message).toBe('Loaded "Intro Unit"');
       } finally {
         vi.useRealTimers();
       }
@@ -1138,42 +1354,41 @@ describe('CourseContentLayout', () => {
     });
 
     it('only schedules the "Loaded" toast once even if the component re-renders', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        const { toast } = await import('sonner');
-        await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
-        mentorState.spinnerHidden = true;
+      const { toast } = await import('sonner');
+      await mockAgentLayoutWithUnit('/course-content/course-v1:test+course+2024/agent');
+      mentorState.spinnerHidden = true;
 
-        const { rerender } = render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
 
-        // Force several extra renders before the timer fires.
-        for (let i = 0; i < 3; i++) {
-          rerender(
-            <CourseContentLayout params={defaultParams}>
-              <div>children {i}</div>
-            </CourseContentLayout>,
-          );
-        }
-
-        await vi.advanceTimersByTimeAsync(4000);
-        expect(toast.success).toHaveBeenCalledTimes(1);
-        expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
-
-        // Trigger more renders after the timer has already fired.
+      // Force several extra renders before the iframe reports loaded.
+      for (let i = 0; i < 3; i++) {
         rerender(
           <CourseContentLayout params={defaultParams}>
-            <div>children final</div>
+            <div>children {i}</div>
           </CourseContentLayout>,
         );
-        await vi.advanceTimersByTimeAsync(4000);
-        expect(toast.success).toHaveBeenCalledTimes(1);
-      } finally {
-        vi.useRealTimers();
       }
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).toHaveBeenCalledTimes(1);
+      expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
+
+      // More renders and iframe loads after it already fired change nothing.
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children final</div>
+        </CourseContentLayout>,
+      );
+      act(() => {
+        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+      });
+      expect(toast.success).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1330,6 +1545,178 @@ describe('CourseContentLayout', () => {
       // After click, every rendered switch should reflect the new checked state.
       const updatedSwitches = screen.getAllByTestId('agent-mode-switch');
       updatedSwitches.forEach((s) => expect(s).toHaveAttribute('aria-checked', 'true'));
+    });
+  });
+
+  describe('one-time agent-mode hint popover', () => {
+    const STORAGE_KEY = 'skills:agent-mode-hint-dismissed';
+
+    const blockDetailsWithMentor = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+        'mentor-block': { id: 'mentor-block', type: 'ibl_mentor_xblock', display_name: 'Mentor' },
+      },
+    };
+
+    // Puts the layout on the agent tab with a mentor xblock present, which is
+    // what makes the Learn/Assess switch (and therefore the hint) eligible.
+    const setupAgentTab = async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
+      vi.mocked(useCourseDetail).mockReturnValue({
+        handleFetchCourseInfo: mockHandleFetchCourseInfo,
+        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
+        handleOpenLesson: mockHandleOpenLesson,
+        handleFetchCourseProgress: mockHandleFetchCourseProgress,
+        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
+        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
+        course: { agent_content_mode: true, course_content_mode: true },
+        courseInfoLoadingState: 'successful',
+        courseOutline: null,
+        courseOutlineLoading: false,
+        courseCompletion: null,
+        courseGradingPolicyActive: false,
+      } as any);
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
+    };
+
+    beforeEach(() => {
+      localStorage.clear();
+      // Keep the unrelated "Loaded" toast timer from firing during our waits.
+      mentorState.spinnerHidden = false;
+    });
+
+    it('does not show the hint before the 600ms delay elapses', async () => {
+      // No shouldAdvanceTime here: this test asserts the hint is absent just
+      // under the threshold, so the clock must only move when advanced explicitly.
+      vi.useFakeTimers();
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(599);
+        });
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('shows the hint 600ms after the Learn/Assess switch appears (first visit)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(600);
+        });
+        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not show the hint when it was previously dismissed (persisted in localStorage)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        localStorage.setItem(STORAGE_KEY, 'true');
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1000);
+        });
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not show the hint on a non-agent tab (switch not visible)', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        const { usePathname } = await import('next/navigation');
+        vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
+        mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
+
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1000);
+        });
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('persists dismissal to localStorage and hides the hint when "Got it" is clicked', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(600);
+        });
+        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+
+        expect(localStorage.getItem(STORAGE_KEY)).toBe('true');
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('persists dismissal and hides the hint when the X button is clicked', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        await setupAgentTab();
+        render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(600);
+        });
+        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+        expect(localStorage.getItem(STORAGE_KEY)).toBe('true');
+        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
@@ -1509,7 +1896,9 @@ describe('CourseContentLayout', () => {
       // Mobile 3-dot trigger renders even when only autoplay is visible.
       expect(screen.getAllByTestId('more-vertical').length).toBeGreaterThan(0);
 
-      // Popover content includes the Autoplay label + its own switch.
+      // Popover content (opened via the trigger) includes the Autoplay label
+      // + its own switch.
+      fireEvent.click(screen.getByLabelText('Agent display options'));
       const popover = screen.getByTestId('agent-mode-popover');
       expect(popover).toHaveTextContent('Autoplay');
       expect(screen.getByTestId('agent-autoplay-popover-switch')).toHaveAttribute(
@@ -1591,6 +1980,7 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
+      fireEvent.click(screen.getByLabelText('Agent display options'));
       fireEvent.click(screen.getByTestId('agent-autoplay-popover-switch'));
 
       const autoplayEvent = dispatchSpy.mock.calls
@@ -1624,6 +2014,7 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
+      fireEvent.click(screen.getByLabelText('Agent display options'));
       const desktopToggle = screen.getByTestId('agent-autoplay-toggle');
       const popoverSwitch = screen.getByTestId('agent-autoplay-popover-switch');
 
@@ -1634,6 +2025,105 @@ describe('CourseContentLayout', () => {
 
       expect(desktopToggle).toHaveAttribute('aria-checked', 'true');
       expect(popoverSwitch).toHaveAttribute('aria-checked', 'true');
+    });
+  });
+
+  // Mobile 3-dot controls popover: the media and fullscreen rows (autoplay
+  // and the Learn/Assess switch rows are covered in their describes above).
+  describe('mobile controls popover (media + fullscreen)', () => {
+    const blockDetailsWithMedia = {
+      root: 'unit-vertical-1',
+      blocks: {
+        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
+        'pdf-block': {
+          id: 'pdf-block',
+          type: 'pdf',
+          display_name: 'Course PDF',
+          student_view_url: 'https://lms.example.com/xblock/pdf-block',
+        },
+      },
+    };
+
+    const setTab = async (tab: 'agent' | 'course') => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${tab}`);
+    };
+
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    it('lists the media and fullscreen rows on the agent tab', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+
+      expect(screen.getByTestId('agent-fullscreen-popover-button')).toBeInTheDocument();
+      const items = screen.getAllByTestId('course-media-menu-item');
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveTextContent('Course PDF');
+    });
+
+    it('lists media but no fullscreen row on the course tab', async () => {
+      await setTab('course');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+
+      expect(screen.getAllByTestId('course-media-menu-item')).toHaveLength(1);
+      expect(screen.queryByTestId('agent-fullscreen-popover-button')).not.toBeInTheDocument();
+    });
+
+    it('closes the popover when the fullscreen row is clicked', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+      fireEvent.click(screen.getByTestId('agent-fullscreen-popover-button'));
+
+      expect(screen.queryByTestId('agent-fullscreen-popover-button')).not.toBeInTheDocument();
+    });
+
+    it('selecting a media item on the agent tab closes the popover and opens the preview dialog', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+      fireEvent.click(screen.getByTestId('course-media-menu-item'));
+
+      // Popover closed, preview (rendered outside it) open.
+      expect(screen.queryByTestId('course-media-menu-item')).not.toBeInTheDocument();
+      expect(screen.getByTestId('course-media-preview')).toBeInTheDocument();
+    });
+
+    it('portals the desktop controls into the navbar slot but keeps the 3-dot in the tabs row', async () => {
+      await setTab('agent');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMedia });
+
+      renderLayout();
+
+      const slot = document.getElementById(NAVBAR_COURSE_CONTROLS_ID)!;
+      expect(slot.contains(screen.getByTestId('agent-fullscreen-toggle'))).toBe(true);
+      expect(slot.contains(screen.getByTestId('course-media-dropdown-trigger'))).toBe(true);
+      // The mobile 3-dot trigger renders beside the unit navigator instead.
+      expect(slot.contains(screen.getByLabelText('Agent display options'))).toBe(false);
+    });
+
+    it('hides the 3-dot trigger when no control is available (course tab, no media)', async () => {
+      await setTab('course');
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });
+
+      renderLayout();
+
+      expect(screen.queryByLabelText('Agent display options')).not.toBeInTheDocument();
     });
   });
 
@@ -1665,27 +2155,27 @@ describe('CourseContentLayout', () => {
     it('shows Learning Info only when the course has learning_info', () => {
       courseDetailWith({ learning_info: ['Understand X'] });
       renderLayout();
-      const link = screen.getByText('Learning Info').closest('a');
+      const link = tabLink('Learning Info');
       expect(link).toHaveAttribute('href', expect.stringContaining('/learning-info'));
     });
 
     it('hides Learning Info when learning_info is empty', () => {
       courseDetailWith({ learning_info: [] });
       renderLayout();
-      expect(screen.queryByText('Learning Info')).not.toBeInTheDocument();
+      expect(queryTabLink('Learning Info')).not.toBeInTheDocument();
     });
 
     it('shows Instructors only when the course has instructors', () => {
       courseDetailWith({ instructor_info: { instructors: [{ name: 'Ada' }] } });
       renderLayout();
-      const link = screen.getByText('Instructors').closest('a');
+      const link = tabLink('Instructors');
       expect(link).toHaveAttribute('href', expect.stringContaining('/instructors'));
     });
 
     it('hides Instructors when the instructors list is empty', () => {
       courseDetailWith({ instructor_info: { instructors: [] } });
       renderLayout();
-      expect(screen.queryByText('Instructors')).not.toBeInTheDocument();
+      expect(queryTabLink('Instructors')).not.toBeInTheDocument();
     });
 
     it('shows Configuration for a platform admin', () => {
@@ -1693,7 +2183,7 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      const link = screen.getByText('Configuration').closest('a');
+      const link = tabLink('Configuration');
       expect(link).toHaveAttribute('href', expect.stringContaining('/configuration'));
     });
 
@@ -1702,14 +2192,14 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: false },
       } as any);
       renderLayout();
-      expect(screen.queryByText('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
     });
 
     it('shows Analytics only when the user has the can_view_analytics permission', () => {
       mockCheckRbacPermission.mockImplementation(((_perms: any, resource: string) =>
         resource.includes('can_view_analytics')) as any);
       renderLayout();
-      const link = screen.getByText('Analytics').closest('a');
+      const link = tabLink('Analytics');
       expect(link).toHaveAttribute('href', expect.stringContaining('/analytics'));
     });
 
@@ -1719,7 +2209,122 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      expect(screen.queryByText('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
     });
+  });
+
+  describe('course-scoped staff roles', () => {
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    const setCourseRole = (role: string) => {
+      courseUserRolesState.current = {
+        courseRoles: [{ role, org: 'test-tenant', course: 'course-v1:test+course+2024' }],
+        isCourseStaff: role === 'course-staff' || role === 'course-instructor',
+        isCourseLimitedStaff: role === 'course-limited-staff',
+        hasCourseStaffAccess: true,
+        isResolved: true,
+      };
+    };
+
+    beforeEach(() => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+    });
+
+    it('looks up roles for the decoded course ID', () => {
+      renderLayout();
+      expect(mockUseCourseUserRoles).toHaveBeenCalledWith('course-v1:test+course+2024');
+    });
+
+    it.each(['course-staff', 'course-instructor'])(
+      'shows every staff tab — Authoring included — for %s',
+      (role) => {
+        setCourseRole(role);
+        renderLayout();
+        expect(tabLink('Instructor')).toBeInTheDocument();
+        expect(tabLink('Configuration')).toBeInTheDocument();
+        expect(tabLink('Analytics')).toBeInTheDocument();
+        expect(tabLink('Authoring')).toBeInTheDocument();
+      },
+    );
+
+    it('shows every staff tab except Authoring for course-limited-staff', () => {
+      setCourseRole('course-limited-staff');
+      renderLayout();
+      expect(tabLink('Instructor')).toBeInTheDocument();
+      expect(tabLink('Configuration')).toBeInTheDocument();
+      expect(tabLink('Analytics')).toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('keeps the staff tabs hidden for a course role that grants no staff access', () => {
+      courseUserRolesState.current = {
+        courseRoles: [
+          { role: 'course-beta-tester', org: 'test-tenant', course: 'course-v1:test+course+2024' },
+        ],
+        isCourseStaff: false,
+        isCourseLimitedStaff: false,
+        hasCourseStaffAccess: false,
+        isResolved: true,
+      };
+      renderLayout();
+      expect(queryTabLink('Instructor')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('still shows Authoring to a platform admin with no course role', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(tabLink('Authoring')).toBeInTheDocument();
+    });
+
+    it('does not grant Analytics to a platform admin lacking can_view_analytics', () => {
+      // Course staff unlock Analytics for their own course, but the platform
+      // admin path still goes through the can_view_analytics permission.
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('content area scrolling', () => {
+    const renderOnTab = async (tab: string) => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${tab}`);
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      return screen.getByText('children').parentElement as HTMLElement;
+    };
+
+    it.each(['analytics', 'configuration', 'instructor', 'instructors'])(
+      'scrolls the container on the %s tab (desktop)',
+      async (tab) => {
+        const contentArea = await renderOnTab(tab);
+        expect(contentArea.className).toContain('overflow-y-auto');
+      },
+    );
+
+    it.each(['course', 'progress', 'dates', 'discussion'])(
+      'leaves scrolling to the iframe on the %s tab (desktop)',
+      async (tab) => {
+        const contentArea = await renderOnTab(tab);
+        expect(contentArea.className).not.toContain('overflow-y-auto');
+      },
+    );
   });
 });

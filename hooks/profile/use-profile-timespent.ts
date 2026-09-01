@@ -6,7 +6,7 @@ import { useLazyGetOverTimeActivityQuery } from '@iblai/iblai-js/data-layer';
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 dayjs.extend(duration);
 
 export const useProfileTimeSpent = () => {
@@ -31,7 +31,7 @@ export const useProfileTimeSpent = () => {
         ],
         true,
       );
-      if (isErrorGetOverTimeActivity || _.isEmpty(response?.data?.data)) {
+      if (isErrorGetOverTimeActivity || isEmpty(response?.data?.data)) {
         throw new Error();
       }
       setTimeSpent(

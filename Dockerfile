@@ -23,6 +23,14 @@ RUN pnpm install --frozen-lockfile
 # Stage 1: Builder
 FROM base AS builder
 ARG APP_VERSION
+# Immutable static hosting: when NEXT_PUBLIC_ASSET_CDN is passed, /_next/* assets
+# are emitted under <cdn>/apps/<NEXT_PUBLIC_APP_NAME>/<APP_VERSION>/. Unset → the
+# build is unchanged (assets served from the app as before).
+ARG NEXT_PUBLIC_ASSET_CDN
+ARG NEXT_PUBLIC_APP_NAME
+ENV NEXT_PUBLIC_ASSET_CDN=$NEXT_PUBLIC_ASSET_CDN
+ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
+ENV APP_VERSION=$APP_VERSION
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY . .
 

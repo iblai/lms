@@ -3,57 +3,95 @@
 import { useState, useEffect } from 'react';
 import { Filter, X } from 'lucide-react';
 import { CourseCardSkeleton } from '@/components/course-card-skeleton';
-import { Footer } from '@/components/footer';
-import { useDiscover } from '@/hooks/discover/use-discover';
+import { useDiscover, ENROLLMENT_FACET_SLUG } from '@/hooks/discover/use-discover';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import React from 'react';
 import { DiscoverContentCard } from '@/components/discover-content-card';
-import { DiscoverContent } from '@/types/discover';
 import AccessiblePaginate from '@/components/ui/accessible-paginate';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { NoCoursesEmptyBox } from '@/components/no-courses-empty-box';
 import { DiscoverFacetsFilter } from '@/components/discover-facets-filter';
 import { DiscoverFilterDrawer } from '@/components/discover-filter-drawer';
 import { FacetFilterContext } from '@/contexts/facet-filter-context';
+/**
+ * Deep-link params → facet seed: `q` (navbar search), `content`
+ * (courses|programs|pathways), and `enrolled=true` / `recommended=true`
+ * (both terms of the one synthetic Access facet).
+ */
+const facetsFromSearchParams = (searchParams: URLSearchParams) => {
+  const contentParam = searchParams.get('content');
+  const enrolledParam = searchParams.get('enrolled');
+  const recommendedParam = searchParams.get('recommended');
+  return {
+    q: searchParams.get('q') ? [decodeURIComponent(searchParams.get('q') || '')] : [],
+    ...(contentParam !== null && {
+      content: contentParam ? contentParam.split(',').filter(Boolean) : [],
+    }),
+    ...((enrolledParam !== null || recommendedParam !== null) && {
+      enrollment: [
+        ...(enrolledParam === 'true' ? ['Enrolled'] : []),
+        ...(recommendedParam === 'true' ? ['Recommended'] : []),
+      ],
+    }),
+  };
+};
+
 export default function DiscoverPage() {
   const [limit] = useState<number>(12);
   const searchParams = useSearchParams();
+  // Seed once at mount so the very first catalog request already carries
+  // the deep-linked filters; the effect below keeps later URL changes in
+  // sync.
+  const [initialFacets] = useState(() => facetsFromSearchParams(searchParams));
   const {
-    contents,
     facets,
     contentsLoading,
     facetsLoading,
     isError,
+    catalogEmpty,
     handleToggleFacet,
     selectedFacets,
     isFacetTermSelected,
     handleSelectFacets,
-    handleFormatContents,
     pagination,
     setPage,
     handleFilterFacets,
     filteredFacets,
     setSelectedFacets,
+    displayCards,
+    enrolledOnly,
+    enrollmentsLoading,
+    recommendedOnly,
+    recommendationsLoading,
   } = useDiscover({
     limit,
+    initialFacets,
   });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
+  // Keep the filters in sync with URL changes after mount (the navbar
+  // search pushes a new `q`, the sidebar's Courses / Programs / Pathways
+  // entries deep-link the user's enrollments).
   useEffect(() => {
-    if (searchParams.get('q')) {
-      setSelectedFacets({
-        ...selectedFacets,
-        q: [decodeURIComponent(searchParams.get('q') || '')],
-      });
-    } else {
-      setSelectedFacets({
-        ...selectedFacets,
-        q: [],
-      });
-    }
-  }, [searchParams]);
+    setSelectedFacets((previous) => ({
+      ...previous,
+      ...facetsFromSearchParams(searchParams),
+    }));
+  }, [searchParams, setSelectedFacets]);
+
+  /** Either user-scoped filter is on — cards come from user endpoints. */
+  const userContentOnly = enrolledOnly || recommendedOnly;
+  /** Any facet term (incl. navbar search `q`) narrows the catalog. */
+  const hasActiveFilters = Object.values(selectedFacets ?? {}).some(
+    (terms) => (terms?.length ?? 0) > 0,
+  );
+  const cardsBusy =
+    contentsLoading ||
+    (enrolledOnly && enrollmentsLoading) ||
+    (recommendedOnly && recommendationsLoading);
 
   return (
     <>
@@ -80,12 +118,8 @@ export default function DiscoverPage() {
               msOverflowStyle: 'none',
             }}
           >
-            <h2 className="mb-4 text-lg font-medium text-gray-600">Explore Content</h2>
-
+            {/* The page title ("Explore Content") lives in the navbar's left cluster. */}
             <div className="mb-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-base font-medium text-gray-700">Filter By</h3>
-              </div>
               <DiscoverFacetsFilter />
             </div>
           </div>
@@ -99,30 +133,33 @@ export default function DiscoverPage() {
             }}
           >
             <div className="w-full pb-16">
-              <div className="mb-4 flex items-center justify-between md:hidden">
-                <h1 className="text-xl font-semibold text-gray-600">Featured Learning Content</h1>
+              <div className="mb-4 flex items-center justify-end gap-2 md:hidden">
                 <Button variant="outline" size="sm" onClick={() => setFilterDrawerOpen(true)}>
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
                 </Button>
               </div>
-              <h1 className="mb-4 hidden text-xl font-semibold text-gray-600 md:block">
-                Featured Learning Content
-              </h1>
               {filterDrawerOpen && <DiscoverFilterDrawer />}
               {/* Content Type Filter */}
-              {!_.isEmpty(selectedFacets) && (
+              {!isEmpty(selectedFacets) && (
                 <div className="mb-6 flex items-center gap-3">
                   {Object.keys(selectedFacets).map((selectedFacet: string, index: number) => {
                     if (selectedFacets?.[selectedFacet]?.length === 0) {
                       return;
                     }
+                    // Chips read as standalone values ("Courses",
+                    // "Enrolled", "Recommended") — the term IS the label,
+                    // so no facet prefix for these.
+                    const hideFacetPrefix =
+                      selectedFacet === 'content' || selectedFacet === ENROLLMENT_FACET_SLUG;
                     return (
                       <div
                         key={`selected-facet-${selectedFacet}-${index}`}
                         className="flex items-center rounded-md bg-gray-100 px-3 py-1 text-sm"
                       >
-                        <span className="mr-1 text-gray-600 capitalize">{selectedFacet}:</span>
+                        {!hideFacetPrefix && (
+                          <span className="mr-1 text-gray-600 capitalize">{selectedFacet}:</span>
+                        )}
                         {selectedFacets?.[selectedFacet]?.map(
                           (selectedTerm: string, index: number) => (
                             <React.Fragment key={index}>
@@ -142,28 +179,44 @@ export default function DiscoverPage() {
                   })}
                 </div>
               )}
-              {((!contentsLoading && isError) ||
-                (!contentsLoading && !isError && contents?.length === 0)) && (
-                <DefaultEmptyBox message="No content found." />
-              )}
+              {/* Wait for the unfiltered catalog probe (`facetsLoading`)
+                  before picking an empty state, so a filter-specific
+                  message never flashes when the catalog is truly empty. */}
+              {!cardsBusy &&
+                !facetsLoading &&
+                ((isError && !userContentOnly) || displayCards?.length === 0) &&
+                (catalogEmpty || (!userContentOnly && !isError && !hasActiveFilters) ? (
+                  // A truly empty catalog: no filter combination (enrolled,
+                  // recommended, search, facets) can match anything — invite
+                  // admins to create the first course, others to contact
+                  // support.
+                  <NoCoursesEmptyBox />
+                ) : (
+                  <DefaultEmptyBox
+                    message={
+                      enrolledOnly
+                        ? 'No enrolled content found.'
+                        : recommendedOnly
+                          ? 'No recommended content found.'
+                          : 'No content found.'
+                    }
+                  />
+                ))}
 
               {/* Course Grid */}
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden min-[450px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                {contentsLoading && (
-                  <SkeletonMultiplier multiplier={10} Skeleton={CourseCardSkeleton} />
-                )}
-                {!contentsLoading &&
-                  !isError &&
-                  contents.length > 0 &&
-                  contents.map((content: DiscoverContent, index) => (
-                    <div key={`content-${index}`} className="w-full">
-                      <DiscoverContentCard content={handleFormatContents(content)} />
+                {cardsBusy && <SkeletonMultiplier multiplier={10} Skeleton={CourseCardSkeleton} />}
+                {!cardsBusy &&
+                  displayCards.length > 0 &&
+                  displayCards.map((card, index) => (
+                    <div key={`content-${card.id || index}`} className="w-full">
+                      <DiscoverContentCard content={card} />
                     </div>
                   ))}
               </div>
 
-              {/* Pagination */}
-              <div className="mt-8 mb-6 flex justify-end">
+              {/* Pagination — the user-scoped views list everything at once */}
+              <div className={`mt-8 mb-6 ${userContentOnly ? 'hidden' : 'flex'} justify-end`}>
                 <AccessiblePaginate
                   className="flex items-center space-x-2"
                   pageClassName="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
@@ -182,7 +235,6 @@ export default function DiscoverPage() {
                 />
               </div>
             </div>
-            <Footer />
           </div>
         </main>
       </FacetFilterContext.Provider>

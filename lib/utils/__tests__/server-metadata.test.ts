@@ -16,10 +16,12 @@ import {
 } from '../server-metadata';
 
 const DEFAULTS = {
-  title: 'skillsAI',
+  title: 'ibl.ai | Agentic LMS',
   favicon: '/favicon.ico',
   description: 'Build Your Skills with AI',
-  logo: '/skills-logo.png',
+  // Mirrors DEFAULT_APP_INFORMATION.logo in ../server-metadata: the dynamic
+  // social card at app/opengraph-image.tsx, used when a tenant has no display_logo.
+  logo: '/opengraph-image',
 };
 
 describe('fetchAppMetadata', () => {

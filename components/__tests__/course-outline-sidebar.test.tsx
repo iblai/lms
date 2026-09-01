@@ -25,11 +25,18 @@ vi.mock('@/components/course-outline', () => ({
   CourseOutline: () => <div data-testid="course-outline">CourseOutline</div>,
 }));
 
-import { CourseOutlineSidebar, OUTLINE_COLLAPSED_KEY } from '@/components/course-outline-sidebar';
+import {
+  CourseOutlineSidebar,
+  CourseOutlineToggle,
+  OUTLINE_COLLAPSED_KEY,
+} from '@/components/course-outline-sidebar';
 
+// The toggle lives in the layout's course header row while the sidebar is a
+// sibling of the content column; they only share state through localStorage.
 const renderSidebar = (course: any = { display_name: 'My Course' }) =>
   render(
     <CourseOutlineContext.Provider value={{ course } as any}>
+      <CourseOutlineToggle />
       <CourseOutlineSidebar />
     </CourseOutlineContext.Provider>,
   );
@@ -42,73 +49,75 @@ describe('CourseOutlineSidebar', () => {
     mockMedia.isWide = true;
   });
 
-  it('renders the rail expand button, header collapse button, and the outline', () => {
+  it('renders the toggle and the outline', () => {
     renderSidebar({ display_name: 'My Course' });
 
-    expect(screen.getByTestId('expand-course-outline')).toBeInTheDocument();
-    expect(screen.getByTestId('collapse-course-outline')).toBeInTheDocument();
+    expect(screen.getByTestId('toggle-course-outline')).toBeInTheDocument();
     expect(screen.getByTestId('course-outline')).toBeInTheDocument();
-    expect(screen.getByText('My Course')).toBeInTheDocument();
   });
 
-  it('defaults to expanded (full outline shown, rail hidden)', () => {
+  it('does not repeat the course name (it already lives in the navbar)', () => {
+    renderSidebar({ display_name: 'My Course' });
+
+    expect(screen.queryByText('My Course')).not.toBeInTheDocument();
+  });
+
+  it('defaults to expanded, with the toggle offering to collapse', () => {
     renderSidebar();
 
     expect(tokens('course-outline-sidebar')).toContain('block');
-    expect(tokens('course-outline-rail')).toContain('hidden');
+    expect(screen.getByTestId('panel-left-close')).toBeInTheDocument();
+    expect(screen.getByTestId('toggle-course-outline')).toHaveAccessibleName(
+      'Collapse course outline',
+    );
   });
 
-  it('offers the collapse control at every width >= 768px (incl. desktop)', () => {
+  it('hides the toggle below md via responsive classes (drawer handles mobile)', () => {
     renderSidebar();
 
-    expect(tokens('collapse-course-outline')).toContain('inline-flex');
+    expect(tokens('toggle-course-outline')).toContain('hidden');
+    expect(tokens('toggle-course-outline')).toContain('md:inline-flex');
   });
 
-  it('collapses and persists collapsed=true when the header button is clicked', () => {
+  it('collapses the sidebar and persists collapsed=true when the toggle is clicked', () => {
     renderSidebar();
 
-    fireEvent.click(screen.getByTestId('collapse-course-outline'));
+    fireEvent.click(screen.getByTestId('toggle-course-outline'));
 
     expect(window.localStorage.getItem(OUTLINE_COLLAPSED_KEY)).toBe('true');
-    expect(tokens('course-outline-rail')).toContain('flex');
     expect(tokens('course-outline-sidebar')).toContain('hidden');
+    expect(screen.getByTestId('panel-left-open')).toBeInTheDocument();
+    expect(screen.getByTestId('toggle-course-outline')).toHaveAccessibleName(
+      'Expand course outline',
+    );
   });
 
-  it('expands and persists collapsed=false when the rail button is clicked', () => {
+  it('expands the sidebar and persists collapsed=false when the toggle is clicked again', () => {
     window.localStorage.setItem(OUTLINE_COLLAPSED_KEY, 'true');
     renderSidebar();
 
-    // Collapsed → rail is shown.
-    expect(tokens('course-outline-rail')).toContain('flex');
+    // Collapsed → sidebar hidden.
+    expect(tokens('course-outline-sidebar')).toContain('hidden');
 
-    fireEvent.click(screen.getByTestId('expand-course-outline'));
+    fireEvent.click(screen.getByTestId('toggle-course-outline'));
 
     expect(window.localStorage.getItem(OUTLINE_COLLAPSED_KEY)).toBe('false');
-    expect(tokens('course-outline-rail')).toContain('hidden');
     expect(tokens('course-outline-sidebar')).toContain('block');
+    expect(screen.getByTestId('panel-left-close')).toBeInTheDocument();
   });
 
   it('reads the persisted collapsed state from localStorage', () => {
     window.localStorage.setItem(OUTLINE_COLLAPSED_KEY, 'true');
     renderSidebar();
 
-    expect(tokens('course-outline-rail')).toContain('flex');
     expect(tokens('course-outline-sidebar')).toContain('hidden');
+    expect(screen.getByTestId('panel-left-open')).toBeInTheDocument();
   });
 
-  it('hides everything below 768px (drawer handles the outline there)', () => {
+  it('hides the sidebar below 768px (drawer handles the outline there)', () => {
     mockMedia.isWide = false;
     renderSidebar();
 
-    expect(tokens('course-outline-rail')).toContain('hidden');
     expect(tokens('course-outline-sidebar')).toContain('hidden');
-  });
-
-  it('does not render the first-time hint popover', () => {
-    window.localStorage.setItem(OUTLINE_COLLAPSED_KEY, 'true');
-    renderSidebar();
-
-    expect(screen.queryByTestId('course-outline-hint')).not.toBeInTheDocument();
-    expect(screen.queryByText('Course outline hidden')).not.toBeInTheDocument();
   });
 });

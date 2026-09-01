@@ -10,6 +10,11 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    // Claude Code agent worktrees are full copies of this repo — linting them
+    // would duplicate every file (and lint code from other branches).
+    ignores: ['.claude/worktrees/**'],
+  },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
     rules: {

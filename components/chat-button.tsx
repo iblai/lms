@@ -4,16 +4,12 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { createContext, useContext } from 'react';
-import { getUserName } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import '@iblai/agent-ai';
 import React from 'react';
-// @ts-ignore
-import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
-import _ from 'lodash';
 import { toast } from 'sonner';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useDefaultMentor } from '@/hooks/use-default-mentor';
 
 // Create a context to share the chat state with other components
 export const ChatContext = createContext<{
@@ -42,9 +38,6 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
   const tenant = useTenantParam();
   const { isOpen, setIsOpen, courseMentor, mentorSidebarHidden } = useChatState();
   const [alreadyOpened, setAlreadyOpened] = useState(false);
-  const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({
-    org: tenant,
-  });
 
   const handleOpen = (open: boolean) => {
     setIsOpen(open);
@@ -53,70 +46,23 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
     }
   };
 
-  const [getMentors, { isLoading: isMentorsLoading, isFetching: isMentorsFetching }] =
-    useLazyGetMentorsQuery();
-  const [mentorInUse, setMentorInUse] = useState<string | null>(null);
-
-  const handleFetchMentors = async () => {
-    // Step 1 - use course mentor if set
-    if (courseMentor) {
-      setMentorInUse(courseMentor);
-      return;
-    }
-    if (!metadataLoaded) return;
-
-    // Step 2 - use embedded mentor if set
-    const embeddedMentor = getEmbeddedMentorToUse();
-    if (embeddedMentor) {
-      setMentorInUse(embeddedMentor?.unique_id);
-      return;
-    }
-
-    // Resolve a mentor unique_id from a result list (default mentor first).
-    const resolveMentor = (results: any[]) =>
-      (results.find((item: any) => item?.metadata?.default) || results[0])?.unique_id || null;
-
-    try {
-      // Step 3 - fetch recently accessed mentors first
-      const recent = await getMentors({
-        org: tenant,
-        username: getUserName(),
-        orderBy: 'recently_accessed_at',
-        limit: 10,
-      }).unwrap();
-
-      let mentor = _.isEmpty(recent?.results) ? null : resolveMentor(recent.results);
-
-      // Step 4 - fall back to featured mentors when none are recently accessed
-      if (!mentor) {
-        const featured = await getMentors({
-          org: tenant,
-          username: getUserName(),
-          featured: true,
-          limit: 10,
-        }).unwrap();
-        mentor = _.isEmpty(featured?.results) ? null : resolveMentor(featured.results);
-      }
-
-      if (!mentor) {
-        throw new Error('No mentors found');
-      }
-      setMentorInUse(mentor);
-    } catch {
+  // Mentor resolution (course → embedded → recent → featured) lives in the hook
+  // so the onboarding wizard embeds the same agent this launcher opens.
+  const { mentor: mentorInUse, isLoading: isMentorLoading } = useDefaultMentor({
+    tenant,
+    courseMentor,
+    skip: mentorSidebarHidden,
+    onError: () => {
       handleOpen(false);
-      setMentorInUse(null);
       toast.error('No mentors found');
-    }
-  };
+    },
+  });
 
   useEffect(() => {
     if (mentorSidebarHidden) {
       handleOpen(false);
-      setMentorInUse(null);
-      return;
     }
-    handleFetchMentors();
-  }, [metadataLoaded, courseMentor, mentorSidebarHidden]);
+  }, [mentorSidebarHidden]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -137,7 +83,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
     };
   }, []);
 
-  if (isMentorsLoading || isMentorsFetching || !metadataLoaded) {
+  if (isMentorLoading) {
     return (
       <div className="relative flex h-24 w-[45px] items-center justify-center rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
         <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
@@ -145,7 +91,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
     );
   }
 
-  if (!isMentorsLoading && !mentorInUse && mentorSidebarHidden) {
+  if (!isMentorLoading && !mentorInUse && mentorSidebarHidden) {
     return <></>;
   }
 

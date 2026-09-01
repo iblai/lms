@@ -42,10 +42,8 @@ vi.mock('../skeleton-multiplier', () => ({
   ),
 }));
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn((val) => !val || Object.keys(val).length === 0),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn((val) => !val || Object.keys(val).length === 0),
 }));
 
 import { ProfileInfoCards } from '../profile-info-cards';
