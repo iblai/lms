@@ -1,7 +1,7 @@
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useContext, useState, useEffect } from 'react';
 import { Clock, AlertCircle } from 'lucide-react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import {
   // @ts-ignore
   useUpdateExamAttemptMutation,
@@ -277,7 +277,7 @@ export const TimedExam = () => {
   }
 
   // Show "ready to start" UI when no active attempt exists
-  if (_.isEmpty(examInfo?.exam?.attempt) || _.isEmpty(examInfo?.active_attempt)) {
+  if (isEmpty(examInfo?.exam?.attempt) || isEmpty(examInfo?.active_attempt)) {
     return (
       <div className="sm:p-6">
         <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 p-6">

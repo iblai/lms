@@ -1,7 +1,7 @@
 import { TenantSwitcher } from '@iblai/iblai-js/web-containers';
 import { getTenant, getTenants, handleTenantSwitch } from '@/utils/helpers';
 import { Tenant } from '@iblai/iblai-js/web-utils';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { selectRbacPermissions } from '@/features/rbac';
 import { useAppSelector } from '@/lib/hooks';
 import { config } from '@/lib/config';
@@ -11,7 +11,7 @@ export function TenantSelect() {
   const tenants = getTenants() as Tenant[];
   const rbacPermissions = useAppSelector(selectRbacPermissions);
 
-  if (_.isEmpty(tenants) || !tenantKey) {
+  if (isEmpty(tenants) || !tenantKey) {
     return <></>;
   }
 

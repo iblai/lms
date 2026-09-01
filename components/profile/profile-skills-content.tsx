@@ -8,7 +8,7 @@ import { useProfileSkills } from '@/hooks/profile/use-profile-skills';
 import { SkillBox } from '@/components/skill-box';
 import { SkeletonSkillBox } from '@/components/skeleton-skill-box';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { UserSkill } from '@/types/skills';
 
@@ -92,12 +92,12 @@ export function ProfileSkillsContent() {
           {!earnedSkillsLoading && earnedSkillsError && (
             <DefaultEmptyBox className="w-full" message="You don't have any earned skills yet." />
           )}
-          {!earnedSkillsLoading && earnedSkillsSuccess && _.isEmpty(earnedSkills) && (
+          {!earnedSkillsLoading && earnedSkillsSuccess && isEmpty(earnedSkills) && (
             <DefaultEmptyBox className="w-full" message="You don't have any earned skills yet." />
           )}
           {!earnedSkillsLoading &&
             earnedSkillsSuccess &&
-            !_.isEmpty(earnedSkills?.resources) &&
+            !isEmpty(earnedSkills?.resources) &&
             earnedSkills?.resources.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
@@ -155,7 +155,7 @@ export function ProfileSkillsContent() {
                 not here — so mobile doesn't show a duplicate box. */}
             {!selfReportedSkillsLoading &&
               selfReportedSkillsSuccess &&
-              !_.isEmpty(selfReportedSkills?.skills) &&
+              !isEmpty(selfReportedSkills?.skills) &&
               selfReportedSkills?.skills.map((skill: any, index: number) => (
                 <SkillBox
                   key={index}
@@ -187,7 +187,7 @@ export function ProfileSkillsContent() {
         )}
         {!selfReportedSkillsLoading &&
           selfReportedSkillsSuccess &&
-          _.isEmpty(selfReportedSkills?.skills) && (
+          isEmpty(selfReportedSkills?.skills) && (
             <DefaultEmptyBox
               className="w-full"
               message="You don't have any self-reported skills yet."
@@ -200,7 +200,7 @@ export function ProfileSkillsContent() {
 
           {!selfReportedSkillsLoading &&
             selfReportedSkillsSuccess &&
-            !_.isEmpty(selfReportedSkills?.skills) &&
+            !isEmpty(selfReportedSkills?.skills) &&
             selfReportedSkills?.skills.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
@@ -262,7 +262,7 @@ export function ProfileSkillsContent() {
           {!desiredSkillsLoading && desiredSkillsError && (
             <DefaultEmptyBox className="w-full" message="You don't have any desired skills yet." />
           )}
-          {!desiredSkillsLoading && desiredSkillsSuccess && _.isEmpty(desiredSkills?.skills) && (
+          {!desiredSkillsLoading && desiredSkillsSuccess && isEmpty(desiredSkills?.skills) && (
             <DefaultEmptyBox className="w-full" message="You don't have any desired skills yet." />
           )}
 
@@ -276,7 +276,7 @@ export function ProfileSkillsContent() {
                   not here — so mobile doesn't show a duplicate box. */}
               {!desiredSkillsLoading &&
                 desiredSkillsSuccess &&
-                !_.isEmpty(desiredSkills?.skills) &&
+                !isEmpty(desiredSkills?.skills) &&
                 desiredSkills?.skills.map((skill: any, index: number) => (
                   <SkillBox
                     key={index}
@@ -296,7 +296,7 @@ export function ProfileSkillsContent() {
             )}
             {!desiredSkillsLoading &&
               desiredSkillsSuccess &&
-              !_.isEmpty(desiredSkills?.skills) &&
+              !isEmpty(desiredSkills?.skills) &&
               desiredSkills?.skills.map((skill: any, index: number) => (
                 <SkillBox
                   key={index}

@@ -171,13 +171,11 @@ vi.mock('lucide-react', () => {
   };
 });
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: (val: any) =>
-      val == null ||
-      (Array.isArray(val) && val.length === 0) ||
-      (typeof val === 'object' && Object.keys(val).length === 0),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: (val: any) =>
+    val == null ||
+    (Array.isArray(val) && val.length === 0) ||
+    (typeof val === 'object' && Object.keys(val).length === 0),
 }));
 
 vi.mock('dayjs', () => {

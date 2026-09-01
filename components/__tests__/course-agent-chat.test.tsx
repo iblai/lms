@@ -57,14 +57,13 @@ vi.mock('@/features/mentor', () => ({
   })),
 }));
 
-vi.mock('lodash', () => {
+vi.mock('lodash/isEmpty', () => {
   const isEmpty = (val: any) =>
     val == null ||
     (Array.isArray(val)
       ? val.length === 0
       : typeof val === 'object' && Object.keys(val).length === 0);
-  const lodash = { isEmpty };
-  return { default: lodash, isEmpty };
+  return { default: isEmpty };
 });
 
 const defaultContextValue = {

@@ -5,7 +5,7 @@ import { SkeletonMultiplier } from '../skeleton-multiplier';
 import { SkeletonSkillBox } from '../skeleton-skill-box';
 import { DefaultEmptyBox } from '../default-empty-box';
 import { SkillBox } from '../skill-box';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 export const SkillsBox = () => {
   const {
@@ -26,14 +26,14 @@ export const SkillsBox = () => {
       {/* Earned Skills Section */}
       <div className="mb-6">
         <h3 className="mb-4 text-base font-medium text-gray-700">Earned</h3>
-        {!earnedSkillsLoading && (earnedSkillsError || _.isEmpty(earnedSkills?.resources)) && (
+        {!earnedSkillsLoading && (earnedSkillsError || isEmpty(earnedSkills?.resources)) && (
           <DefaultEmptyBox className="w-full" message="You don't have any earned skills yet." />
         )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {earnedSkillsLoading && <SkeletonMultiplier Skeleton={SkeletonSkillBox} multiplier={6} />}
           {!earnedSkillsLoading &&
             !earnedSkillsError &&
-            !_.isEmpty(earnedSkills?.resources) &&
+            !isEmpty(earnedSkills?.resources) &&
             earnedSkills?.resources.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
@@ -59,7 +59,7 @@ export const SkillsBox = () => {
         )}
         {!selfReportedSkillsLoading &&
           !selfReportedSkillsError &&
-          _.isEmpty(selfReportedSkills?.skills) && (
+          isEmpty(selfReportedSkills?.skills) && (
             <DefaultEmptyBox
               className="w-full"
               message="You don't have any self-reported skills yet."
@@ -71,7 +71,7 @@ export const SkillsBox = () => {
           )}
           {!selfReportedSkillsLoading &&
             !selfReportedSkillsError &&
-            !_.isEmpty(selfReportedSkills?.skills) &&
+            !isEmpty(selfReportedSkills?.skills) &&
             selfReportedSkills?.skills.map((skill: any, index: number) => (
               <SkillBox
                 key={index}
@@ -91,7 +91,7 @@ export const SkillsBox = () => {
         {!desiredSkillsLoading && desiredSkillsError && (
           <DefaultEmptyBox className="w-full" message="You don't have any desired skills yet." />
         )}
-        {!desiredSkillsLoading && !desiredSkillsError && _.isEmpty(desiredSkills?.skills) && (
+        {!desiredSkillsLoading && !desiredSkillsError && isEmpty(desiredSkills?.skills) && (
           <DefaultEmptyBox className="w-full" message="You don't have any desired skills yet." />
         )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -100,7 +100,7 @@ export const SkillsBox = () => {
           )}
           {!desiredSkillsLoading &&
             !desiredSkillsError &&
-            !_.isEmpty(desiredSkills?.skills) &&
+            !isEmpty(desiredSkills?.skills) &&
             desiredSkills?.skills.map((skill: any, index: number) => (
               <SkillBox
                 key={index}

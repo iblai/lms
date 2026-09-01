@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 import { usePathname, useSearchParams } from 'next/navigation';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
@@ -168,7 +168,7 @@ export default function CourseContentLayout({
   }, [courseId]);
 
   useEffect(() => {
-    if (!_.isEmpty(course)) {
+    if (!isEmpty(course)) {
       if (!course?.mentor_hidden) {
         setCourseMentor(course.mentor_uuid || null);
       }
@@ -277,7 +277,7 @@ export default function CourseContentLayout({
     }
   }, [fullscreenToggleVisible]);
   useEffect(() => {
-    if (!_.isEmpty(courseOutline)) {
+    if (!isEmpty(courseOutline)) {
       const currentCourse = getUnitToIframe(courseOutline);
       setCurrentCourseInfo(currentCourse);
       const unitID = currentCourse?.id;
