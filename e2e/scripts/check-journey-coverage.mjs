@@ -39,6 +39,8 @@ const JOURNEYS_DIR = join(REPO_ROOT, 'e2e', 'journeys');
 
 /** Files intentionally excluded from E2E coverage requirements. */
 const EXCLUDED_PATTERNS = [
+  // Claude Code agent worktrees — duplicate checkouts of this repo
+  /^\.claude\/worktrees\//,
   /\/layout\.tsx$/,
   /\/loading\.tsx$/,
   /\/not-found\.tsx$/,
@@ -69,6 +71,7 @@ const EXCLUDED_PATTERNS = [
   /^app\/platform\/\[tenant\]\/analytics\/courses\/\[courseId\]\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/analytics\/courses\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/analytics\/financial\/page\.tsx$/,
+  /^app\/platform\/\[tenant\]\/analytics\/memory\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/analytics\/monetization\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/analytics\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/analytics\/programs\/\[programId\]\/page\.tsx$/,
@@ -101,7 +104,8 @@ const EXCLUDED_PATTERNS = [
   /^app\/platform\/\[tenant\]\/recommended\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/reports\/\[tenantKey\]\/\[reportName\]\/page\.tsx$/,
   /^app\/platform\/\[tenant\]\/start\/page\.tsx$/,
-  // Legacy non-tenant-scoped route — redirect stub, no standalone journey
+  // Legacy non-tenant-scoped routes — redirect stubs, no standalone journey
+  /^app\/analytics\/memory\/page\.tsx$/,
   /^app\/analytics\/monetization\/page\.tsx$/,
 ];
 

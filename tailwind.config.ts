@@ -70,10 +70,11 @@ const config: Config = {
         //   DEFAULT: themeConfig.colors.accent.DEFAULT,
         //   dark: themeConfig.colors.accent.dark,
         // },
-        // Legacy colors (keeping for backward compatibility)
+        // Legacy colors (keeping for backward compatibility) — amber renders
+        // the sidebar blue family (see the @theme remap in globals.css).
         amber: {
-          100: '#FEF3C7',
-          500: '#F59E0B',
+          100: '#dbeafe',
+          500: '#3b82f6',
         },
         chart: {
           '1': 'hsl(var(--chart-1))',

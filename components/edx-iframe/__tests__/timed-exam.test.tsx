@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 
 const mockUpdateExamAttempt = vi.fn();
@@ -15,15 +15,13 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
   useLazyGetExamInfoQuery: vi.fn(() => [mockGetExamInfo]),
 }));
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn((val: any) => {
-      if (val === null || val === undefined) return true;
-      if (typeof val === 'object' && !Array.isArray(val)) return Object.keys(val).length === 0;
-      if (Array.isArray(val)) return val.length === 0;
-      return false;
-    }),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn((val: any) => {
+    if (val === null || val === undefined) return true;
+    if (typeof val === 'object' && !Array.isArray(val)) return Object.keys(val).length === 0;
+    if (Array.isArray(val)) return val.length === 0;
+    return false;
+  }),
 }));
 
 import { TimedExam } from '../timed-exam';
@@ -32,7 +30,6 @@ const buildContextValue = (overrides = {}) => ({
   iframeUrl: '',
   setIframeUrl: vi.fn(),
   courseOutline: {} as any,
-  setActiveTab: vi.fn(),
   activeTab: '',
   courseID: 'course-v1:test+101',
   currentlyInExamSubsection: false,
@@ -107,7 +104,7 @@ describe('TimedExam', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     // Re-apply lodash mock implementation
-    vi.mocked(_.isEmpty).mockImplementation((val: any) => {
+    vi.mocked(isEmpty).mockImplementation((val: any) => {
       if (val === null || val === undefined) return true;
       if (typeof val === 'object' && !Array.isArray(val)) return Object.keys(val).length === 0;
       if (Array.isArray(val)) return val.length === 0;
@@ -347,7 +344,7 @@ describe('TimedExam', () => {
     expect(container.querySelector('.bg-blue-50')).toBeInTheDocument();
   });
 
-  it('shows yellow style when time is low', () => {
+  it('shows the low-time (light blue) style when time is low', () => {
     const examWithLowTime = {
       ...startedExamInfo,
       exam: {
@@ -361,7 +358,7 @@ describe('TimedExam', () => {
       },
     };
     const { container } = renderTimedExam({ examInfo: examWithLowTime });
-    expect(container.querySelector('.bg-yellow-50')).toBeInTheDocument();
+    expect(container.querySelector('[class*="bg-[#dbeafe]"]')).toBeInTheDocument();
   });
 
   it('shows red style when time is critically low', () => {
@@ -560,7 +557,7 @@ describe('TimedExam', () => {
 
   it('handles exam with no active_attempt', () => {
     // When both attempt and active_attempt are empty, should show ready-to-start UI
-    vi.mocked(_.isEmpty).mockReturnValue(true);
+    vi.mocked(isEmpty).mockReturnValue(true);
     const examWithNoActive = {
       ...noAttemptExamInfo,
       active_attempt: null,

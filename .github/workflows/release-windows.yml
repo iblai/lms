@@ -26,7 +26,6 @@ jobs:
   release:
     uses: ./.github/workflows/reusable-release-windows.yml
     with:
-      cert_subject: 'CN=IBL.ai, O=IBL.ai'
       # Tag push -> attach the installers to that app-v<X> Release.
       # Manual dispatch -> build-only artifacts (no Release), named by short SHA.
       release_tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}

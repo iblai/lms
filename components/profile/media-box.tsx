@@ -22,7 +22,7 @@ import Link from 'next/link';
 import { useForm } from '@tanstack/react-form';
 import { toast } from 'sonner';
 import { useCreateUserResumeMutation } from '@/services/career';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
@@ -166,7 +166,7 @@ export const MediaBox = () => {
   const [uploadedFileIsPDF, setUploadedFileIsPDF] = useState<boolean>(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (_.isEmpty(event.target.files)) {
+    if (isEmpty(event.target.files)) {
       return;
     }
     const file = event.target.files?.[0];

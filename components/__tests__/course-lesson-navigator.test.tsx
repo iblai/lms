@@ -7,12 +7,10 @@ vi.mock('lucide-react', () => ({
   ChevronRight: (props: any) => <span data-testid="chevron" {...props} />,
 }));
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
+  ),
 }));
 
 import { CourseLessonNavigator } from '../course-lesson-navigator';
@@ -77,7 +75,6 @@ const renderNavigator = ({
     courseID,
     iframeUrl: '',
     setIframeUrl: vi.fn(),
-    setActiveTab: vi.fn(),
     activeTab: 'course',
     currentlyInExamSubsection: false,
     setCurrentlyInExamSubsection: vi.fn(),

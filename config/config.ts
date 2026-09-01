@@ -35,9 +35,9 @@ export const themeConfig = {
   colors: {
     // Primary color palette
     primary: {
-      light: '#FEF3C7', // amber-100
-      DEFAULT: '#F59E0B', // amber-500
-      dark: '#D97706', // amber-600
+      light: '#dbeafe', // sidebar blue (light)
+      DEFAULT: '#3b82f6', // sidebar blue (accent)
+      dark: '#2563eb', // sidebar blue (dark)
     },
     // Secondary color palette
     secondary: {
@@ -47,9 +47,9 @@ export const themeConfig = {
     },
     // Accent colors for highlights and special elements
     accent: {
-      light: '#FEF3C7', // amber-100
-      DEFAULT: '#F59E0B', // amber-500
-      dark: '#D97706', // amber-600
+      light: '#dbeafe', // sidebar blue (light)
+      DEFAULT: '#3b82f6', // sidebar blue (accent)
+      dark: '#2563eb', // sidebar blue (dark)
     },
     // Background colors
     background: {
@@ -73,7 +73,7 @@ export const themeConfig = {
     // Success, warning, error colors
     status: {
       success: '#10B981', // emerald-500
-      warning: '#F59E0B', // amber-500
+      warning: '#3b82f6', // sidebar blue (accent)
       error: '#EF4444', // red-500
       info: '#3B82F6', // blue-500
     },
@@ -83,8 +83,8 @@ export const themeConfig = {
       navbar: {
         background: '#FFFFFF',
         text: '#374151',
-        activeText: '#B45309',
-        activeBorder: '#F59E0B',
+        activeText: '#1d4ed8',
+        activeBorder: '#3b82f6',
         hoverText: '#1F2937',
         hoverBackground: '#F3F4F6',
       },
@@ -93,23 +93,23 @@ export const themeConfig = {
         background: '#FFFFFF',
         border: '#E5E7EB',
         text: '#374151',
-        iconBackground: '#FEF3C7',
-        iconColor: '#F59E0B',
+        iconBackground: '#dbeafe',
+        iconColor: '#3b82f6',
         hoverBackground: '#F3F4F6',
-        skillBackground: '#FEF3C7',
-        skillHoverBackground: '#FDE68A',
+        skillBackground: '#dbeafe',
+        skillHoverBackground: '#bfdbfe',
         skillText: '#374151',
       },
       // Button specific colors
       button: {
         primary: {
-          background: 'linear-gradient(to right, #4B5563, #F59E0B)',
+          background: 'linear-gradient(to right, #2563EB, #93C5FD)',
           text: '#FFFFFF',
           hoverOpacity: 0.9,
           // Add explicit gradient definitions
           gradient: {
-            from: '#4B5563', // gray-700
-            to: '#F59E0B', // amber-500
+            from: '#2563EB', // blue-600
+            to: '#93C5FD', // blue-300
             direction: 'to right',
           },
         },
@@ -127,8 +127,8 @@ export const themeConfig = {
         // Add accent button style
         accent: {
           gradient: {
-            from: '#F59E0B', // amber-500
-            to: '#D97706', // amber-600
+            from: '#2563EB', // blue-600
+            to: '#93C5FD', // blue-300
             direction: 'to right',
           },
           text: '#FFFFFF',
@@ -141,20 +141,20 @@ export const themeConfig = {
         text: '#374151',
         border: '#E5E7EB',
         sidebar: {
-          background: 'linear-gradient(to bottom, #FFFFFF, #F9FAFB, #FEF3C7)',
+          background: 'linear-gradient(to bottom, #FFFFFF, #F9FAFB, #dbeafe)',
           text: '#374151',
           activeTab: {
-            background: '#FEF3C7',
-            border: '#F59E0B',
-            text: '#D97706',
+            background: '#dbeafe',
+            border: '#3b82f6',
+            text: '#2563eb',
           },
         },
       },
       // Badge specific colors
       badge: {
         admin: {
-          background: '#FEF3C7',
-          text: '#D97706',
+          background: '#dbeafe',
+          text: '#2563eb',
         },
         default: {
           background: '#F3F4F6',

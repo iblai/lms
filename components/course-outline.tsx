@@ -33,7 +33,7 @@ const CompletionIcon = ({ node }: { node: CourseOutlineChildNode }) => {
     // Fully complete - filled check circle
     return (
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="#f59e0b" stroke="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="#3b82f6" stroke="none" />
         <path
           d="M5 8.5L7 10.5L11 6"
           fill="none"
@@ -78,7 +78,7 @@ const CompletionIcon = ({ node }: { node: CourseOutlineChildNode }) => {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#f59e0b"
+        stroke="#3b82f6"
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}
         strokeDashoffset={dashOffset}
@@ -102,10 +102,7 @@ export const CourseOutline = () => {
     currentLesson,
   } = useContext(CourseOutlineContext);
   return (
-    <div
-      className="h-full overflow-y-auto md:h-[calc(100%-35px)]"
-      style={{ scrollbarWidth: 'none' }}
-    >
+    <div className="h-full overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
       {courseOutlineLoading ? (
         <SkeletonMultiplier multiplier={8} Skeleton={SkeletonCourseOutline} />
       ) : (
@@ -127,12 +124,12 @@ export const CourseOutline = () => {
             </button>
 
             {expandedModule === module.id && module.children && (
-              <div className="pr-2 pb-2 pl-6">
+              <div className="pl-6">
                 {module.children.map((lesson) => (
                   <div key={lesson.id}>
                     <button
                       onClick={() => toggleLesson(lesson.id)}
-                      className={`mb-1 flex w-full items-center justify-between rounded-sm p-2 text-left text-sm ${
+                      className={`flex w-full items-center justify-between rounded-sm p-3 text-left text-sm ${
                         currentChapter === lesson.id
                           ? 'bg-amber-50 text-amber-700'
                           : 'text-gray-600 hover:bg-gray-50'
@@ -156,12 +153,12 @@ export const CourseOutline = () => {
                     {lesson.children &&
                       lesson.children.length > 0 &&
                       expandedLessons.includes(lesson.id) && (
-                        <div className="pr-2 pb-2 pl-6">
+                        <div className="pl-6">
                           {lesson.children.map((sublesson) => (
                             <button
                               key={sublesson.id}
                               onClick={() => selectLesson(sublesson.id)}
-                              className={`mb-1 flex w-full items-center rounded-sm p-2 text-left text-sm ${
+                              className={`flex w-full items-center p-3 text-left text-sm ${
                                 currentLesson === sublesson.id
                                   ? 'bg-amber-50 text-amber-700'
                                   : 'text-gray-600 hover:bg-gray-50'

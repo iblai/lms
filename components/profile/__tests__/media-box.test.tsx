@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
+import isEmpty from 'lodash/isEmpty';
 
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
@@ -94,12 +95,10 @@ vi.mock('@tanstack/react-form', () => ({
   }),
 }));
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val) => !val || (typeof val === 'object' ? Object.keys(val).length === 0 : false),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val) => !val || (typeof val === 'object' ? Object.keys(val).length === 0 : false),
+  ),
 }));
 
 import { MediaBox } from '../media-box';
@@ -297,8 +296,7 @@ describe('MediaBox', () => {
   });
 
   it('handles empty file input', async () => {
-    const _ = await import('lodash');
-    vi.mocked(_.default.isEmpty).mockReturnValue(true);
+    vi.mocked(isEmpty).mockReturnValue(true);
     render(<MediaBox />);
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
     if (fileInput) {
@@ -312,8 +310,7 @@ describe('MediaBox', () => {
   });
 
   it('shows selected file name after selection', async () => {
-    const lodash = await import('lodash');
-    vi.mocked(lodash.default.isEmpty).mockReturnValue(false);
+    vi.mocked(isEmpty).mockReturnValue(false);
 
     render(<MediaBox />);
     const fileInput = document.getElementById('file-input') as HTMLInputElement;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext } from 'react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { ChevronRight } from 'lucide-react';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
@@ -10,7 +10,7 @@ import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
 export const CourseLessonNavigator = ({ className }: { className?: string }) => {
   const { courseOutline, courseID } = useContext(EdxIframeContext);
   const { selectLesson, currentUnitID } = useContext(CourseOutlineContext);
-  const hasOutline = !_.isEmpty(courseOutline) && !!courseID;
+  const hasOutline = !isEmpty(courseOutline) && !!courseID;
   const { navigator } = useCourseNavigator(
     hasOutline ? courseOutline : ({ children: [] } as any),
     currentUnitID || courseID || '',

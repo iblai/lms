@@ -2,7 +2,7 @@ import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useContext, useEffect, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { Loader2 } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -28,8 +28,10 @@ export const EdxIframe = () => {
     setIframeUrl,
     refresher,
     agentMode,
+    agentFullscreen,
   } = useContext(EdxIframeContext);
   const isAssessmentMode = agentMode === 'assessment';
+  const isAssessmentFullscreen = isAssessmentMode && agentFullscreen;
   const { currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
 
   const searchParams = useSearchParams();
@@ -41,7 +43,7 @@ export const EdxIframe = () => {
   const [getExamInfo] = useLazyGetExamInfoQuery();
 
   const handleLoadCourse = useDebouncedCallback(() => {
-    if (!_.isEmpty(courseOutline)) {
+    if (!isEmpty(courseOutline)) {
       setExamInfo(null);
       setCurrentlyInExamSubsection(false);
       setFetchingIframeData(true);
@@ -179,31 +181,39 @@ export const EdxIframe = () => {
           className={cn(
             'w-full',
             isAssessmentMode ? 'p-0' : 'p-6',
+            isAssessmentFullscreen && 'h-full',
             `active-tab-${activeTab} course-edx-iframe-container`,
           )}
         >
           {examInfo && <TimedExam />}
-          {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
+          {(!examInfo || (examInfo?.exam && !isEmpty(examInfo?.exam?.attempt))) && (
             <iframe
               ref={iframeRef}
               src={iframeUrl}
               onLoad={() => {
                 setFetchingIframeData(false);
                 refetchCourseOutline(false);
+                // The agent tab keeps this iframe hidden and defers its mentor
+                // unit notifications until the iframe has actually loaded.
+                window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
               }}
               id="edx-iframe"
               title="Forum InnerWare"
               sandbox="allow-modals allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
               frameBorder={0}
               className={
-                isAssessmentMode
-                  ? 'h-[calc(100vh-258px)] w-full md:h-[calc(100vh-260px)] lg:h-[calc(100vh-250px)]'
-                  : undefined
+                isAssessmentFullscreen
+                  ? 'h-full w-full'
+                  : isAssessmentMode
+                    ? 'h-[calc(100vh-255px)] w-full md:h-[calc(100vh-257px)] lg:h-[calc(100vh-247px)]'
+                    : undefined
               }
               style={
-                isAssessmentMode
-                  ? { width: '100%' }
-                  : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
+                isAssessmentFullscreen
+                  ? { width: '100%', height: '100%' }
+                  : isAssessmentMode
+                    ? { width: '100%' }
+                    : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
               }
               allowFullScreen={true}
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"

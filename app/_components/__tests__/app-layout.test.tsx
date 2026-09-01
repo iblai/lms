@@ -49,27 +49,10 @@ vi.mock('@/lib/config', () => ({
   },
 }));
 
-// Mock NavigationDrawer
-vi.mock('@/components/navigation-drawer', () => ({
-  NavigationDrawer: ({ isOpen, onClose }: any) => (
-    <div data-testid="navigation-drawer" data-is-open={isOpen}>
-      NavigationDrawer
-      <button onClick={onClose} data-testid="drawer-close">
-        Close
-      </button>
-    </div>
-  ),
-}));
-
-// Mock NavBar
+// Mock NavBar — prop-less; it wires itself to the sidebar context and
+// derives page state from the pathname.
 vi.mock('@/components/nav-bar', () => ({
-  NavBar: ({ sidebarOpen, activePage, onMenuClick }: any) => (
-    <div data-testid="navbar" data-sidebar-open={sidebarOpen} data-active-page={activePage}>
-      <button onClick={onMenuClick} data-testid="menu-btn">
-        Menu
-      </button>
-    </div>
-  ),
+  NavBar: () => <div data-testid="navbar" />,
 }));
 
 // Mock Footer
@@ -104,6 +87,13 @@ vi.mock('@/utils/helpers', () => ({
 // which doesn't resolve under vitest's module resolver).
 vi.mock('../monetization-wrapper', () => ({
   MonetizationWrapper: () => <div data-testid="monetization-wrapper" />,
+}));
+
+// Mock the sidebar — it's the cross-SPA PlatformSidebar shell and pulls the
+// full @iblai/iblai-js/web-containers surface, which is out of scope for
+// AppLayout's layout tests.
+vi.mock('@/components/app-sidebar', () => ({
+  AppSidebar: () => <div data-testid="app-sidebar" />,
 }));
 
 import AppLayout from '../app-layout';
@@ -194,7 +184,6 @@ describe('AppLayout', () => {
 
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
-    expect(screen.getByTestId('navigation-drawer')).toBeInTheDocument();
   });
 
   it('renders children within auth layout', () => {
@@ -303,20 +292,12 @@ describe('AppLayout', () => {
     expect(chatButton).toHaveAttribute('data-is-mobile', 'false');
   });
 
-  it('passes active page derived from pathname to NavBar', () => {
+  it('renders the NavBar on non-root pages', () => {
     vi.mocked(usePathname).mockReturnValue('/profile/skills');
 
     render(<AppLayout>Content</AppLayout>);
 
-    expect(screen.getByTestId('navbar')).toHaveAttribute('data-active-page', 'profile');
-  });
-
-  it('passes "home" as active page when pathname is root-level', () => {
-    vi.mocked(usePathname).mockReturnValue('/platform/test-tenant/home');
-
-    render(<AppLayout>Content</AppLayout>);
-
-    expect(screen.getByTestId('navbar')).toHaveAttribute('data-active-page', 'home');
+    expect(screen.getByTestId('navbar')).toBeInTheDocument();
   });
 
   it('calls setCourseMentor(null) when navigating away from course pages with courseMentor set', () => {

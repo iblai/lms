@@ -1,30 +1,27 @@
 import { test, expect, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { gotoTenantPage, waitForAppShell, waitForLoaderToDisappear } from '../utils/navigation';
+import {
+  getCourseContentTab,
+  gotoTenantPage,
+  waitForAppShell,
+  waitForLoaderToDisappear,
+} from '../utils/navigation';
 
 /**
  * Helper: Navigate from /home → first course → Access Course → course content tabs.
  * Returns true if successful, false if skipped (no courses).
  */
 async function navigateToCourseContent(page: Page): Promise<boolean> {
-  await gotoTenantPage(page, 'home', { timeout: 120000 });
+  // Enrolled courses live on the centralized catalog page.
+  await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120000 });
   await waitForAppShell(page);
 
-  const myCoursesHeading = page.getByRole('heading', { name: 'My Courses' });
-  await expect(myCoursesHeading).toBeVisible({ timeout: 120000 });
-
-  const myCoursesGrid = page.getByRole('region', { name: 'My Courses' });
-  await expect(myCoursesGrid).toBeVisible({ timeout: 120000 });
-
-  //wait for myCoursesGrid.getByRole('link', { name: any name }) to be visible
-  await expect(myCoursesGrid.getByRole('link', { name: /.*/ })).toBeVisible({ timeout: 30_000 });
-
-  const courseLink = myCoursesGrid.getByRole('link').first();
-  const hasCourse = await courseLink.isVisible({ timeout: 120_000 }).catch(() => false);
+  const courseCard = page.locator('[data-testid="discover-content-card"]').first();
+  const hasCourse = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
 
   if (!hasCourse) return false;
 
-  await courseLink.click();
+  await courseCard.click();
   await page.waitForURL(/\/courses\//, { timeout: 120000 });
   await waitForLoaderToDisappear(page);
   await waitForAppShell(page);
@@ -377,10 +374,10 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
-    const isAdmin = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    // Admin-gated tabs may sit behind the tab row's overflow menu.
+    const instructorTab = await getCourseContentTab(page, 'Instructor');
 
-    if (!isAdmin) {
+    if (!instructorTab) {
       logger.info('Authoring tab is admin-gated like Instructor — skipping for non-admin');
       test.skip();
       return;
@@ -391,11 +388,12 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const parts = url.pathname.split('/').filter(Boolean);
     const courseId = decodeURIComponent(parts[3] || '');
 
-    const authoringTab = page.getByRole('link', { name: 'Authoring' });
-    await expect(authoringTab).toBeVisible({ timeout: 10000 });
-    await expect(authoringTab).toHaveAttribute('target', '_blank');
+    const authoringTab = await getCourseContentTab(page, 'Authoring');
+    expect(authoringTab).not.toBeNull();
+    await expect(authoringTab!).toBeVisible({ timeout: 10000 });
+    await expect(authoringTab!).toHaveAttribute('target', '_blank');
 
-    const href = await authoringTab.getAttribute('href');
+    const href = await authoringTab!.getAttribute('href');
     expect(href).toBeTruthy();
     expect(href).toContain(`/course/${courseId}`);
     logger.info(`Authoring tab points at studio: ${href}`);
@@ -409,10 +407,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorTab = page.getByRole('link', { name: 'Instructor' }).first();
-    const hasInstructor = await instructorTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    const instructorTab = await getCourseContentTab(page, 'Instructor');
 
-    if (!hasInstructor) {
+    if (!instructorTab) {
       logger.info('Instructor tab not available — expected for some courses');
       test.skip();
       return;
@@ -1046,7 +1043,8 @@ test.describe('Journey 05: Course Content Tabs', () => {
     // The mentor web component should mount before we exercise fullscreen.
     await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 60_000 });
 
-    // The fullscreen control lives in the tabs row, to the right of the autoplay icon.
+    // The fullscreen control lives in the top navbar (left of the search bar),
+    // to the right of the autoplay icon.
     const enterFullscreen = page.getByRole('button', { name: 'Enter fullscreen' });
     await expect(enterFullscreen).toBeVisible({ timeout: 30_000 });
     await enterFullscreen.click();
@@ -1069,6 +1067,60 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Agent tab fullscreen toggle expands the chat and the floating bubble restores it');
   });
 
+  test('Checkpoint 34: Unit media dropdown lists pdf/video/media-catalog blocks and previews them on the Agent tab', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      logger.info('Agent tab not visible — skipping');
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    // The dropdown only renders when the current unit actually has pdf,
+    // video, or ibl-media-catalog blocks, so its absence is not a failure.
+    const mediaTrigger = page.getByTestId('course-media-dropdown-trigger');
+    const hasMedia = await mediaTrigger.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasMedia) {
+      logger.info('Current unit has no media blocks — skipping');
+      test.skip();
+      return;
+    }
+
+    await mediaTrigger.click();
+
+    // Each entry shows the block display name plus its human-readable type.
+    const items = page.getByTestId('course-media-dropdown-item');
+    await expect(items.first()).toBeVisible({ timeout: 15_000 });
+    const itemText = (await items.first().innerText()).trim();
+    expect(itemText.length).toBeGreaterThan(0);
+    expect(itemText).toMatch(/PDF|Video|Media catalog/);
+
+    // On the Agent tab a selection opens the student_view_url in an overlay.
+    await items.first().click();
+    const preview = page.getByTestId('course-media-preview');
+    await expect(preview).toBeVisible({ timeout: 15_000 });
+    await expect(preview.locator('iframe')).toBeAttached({ timeout: 15_000 });
+
+    await page.keyboard.press('Escape');
+    await expect(preview).toBeHidden({ timeout: 15_000 });
+
+    logger.info('Unit media dropdown lists media blocks and previews them on the Agent tab');
+  });
+
   // ── Admin Configuration tab (moved here from the course about page) ──────────
   //
   // Configuration is now a course-content route (`/course-content/<id>/configuration`)
@@ -1083,9 +1135,8 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const ready = await navigateToCourseContent(page);
     if (!ready) return false;
 
-    const configTab = page.getByRole('link', { name: 'Configuration', exact: true }).first();
-    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
-    if (!isAdmin) return false;
+    const configTab = await getCourseContentTab(page, 'Configuration');
+    if (!configTab) return false;
 
     await configTab.click();
     await page.waitForURL(/\/course-content\/.+\/configuration/, { timeout: 30_000 });
@@ -1104,10 +1155,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const configTab = page.getByRole('link', { name: 'Configuration', exact: true }).first();
-    const isAdmin = await configTab.isVisible({ timeout: 120_000 }).catch(() => false);
+    const configTab = await getCourseContentTab(page, 'Configuration');
 
-    if (!isAdmin) {
+    if (!configTab) {
       logger.info('Configuration tab not visible — user is not a platform admin; skipping');
       test.skip();
       return;
@@ -1281,10 +1331,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const learningInfoTab = page.getByRole('link', { name: 'Learning Info', exact: true }).first();
-    const hasTab = await learningInfoTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const learningInfoTab = await getCourseContentTab(page, 'Learning Info');
 
-    if (!hasTab) {
+    if (!learningInfoTab) {
       logger.info('Learning Info tab not present — course has no learning_info; skipping');
       test.skip();
       return;
@@ -1308,10 +1357,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorsTab = page.getByRole('link', { name: 'Instructors', exact: true }).first();
-    const hasTab = await instructorsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const instructorsTab = await getCourseContentTab(page, 'Instructors');
 
-    if (!hasTab) {
+    if (!instructorsTab) {
       logger.info('Instructors tab not present — course has no instructor_info; skipping');
       test.skip();
       return;
@@ -1326,6 +1374,67 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Instructors tab renders the instructors list');
   });
 
+  test('Checkpoint 35: layout requests the signed-in user\u2019s role listing', async ({
+    page,
+  }) => {
+    // Course-scoped roles (course-staff / course-instructor / course-limited-staff)
+    // gate the staff tabs, so the layout must fetch the role listing on mount.
+    const roleRequests: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/api/ibl/users/manage/roles/')) {
+        roleRequests.push(request.url());
+      }
+    });
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    await expect.poll(() => roleRequests.length, { timeout: 30_000 }).toBeGreaterThan(0);
+    // Looked up by the signed-in user, never by an arbitrary identity.
+    expect(roleRequests.some((url) => /[?&](username|email|user_id)=/.test(url))).toBe(true);
+    logger.info(`Role listing requested: ${roleRequests[0]}`);
+  });
+
+  test('Checkpoint 36: staff tabs appear together and Authoring stays full-staff only', async ({
+    page,
+  }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const [instructorTab, configurationTab, authoringTab] = await Promise.all([
+      getCourseContentTab(page, 'Instructor'),
+      getCourseContentTab(page, 'Configuration'),
+      getCourseContentTab(page, 'Authoring'),
+    ]);
+
+    if (!instructorTab && !configurationTab && !authoringTab) {
+      logger.info('Viewer holds no staff role on this course — no staff tabs, as expected');
+      return;
+    }
+
+    // Instructor and Configuration share one gate (platform admin OR any course
+    // staff role), so they are always shown together.
+    expect(Boolean(instructorTab)).toBe(Boolean(configurationTab));
+
+    // Authoring is the narrower gate: platform admins and full course staff get
+    // it, course-limited-staff never does. So Authoring implies the other two.
+    if (authoringTab) {
+      expect(instructorTab).not.toBeNull();
+      expect(configurationTab).not.toBeNull();
+      logger.info('Viewer is admin / full course staff — every staff tab including Authoring');
+    } else {
+      logger.info('Viewer is limited staff — staff tabs present, Authoring withheld');
+    }
+  });
+
   test('Checkpoint 32: Analytics tab (can_view_analytics) renders course analytics', async ({
     page,
   }) => {
@@ -1336,10 +1445,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const analyticsTab = page.getByRole('link', { name: 'Analytics', exact: true }).first();
-    const hasTab = await analyticsTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    const analyticsTab = await getCourseContentTab(page, 'Analytics');
 
-    if (!hasTab) {
+    if (!analyticsTab) {
       logger.info('Analytics tab not present — user lacks can_view_analytics; skipping');
       test.skip();
       return;

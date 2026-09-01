@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { use, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import {
   ChevronRight,
@@ -10,34 +11,45 @@ import {
   ListTree,
   Maximize,
   MoreVertical,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
+import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 import { usePathname, useSearchParams } from 'next/navigation';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { getUserId, getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
-import { CourseOutlineSidebar } from '@/components/course-outline-sidebar';
+import { CourseOutlineSidebar, CourseOutlineToggle } from '@/components/course-outline-sidebar';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
+import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
+import {
+  CourseMediaDropdown,
+  CourseMediaMenuItems,
+  CourseMediaPreviewDialog,
+  getUnitMediaBlocks,
+} from '@/components/course-media-dropdown';
+import type { CourseBlockDetailsBlock } from '@/types/courses';
 // @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import {
   setAdvancedDisplayMonetizationCheckoutModal,
   useTenantMetadata,
 } from '@iblai/iblai-js/web-utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
+import { MONETIZATION_CLOSE_PAYLOAD, NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 import { config } from '@/lib/config';
 import { selectMentorSpinnerHidden } from '@/features/mentor';
 import {
@@ -50,6 +62,30 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useMediaQuery } from 'react-responsive';
 import { cn } from '@/lib/utils';
+
+// Safety net for mentor unit notifications when the course iframe never fires
+// a load event (e.g. an exam gate keeps it unmounted).
+const EDX_IFRAME_LOAD_FALLBACK_MS = 15_000;
+
+// Tab identity is derived from the route rather than pushed up from each page's
+// mount effect: an effect lands one commit *after* the new page renders, so the
+// EdxIframe it mounts would briefly see the previous tab and load that tab's URL.
+// Keys are route segments, values the tab keys used by the tab bar and by the
+// edX iframe URL builder ("discussion" is still called "forum" on the edX side).
+const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
+  agent: 'agent',
+  course: 'course',
+  progress: 'progress',
+  dates: 'dates',
+  discussion: 'forum',
+  bookmarks: 'bookmarks',
+  instructor: 'instructor',
+  instructors: 'instructors',
+  configuration: 'configuration',
+  analytics: 'analytics',
+  'learning-info': 'learning-info',
+};
+const DEFAULT_TAB = 'course';
 
 export default function CourseContentLayout({
   children,
@@ -78,9 +114,17 @@ export default function CourseContentLayout({
   const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
+  // Course-scoped staff roles open the staff-only tabs to people who aren't
+  // platform admins: full staff (course-staff / course-instructor) get every
+  // tab, limited staff get all of them except Authoring — they run the course
+  // but can't edit it in Studio.
+  const { isCourseStaff, hasCourseStaffAccess } = useCourseUserRoles(courseId);
+  const canViewStaffTabs = isAdmin || hasCourseStaffAccess;
+  const canViewAuthoringTab = isAdmin || isCourseStaff;
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
+  const activeTab = ROUTE_SEGMENT_TO_TAB[currentTab ?? ''] ?? DEFAULT_TAB;
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
@@ -124,7 +168,7 @@ export default function CourseContentLayout({
   }, [courseId]);
 
   useEffect(() => {
-    if (!_.isEmpty(course)) {
+    if (!isEmpty(course)) {
       if (!course?.mentor_hidden) {
         setCourseMentor(course.mentor_uuid || null);
       }
@@ -137,7 +181,6 @@ export default function CourseContentLayout({
   const [currentChapter, setCurrentChapter] = useState('');
 
   const [expandedLessons, setExpandedLessons] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState('course');
   const [courseOutlineDrawerOpen, setCourseOutlineDrawerOpen] = useState(false);
   const [currentlyInExamSubsection, setCurrentlyInExamSubsection] = useState(false);
   const [examInfo, setExamInfo] = useState<ExamInfo | null>(null);
@@ -163,15 +206,64 @@ export default function CourseContentLayout({
   const autoplayToggleVisible =
     course?.agent_autoplay === true && metadata?.enable_course_voice_autoplay === true;
 
+  // Needed on both agent (mentor xblock detection + media preview) and course
+  // (media scroll-to) tabs.
+  const blockDetailsTab = currentTab === 'agent' || currentTab === 'course';
   const { data: courseBlockDetails } = useGetCourseBlockDetailsQuery(
     { blockId: currentUnitID || '', username: getUserName() },
-    { skip: !currentUnitID || currentTab !== 'agent' },
+    { skip: !currentUnitID || !blockDetailsTab },
   );
   const hasMentorXblock = Object.values(courseBlockDetails?.blocks ?? {}).some(
     (block) => block.type === 'ibl_mentor_xblock',
   );
   const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
   const fullscreenToggleVisible = currentTab === 'agent';
+  const unitMediaVisible =
+    blockDetailsTab && getUnitMediaBlocks(courseBlockDetails?.blocks).length > 0;
+
+  // Mobile collapses every course control into a single 3-dot popover.
+  // Controlled so actions inside (fullscreen, media) can close it; the media
+  // preview dialog lives OUTSIDE the popover, which unmounts its children as
+  // soon as focus moves into the (body-portaled) dialog.
+  const [mobileControlsOpen, setMobileControlsOpen] = useState(false);
+  const [mobileMediaPreviewBlock, setMobileMediaPreviewBlock] =
+    useState<CourseBlockDetailsBlock | null>(null);
+
+  // One-time informative hint shown under the Learn/Assess switcher (which
+  // lives in the navbar) the first time it becomes available. Persisted so it
+  // doesn't nag on every visit.
+  const [agentModeHintDismissed, setAgentModeHintDismissed] = useLocalStorage<boolean>(
+    'skills:agent-mode-hint-dismissed',
+    false,
+    {
+      serializer: (value) => (value ? 'true' : 'false'),
+      deserializer: (value) => value === 'true',
+    },
+  );
+  const [agentModeHintOpen, setAgentModeHintOpen] = useState(false);
+
+  // Navbar slot (rendered empty by the NavBar on every page) that the course
+  // controls below portal into, so they sit left of the navbar search bar
+  // while their state stays in this layout. Resolved in an effect: the NavBar
+  // lives in an ancestor layout, so the slot is in the DOM by the time
+  // effects run.
+  const [navbarControlsSlot, setNavbarControlsSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setNavbarControlsSlot(document.getElementById(NAVBAR_COURSE_CONTROLS_ID));
+  }, []);
+  const dismissAgentModeHint = () => {
+    setAgentModeHintOpen(false);
+    setAgentModeHintDismissed(true);
+  };
+
+  useEffect(() => {
+    if (assessmentToggleVisible && !agentModeHintDismissed) {
+      // Small delay so the switcher has settled into place before anchoring.
+      const timer = setTimeout(() => setAgentModeHintOpen(true), 600);
+      return () => clearTimeout(timer);
+    }
+    setAgentModeHintOpen(false);
+  }, [assessmentToggleVisible, agentModeHintDismissed]);
 
   useEffect(() => {
     if (!assessmentToggleVisible && agentMode !== 'learning') {
@@ -185,7 +277,7 @@ export default function CourseContentLayout({
     }
   }, [fullscreenToggleVisible]);
   useEffect(() => {
-    if (!_.isEmpty(courseOutline)) {
+    if (!isEmpty(courseOutline)) {
       const currentCourse = getUnitToIframe(courseOutline);
       setCurrentCourseInfo(currentCourse);
       const unitID = currentCourse?.id;
@@ -200,6 +292,43 @@ export default function CourseContentLayout({
     }
   }, [searchParams, courseOutline]);
 
+  // Tracks whether the (hidden) course iframe has already fired a load event,
+  // so a notification whose other conditions resolve late can go out right away.
+  const edxIframeLoadedRef = useRef(false);
+  useEffect(() => {
+    const handleIframeLoaded = () => {
+      edxIframeLoadedRef.current = true;
+    };
+    window.addEventListener('edx-iframe:loaded', handleIframeLoaded);
+    return () => window.removeEventListener('edx-iframe:loaded', handleIframeLoaded);
+  }, []);
+
+  // Defers the toast + mentor:unit-switched dispatch until the hidden course
+  // iframe has loaded, so the mentor never reacts to a unit that isn't
+  // rendered yet. The fallback timer covers subsections that never mount the
+  // iframe (e.g. exam gates). Returns a cleanup that cancels the notification.
+  const notifyMentorOnceIframeLoaded = (message: string, alreadyLoaded = false) => {
+    const dispatch = () => {
+      toast.success(message);
+      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
+    };
+    if (alreadyLoaded) {
+      dispatch();
+      return undefined;
+    }
+    const cancel = () => {
+      clearTimeout(fallbackTimer);
+      window.removeEventListener('edx-iframe:loaded', send);
+    };
+    const send = () => {
+      cancel();
+      dispatch();
+    };
+    const fallbackTimer = setTimeout(send, EDX_IFRAME_LOAD_FALLBACK_MS);
+    window.addEventListener('edx-iframe:loaded', send, { once: true });
+    return cancel;
+  };
+
   const previousUnitIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     const unitId = currentCourseInfo?.id;
@@ -207,12 +336,14 @@ export default function CourseContentLayout({
       previousUnitIdRef.current = unitId;
       return;
     }
-    if (previousUnitIdRef.current && previousUnitIdRef.current !== unitId) {
-      const message = `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`;
-      toast.success(message);
-      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
-    }
+    const previousUnitId = previousUnitIdRef.current;
     previousUnitIdRef.current = unitId;
+    if (previousUnitId && previousUnitId !== unitId) {
+      // Always wait for the *next* load: switching units remounts the iframe.
+      return notifyMentorOnceIframeLoaded(
+        `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`,
+      );
+    }
   }, [currentCourseInfo?.id, currentTab]);
 
   const unitLoadedScheduledRef = useRef(false);
@@ -229,11 +360,7 @@ export default function CourseContentLayout({
       return;
     }
     unitLoadedScheduledRef.current = true;
-    setTimeout(() => {
-      const message = `Loaded "${unitName}"`;
-      toast.success(message);
-      window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
-    }, 4000);
+    return notifyMentorOnceIframeLoaded(`Loaded "${unitName}"`, edxIframeLoadedRef.current);
   }, [currentCourseInfo?.id, currentCourseInfo?.display_name, currentTab, mentorSpinnerHidden]);
 
   const toggleModule = (moduleId: string) => {
@@ -260,12 +387,81 @@ export default function CourseContentLayout({
     (isCourseContentModeOn(course) &&
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
+  const courseBasePath = `/platform/${tenant}/course-content/${resolvedParams.course_id}`;
+  // Ordered tab list; the tab bar hides whatever doesn't fit behind a 3-dot
+  // dropdown so it never overlaps the course controls / unit navigator.
+  const courseTabs = useMemo<CourseContentTab[]>(() => {
+    const tabs: CourseContentTab[] = [];
+    if (agentTabVisible) {
+      tabs.push({ key: 'agent', label: 'Agent', href: `${courseBasePath}/agent` });
+    }
+    if (courseTabVisible) {
+      tabs.push({
+        key: 'course',
+        label: 'Course',
+        href: `${courseBasePath}/course${currentCourseInfo?.id ? `?unit_id=${currentCourseInfo.id}` : ''}`,
+      });
+    }
+    tabs.push(
+      { key: 'progress', label: 'Progress', href: `${courseBasePath}/progress` },
+      { key: 'dates', label: 'Dates', href: `${courseBasePath}/dates` },
+      { key: 'forum', label: 'Discussion', href: `${courseBasePath}/discussion` },
+    );
+    if (canViewStaffTabs) {
+      tabs.push({ key: 'instructor', label: 'Instructor', href: `${courseBasePath}/instructor` });
+    }
+    if (course?.learning_info && course.learning_info.length > 0) {
+      tabs.push({
+        key: 'learning-info',
+        label: 'Learning Info',
+        href: `${courseBasePath}/learning-info`,
+      });
+    }
+    if (course?.instructor_info?.instructors && course.instructor_info.instructors.length > 0) {
+      tabs.push({
+        key: 'instructors',
+        label: 'Instructors',
+        href: `${courseBasePath}/instructors`,
+      });
+    }
+    if (canViewStaffTabs) {
+      tabs.push({
+        key: 'configuration',
+        label: 'Configuration',
+        href: `${courseBasePath}/configuration`,
+      });
+    }
+    if (canViewAnalytics || hasCourseStaffAccess) {
+      tabs.push({ key: 'analytics', label: 'Analytics', href: `${courseBasePath}/analytics` });
+    }
+    if (canViewAuthoringTab) {
+      tabs.push({
+        key: 'authoring',
+        label: 'Authoring',
+        href: `${config.urls.studioUrl()}/course/${courseId}`,
+        external: true,
+      });
+    }
+    return tabs;
+  }, [
+    courseBasePath,
+    courseId,
+    agentTabVisible,
+    courseTabVisible,
+    currentCourseInfo?.id,
+    canViewStaffTabs,
+    canViewAuthoringTab,
+    hasCourseStaffAccess,
+    course?.learning_info,
+    course?.instructor_info?.instructors,
+    canViewAnalytics,
+  ]);
+
   const edxIframeValue = useMemo(
     () => ({
       iframeUrl,
       setIframeUrl,
       courseOutline,
-      setActiveTab,
       activeTab,
       courseID: courseId,
       currentlyInExamSubsection,
@@ -331,217 +527,165 @@ export default function CourseContentLayout({
               <div className="border-b border-gray-200">
                 {/* Skills innercourseware tabs */}
                 <div className="flex w-full items-center justify-between">
-                  <div className="flex min-w-0 overflow-x-auto">
-                    {agentTabVisible && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/agent`}
-                        aria-current={activeTab === 'agent' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'agent'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Agent
-                      </Link>
-                    )}
-                    {courseTabVisible && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/course${
-                          currentCourseInfo?.id ? `?unit_id=${currentCourseInfo?.id}` : ''
-                        }`}
-                        aria-current={activeTab === 'course' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'course'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Course
-                      </Link>
-                    )}
-                    <Link
-                      href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/progress`}
-                      aria-current={activeTab === 'progress' ? 'page' : undefined}
-                      className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                        activeTab === 'progress'
-                          ? 'border-amber-500 text-amber-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Progress
-                    </Link>
-                    <Link
-                      href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/dates`}
-                      aria-current={activeTab === 'dates' ? 'page' : undefined}
-                      className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                        activeTab === 'dates'
-                          ? 'border-amber-500 text-amber-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Dates
-                    </Link>
-                    <Link
-                      href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/discussion`}
-                      aria-current={activeTab === 'forum' ? 'page' : undefined}
-                      className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                        activeTab === 'forum'
-                          ? 'border-amber-500 text-amber-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Discussion
-                    </Link>
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/instructor`}
-                        aria-current={activeTab === 'instructor' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'instructor'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Instructor
-                      </Link>
-                    )}
-                    {course?.learning_info && course.learning_info.length > 0 && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/learning-info`}
-                        aria-current={activeTab === 'learning-info' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'learning-info'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Learning Info
-                      </Link>
-                    )}
-                    {course?.instructor_info?.instructors &&
-                      course.instructor_info.instructors.length > 0 && (
-                        <Link
-                          href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/instructors`}
-                          aria-current={activeTab === 'instructors' ? 'page' : undefined}
-                          className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                            activeTab === 'instructors'
-                              ? 'border-amber-500 text-amber-600'
-                              : 'border-transparent text-gray-500 hover:text-gray-700'
-                          }`}
-                        >
-                          Instructors
-                        </Link>
-                      )}
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/configuration`}
-                        aria-current={activeTab === 'configuration' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'configuration'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Configuration
-                      </Link>
-                    )}
-                    {canViewAnalytics && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/analytics`}
-                        aria-current={activeTab === 'analytics' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'analytics'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Analytics
-                      </Link>
-                    )}
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <a
-                        href={`${config.urls.studioUrl()}/course/${courseId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700"
-                      >
-                        Authoring
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 pr-4">
-                    {autoplayToggleVisible && (
-                      <button
-                        type="button"
-                        onClick={() => setAgentAutoplay(!agentAutoplayOn)}
-                        role="switch"
-                        aria-checked={agentAutoplayOn}
-                        aria-label={
-                          agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
-                        }
-                        title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
-                        data-testid="agent-autoplay-toggle"
-                        className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
-                          agentAutoplayOn
-                            ? 'text-amber-600 hover:text-amber-700'
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        {agentAutoplayOn ? (
-                          <CirclePause className="h-5 w-5" />
-                        ) : (
-                          <CirclePlay className="h-5 w-5" />
+                  <CourseContentTabs tabs={courseTabs} activeTab={activeTab} />
+                  {/* Course controls (autoplay, media dropdown, fullscreen,
+                      Learn/Assess) render in the top navbar — left of the
+                      search bar — via the NavBar's portal slot; their state
+                      stays in this layout. */}
+                  {navbarControlsSlot &&
+                    createPortal(
+                      <div className="flex items-center gap-3">
+                        {autoplayToggleVisible && (
+                          <button
+                            type="button"
+                            onClick={() => setAgentAutoplay(!agentAutoplayOn)}
+                            role="switch"
+                            aria-checked={agentAutoplayOn}
+                            aria-label={
+                              agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
+                            }
+                            title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
+                            data-testid="agent-autoplay-toggle"
+                            className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
+                              agentAutoplayOn
+                                ? 'text-amber-600 hover:text-amber-700'
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          >
+                            {agentAutoplayOn ? (
+                              <CirclePause className="h-5 w-5" />
+                            ) : (
+                              <CirclePlay className="h-5 w-5" />
+                            )}
+                          </button>
                         )}
-                      </button>
+                        {unitMediaVisible && (
+                          <div className="hidden items-center md:flex">
+                            <CourseMediaDropdown
+                              blocks={courseBlockDetails?.blocks}
+                              currentTab={currentTab}
+                            />
+                          </div>
+                        )}
+                        {fullscreenToggleVisible && (
+                          <button
+                            type="button"
+                            onClick={() => setAgentFullscreen(true)}
+                            aria-label="Enter fullscreen"
+                            title="Fullscreen"
+                            data-testid="agent-fullscreen-toggle"
+                            className="hidden rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex"
+                          >
+                            <Maximize className="h-5 w-5" />
+                          </button>
+                        )}
+                        {assessmentToggleVisible && (
+                          <Popover
+                            open={agentModeHintOpen}
+                            onOpenChange={(open) => {
+                              if (!open) {
+                                dismissAgentModeHint();
+                              }
+                            }}
+                          >
+                            <PopoverAnchor asChild>
+                              <div
+                                className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
+                                role="group"
+                                aria-label="Agent display mode"
+                              >
+                                <span
+                                  className={
+                                    agentMode === 'learning' ? 'font-medium text-amber-600' : ''
+                                  }
+                                >
+                                  Learn
+                                </span>
+                                <Switch
+                                  checked={agentMode === 'assessment'}
+                                  onCheckedChange={(checked) =>
+                                    setAgentMode(checked ? 'assessment' : 'learning')
+                                  }
+                                  aria-label="Toggle assessment mode"
+                                  className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                                />
+                                <span
+                                  className={
+                                    agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                                  }
+                                >
+                                  Assess
+                                </span>
+                              </div>
+                            </PopoverAnchor>
+                            <PopoverContent
+                              side="bottom"
+                              align="end"
+                              sideOffset={10}
+                              className="w-64 p-3"
+                              onOpenAutoFocus={(event) => event.preventDefault()}
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 text-xs text-gray-600">
+                                  <p className="mb-1 font-medium text-gray-900">
+                                    Two ways to learn
+                                  </p>
+                                  <p>
+                                    Use this switch to move between{' '}
+                                    <span className="font-medium text-amber-600">Learn</span> mode,
+                                    where the agent teaches you, and{' '}
+                                    <span className="font-medium text-amber-600">Assess</span> mode,
+                                    where it quizzes you on what you&apos;ve covered.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={dismissAgentModeHint}
+                                  aria-label="Dismiss"
+                                  className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <div className="mt-2 flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={dismissAgentModeHint}
+                                  className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                                >
+                                  Got it
+                                </button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>,
+                      navbarControlsSlot,
                     )}
-                    {fullscreenToggleVisible && (
-                      <button
-                        type="button"
-                        onClick={() => setAgentFullscreen(true)}
-                        aria-label="Enter fullscreen"
-                        title="Fullscreen"
-                        data-testid="agent-fullscreen-toggle"
-                        className="rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                      >
-                        <Maximize className="h-5 w-5" />
-                      </button>
-                    )}
-                    {assessmentToggleVisible && (
-                      <div
-                        className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
-                        role="group"
-                        aria-label="Agent display mode"
-                      >
-                        <span
-                          className={agentMode === 'learning' ? 'font-medium text-amber-600' : ''}
-                        >
-                          Learn
-                        </span>
-                        <Switch
-                          checked={agentMode === 'assessment'}
-                          onCheckedChange={(checked) =>
-                            setAgentMode(checked ? 'assessment' : 'learning')
-                          }
-                          aria-label="Toggle assessment mode"
-                          className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                        />
-                        <span
-                          className={agentMode === 'assessment' ? 'font-medium text-amber-600' : ''}
-                        >
-                          Assess
-                        </span>
-                      </div>
-                    )}
-                    {(assessmentToggleVisible || autoplayToggleVisible) && (
-                      <Popover>
+                  {/* Preview for media picked from the mobile controls popover;
+                      kept out of the popover so closing it doesn't unmount the
+                      dialog. */}
+                  <CourseMediaPreviewDialog
+                    block={mobileMediaPreviewBlock}
+                    onClose={() => setMobileMediaPreviewBlock(null)}
+                  />
+                  <div className="flex shrink-0 items-center gap-3 pr-4">
+                    {/* Mobile-only (trigger is md:hidden) 3-dot menu bundling
+                        the course controls, sitting left of the prev/next unit
+                        buttons; desktop shows them inline in the navbar via
+                        the portal above. */}
+                    {(assessmentToggleVisible ||
+                      autoplayToggleVisible ||
+                      fullscreenToggleVisible ||
+                      unitMediaVisible) && (
+                      <Popover open={mobileControlsOpen} onOpenChange={setMobileControlsOpen}>
                         <PopoverTrigger
                           className="rounded p-1 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none md:hidden"
                           aria-label="Agent display options"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </PopoverTrigger>
-                        <PopoverContent align="end" className="w-auto p-3">
+                        <PopoverContent align="end" className="w-48 p-2">
                           <div className="flex flex-col gap-3">
                             {autoplayToggleVisible && (
                               <div
@@ -569,6 +713,30 @@ export default function CourseContentLayout({
                                   className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
                                 />
                               </div>
+                            )}
+                            {unitMediaVisible && (
+                              <CourseMediaMenuItems
+                                blocks={courseBlockDetails?.blocks}
+                                currentTab={currentTab}
+                                onAction={(previewBlock) => {
+                                  setMobileControlsOpen(false);
+                                  setMobileMediaPreviewBlock(previewBlock);
+                                }}
+                              />
+                            )}
+                            {fullscreenToggleVisible && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMobileControlsOpen(false);
+                                  setAgentFullscreen(true);
+                                }}
+                                data-testid="agent-fullscreen-popover-button"
+                                className="flex items-center gap-2 rounded p-1 text-left text-xs text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                              >
+                                <Maximize className="h-4 w-4 text-gray-500" />
+                                <span>Fullscreen</span>
+                              </button>
                             )}
                             {assessmentToggleVisible && (
                               <div
@@ -608,6 +776,8 @@ export default function CourseContentLayout({
                   </div>
                 </div>
                 <div className="flex items-center bg-gray-50 px-4 py-2">
+                  {/* md+ collapses/expands the inline sidebar from the same spot */}
+                  <CourseOutlineToggle />
                   <button
                     onClick={() => setCourseOutlineDrawerOpen(true)} // Open the new course outline drawer
                     className="mr-2 -ml-2 p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:hidden" // Mobile only; tablet/laptop use the inline collapsible sidebar
@@ -679,9 +849,18 @@ export default function CourseContentLayout({
 
               {/* Content area */}
               <div
-                /* className="flex-1 overflow-y-auto bg-amber-50 pb-[60px]" */
-                //no overflow hidden on mobile
-                className={cn('flex-1', isMobile ? 'overflow-y-auto' : 'overflow-hidden')}
+                // Mobile scrolls this container itself. On desktop the
+                // iframe tabs manage their own scroll, but the plain-page
+                // tabs (analytics / configuration / instructor(s)) render
+                // long content and need the container to scroll too.
+                className={cn(
+                  'flex-1',
+                  (isMobile ||
+                    ['analytics', 'configuration', 'instructor', 'instructors'].includes(
+                      currentTab ?? '',
+                    )) &&
+                    'overflow-y-auto',
+                )}
                 style={{ scrollbarWidth: 'none' }}
               >
                 {children}

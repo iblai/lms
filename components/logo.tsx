@@ -6,14 +6,17 @@ import { config } from '@/lib/config';
 import { useEffect, useState } from 'react';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { cn } from '@/lib/utils';
 
 export function Logo({
   width = 120,
   height = 40,
+  className,
 }: {
   variant?: 'main' | 'small' | 'footer';
   width?: number;
   height?: number;
+  className?: string;
 }) {
   const tenant = useTenantParam();
   const { metadata } = useTenantMetadata({
@@ -44,7 +47,7 @@ export function Logo({
         alt={config.settings.appName()}
         width={width}
         height={height}
-        className="h-6 w-auto sm:h-7 md:h-8" // Reduced from h-8 sm:h-9 md:h-11
+        className={cn('h-6 w-auto sm:h-7 md:h-8', className)}
         //onError={handleLogoError}
       />
     </Link>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus, Minus, Play } from 'lucide-react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonCourseSyllabus } from '@/components/skeleton-course-syllabus';
@@ -56,7 +56,7 @@ export function SyllabusTab({
                 {section.children?.map((lesson: any, lessonIndex: number) => (
                   <div
                     onClick={
-                      !_.isEmpty(lesson?.children)
+                      !isEmpty(lesson?.children)
                         ? () => handleOpenLesson(lesson?.children?.[0]?.id || null, true)
                         : () => {}
                     }

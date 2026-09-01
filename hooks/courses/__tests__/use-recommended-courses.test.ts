@@ -7,18 +7,30 @@ vi.mock('@/utils/helpers', () => ({
   getOrg: vi.fn(() => 'test-org'),
 }));
 
-const mockGetRecommendationsAiSearch = vi.fn();
+// The declarative recommendations query — tests configure the payload and
+// inspect the subscription args/options recorded on every render.
+const mockRecommendationsQuery = vi.hoisted(() => ({
+  data: { recommendations: [] } as any,
+  isLoading: false,
+  error: null as any,
+  calls: [] as { args: any; options: any }[],
+}));
 
 vi.mock('@iblai/iblai-js/data-layer', () => ({
-  useLazyGetRecommendationsAiSearchQuery: vi.fn(() => [
-    mockGetRecommendationsAiSearch,
-    { isLoading: false, error: null },
-  ]),
+  useGetRecommendationsAiSearchQuery: vi.fn((args: any, options: any) => {
+    mockRecommendationsQuery.calls.push({ args, options });
+    return {
+      data: options?.skip ? undefined : mockRecommendationsQuery.data,
+      isLoading: mockRecommendationsQuery.isLoading,
+      error: mockRecommendationsQuery.error,
+    };
+  }),
 }));
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   useTenantMetadata: vi.fn(() => ({
     metadata: { skills_include_community_courses: false },
+    isLoading: false,
   })),
 }));
 
@@ -28,8 +40,13 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 describe('useRecommendedCourses', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetRecommendationsAiSearch.mockResolvedValue({
-      data: { recommendations: [] },
+    mockRecommendationsQuery.data = { recommendations: [] };
+    mockRecommendationsQuery.isLoading = false;
+    mockRecommendationsQuery.error = null;
+    mockRecommendationsQuery.calls = [];
+    (useTenantMetadata as ReturnType<typeof vi.fn>).mockReturnValue({
+      metadata: { skills_include_community_courses: false },
+      isLoading: false,
     });
   });
 
@@ -43,12 +60,22 @@ describe('useRecommendedCourses', () => {
     expect(result.current).toHaveProperty('isError');
   });
 
-  it('fetches courses on mount', async () => {
+  it('subscribes to the recommendations query on mount', () => {
     renderHook(() => useRecommendedCourses({ limit: 8, search: '', forceLimit: false }));
+    expect(mockRecommendationsQuery.calls.length).toBeGreaterThan(0);
+    expect(mockRecommendationsQuery.calls[0].options.skip).toBe(false);
+  });
 
-    await waitFor(() => {
-      expect(mockGetRecommendationsAiSearch).toHaveBeenCalled();
+  it('skips the query while tenant metadata is loading', () => {
+    (useTenantMetadata as ReturnType<typeof vi.fn>).mockReturnValue({
+      metadata: undefined,
+      isLoading: true,
     });
+    const { result } = renderHook(() =>
+      useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
+    );
+    expect(mockRecommendationsQuery.calls[0].options.skip).toBe(true);
+    expect(result.current.isLoading).toBe(true);
   });
 
   it('transforms AI search recommendations to correct format', async () => {
@@ -60,9 +87,7 @@ describe('useRecommendedCourses', () => {
       domain: 'Technology',
       difficulty_level: 'beginner',
     };
-    mockGetRecommendationsAiSearch.mockResolvedValue({
-      data: { recommendations: [mockRec] },
-    });
+    mockRecommendationsQuery.data = { recommendations: [mockRec] };
 
     const { result } = renderHook(() =>
       useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
@@ -88,9 +113,7 @@ describe('useRecommendedCourses', () => {
       domain: null,
       difficulty_level: 'beginner',
     }));
-    mockGetRecommendationsAiSearch.mockResolvedValue({
-      data: { recommendations },
-    });
+    mockRecommendationsQuery.data = { recommendations };
 
     const { result } = renderHook(() =>
       useRecommendedCourses({ limit: 5, search: '', forceLimit: true }),
@@ -110,9 +133,7 @@ describe('useRecommendedCourses', () => {
       domain: null,
       difficulty_level: 'beginner',
     }));
-    mockGetRecommendationsAiSearch.mockResolvedValue({
-      data: { recommendations },
-    });
+    mockRecommendationsQuery.data = { recommendations };
 
     const { result } = renderHook(() =>
       useRecommendedCourses({ limit: 5, search: '', forceLimit: false }),
@@ -123,58 +144,34 @@ describe('useRecommendedCourses', () => {
     });
   });
 
-  it('uses provided tenant in params', async () => {
-    mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations: [] } });
-
+  it('uses provided tenant in params', () => {
     renderHook(() =>
       useRecommendedCourses({ limit: 8, search: '', forceLimit: false, tenant: 'custom-tenant' }),
     );
-
-    await waitFor(() => {
-      expect(mockGetRecommendationsAiSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          params: expect.objectContaining({ platform_key: 'custom-tenant' }),
-        }),
-        true,
-      );
-    });
+    expect(mockRecommendationsQuery.calls[0].args).toEqual(
+      expect.objectContaining({
+        params: expect.objectContaining({ platform_key: 'custom-tenant' }),
+      }),
+    );
   });
 
-  it('includes search_terms when search is provided', async () => {
-    mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations: [] } });
-
-    renderHook(() => useRecommendedCourses({ limit: 8, search: 'python', forceLimit: false }));
-
-    await waitFor(() => {
-      expect(mockGetRecommendationsAiSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          params: expect.objectContaining({ search_terms: 'python' }),
-        }),
-        true,
-      );
-    });
-  });
-
-  it('includes include_main_catalog when metadata has skills_include_community_courses', async () => {
+  it('includes include_main_catalog when metadata has skills_include_community_courses', () => {
     (useTenantMetadata as ReturnType<typeof vi.fn>).mockReturnValue({
       metadata: { skills_include_community_courses: true },
+      isLoading: false,
     });
-    mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations: [] } });
 
     renderHook(() => useRecommendedCourses({ limit: 8, search: '', forceLimit: false }));
 
-    await waitFor(() => {
-      expect(mockGetRecommendationsAiSearch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          params: expect.objectContaining({ include_main_catalog: true }),
-        }),
-        true,
-      );
-    });
+    expect(mockRecommendationsQuery.calls[0].args).toEqual(
+      expect.objectContaining({
+        params: expect.objectContaining({ include_main_catalog: true }),
+      }),
+    );
   });
 
   it('handles empty recommendations gracefully', async () => {
-    mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations: [] } });
+    mockRecommendationsQuery.data = { recommendations: [] };
 
     const { result } = renderHook(() =>
       useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
@@ -186,8 +183,9 @@ describe('useRecommendedCourses', () => {
     });
   });
 
-  it('handles error in handleFetchCourses', async () => {
-    mockGetRecommendationsAiSearch.mockRejectedValue(new Error('Network error'));
+  it('exposes the query error and falls back to empty lists', async () => {
+    mockRecommendationsQuery.data = undefined;
+    mockRecommendationsQuery.error = new Error('Network error');
 
     const { result } = renderHook(() =>
       useRecommendedCourses({ limit: 8, search: '', forceLimit: false }),
@@ -197,6 +195,7 @@ describe('useRecommendedCourses', () => {
       expect(result.current.recommendedCourses).toEqual([]);
       expect(result.current.allRecommendedCourses).toEqual([]);
     });
+    expect(result.current.isError).toBeTruthy();
   });
 
   it('filters courses when search length > 2', async () => {
@@ -218,7 +217,7 @@ describe('useRecommendedCourses', () => {
         difficulty_level: 'beginner',
       },
     ];
-    mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations } });
+    mockRecommendationsQuery.data = { recommendations };
 
     const { result, rerender } = renderHook(
       ({ search }) => useRecommendedCourses({ limit: 8, search, forceLimit: false }),
@@ -248,7 +247,7 @@ describe('useRecommendedCourses', () => {
         difficulty_level: 'beginner',
       },
     ];
-    mockGetRecommendationsAiSearch.mockResolvedValue({ data: { recommendations } });
+    mockRecommendationsQuery.data = { recommendations };
 
     const { result, rerender } = renderHook(
       ({ search }) => useRecommendedCourses({ limit: 8, search, forceLimit: false }),

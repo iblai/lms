@@ -77,7 +77,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
   );
 
   return (
-    <div className="h-full overflow-auto">
+    <div className="h-full">
       <AnalyticsSettingsProvider value={analyticsSettingsValue}>
         <AnalyticsLayout
           currentPath={pathname}
@@ -85,6 +85,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
           onTabChange={handleTabChange}
           activeTabClassName="!text-amber-600"
           beforeDataReports={groupsFilterDropdown}
+          showPicker={true}
         >
           {children}
         </AnalyticsLayout>

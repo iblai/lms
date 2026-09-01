@@ -16,7 +16,7 @@ export default function NotificationsPage() {
   const rbacPermissions = useAppSelector(selectRbacPermissions);
 
   return (
-    <div className="h-full pb-14">
+    <div className="h-full">
       <NotificationDisplay
         org={tenant}
         userId={getUserName()}
