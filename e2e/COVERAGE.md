@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-07-22 | 232 checkpoints | 32 journeys | 100% covered
+> Last updated: 2026-08-25 | 251 checkpoints | 35 journeys | 100% covered
 
 ## How This Works
 
@@ -39,18 +39,19 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 3: Home Dashboard (8 checkpoints) — `journeys/03-home-dashboard.spec.ts`
+## Journey 3: Home Dashboard (9 checkpoints) — `journeys/03-home-dashboard.spec.ts`
 
 **Source files:** `app/home/page.tsx`, `components/home/home-hero.tsx`, `components/home/home-activity-overview.tsx`, `components/home/home-discover-rail.tsx`
 
 - [x] Home page loads with the hero greeting band and primary CTAs (Explore Catalog / My Courses)
-- [x] Explore rail displays catalog cards; an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)
+- [x] Courses rail displays cards for the tenant's `lms_dashboard_courses_display` mode (catalog / enrolled / recommended); an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)
 - [x] My Courses CTA opens the enrolled catalog view
 - [x] Clicking an enrolled catalog card navigates to the course about page
-- [x] Clicking a catalog rail card navigates to the content page
+- [x] Clicking a courses rail card navigates to the content page
 - [x] Activity Overview band is absent from the home page (stats live on profile Activity)
 - [x] "View All" or "See more" links in course sections navigate to appropriate pages
 - [x] Home page loads without console errors
+- [x] Courses rail heading matches the tenant's `lms_dashboard_courses_display` setting and its "See More" opens Discover on the same filter (`enrolled=true` / `recommended=true` / unfiltered catalog)
 
 ---
 
@@ -68,9 +69,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (34 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (36 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -106,6 +107,8 @@ When adding a new page or modifying an existing user flow:
 - [x] Analytics tab (gated on the `can_view_analytics` RBAC permission) navigates to `/analytics` and renders `AnalyticsCourseDetail` (enrollment stat cards + Enrolled Users table) _(permission-gated; skips gracefully if absent)_
 - [x] Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout
 - [x] Unit media dropdown (beside the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews `student_view_url` in an overlay on the Agent tab and posts a `SCROLL_TO` message to the edX iframe on the Course tab _(skips gracefully when the unit has no media blocks)_
+- [x] Course content layout requests the signed-in user's role listing (`GET /api/ibl/users/manage/roles/`, looked up by `username` / `email` / `user_id`) so course-scoped roles can gate the staff tabs
+- [x] Staff tabs follow the course-role gates: `course-staff` / `course-instructor` (and platform admins) see every staff tab including Authoring, `course-limited-staff` sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees none of them
 
 ---
 
@@ -361,7 +364,7 @@ When adding a new page or modifying an existing user flow:
 **Source files:** `components/app-sidebar/index.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
 
 - [x] Sidebar mobile sheet opens via the navbar hamburger and displays menu items on mobile viewport (375×812)
-- [x] Course nav tabs container is horizontally scrollable on mobile (overflow-x-auto, w-full)
+- [x] Course nav tabs never overflow their container; tabs that don't fit collapse into the 3-dot overflow menu and stay reachable
 - [x] EdX iframe container has course-edx-iframe-container class and correct active-tab class per tab
 - [x] Mobile viewport: non-course tabs (Progress, Dates, Discussion) have no padding on iframe container
 - [x] Mobile viewport: Course tab retains padding on iframe container
@@ -471,6 +474,43 @@ When adding a new page or modifying an existing user flow:
 - [x] Audit tab routes to /analytics/audit and the audit log view renders _(admin only)_
 - [x] Audit log filters (user search, action filter) are visible
 - [x] Audit log table (USER/ACTION/TIME) or empty state is visible
+
+---
+
+## Journey 34: Admin Onboarding Wizard (6 checkpoints) — `journeys/34-admin-onboarding-wizard.spec.ts`
+
+**Source files:** `app/platform/[tenant]/onboarding/page.tsx`
+
+- [x] Onboarding route renders the SDK wizard's organization step
+- [x] Continue is disabled until an organization is named
+- [x] Naming the organization advances to the sector step
+- [x] Selecting a sector advances to the invite step
+- [x] Wizard progress is exposed to assistive tech (progressbar `aria-valuenow`)
+- [x] Final step wraps up the setup with a Complete button that finalizes onboarding
+
+---
+
+## Journey 35: User Onboarding (5 checkpoints) — `journeys/35-user-onboarding.spec.ts`
+
+**Source files:** `app/platform/[tenant]/onboarding/page.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`, `components/nav-bar.tsx`
+
+- [x] Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow
+- [x] The `?flow=` param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch
+- [x] The member flow's step heading (icon, title, subtitle) is rendered in the navbar rather than above the step
+- [x] The member flow never shows the admin setup steps (organization, sector, invite)
+- [x] The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away
+
+---
+
+## Journey 36: User Onboarding — Per-Agent Links (5 checkpoints) — `journeys/36-user-onboarding-agent-link.spec.ts`
+
+**Source files:** `app/platform/[tenant]/onboarding/[agentId]/page.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`
+
+- [x] The agent-scoped onboarding route serves the member flow and holds the route, never an error page
+- [x] An agent id naming no configured agent shows the "nothing set up" notice rather than substituting another agent
+- [x] The tenant's default onboarding agent is reachable by its own per-agent link
+- [x] The agent-scoped route never shows the admin setup steps, even for an admin
+- [x] An admin can still switch to the setup flow from an agent link; a member cannot
 
 ---
 

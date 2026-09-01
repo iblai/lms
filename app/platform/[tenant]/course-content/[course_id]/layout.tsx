@@ -15,8 +15,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
+import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 import { usePathname, useSearchParams } from 'next/navigation';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
@@ -27,6 +28,7 @@ import { CourseOutlineSidebar, CourseOutlineToggle } from '@/components/course-o
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
 import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
+import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
 import {
   CourseMediaDropdown,
   CourseMediaMenuItems,
@@ -65,6 +67,26 @@ import { cn } from '@/lib/utils';
 // a load event (e.g. an exam gate keeps it unmounted).
 const EDX_IFRAME_LOAD_FALLBACK_MS = 15_000;
 
+// Tab identity is derived from the route rather than pushed up from each page's
+// mount effect: an effect lands one commit *after* the new page renders, so the
+// EdxIframe it mounts would briefly see the previous tab and load that tab's URL.
+// Keys are route segments, values the tab keys used by the tab bar and by the
+// edX iframe URL builder ("discussion" is still called "forum" on the edX side).
+const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
+  agent: 'agent',
+  course: 'course',
+  progress: 'progress',
+  dates: 'dates',
+  discussion: 'forum',
+  bookmarks: 'bookmarks',
+  instructor: 'instructor',
+  instructors: 'instructors',
+  configuration: 'configuration',
+  analytics: 'analytics',
+  'learning-info': 'learning-info',
+};
+const DEFAULT_TAB = 'course';
+
 export default function CourseContentLayout({
   children,
   params,
@@ -92,9 +114,17 @@ export default function CourseContentLayout({
   const contentModeViewer = { isAdmin, isWatcher };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
+  // Course-scoped staff roles open the staff-only tabs to people who aren't
+  // platform admins: full staff (course-staff / course-instructor) get every
+  // tab, limited staff get all of them except Authoring — they run the course
+  // but can't edit it in Studio.
+  const { isCourseStaff, hasCourseStaffAccess } = useCourseUserRoles(courseId);
+  const canViewStaffTabs = isAdmin || hasCourseStaffAccess;
+  const canViewAuthoringTab = isAdmin || isCourseStaff;
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
+  const activeTab = ROUTE_SEGMENT_TO_TAB[currentTab ?? ''] ?? DEFAULT_TAB;
   const dispatch = useDispatch();
   const mentorSpinnerHidden = useSelector(selectMentorSpinnerHidden);
   const { setCourseMentor } = useChatState();
@@ -138,7 +168,7 @@ export default function CourseContentLayout({
   }, [courseId]);
 
   useEffect(() => {
-    if (!_.isEmpty(course)) {
+    if (!isEmpty(course)) {
       if (!course?.mentor_hidden) {
         setCourseMentor(course.mentor_uuid || null);
       }
@@ -151,7 +181,6 @@ export default function CourseContentLayout({
   const [currentChapter, setCurrentChapter] = useState('');
 
   const [expandedLessons, setExpandedLessons] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState('course');
   const [courseOutlineDrawerOpen, setCourseOutlineDrawerOpen] = useState(false);
   const [currentlyInExamSubsection, setCurrentlyInExamSubsection] = useState(false);
   const [examInfo, setExamInfo] = useState<ExamInfo | null>(null);
@@ -248,7 +277,7 @@ export default function CourseContentLayout({
     }
   }, [fullscreenToggleVisible]);
   useEffect(() => {
-    if (!_.isEmpty(courseOutline)) {
+    if (!isEmpty(courseOutline)) {
       const currentCourse = getUnitToIframe(courseOutline);
       setCurrentCourseInfo(currentCourse);
       const unitID = currentCourse?.id;
@@ -358,12 +387,81 @@ export default function CourseContentLayout({
     (isCourseContentModeOn(course) &&
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
+  const courseBasePath = `/platform/${tenant}/course-content/${resolvedParams.course_id}`;
+  // Ordered tab list; the tab bar hides whatever doesn't fit behind a 3-dot
+  // dropdown so it never overlaps the course controls / unit navigator.
+  const courseTabs = useMemo<CourseContentTab[]>(() => {
+    const tabs: CourseContentTab[] = [];
+    if (agentTabVisible) {
+      tabs.push({ key: 'agent', label: 'Agent', href: `${courseBasePath}/agent` });
+    }
+    if (courseTabVisible) {
+      tabs.push({
+        key: 'course',
+        label: 'Course',
+        href: `${courseBasePath}/course${currentCourseInfo?.id ? `?unit_id=${currentCourseInfo.id}` : ''}`,
+      });
+    }
+    tabs.push(
+      { key: 'progress', label: 'Progress', href: `${courseBasePath}/progress` },
+      { key: 'dates', label: 'Dates', href: `${courseBasePath}/dates` },
+      { key: 'forum', label: 'Discussion', href: `${courseBasePath}/discussion` },
+    );
+    if (canViewStaffTabs) {
+      tabs.push({ key: 'instructor', label: 'Instructor', href: `${courseBasePath}/instructor` });
+    }
+    if (course?.learning_info && course.learning_info.length > 0) {
+      tabs.push({
+        key: 'learning-info',
+        label: 'Learning Info',
+        href: `${courseBasePath}/learning-info`,
+      });
+    }
+    if (course?.instructor_info?.instructors && course.instructor_info.instructors.length > 0) {
+      tabs.push({
+        key: 'instructors',
+        label: 'Instructors',
+        href: `${courseBasePath}/instructors`,
+      });
+    }
+    if (canViewStaffTabs) {
+      tabs.push({
+        key: 'configuration',
+        label: 'Configuration',
+        href: `${courseBasePath}/configuration`,
+      });
+    }
+    if (canViewAnalytics || hasCourseStaffAccess) {
+      tabs.push({ key: 'analytics', label: 'Analytics', href: `${courseBasePath}/analytics` });
+    }
+    if (canViewAuthoringTab) {
+      tabs.push({
+        key: 'authoring',
+        label: 'Authoring',
+        href: `${config.urls.studioUrl()}/course/${courseId}`,
+        external: true,
+      });
+    }
+    return tabs;
+  }, [
+    courseBasePath,
+    courseId,
+    agentTabVisible,
+    courseTabVisible,
+    currentCourseInfo?.id,
+    canViewStaffTabs,
+    canViewAuthoringTab,
+    hasCourseStaffAccess,
+    course?.learning_info,
+    course?.instructor_info?.instructors,
+    canViewAnalytics,
+  ]);
+
   const edxIframeValue = useMemo(
     () => ({
       iframeUrl,
       setIframeUrl,
       courseOutline,
-      setActiveTab,
       activeTab,
       courseID: courseId,
       currentlyInExamSubsection,
@@ -429,145 +527,7 @@ export default function CourseContentLayout({
               <div className="border-b border-gray-200">
                 {/* Skills innercourseware tabs */}
                 <div className="flex w-full items-center justify-between">
-                  <div className="flex min-w-0 overflow-x-auto">
-                    {agentTabVisible && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/agent`}
-                        aria-current={activeTab === 'agent' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'agent'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Agent
-                      </Link>
-                    )}
-                    {courseTabVisible && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/course${
-                          currentCourseInfo?.id ? `?unit_id=${currentCourseInfo?.id}` : ''
-                        }`}
-                        aria-current={activeTab === 'course' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'course'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Course
-                      </Link>
-                    )}
-                    <Link
-                      href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/progress`}
-                      aria-current={activeTab === 'progress' ? 'page' : undefined}
-                      className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                        activeTab === 'progress'
-                          ? 'border-amber-500 text-amber-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Progress
-                    </Link>
-                    <Link
-                      href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/dates`}
-                      aria-current={activeTab === 'dates' ? 'page' : undefined}
-                      className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                        activeTab === 'dates'
-                          ? 'border-amber-500 text-amber-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Dates
-                    </Link>
-                    <Link
-                      href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/discussion`}
-                      aria-current={activeTab === 'forum' ? 'page' : undefined}
-                      className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                        activeTab === 'forum'
-                          ? 'border-amber-500 text-amber-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Discussion
-                    </Link>
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/instructor`}
-                        aria-current={activeTab === 'instructor' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'instructor'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Instructor
-                      </Link>
-                    )}
-                    {course?.learning_info && course.learning_info.length > 0 && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/learning-info`}
-                        aria-current={activeTab === 'learning-info' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'learning-info'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Learning Info
-                      </Link>
-                    )}
-                    {course?.instructor_info?.instructors &&
-                      course.instructor_info.instructors.length > 0 && (
-                        <Link
-                          href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/instructors`}
-                          aria-current={activeTab === 'instructors' ? 'page' : undefined}
-                          className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                            activeTab === 'instructors'
-                              ? 'border-amber-500 text-amber-600'
-                              : 'border-transparent text-gray-500 hover:text-gray-700'
-                          }`}
-                        >
-                          Instructors
-                        </Link>
-                      )}
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/configuration`}
-                        aria-current={activeTab === 'configuration' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'configuration'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Configuration
-                      </Link>
-                    )}
-                    {canViewAnalytics && (
-                      <Link
-                        href={`/platform/${tenant}/course-content/${resolvedParams.course_id}/analytics`}
-                        aria-current={activeTab === 'analytics' ? 'page' : undefined}
-                        className={`border-b-2 px-4 py-3 text-sm font-medium ${
-                          activeTab === 'analytics'
-                            ? 'border-amber-500 text-amber-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Analytics
-                      </Link>
-                    )}
-                    {departmentMemberCheck?.is_platform_admin && (
-                      <a
-                        href={`${config.urls.studioUrl()}/course/${courseId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border-b-2 border-transparent px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700"
-                      >
-                        Authoring
-                      </a>
-                    )}
-                  </div>
+                  <CourseContentTabs tabs={courseTabs} activeTab={activeTab} />
                   {/* Course controls (autoplay, media dropdown, fullscreen,
                       Learn/Assess) render in the top navbar — left of the
                       search bar — via the NavBar's portal slot; their state
@@ -709,7 +669,7 @@ export default function CourseContentLayout({
                     block={mobileMediaPreviewBlock}
                     onClose={() => setMobileMediaPreviewBlock(null)}
                   />
-                  <div className="flex items-center gap-3 pr-4">
+                  <div className="flex shrink-0 items-center gap-3 pr-4">
                     {/* Mobile-only (trigger is md:hidden) 3-dot menu bundling
                         the course controls, sitting left of the prev/next unit
                         buttons; desktop shows them inline in the navbar via

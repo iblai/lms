@@ -14,7 +14,7 @@ import {
   Save,
   X,
 } from 'lucide-react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
 import { useDispatch } from 'react-redux';
@@ -1081,7 +1081,7 @@ export default function ProgramDetailPage() {
                   </button>
                 )}
 
-                {!_.isEmpty(programCompletion) && (
+                {!isEmpty(programCompletion) && (
                   <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Progress</span>

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import { renderHook } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
+import isEmpty from 'lodash/isEmpty';
 
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
@@ -50,12 +51,10 @@ vi.mock('next/image', () => ({
 
 vi.mock('@iblai/agent-ai', () => ({}));
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val) => !val || (Array.isArray(val) ? val.length === 0 : Object.keys(val).length === 0),
+  ),
 }));
 
 import { ChatButton, ChatContext, useChatState } from '../chat-button';
@@ -292,8 +291,7 @@ describe('ChatButton', () => {
   });
 
   it('handles mentor with no default metadata', async () => {
-    const _ = await import('lodash');
-    vi.mocked(_.default.isEmpty).mockReturnValue(false);
+    vi.mocked(isEmpty).mockReturnValue(false);
     mockGetMentors.mockReturnValue(
       makeMentorResult([
         { unique_id: 'mentor-1', metadata: {} },

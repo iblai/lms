@@ -7,14 +7,30 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
  *
  * Validates the home landing page at /home:
  *  1. Hero greeting band with primary CTAs
- *  2. Explore rail
+ *  2. Courses rail
  *  3. My Courses CTA → enrolled catalog
  *  4. Click enrolled catalog card → course about
- *  5. Click catalog rail card → course about
+ *  5. Click rail card → course about
  *  6. Activity Overview band shows stats
  *  7. View All links
  *  8. No console errors
+ *  9. Rail mode matches the tenant's courses-display setting
  */
+
+/**
+ * The rail's heading and region name follow the tenant's
+ * `lms_dashboard_courses_display` setting, so locate it by any of its three
+ * modes rather than pinning one tenant's configuration.
+ */
+const RAIL_NAME = /^(explore|my courses|recommended for you)$/i;
+
+/** The Discover filter each rail mode hands off to via "See More". */
+const SEE_MORE_BY_MODE: Record<string, RegExp> = {
+  explore: /\/discover$/,
+  'my courses': /\/discover\?enrolled=true$/,
+  'recommended for you': /\/discover\?recommended=true$/,
+};
+
 test.describe('Journey 03: Home Dashboard', () => {
   test.setTimeout(200000);
 
@@ -54,18 +70,18 @@ test.describe('Journey 03: Home Dashboard', () => {
     await expect(page).toHaveURL(/\/home/);
   });
 
-  test('Checkpoint 2: Explore rail is displayed', async ({ page }) => {
-    // Recommendations moved to the centralized catalog page; the home
-    // page closes with a catalog discovery rail instead.
-    const railHeading = page.getByRole('heading', { name: /^explore$/i });
+  test('Checkpoint 2: Courses rail is displayed', async ({ page }) => {
+    // The home page closes with a courses rail — the catalog, the user's
+    // enrollments, or their recommendations, per the tenant setting.
+    const railHeading = page.getByRole('heading', { name: RAIL_NAME });
 
     const hasRail = await railHeading.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (hasRail) {
       await expect(railHeading).toBeVisible();
-      logger.info('Explore rail found');
+      logger.info(`Courses rail found: "${await railHeading.textContent()}"`);
     } else {
-      logger.info('Catalog rail not present — Discover may be disabled or empty');
+      logger.info('Courses rail not present — Discover may be disabled or empty');
     }
   });
 
@@ -110,18 +126,18 @@ test.describe('Journey 03: Home Dashboard', () => {
     logger.info('Navigated to course about page from the enrolled catalog');
   });
 
-  test('Checkpoint 5: Click catalog rail card navigates to course about', async ({ page }) => {
-    const railRegion = page.getByRole('region', { name: 'Explore' });
+  test('Checkpoint 5: Click rail card navigates to course about', async ({ page }) => {
+    const railRegion = page.getByRole('region', { name: RAIL_NAME });
 
     const hasRail = await railRegion.isVisible({ timeout: 120_000 }).catch(() => false);
 
     if (!hasRail) {
-      logger.info('No Explore rail — skipping');
+      logger.info('No courses rail — skipping');
       test.skip();
       return;
     }
 
-    // Catalog rail cards are click targets (divs) that route to the course.
+    // Rail cards are click targets (divs) that route to the course.
     const card = railRegion.locator('[data-testid="discover-content-card"]').first();
     const hasCard = await card.isVisible({ timeout: 120_000 }).catch(() => false);
 
@@ -142,9 +158,9 @@ test.describe('Journey 03: Home Dashboard', () => {
 
   test('Checkpoint 6: Activity Overview band is NOT on the home page', async ({ page }) => {
     // The stats + time-spent chart live on the profile Activity page only.
-    // Wait until the Explore rail (or its absence) settles so we assert on
+    // Wait until the courses rail (or its absence) settles so we assert on
     // the fully rendered page, not a loading state.
-    const rail = page.getByRole('region', { name: 'Explore' });
+    const rail = page.getByRole('region', { name: RAIL_NAME });
     await rail.isVisible({ timeout: 120_000 }).catch(() => false);
 
     await expect(page.getByRole('region', { name: 'Activity Overview' })).toHaveCount(0);
@@ -183,5 +199,39 @@ test.describe('Journey 03: Home Dashboard', () => {
 
     // We log but do not fail for minor console errors — just ensure no crash
     await expect(page).toHaveURL(/\/home/);
+  });
+
+  test('Checkpoint 9: Rail mode matches the tenant courses-display setting', async ({ page }) => {
+    // The tenant's `lms_dashboard_courses_display` setting picks the rail's
+    // source (catalog / enrolled / recommended). Whichever mode this tenant
+    // is on, its heading and its "See More" hand-off must agree — the rail
+    // and the Discover page it opens land on the same filter.
+    const railHeading = page.getByRole('heading', { name: RAIL_NAME });
+
+    const hasRail = await railHeading.isVisible({ timeout: 120_000 }).catch(() => false);
+    if (!hasRail) {
+      logger.info('No courses rail — Discover disabled or the catalog is empty; skipping');
+      test.skip();
+      return;
+    }
+
+    const mode = (await railHeading.textContent())?.trim().toLowerCase() ?? '';
+    expect(Object.keys(SEE_MORE_BY_MODE)).toContain(mode);
+
+    const railRegion = page.getByRole('region', { name: RAIL_NAME });
+    const seeMore = railRegion.getByRole('link', { name: /see more/i });
+    await expect(seeMore).toHaveAttribute('href', SEE_MORE_BY_MODE[mode]);
+    logger.info(`Rail is in "${mode}" mode and its See More carries the matching filter`);
+
+    // Following it lands on the Discover page already on that filter.
+    await seeMore.click();
+    await page.waitForURL(SEE_MORE_BY_MODE[mode], { timeout: 120_000 });
+    await waitForAppShell(page);
+
+    if (mode !== 'explore') {
+      const enrollmentChip = page.getByRole('button', { name: /remove filter enrollment/i });
+      await expect(enrollmentChip).toBeVisible({ timeout: 120_000 });
+      logger.info('Discover opened with the rail’s access filter already applied');
+    }
   });
 });

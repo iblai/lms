@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -29,13 +29,10 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock lodash
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val: any) =>
-        !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val: any) => !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
+  ),
 }));
 
 // Mock lucide-react icons
@@ -67,6 +64,21 @@ const mockUseGetCourseBlockDetailsQuery: any = vi.fn(
 );
 vi.mock('@/services/course-metadata', () => ({
   useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
+}));
+
+// Mock the course-role hook — drives the staff-only tab gates
+const courseUserRolesState = vi.hoisted(() => ({
+  current: {
+    courseRoles: [] as any[],
+    isCourseStaff: false,
+    isCourseLimitedStaff: false,
+    hasCourseStaffAccess: false,
+    isResolved: true,
+  },
+}));
+const mockUseCourseUserRoles = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/courses/use-course-user-roles', () => ({
+  useCourseUserRoles: (...args: any[]) => mockUseCourseUserRoles(...args),
 }));
 
 // Mock useGetDepartmentMemberCheckQuery
@@ -286,12 +298,19 @@ vi.mock('react', async () => {
 });
 
 import CourseContentLayout from '../layout';
+import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 
 describe('CourseContentLayout', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
+
+  // CourseContentTabs renders an aria-hidden copy of every label to measure its
+  // natural width, so a plain text query matches each tab twice. Tabs are always
+  // anchors, and role queries skip the aria-hidden measurement row.
+  const tabLink = (name: string) => screen.getByRole('link', { name });
+  const queryTabLink = (name: string) => screen.queryByRole('link', { name });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -304,6 +323,14 @@ describe('CourseContentLayout', () => {
     document.body.appendChild(navbarControlsSlot);
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mockCheckRbacPermission.mockReturnValue(false);
+    courseUserRolesState.current = {
+      courseRoles: [],
+      isCourseStaff: false,
+      isCourseLimitedStaff: false,
+      hasCourseStaffAccess: false,
+      isResolved: true,
+    };
+    mockUseCourseUserRoles.mockImplementation(() => courseUserRolesState.current);
     vi.mocked(useCourseDetail).mockReturnValue({
       handleFetchCourseInfo: mockHandleFetchCourseInfo,
       handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
@@ -357,11 +384,11 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
-    expect(screen.getByText('Progress')).toBeInTheDocument();
-    expect(screen.getByText('Dates')).toBeInTheDocument();
-    expect(screen.getByText('Discussion')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
+    expect(tabLink('Progress')).toBeInTheDocument();
+    expect(tabLink('Dates')).toBeInTheDocument();
+    expect(tabLink('Discussion')).toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is not true', () => {
@@ -385,8 +412,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('hides Course tab when course.course_content_mode is false', () => {
@@ -410,8 +437,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
-    expect(screen.queryByText('Course')).not.toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
+    expect(queryTabLink('Course')).not.toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is null', () => {
@@ -435,8 +462,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Course tab when course.course_content_mode is null', () => {
@@ -460,7 +487,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Course tab when both course_content_mode and agent_content_mode are false', () => {
@@ -484,8 +511,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('hides Agent tab for non-admin when agent_content_mode_audience is admins-only', () => {
@@ -516,8 +543,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Agent tab for admin when agent_content_mode_audience is admins-only', () => {
@@ -548,7 +575,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
   });
 
   it('hides Course tab for non-admin when course_content_mode_audience is admins-only', () => {
@@ -579,8 +606,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Course')).not.toBeInTheDocument();
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(queryTabLink('Course')).not.toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
   });
 
   it('hides Agent tab from a non-watcher when agent_content_mode_audience is watchers-only', () => {
@@ -612,8 +639,8 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Agent')).not.toBeInTheDocument();
-    expect(screen.getByText('Course')).toBeInTheDocument();
+    expect(queryTabLink('Agent')).not.toBeInTheDocument();
+    expect(tabLink('Course')).toBeInTheDocument();
   });
 
   it('shows Agent tab to a watcher (RBAC granted) when agent_content_mode_audience is watchers-only', () => {
@@ -645,7 +672,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(tabLink('Agent')).toBeInTheDocument();
     expect(mockCheckRbacPermission).toHaveBeenCalledWith({}, '/watchedgroups/#list');
   });
 
@@ -659,7 +686,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.queryByText('Instructor')).not.toBeInTheDocument();
+    expect(queryTabLink('Instructor')).not.toBeInTheDocument();
   });
 
   it('shows Instructor tab when user is platform admin', () => {
@@ -672,7 +699,7 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(screen.getByText('Instructor')).toBeInTheDocument();
+    expect(tabLink('Instructor')).toBeInTheDocument();
   });
 
   describe('Authoring tab (platform admin only)', () => {
@@ -686,7 +713,7 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(screen.getByText('Authoring')).toBeInTheDocument();
+      expect(tabLink('Authoring')).toBeInTheDocument();
     });
 
     it('hides Authoring tab for non-admin users', () => {
@@ -699,7 +726,7 @@ describe('CourseContentLayout', () => {
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(screen.queryByText('Authoring')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
     });
 
     it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
@@ -945,6 +972,59 @@ describe('CourseContentLayout', () => {
       </CourseContentLayout>,
     );
     expect(screen.getByTestId('course-lesson-navigator')).toBeInTheDocument();
+  });
+
+  describe('active tab derived from the route', () => {
+    // The tab identity used to be pushed up from each page's mount effect, which
+    // landed a commit after the new page (and its EdxIframe) had already
+    // rendered against the *previous* tab. Deriving it from the pathname means a
+    // page never sees a tab value that disagrees with the URL it renders under.
+    const DEFAULT_PATHNAME = '/course-content/course-v1:test+course+2024/course';
+
+    const ActiveTabProbe = () => {
+      const { activeTab } = React.useContext(EdxIframeContext);
+      return <div data-testid="active-tab">{activeTab}</div>;
+    };
+
+    const renderAt = async (pathname: string) => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(pathname);
+      return render(
+        <CourseContentLayout params={defaultParams}>
+          <ActiveTabProbe />
+        </CourseContentLayout>,
+      );
+    };
+
+    afterEach(async () => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(DEFAULT_PATHNAME);
+    });
+
+    it.each([
+      ['/course-content/course-v1:test+course+2024/agent', 'agent'],
+      ['/course-content/course-v1:test+course+2024/course', 'course'],
+      ['/course-content/course-v1:test+course+2024/progress', 'progress'],
+      ['/course-content/course-v1:test+course+2024/analytics', 'analytics'],
+      // The discussion route is still called "forum" by the edX iframe URL builder.
+      ['/course-content/course-v1:test+course+2024/discussion', 'forum'],
+    ])('exposes %s as activeTab "%s" on the first render', async (pathname, expected) => {
+      const { getByTestId } = await renderAt(pathname);
+      expect(getByTestId('active-tab')).toHaveTextContent(expected);
+    });
+
+    it('falls back to the course tab for a route with no known tab segment', async () => {
+      const { getByTestId } = await renderAt('/course-content/course-v1:test+course+2024');
+      expect(getByTestId('active-tab')).toHaveTextContent('course');
+    });
+
+    it('highlights the tab matching the route', async () => {
+      await renderAt('/course-content/course-v1:test+course+2024/discussion');
+      // The mocked next/link drops aria-current, so assert the active styling —
+      // it proves the derived value lines up with the tab bar's `key`s.
+      expect(tabLink('Discussion').className).toContain('text-amber-600');
+      expect(tabLink('Agent').className).not.toContain('text-amber-600');
+    });
   });
 
   describe('unit-switch toast on the agent tab', () => {
@@ -2075,27 +2155,27 @@ describe('CourseContentLayout', () => {
     it('shows Learning Info only when the course has learning_info', () => {
       courseDetailWith({ learning_info: ['Understand X'] });
       renderLayout();
-      const link = screen.getByText('Learning Info').closest('a');
+      const link = tabLink('Learning Info');
       expect(link).toHaveAttribute('href', expect.stringContaining('/learning-info'));
     });
 
     it('hides Learning Info when learning_info is empty', () => {
       courseDetailWith({ learning_info: [] });
       renderLayout();
-      expect(screen.queryByText('Learning Info')).not.toBeInTheDocument();
+      expect(queryTabLink('Learning Info')).not.toBeInTheDocument();
     });
 
     it('shows Instructors only when the course has instructors', () => {
       courseDetailWith({ instructor_info: { instructors: [{ name: 'Ada' }] } });
       renderLayout();
-      const link = screen.getByText('Instructors').closest('a');
+      const link = tabLink('Instructors');
       expect(link).toHaveAttribute('href', expect.stringContaining('/instructors'));
     });
 
     it('hides Instructors when the instructors list is empty', () => {
       courseDetailWith({ instructor_info: { instructors: [] } });
       renderLayout();
-      expect(screen.queryByText('Instructors')).not.toBeInTheDocument();
+      expect(queryTabLink('Instructors')).not.toBeInTheDocument();
     });
 
     it('shows Configuration for a platform admin', () => {
@@ -2103,7 +2183,7 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      const link = screen.getByText('Configuration').closest('a');
+      const link = tabLink('Configuration');
       expect(link).toHaveAttribute('href', expect.stringContaining('/configuration'));
     });
 
@@ -2112,14 +2192,14 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: false },
       } as any);
       renderLayout();
-      expect(screen.queryByText('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
     });
 
     it('shows Analytics only when the user has the can_view_analytics permission', () => {
       mockCheckRbacPermission.mockImplementation(((_perms: any, resource: string) =>
         resource.includes('can_view_analytics')) as any);
       renderLayout();
-      const link = screen.getByText('Analytics').closest('a');
+      const link = tabLink('Analytics');
       expect(link).toHaveAttribute('href', expect.stringContaining('/analytics'));
     });
 
@@ -2129,7 +2209,93 @@ describe('CourseContentLayout', () => {
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      expect(screen.queryByText('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('course-scoped staff roles', () => {
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    const setCourseRole = (role: string) => {
+      courseUserRolesState.current = {
+        courseRoles: [{ role, org: 'test-tenant', course: 'course-v1:test+course+2024' }],
+        isCourseStaff: role === 'course-staff' || role === 'course-instructor',
+        isCourseLimitedStaff: role === 'course-limited-staff',
+        hasCourseStaffAccess: true,
+        isResolved: true,
+      };
+    };
+
+    beforeEach(() => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: false },
+      } as any);
+    });
+
+    it('looks up roles for the decoded course ID', () => {
+      renderLayout();
+      expect(mockUseCourseUserRoles).toHaveBeenCalledWith('course-v1:test+course+2024');
+    });
+
+    it.each(['course-staff', 'course-instructor'])(
+      'shows every staff tab — Authoring included — for %s',
+      (role) => {
+        setCourseRole(role);
+        renderLayout();
+        expect(tabLink('Instructor')).toBeInTheDocument();
+        expect(tabLink('Configuration')).toBeInTheDocument();
+        expect(tabLink('Analytics')).toBeInTheDocument();
+        expect(tabLink('Authoring')).toBeInTheDocument();
+      },
+    );
+
+    it('shows every staff tab except Authoring for course-limited-staff', () => {
+      setCourseRole('course-limited-staff');
+      renderLayout();
+      expect(tabLink('Instructor')).toBeInTheDocument();
+      expect(tabLink('Configuration')).toBeInTheDocument();
+      expect(tabLink('Analytics')).toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('keeps the staff tabs hidden for a course role that grants no staff access', () => {
+      courseUserRolesState.current = {
+        courseRoles: [
+          { role: 'course-beta-tester', org: 'test-tenant', course: 'course-v1:test+course+2024' },
+        ],
+        isCourseStaff: false,
+        isCourseLimitedStaff: false,
+        hasCourseStaffAccess: false,
+        isResolved: true,
+      };
+      renderLayout();
+      expect(queryTabLink('Instructor')).not.toBeInTheDocument();
+      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+    });
+
+    it('still shows Authoring to a platform admin with no course role', () => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(tabLink('Authoring')).toBeInTheDocument();
+    });
+
+    it('does not grant Analytics to a platform admin lacking can_view_analytics', () => {
+      // Course staff unlock Analytics for their own course, but the platform
+      // admin path still goes through the can_view_analytics permission.
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(queryTabLink('Analytics')).not.toBeInTheDocument();
     });
   });
 

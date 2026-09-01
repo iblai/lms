@@ -1,28 +1,29 @@
 'use client';
 
 import type React from 'react';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
-import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useTenantParam } from '@/hooks/use-tenant-param';
-import { redirect } from 'next/navigation';
+import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
+import { useParams, redirect } from 'next/navigation';
 
 export default function InstructorTab() {
+  const params = useParams();
   const tenant = useTenantParam();
-  const { setActiveTab } = useContext(EdxIframeContext);
+  const courseId = decodeURIComponent(params.course_id as string);
   const { data: departmentMemberCheck, isSuccess } = useGetDepartmentMemberCheckQuery({
     platform_key: tenant,
   });
+  // Course staff (full or limited) get this tab too — hold the redirect until
+  // the course-role listing has settled, or they'd be bounced mid-fetch.
+  const { hasCourseStaffAccess, isResolved: rolesResolved } = useCourseUserRoles(courseId);
+  const canView = departmentMemberCheck?.is_platform_admin === true || hasCourseStaffAccess;
   useEffect(() => {
-    if (isSuccess) {
-      if (!departmentMemberCheck?.is_platform_admin) {
-        redirect(`/platform/${tenant}`);
-      } else {
-        setActiveTab('instructor');
-      }
+    if (isSuccess && rolesResolved && !canView) {
+      redirect(`/platform/${tenant}`);
     }
-  }, [tenant, isSuccess, departmentMemberCheck, setActiveTab]);
+  }, [tenant, isSuccess, rolesResolved, canView]);
 
   return <EdxIframe />;
 }

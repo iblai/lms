@@ -29,3 +29,26 @@ export const MONETIZATION_CLOSE_PAYLOAD = {
  * a course-content layout is mounted.
  */
 export const NAVBAR_COURSE_CONTROLS_ID = 'navbar-course-controls';
+
+/**
+ * Query param the onboarding route reads to decide which flow it runs, and the
+ * value that selects the member (user onboarding) one — e.g.
+ * `/platform/<tenant>/onboarding?flow=user`.
+ *
+ * The switch that sets it lives in the navbar while the flow itself is rendered
+ * by the page, so the URL — not component state — is what keeps the two in
+ * sync (and makes a chosen flow reloadable and shareable). Only admins are
+ * offered the switch; members get the member flow regardless of the param.
+ * With no param, `resolveOnboardingFlow` decides — see lib/onboarding-flow.ts.
+ */
+export const ONBOARDING_FLOW_PARAM = 'flow';
+export const ONBOARDING_USER_FLOW = 'user';
+export const ONBOARDING_ADMIN_FLOW = 'admin';
+
+/**
+ * DOM id of the navbar slot the onboarding page portals the current step's
+ * heading into (icon + title + subtitle), so the step itself keeps all of its
+ * room for the form or the agent. Rendered (empty, and therefore zero-width)
+ * by the NavBar on every page.
+ */
+export const NAVBAR_ONBOARDING_HEADER_ID = 'navbar-onboarding-header';

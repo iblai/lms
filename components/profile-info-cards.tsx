@@ -12,7 +12,7 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import { useState } from 'react';
 import { UserActivityInfo } from '@/types/perlearner';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { SkeletonMultiplier } from './skeleton-multiplier';
 import Link from 'next/link';
 
@@ -32,7 +32,7 @@ export function ProfileInfoCards() {
         org: getTenant(),
         username: getUserName(),
       });
-      if (activityError || _.isEmpty(response.data)) {
+      if (activityError || isEmpty(response.data)) {
         throw new Error('Error fetching per learner activity');
       }
       const sortedData = [...response.data.data].sort((a, b) => b.time_invested - a.time_invested);

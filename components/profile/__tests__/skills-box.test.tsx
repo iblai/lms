@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 const mockUseProfileSkills = vi.fn();
 vi.mock('@/hooks/profile/use-profile-skills', () => ({
@@ -42,10 +42,8 @@ const isEmptyImpl = (val: any): boolean => {
   return false;
 };
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn((val: any) => isEmptyImpl(val)),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn((val: any) => isEmptyImpl(val)),
 }));
 
 import { SkillsBox } from '../skills-box';
@@ -66,7 +64,7 @@ describe('SkillsBox', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset isEmpty to smart implementation
-    vi.mocked(_.isEmpty).mockImplementation((val: any) => isEmptyImpl(val));
+    vi.mocked(isEmpty).mockImplementation((val: any) => isEmptyImpl(val));
   });
 
   it('renders without crashing', () => {

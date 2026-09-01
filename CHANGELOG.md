@@ -1,5 +1,170 @@
 # Changelog
 
+## [0.75.2](https://github.com/iblai/lms/compare/skills-v0.75.1...skills-v0.75.2) (2026-09-01)
+
+### Performance
+
+* **bundle:** deep-import lodash instead of the whole library ([d815d55](https://github.com/iblai/lms/commit/d815d55356b918936e6981d7c3168fc687f3926f))
+
+## [0.75.1](https://github.com/iblai/lms/compare/skills-v0.75.0...skills-v0.75.1) (2026-08-30)
+
+### Bug Fixes
+
+* platform account sheet props updated ([ebf5bc5](https://github.com/iblai/lms/commit/ebf5bc5b340839101c26af45e957fbb5d64cf069))
+
+## [0.75.0](https://github.com/iblai/lms/compare/skills-v0.74.1...skills-v0.75.0) (2026-08-28)
+
+### Features
+
+* bumped iblai-js to 2.8.3 ([451fc60](https://github.com/iblai/lms/commit/451fc60faedcd3146ba67076db4b900f9fbadf9e))
+
+## [0.74.1](https://github.com/iblai/lms/compare/skills-v0.74.0...skills-v0.74.1) (2026-08-28)
+
+### Chores
+
+* bumped iblai-js to 2.7.4 ([5c78d97](https://github.com/iblai/lms/commit/5c78d97ad639f2ec8a41f1820119a4cce1971779))
+
+## [0.74.0](https://github.com/iblai/lms/compare/skills-v0.73.2...skills-v0.74.0) (2026-08-28)
+
+### Features
+
+* agent tab race condition optimization ([bb4065a](https://github.com/iblai/lms/commit/bb4065a35d9e2ab71d46abf9e12f7f166d7c825e))
+* agent tab race condition optimization > gitignore updated ([1d2fadd](https://github.com/iblai/lms/commit/1d2fadd6885e66532ad53f3f95cc3680818de608))
+* agent tab race condition updated ([9952b27](https://github.com/iblai/lms/commit/9952b27c2af525545001e283a3fd89f6c00e935f))
+
+## [0.73.2](https://github.com/iblai/lms/compare/skills-v0.73.1...skills-v0.73.2) (2026-08-27)
+
+### Bug Fixes
+
+* **ci:** remove the paths filter that deadlocks the required PR Validation check ([31ce6e5](https://github.com/iblai/lms/commit/31ce6e5a9a42c6f51c33dc8cabe4255a35529e5f)), closes [os#462](https://github.com/iblai/os/issues/462)
+
+## [0.73.1](https://github.com/iblai/lms/compare/skills-v0.73.0...skills-v0.73.1) (2026-08-27)
+
+### Bug Fixes
+
+* course about page > no session title & login button fix ([eeba4e3](https://github.com/iblai/lms/commit/eeba4e38faf5c973ac8af34211b9bb2df83dcb6b))
+
+## [0.73.0](https://github.com/iblai/lms/compare/skills-v0.72.0...skills-v0.73.0) (2026-08-26)
+
+### Features
+
+* course content tabs now edx course roles based ([616a36a](https://github.com/iblai/lms/commit/616a36ae6944eb05c3208fd7f2a8a51ac820c004))
+
+## [0.72.0](https://github.com/iblai/lms/compare/skills-v0.71.0...skills-v0.72.0) (2026-08-22)
+
+### Features
+
+* sdk onboarding multiple agents integration ([acfb435](https://github.com/iblai/lms/commit/acfb435b99c66243a7cccc3f7d839f746fd91bab))
+* sdk onboarding multiple agents integration  > test coverage ([0321012](https://github.com/iblai/lms/commit/0321012d66b30ab3e7924a8e196ea3dbd65a2837))
+* sdk onboarding multiple agents integration  > test coverage ([99c4ace](https://github.com/iblai/lms/commit/99c4ace9cb297fd56c9cbe446d04962d164edebc))
+
+## [0.71.0](https://github.com/iblai/lms/compare/skills-v0.70.0...skills-v0.71.0) (2026-08-21)
+
+### Features
+
+* analytics agents picker added ([b7efb27](https://github.com/iblai/lms/commit/b7efb27d45c8b7c35563a7e7601d418ac12191fc))
+* analytics agents picker added > test coverage ([722e8a1](https://github.com/iblai/lms/commit/722e8a19e701cbf2c8310f0c933cecb5a7be1159))
+* bumped iblai-js to 2.5.6 ([f4ac10e](https://github.com/iblai/lms/commit/f4ac10e354d8b9c21eba68b359a33f87a21c8b61))
+
+## [0.70.0](https://github.com/iblai/lms/compare/skills-v0.69.2...skills-v0.70.0) (2026-08-21)
+
+### Features
+
+* sdk onboarding integration + miscelleanous ([bc6c945](https://github.com/iblai/lms/commit/bc6c945eb5d1095fdb4a4efb699e0fd1dfe0e3b5))
+* sdk onboarding integration + test coverage ([08633c7](https://github.com/iblai/lms/commit/08633c781f8af9f7882af56ddff04935a371c6ea))
+* sdk onboarding integration + test coverage ([b401601](https://github.com/iblai/lms/commit/b401601fc738ebd53fec60bab7a397d47f402f12))
+* sdk onboarding integration + test coverage ([ee018f8](https://github.com/iblai/lms/commit/ee018f8dec4ca9e16755fd70b8bcaee7eb46d886))
+* sdk version bump ([ebdb671](https://github.com/iblai/lms/commit/ebdb6711a3b148f0e38af36abe4767860ef7ed11))
+
+## [0.69.2](https://github.com/iblai/lms/compare/skills-v0.69.1...skills-v0.69.2) (2026-08-18)
+
+### Bug Fixes
+
+* course tab overlapping issue > test coverage ([e37b188](https://github.com/iblai/lms/commit/e37b188d971cc7e08cf0ebc1e31489e6128c00a2))
+* course tabs overlapping issue fixed ([9179b80](https://github.com/iblai/lms/commit/9179b802106ec16c0bad21a57067085a371c7885))
+
+## [0.69.1](https://github.com/iblai/lms/compare/skills-v0.69.0...skills-v0.69.1) (2026-08-18)
+
+### Chores
+
+* bumped iblai-js to 2.5.0 ([1d93bfc](https://github.com/iblai/lms/commit/1d93bfcf6fa07fceabf4ce6d594ef7d55d2801b6))
+
+## [0.69.0](https://github.com/iblai/lms/compare/skills-v0.68.1...skills-v0.69.0) (2026-08-14)
+
+### Features
+
+* **deploy:** immutable, deployment-ID static hosting via AWS S3 + CloudFront ([44c7929](https://github.com/iblai/lms/commit/44c79293fa45cc93b48d6bcab8dc4d611836b955))
+
+## [0.68.1](https://github.com/iblai/lms/compare/skills-v0.68.0...skills-v0.68.1) (2026-08-14)
+
+### Bug Fixes
+
+* image broken for enrolled courses ([2cc7a90](https://github.com/iblai/lms/commit/2cc7a90a836cf21c4623ba0423e71ad2de5f8857))
+
+## [0.68.0](https://github.com/iblai/lms/compare/skills-v0.67.0...skills-v0.68.0) (2026-08-13)
+
+### Features
+
+* **time-tracking:** track course/unit time via the SDK provider ([e687669](https://github.com/iblai/lms/commit/e687669a7c1a1c32e6b6e8a211463551758cb16b))
+
+### Chores
+
+* updates pnpm lock file ([9085ee5](https://github.com/iblai/lms/commit/9085ee5730eebb9d43477d7098a26d2ff1f03276))
+
+## [0.67.0](https://github.com/iblai/lms/compare/skills-v0.66.1...skills-v0.67.0) (2026-08-12)
+
+### Features
+
+* bumped iblai-js to 2.3.14 ([d63df23](https://github.com/iblai/lms/commit/d63df23a9f20108316431e82bdf9192f1fa45b6a))
+
+## [0.66.1](https://github.com/iblai/lms/compare/skills-v0.66.0...skills-v0.66.1) (2026-08-11)
+
+### Bug Fixes
+
+* minor ui consistency i.e margin/padding/font-size issues solved ([0c6c83c](https://github.com/iblai/lms/commit/0c6c83cb8d9443fcd386724464763179ae03e265))
+
+## [0.66.0](https://github.com/iblai/lms/compare/skills-v0.65.2...skills-v0.66.0) (2026-08-11)
+
+### Features
+
+* home course display settings sdk integration ([f1cfb2b](https://github.com/iblai/lms/commit/f1cfb2bdfd2442280b2a2c8f25afd944833933ad))
+* home course display settings sdk integration ([772a715](https://github.com/iblai/lms/commit/772a71529f061196af51724308369cf419167f02))
+* home course display settings sdk integration > iblai-js version updated + makefile update ([00a9d9a](https://github.com/iblai/lms/commit/00a9d9ab733da1d5591774da64e127965e8120f4))
+* ignore claude worktrees from prepush scripts ([5fec192](https://github.com/iblai/lms/commit/5fec192a112a42c8f4d7f43a1913d4db0c8dd003))
+
+## [0.65.2](https://github.com/iblai/lms/compare/skills-v0.65.1...skills-v0.65.2) (2026-08-10)
+
+### Bug Fixes
+
+* **readme:** point download buttons at app-v1.0.17 (fix 404s) ([6c5f7da](https://github.com/iblai/lms/commit/6c5f7da427d0aee79285e076c005678110dd60a7)), closes [#207](https://github.com/iblai/lms/issues/207)
+
+## [0.65.1](https://github.com/iblai/lms/compare/skills-v0.65.0...skills-v0.65.1) (2026-08-10)
+
+### Documentation
+
+* **readme:** move download buttons into the top hero (match mentorai) ([0e33c63](https://github.com/iblai/lms/commit/0e33c63ab94622ea82bcf9ad7a0e9e5f3724dcb4))
+
+## [0.65.0](https://github.com/iblai/lms/compare/skills-v0.64.0...skills-v0.65.0) (2026-08-10)
+
+### Features
+
+* **os-builds:** Windows installers + mentorai-style download README ([169dd86](https://github.com/iblai/lms/commit/169dd86e4a93dc690424e46b976d58aac8e64c5e))
+
+### Chores
+
+* **os-builds:** add iOS version-bump helper for Agentic LMS ([5822fb1](https://github.com/iblai/lms/commit/5822fb1171720afa0be4afbc4ece66e6a5399d90))
+* **tauri:** release app-v1.0.17 ([1b37c0c](https://github.com/iblai/lms/commit/1b37c0ca8c14b8c23a5d47ecff34fefd3bbe710b))
+
+## [0.64.0](https://github.com/iblai/lms/compare/skills-v0.63.0...skills-v0.64.0) (2026-08-06)
+
+### Features
+
+* **csp:** make partner CSP hosts configurable via CSP_PARTNER_HOSTS ([f9a3ff0](https://github.com/iblai/lms/commit/f9a3ff00d3b212bf95e20b788cb760c63803c064))
+
+### Bug Fixes
+
+* **csp:** allow wss:// partner origins in connect-src ([3d38f58](https://github.com/iblai/lms/commit/3d38f588fa4377536cd27ba3acf1bade46bc0899))
+
 ## [0.63.0](https://github.com/iblai/lms/compare/skills-v0.62.0...skills-v0.63.0) (2026-08-06)
 
 ### Features

@@ -29,11 +29,13 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
   AnalyticsLayout: ({
     children,
     beforeDataReports,
+    showPicker,
   }: {
     children: React.ReactNode;
     beforeDataReports?: React.ReactNode;
+    showPicker?: boolean;
   }) => (
-    <div data-testid="analytics-layout">
+    <div data-testid="analytics-layout" data-show-picker={String(showPicker)}>
       <div data-testid="before-data-reports">{beforeDataReports}</div>
       {children}
     </div>
@@ -133,6 +135,25 @@ describe('AnalyticsLayoutWrapper', () => {
       platformKey: 'test-tenant',
       requiredAction: 'Ibl.Analytics/Reports/read',
     });
+  });
+
+  it('enables the date range picker on the analytics layout', () => {
+    render(
+      <AnalyticsLayoutWrapper>
+        <span>content</span>
+      </AnalyticsLayoutWrapper>,
+    );
+    expect(screen.getByTestId('analytics-layout')).toHaveAttribute('data-show-picker', 'true');
+  });
+
+  it('enables the date range picker on the data reports page', () => {
+    mockUsePathname.mockReturnValue('/platform/test-tenant/analytics/reports');
+    render(
+      <AnalyticsLayoutWrapper>
+        <span>content</span>
+      </AnalyticsLayoutWrapper>,
+    );
+    expect(screen.getByTestId('analytics-layout')).toHaveAttribute('data-show-picker', 'true');
   });
 
   it('does not fetch groups when there is no tenant key', () => {

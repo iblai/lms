@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
+import { getCourseContentTab, gotoTenantPage, waitForAppShell } from '../utils/navigation';
 import { waitForPageLoad } from '@iblai/iblai-js/playwright';
 
 /**
@@ -62,28 +62,29 @@ test.describe.fixme('Journey 24: Mobile View', () => {
     expect(hasHamburger || (await navbar.isVisible())).toBeTruthy();
   });
 
-  test('CP-2: Course tabs container is scrollable (overflow-x-auto, min-w-0)', async ({ page }) => {
+  test('CP-2: Course tabs collapse into the overflow menu instead of overlapping', async ({
+    page,
+  }) => {
     await navigateToCourseContent(page);
 
-    // The nav tabs container should have overflow-x-auto and w-full
-    const tabsContainer = page.locator('div.flex.overflow-x-auto.min-w-0').first();
+    const tabsContainer = page.getByTestId('course-content-tabs');
     await expect(tabsContainer).toBeVisible({ timeout: 30_000 });
 
-    // Verify course navigation tabs are inside (the first tab is "Course" or "Agent" depending on mode)
-    await expect(tabsContainer.getByRole('link', { name: /^(Course|Agent)$/ }).first()).toBeVisible(
-      {
-        timeout: 30_000,
-      },
+    // The tab row never spills past its container — anything that doesn't fit
+    // moves into the 3-dot overflow menu.
+    const overflows = await tabsContainer.evaluate(
+      (el) => el.scrollWidth > el.clientWidth + 1 || false,
     );
-    await expect(tabsContainer.getByRole('link', { name: 'Progress' })).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(tabsContainer.getByRole('link', { name: 'Dates' })).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(tabsContainer.getByRole('link', { name: 'Discussion' })).toBeVisible({
-      timeout: 30_000,
-    });
+    expect(overflows).toBe(false);
+
+    // Every core tab stays reachable, inline or through the overflow menu.
+    for (const name of [/^(Course|Agent)$/, 'Progress', 'Dates', 'Discussion'] as Array<
+      string | RegExp
+    >) {
+      const tab = await getCourseContentTab(page, name);
+      expect(tab, `tab ${name} should be reachable`).not.toBeNull();
+      await expect(tab!).toBeVisible({ timeout: 30_000 });
+    }
   });
 
   test('CP-3: Iframe container has correct CSS classes per tab', async ({ page }) => {

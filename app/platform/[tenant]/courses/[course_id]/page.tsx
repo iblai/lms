@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { Clock, Calendar, Globe, DollarSign } from 'lucide-react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
 import { getRandomCourseImage } from '@/utils/helpers';
 import { config } from '@/lib/config';
@@ -76,7 +76,7 @@ export default function CourseDetailsPage() {
   // Course info is fetched once by `CourseDetailProvider` in the layout; the
   // page only reacts to the resulting `course` to wire up the mentor + syllabus.
   useEffect(() => {
-    if (!_.isEmpty(course)) {
+    if (!isEmpty(course)) {
       if (!course?.mentor_hidden) {
         setCourseMentor(course?.mentor_uuid || null);
       } else {

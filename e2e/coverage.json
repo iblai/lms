@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-07-20",
+  "lastUpdated": "2026-08-25",
   "summary": {
-    "totalCheckpoints": 232,
-    "coveredCheckpoints": 232,
+    "totalCheckpoints": 251,
+    "coveredCheckpoints": 251,
     "percent": 100,
-    "totalJourneys": 32
+    "totalJourneys": 35
   },
   "journeys": [
     {
@@ -38,7 +38,7 @@
     },
     {
       "id": "onboarding-first-time-user",
-      "name": "Onboarding \u2014 First-Time User",
+      "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": [
         "app/start/page.tsx",
@@ -93,7 +93,7 @@
         },
         {
           "id": "home-02",
-          "description": "Explore rail displays catalog cards; an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)",
+          "description": "Courses rail displays cards for the tenant's lms_dashboard_courses_display mode (catalog / enrolled / recommended); an empty catalog shows the no-courses box (create-course CTA for admins, contact-support otherwise)",
           "status": "covered"
         },
         {
@@ -108,7 +108,7 @@
         },
         {
           "id": "home-05",
-          "description": "Clicking a catalog rail card navigates to the content page",
+          "description": "Clicking a courses rail card navigates to the content page",
           "status": "covered"
         },
         {
@@ -124,6 +124,11 @@
         {
           "id": "home-08",
           "description": "Home page loads without console errors",
+          "status": "covered"
+        },
+        {
+          "id": "home-09",
+          "description": "Courses rail heading matches the tenant's lms_dashboard_courses_display setting and its \"See More\" opens Discover on the same filter (enrolled=true / recommended=true / unfiltered catalog)",
           "status": "covered"
         }
       ]
@@ -167,7 +172,7 @@
     },
     {
       "id": "course-content-tabs",
-      "name": "Course Content \u2014 Tab Navigation & Iframes",
+      "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
@@ -196,7 +201,8 @@
         "components/edx-iframe/edx-iframe.tsx",
         "hooks/courses/edx-iframe-context.ts",
         "services/course-metadata.ts",
-        "components/course-media-dropdown.tsx"
+        "components/course-media-dropdown.tsx",
+        "hooks/courses/use-course-user-roles.ts"
       ],
       "checkpoints": [
         {
@@ -366,7 +372,17 @@
         },
         {
           "id": "tabs-34",
-          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-35",
+          "description": "Course content layout requests the signed-in user’s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-36",
+          "description": "Staff tabs follow the course-role gates: course-staff / course-instructor (and platform admins) see every staff tab including Authoring, course-limited-staff sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees none of them",
           "status": "covered"
         }
       ]
@@ -417,7 +433,7 @@
     },
     {
       "id": "profile-skills",
-      "name": "Profile \u2014 Skills",
+      "name": "Profile — Skills",
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
@@ -455,7 +471,7 @@
     },
     {
       "id": "profile-credentials",
-      "name": "Profile \u2014 Credentials",
+      "name": "Profile — Credentials",
       "spec": "08-profile-credentials.spec.ts",
       "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
@@ -488,7 +504,7 @@
     },
     {
       "id": "profile-pathways",
-      "name": "Profile \u2014 Pathways",
+      "name": "Profile — Pathways",
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": [
         "app/profile/pathways/page.tsx",
@@ -524,7 +540,7 @@
     },
     {
       "id": "profile-programs",
-      "name": "Profile \u2014 Programs",
+      "name": "Profile — Programs",
       "spec": "10-profile-programs.spec.ts",
       "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
@@ -565,7 +581,7 @@
         },
         {
           "id": "prog-08",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates content",
+          "description": "Tab switching About → Courses → Settings updates content",
           "status": "covered"
         },
         {
@@ -582,7 +598,7 @@
     },
     {
       "id": "profile-courses",
-      "name": "Profile \u2014 Courses",
+      "name": "Profile — Courses",
       "spec": "11-profile-courses.spec.ts",
       "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
@@ -610,7 +626,7 @@
     },
     {
       "id": "profile-public",
-      "name": "Profile \u2014 Public",
+      "name": "Profile — Public",
       "spec": "12-profile-public.spec.ts",
       "sourceFiles": ["app/profile/public/page.tsx"],
       "checkpoints": [
@@ -851,7 +867,7 @@
     },
     {
       "id": "analytics-content",
-      "name": "Analytics Content \u2014 Courses & Programs",
+      "name": "Analytics Content — Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
       "sourceFiles": [
         "app/analytics/courses/page.tsx",
@@ -1065,7 +1081,7 @@
     },
     {
       "id": "navigation-navbar",
-      "name": "Navigation \u2014 NavBar & Sidebar",
+      "name": "Navigation — NavBar & Sidebar",
       "spec": "22-navigation-navbar.spec.ts",
       "sourceFiles": [
         "components/nav-bar.tsx",
@@ -1185,7 +1201,7 @@
         },
         {
           "id": "mob-02",
-          "description": "Course tabs scrollable on mobile",
+          "description": "Course tabs collapse into the overflow menu instead of overlapping",
           "status": "covered"
         },
         {
@@ -1217,7 +1233,7 @@
     },
     {
       "id": "chat-embed",
-      "name": "Chat Embed \u2014 Mentor Widget",
+      "name": "Chat Embed — Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
       "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
@@ -1354,7 +1370,7 @@
     },
     {
       "id": "accessibility-wcag",
-      "name": "Accessibility \u2014 WCAG 2.1 AA",
+      "name": "Accessibility — WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
@@ -1418,7 +1434,7 @@
     },
     {
       "id": "course-access-guard-tenant-redirect",
-      "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
+      "name": "Course Access Guard — Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
       "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
       "checkpoints": [
@@ -1476,7 +1492,7 @@
         },
         {
           "id": "pdp-05",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates aria-selected and tab content",
+          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
           "status": "covered"
         },
         {
@@ -1528,6 +1544,117 @@
         {
           "id": "aud-03",
           "description": "Audit log table (USER/ACTION/TIME) or empty state is visible",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "admin-onboarding-wizard",
+      "name": "Admin Onboarding Wizard",
+      "spec": "34-admin-onboarding-wizard.spec.ts",
+      "sourceFiles": ["app/platform/[tenant]/onboarding/page.tsx"],
+      "checkpoints": [
+        {
+          "id": "adminonb-01",
+          "description": "Onboarding route renders the SDK wizard's organization step",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-02",
+          "description": "Continue is disabled until an organization is named",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-03",
+          "description": "Naming the organization advances to the sector step",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-04",
+          "description": "Selecting a sector advances to the invite step",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-05",
+          "description": "Wizard progress is exposed to assistive tech",
+          "status": "covered"
+        },
+        {
+          "id": "adminonb-06",
+          "description": "Final step wraps up the setup with a Complete button that finalizes onboarding",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "user-onboarding",
+      "name": "User Onboarding",
+      "spec": "35-user-onboarding.spec.ts",
+      "sourceFiles": [
+        "app/platform/[tenant]/onboarding/page.tsx",
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx",
+        "components/nav-bar.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "useronb-01",
+          "description": "Onboarding route serves the member flow to members, and to admins the member flow when configured else the setup flow",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-02",
+          "description": "The ?flow= param picks the onboarding flow for an admin and is ignored for a member; the navbar ships no flow switch",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-05",
+          "description": "The member flow's step heading (icon, title, subtitle) is rendered in the navbar rather than above the step",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-03",
+          "description": "The member flow never shows the admin setup steps (organization, sector, invite)",
+          "status": "covered"
+        },
+        {
+          "id": "useronb-04",
+          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "user-onboarding-agent-link",
+      "name": "User Onboarding — Per-Agent Links",
+      "spec": "36-user-onboarding-agent-link.spec.ts",
+      "sourceFiles": [
+        "app/platform/[tenant]/onboarding/[agentId]/page.tsx",
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "agentlink-01",
+          "description": "The agent-scoped onboarding route serves the member flow and holds the route, never an error page",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-02",
+          "description": "An agent id naming no configured agent shows the \"nothing set up\" notice rather than substituting another agent",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-03",
+          "description": "The tenant's default onboarding agent is reachable by its own per-agent link",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-04",
+          "description": "The agent-scoped route never shows the admin setup steps, even for an admin",
+          "status": "covered"
+        },
+        {
+          "id": "agentlink-05",
+          "description": "An admin can still switch to the setup flow from an agent link; a member cannot",
           "status": "covered"
         }
       ]
