@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.2](https://github.com/iblai/lms/compare/skills-v0.75.1...skills-v0.75.2) (2026-09-01)
+
+### Performance
+
+* **bundle:** deep-import lodash instead of the whole library ([d815d55](https://github.com/iblai/lms/commit/d815d55356b918936e6981d7c3168fc687f3926f))
+
 ## [0.75.1](https://github.com/iblai/lms/compare/skills-v0.75.0...skills-v0.75.1) (2026-08-30)
 
 ### Bug Fixes
