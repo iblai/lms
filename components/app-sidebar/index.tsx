@@ -471,7 +471,7 @@ export function AppSidebar() {
         platformBaseDomain={config.settings.platformBaseDomain()}
         showGradebookTab={true}
         onboardingBasePath={onboardingBasePath}
-        rbackPermissions={rbacPermissions}
+        rbacPermissions={rbacPermissions}
       />
 
       {inviteOpen && (
