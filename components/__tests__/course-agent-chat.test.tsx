@@ -536,11 +536,36 @@ describe('CourseAgentChat', () => {
     });
   });
   describe('agent-based unit completion', () => {
+    const outlineWithUnits = {
+      id: 'course-v1:test+101+2024',
+      children: [
+        {
+          id: 'chapter-1',
+          children: [
+            {
+              id: 'sequential-1',
+              children: [
+                {
+                  id: 'block-v1:test+101+type@vertical+block@unit-1',
+                  display_name: 'Benefits of AI For Education.',
+                },
+                {
+                  id: 'block-v1:test+101+type@vertical+block@unit-2',
+                  display_name: 'Second Unit',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any;
+
     const renderInCourse = ({
       metadata = { enable_agent_based_unit_completion: true },
       course = { agent_content_mode: true, enable_agent_based_completion: true },
       activeTab = 'agent',
       currentUnitID = 'block-v1:test+101+type@vertical+block@unit-1',
+      courseOutline = outlineWithUnits,
     }: Record<string, any> = {}) => {
       mockUseTenantMetadata.mockReturnValue({
         getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
@@ -557,6 +582,7 @@ describe('CourseAgentChat', () => {
                   courseID: 'course-v1:test+101+2024',
                   activeTab,
                   agentMode: 'learning',
+                  courseOutline,
                 } as any
               }
             >
@@ -580,6 +606,59 @@ describe('CourseAgentChat', () => {
       expect(el.getAttribute('edxuserid')).toBe('42');
     });
 
+    it('passes the unit display name and turns lesson completion on', async () => {
+      const { container } = renderInCourse();
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxdisplayname')).toBe('Benefits of AI For Education.');
+      expect(el.hasAttribute('enablelessoncompletion')).toBe(true);
+    });
+
+    it('names the unit the learner is actually on', async () => {
+      const { container } = renderInCourse({
+        currentUnitID: 'block-v1:test+101+type@vertical+block@unit-2',
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxdisplayname')).toBe('Second Unit');
+    });
+
+    it('sends no display name when the unit is absent from the outline', async () => {
+      const { container } = renderInCourse({
+        currentUnitID: 'block-v1:other+course+type@vertical+block@unit-9',
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxusageid')).toBe(
+        'block-v1:other+course+type@vertical+block@unit-9',
+      );
+      expect(el.hasAttribute('edxdisplayname')).toBe(false);
+    });
+
+    it('sends no display name before the outline has loaded', async () => {
+      const { container } = renderInCourse({ courseOutline: {} });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.hasAttribute('edxdisplayname')).toBe(false);
+      expect(el.hasAttribute('enablelessoncompletion')).toBe(true);
+    });
+
     it('omits the edX ids while edX still auto-completes units', async () => {
       const { container } = renderInCourse({
         metadata: { enable_agent_based_unit_completion: false },
@@ -593,6 +672,8 @@ describe('CourseAgentChat', () => {
       expect(el.hasAttribute('edxcourseid')).toBe(false);
       expect(el.hasAttribute('edxusageid')).toBe(false);
       expect(el.hasAttribute('edxuserid')).toBe(false);
+      expect(el.hasAttribute('edxdisplayname')).toBe(false);
+      expect(el.hasAttribute('enablelessoncompletion')).toBe(false);
     });
 
     it('omits the edX ids when the course opts out of agent-based completion', async () => {

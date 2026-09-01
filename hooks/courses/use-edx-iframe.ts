@@ -312,5 +312,6 @@ export const useEdxIframe = () => {
     getNextUnitIframe,
     addBookmarksTab,
     getParentsInfosFromSublessonId,
+    findVerticalById
   };
 };
