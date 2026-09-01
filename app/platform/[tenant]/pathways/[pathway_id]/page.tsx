@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
 
 import { PathwayCompletionResponse } from '@iblai/iblai-api';
@@ -283,7 +283,7 @@ export default function PathwayDetailPage() {
                   </button>
                 )}
 
-                {!_.isEmpty(pathwayCompletion) && (
+                {!isEmpty(pathwayCompletion) && (
                   <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Progress</span>

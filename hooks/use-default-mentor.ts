@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 // @ts-ignore
 import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
@@ -88,7 +88,7 @@ export function useDefaultMentor({
           limit: 10,
         }).unwrap();
 
-        let resolved = _.isEmpty(recent?.results) ? null : resolveMentor(recent.results);
+        let resolved = isEmpty(recent?.results) ? null : resolveMentor(recent.results);
 
         // Step 4 - fall back to featured mentors when none are recently accessed
         if (!resolved) {
@@ -98,7 +98,7 @@ export function useDefaultMentor({
             featured: true,
             limit: 10,
           }).unwrap();
-          resolved = _.isEmpty(featured?.results) ? null : resolveMentor(featured.results);
+          resolved = isEmpty(featured?.results) ? null : resolveMentor(featured.results);
         }
 
         if (!resolved) {

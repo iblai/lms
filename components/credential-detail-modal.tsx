@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { CustomAssertion } from '../types/credentials';
 import { CREDENTIAL_DEFAULT_IMG } from '@/constants/assets';
 import dayjs from 'dayjs';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { getRandomCourseImage, inBrowserPrint } from '@/utils/helpers';
 
 interface CredentialDetailModalProps {
@@ -93,7 +93,7 @@ export function CredentialDetailModal({ credential, onClose }: CredentialDetailM
             </p>
           </div>
           {/* Course Section with Image */}
-          {!_.isEmpty(credential?.course) && (
+          {!isEmpty(credential?.course) && (
             <div className="mb-6 overflow-hidden rounded-lg border border-gray-200">
               <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
                 <h3 className="text-md flex items-center gap-2 font-medium text-gray-700">

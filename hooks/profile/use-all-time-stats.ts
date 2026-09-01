@@ -6,7 +6,7 @@ import {
   // @ts-ignore
   useLazyGetUserDesiredSkillsQuery,
 } from '@iblai/iblai-js/data-layer';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { useLazyGetUserCredentialsQuery } from '@/services/credentials';
 import { useLazyGetUserEnrolledCoursesQuery } from '@/services/courses';
 
@@ -69,7 +69,7 @@ export const useAllTimeStats = () => {
         },
         true,
       );
-      if (isErrorGetUserCredentials || _.isEmpty(response?.data)) {
+      if (isErrorGetUserCredentials || isEmpty(response?.data)) {
         throw new Error();
       }
       setCredentials(response?.data?.data?.length || 0);
@@ -86,7 +86,7 @@ export const useAllTimeStats = () => {
         },
         true,
       );
-      if (isErrorGetUserEnrolledCourses || _.isEmpty(response.data)) {
+      if (isErrorGetUserEnrolledCourses || isEmpty(response.data)) {
         throw new Error();
       }
       setCourses(response?.data?.count || 0);

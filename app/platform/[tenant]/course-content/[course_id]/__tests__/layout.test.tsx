@@ -29,13 +29,10 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock lodash
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: vi.fn(
-      (val: any) =>
-        !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
-    ),
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: vi.fn(
+    (val: any) => !val || Object.keys(val).length === 0 || (Array.isArray(val) && val.length === 0),
+  ),
 }));
 
 // Mock lucide-react icons

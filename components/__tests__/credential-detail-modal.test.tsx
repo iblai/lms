@@ -23,10 +23,8 @@ vi.mock('dayjs', () => {
   return { default: dayjs };
 });
 
-vi.mock('lodash', () => ({
-  default: {
-    isEmpty: (obj: any) => !obj || Object.keys(obj).length === 0,
-  },
+vi.mock('lodash/isEmpty', () => ({
+  default: (obj: any) => !obj || Object.keys(obj).length === 0,
 }));
 
 import { CredentialDetailModal } from '../credential-detail-modal';

@@ -11,7 +11,8 @@ import {
   // @ts-ignore
   useLazyGetPerLearnerInfoQuery,
 } from '@iblai/iblai-js/data-layer';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
+import sumBy from 'lodash/sumBy';
 import { useLazyGetUserCredentialsQuery } from '@/services/credentials';
 import { useLazyGetUserPerLearnerInfoQuery } from '@/services/perlearner';
 import { useLazyGetUserEnrolledCoursesQuery } from '@/services/courses';
@@ -79,12 +80,12 @@ export const useProfileActivityStats = () => {
         ],
         true,
       );
-      if (isErrorGetUserSkillsPoints || _.isEmpty(response?.data?.skill_points)) {
+      if (isErrorGetUserSkillsPoints || isEmpty(response?.data?.skill_points)) {
         throw new Error();
       }
       updateSingleStat({
         value:
-          _.sumBy(
+          sumBy(
             Object.values(response.data?.skill_points || {}),
             (skill: any) => skill.total_points,
           ) || 0,
@@ -155,7 +156,7 @@ export const useProfileActivityStats = () => {
         },
         true,
       );
-      if (isErrorGetUserCredentials || _.isEmpty(response?.data)) {
+      if (isErrorGetUserCredentials || isEmpty(response?.data)) {
         throw new Error();
       }
       updateSingleStat({
@@ -182,7 +183,7 @@ export const useProfileActivityStats = () => {
         },
         true,
       );
-      if (isErrorGetUserEnrolledCourses || _.isEmpty(response.data)) {
+      if (isErrorGetUserEnrolledCourses || isEmpty(response.data)) {
         throw new Error();
       }
       updateSingleStat({
@@ -210,7 +211,7 @@ export const useProfileActivityStats = () => {
         },
         true,
       );
-      if (isEnrolledProgramsError || _.isEmpty(response.data)) {
+      if (isEnrolledProgramsError || isEmpty(response.data)) {
         throw new Error();
       }
       updateSingleStat({
@@ -247,7 +248,7 @@ export const useProfileActivityStats = () => {
         },
         true,
       );
-      if (isCatalogPathwaysError || _.isEmpty(response.data)) {
+      if (isCatalogPathwaysError || isEmpty(response.data)) {
         throw new Error();
       }
       const uniquePathways = filterUniquePathways(response.data);
@@ -281,7 +282,7 @@ export const useProfileActivityStats = () => {
         ],
         true,
       );
-      if (isErrorgetPerLearnerInfo || _.isEmpty(response.data)) {
+      if (isErrorgetPerLearnerInfo || isEmpty(response.data)) {
         throw new Error();
       }
       updateSingleStat({
@@ -321,7 +322,7 @@ export const useProfileActivityStats = () => {
         },
         true,
       );
-      if (isErrorGetUserPerLearnerInfo || _.isEmpty(response.data)) {
+      if (isErrorGetUserPerLearnerInfo || isEmpty(response.data)) {
         throw new Error();
       }
       const totalTimeSpentSeconds = response?.data?.data?.total_time_spent;
