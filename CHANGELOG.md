@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.76.0](https://github.com/iblai/lms/compare/skills-v0.75.4...skills-v0.76.0) (2026-09-02)
+
+### Features
+
+* iblai-js bump > watcher transcript integration ([2e7d8a5](https://github.com/iblai/lms/commit/2e7d8a5e6085c9c10d6a5b45373fa46295e4f34e))
+
+### Bug Fixes
+
+* embedded agent id resolve optimized ([70a10d9](https://github.com/iblai/lms/commit/70a10d92dfe2018470c07bce888eb534b8850960))
+
+### Chores
+
+* bumped iblai-js to 2.7.12 ([715a100](https://github.com/iblai/lms/commit/715a100cf21c874ed8927c9e44b4c7d49ee48724))
+
 ## [0.75.4](https://github.com/iblai/lms/compare/skills-v0.75.3...skills-v0.75.4) (2026-09-02)
 
 ### Bug Fixes
