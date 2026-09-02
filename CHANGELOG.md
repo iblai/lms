@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.4](https://github.com/iblai/lms/compare/skills-v0.75.3...skills-v0.75.4) (2026-09-02)
+
+### Bug Fixes
+
+* **pr-gate:** defer only to a sibling run that is still running ([863d912](https://github.com/iblai/lms/commit/863d912d57baf82e06c219fda7371e2a3770162f)), closes [lms#232](https://github.com/iblai/lms/issues/232)
+
 ## [0.75.3](https://github.com/iblai/lms/compare/skills-v0.75.2...skills-v0.75.3) (2026-09-02)
 
 ### Bug Fixes
