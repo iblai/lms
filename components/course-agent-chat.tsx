@@ -2,26 +2,26 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, SquarePen } from 'lucide-react';
-import isEmpty from 'lodash/isEmpty';
 import { toast } from 'sonner';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-// @ts-ignore
-import { useLazyGetMentorsQuery } from '@iblai/iblai-js/data-layer';
 import '@iblai/agent-ai';
 import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
-import { getUserName } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
 import { setMentorSpinnerHidden } from '@/features/mentor';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useDefaultMentor } from '@/hooks/use-default-mentor';
 
 export function CourseAgentChat() {
-  const DEFAULT_MENTOR_NAME = config.settings.defaultEmbeddedMentorName();
   const tenant = useTenantParam();
   const { courseMentor } = useChatState();
-  const { getEmbeddedMentorToUse, metadataLoaded } = useTenantMetadata({ org: tenant });
-  const [getMentors, { isLoading, isFetching }] = useLazyGetMentorsQuery();
-  const [mentorInUse, setMentorInUse] = useState<string | null>(null);
+  // Shared with the chat launcher so both embed the same agent, and so a
+  // course mentor arriving late supersedes an in-flight fallback lookup
+  // instead of racing it.
+  const { mentor: mentorInUse, isLoading } = useDefaultMentor({
+    tenant,
+    courseMentor,
+    onError: () => toast.error('No mentors found'),
+  });
   const [spinnerHidden, setSpinnerHidden] = useState(false);
   const mentorElementRef = useRef<HTMLElement | null>(null);
   const dispatch = useDispatch();
@@ -32,44 +32,6 @@ export function CourseAgentChat() {
       dispatch(setMentorSpinnerHidden(false));
     };
   }, [spinnerHidden, dispatch]);
-
-  useEffect(() => {
-    const resolveMentor = async () => {
-      if (courseMentor) {
-        setMentorInUse(courseMentor);
-        return;
-      }
-      if (!metadataLoaded) return;
-      const embeddedMentor = getEmbeddedMentorToUse();
-      if (embeddedMentor) {
-        setMentorInUse(embeddedMentor?.unique_id);
-        return;
-      }
-      try {
-        const response = await getMentors({
-          org: tenant,
-          username: getUserName(),
-          query: DEFAULT_MENTOR_NAME,
-        });
-        if (isEmpty(response?.data?.results)) {
-          throw new Error('No mentors found');
-        }
-        const mentor =
-          (
-            response?.data?.results.find((item: any) => item?.metadata?.default) ||
-            response?.data?.results[0]
-          )?.unique_id || null;
-        if (!mentor) {
-          throw new Error('No mentors found');
-        }
-        setMentorInUse(mentor);
-      } catch {
-        setMentorInUse(null);
-        toast.error('No mentors found');
-      }
-    };
-    resolveMentor();
-  }, [metadataLoaded, courseMentor]);
 
   useEffect(() => {
     const handleUnitSwitched = (event: Event) => {
@@ -144,7 +106,7 @@ export function CourseAgentChat() {
     iframe?.contentWindow?.postMessage({ type: 'MENTOR:NEW_CHAT' }, '*');
   };
 
-  if (isLoading || isFetching || !metadataLoaded) {
+  if (isLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-white">
         <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
