@@ -11,6 +11,7 @@ import { CourseOutlineContext } from '@/contexts/course-outline-context';
 // @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
+import { getAuthItem } from '@/utils/auth-storage';
 import { cn } from '@/lib/utils';
 
 // Only mounted inside a timed/special-exam subsection (examInfo set); defer its chunk.
@@ -145,7 +146,7 @@ export const EdxIframe = () => {
         if (!isMFETab || !iframeRef.current || !currentIframeUrl) return;
 
         try {
-          const jwtToken = localStorage.getItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY);
+          const jwtToken = getAuthItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY);
           if (!jwtToken) return;
 
           const iframeOrigin = new URL(currentIframeUrl).origin;

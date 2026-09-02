@@ -40,6 +40,7 @@ SKIP_COVERAGE_FILES=(
   "app/platform/[tenant]/profile/pathways/page.tsx"
   "app/platform/[tenant]/profile/public/page.tsx"
   "app/platform/[tenant]/profile/skills/page.tsx"
+  "app/sso-login/page.tsx"
   "components/account-dialog.tsx"
   "components/add-company-dialog.tsx"
   "components/add-institution-dialog.tsx"

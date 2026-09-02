@@ -5,7 +5,14 @@ import { userDataSchema, tenantSchema } from '@/types/storage';
 import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { config } from '@/lib/config';
-import { Tenant } from '@iblai/iblai-js/web-utils';
+import type { Tenant } from '@iblai/iblai-js/web-utils';
+import {
+  getAuthItem,
+  setAuthItem,
+  removeAuthItem,
+  clearPerTabSession,
+  isPerTabAuthEnabled,
+} from '@/utils/auth-storage';
 
 export class LocalStorageService implements StorageService {
   private static instance: LocalStorageService;
@@ -20,15 +27,15 @@ export class LocalStorageService implements StorageService {
   }
 
   async getItem<T>(key: string): Promise<T | null> {
-    return window.localStorage.getItem(key) as T;
+    return getAuthItem(key) as T;
   }
 
   async setItem<T>(key: string, item: T): Promise<void> {
-    window.localStorage.setItem(key, JSON.stringify(item));
+    setAuthItem(key, JSON.stringify(item));
   }
 
   async removeItem(key: string): Promise<void> {
-    window.localStorage.removeItem(key);
+    removeAuthItem(key);
   }
 }
 
@@ -38,7 +45,7 @@ export const getLocalStorageItem = (key: string): string | null => {
   }
 
   try {
-    return window.localStorage.getItem(key);
+    return getAuthItem(key);
   } catch (error) {
     console.error('Error accessing localStorage:', error);
     return null;
@@ -51,7 +58,7 @@ export const setLocalStorageItem = <T>(key: string, value: T): void => {
   }
 
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    setAuthItem(key, JSON.stringify(value));
   } catch (error) {
     console.error('Error setting localStorage:', error);
   }
@@ -63,7 +70,7 @@ export const removeLocalStorageItem = (key: string): void => {
   }
 
   try {
-    window.localStorage.removeItem(key);
+    removeAuthItem(key);
   } catch (error) {
     console.error('Error removing localStorage item:', error);
   }
@@ -148,7 +155,7 @@ export const canMonetize = (currentTenant: Tenant, allTenants: Tenant[]) => {
 export const handleSaveCurrentTenant = (currentTenant: Tenant) => {
   const currentPath = `${window.location.pathname}${window.location.search}`;
   localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
-  localStorage.setItem(LOCALSTORAGE_KEYS.CURRENT_TENANT, JSON.stringify(currentTenant));
+  setAuthItem(LOCALSTORAGE_KEYS.CURRENT_TENANT, JSON.stringify(currentTenant));
 };
 
 export const handleTenantSwitch = async (
@@ -156,6 +163,31 @@ export const handleTenantSwitch = async (
   saveRedirect = false,
   redirectUrl?: string,
 ) => {
+  // Per-tab tenant switch: clear only this tab's session (preserving the
+  // edx-JWT, forwarded as a URL param so the auth SPA can silently re-mint the
+  // new tenant). No localStorage.clear() and no current-tenant-cookie reset —
+  // the returning SsoLogin re-installs both this tab's session and the
+  // most-recent-login seed, leaving sibling tabs untouched.
+  if (isPerTabAuthEnabled()) {
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    const jwtToken = getAuthItem('edx_jwt_token');
+    clearPerTabSession();
+
+    const params: Record<string, string> = {
+      tenant,
+      [LOCALSTORAGE_KEYS.REDIRECT_TO]: redirectUrl ?? window.location.origin,
+    };
+    if (jwtToken) {
+      params.token = jwtToken;
+    }
+    if (saveRedirect) {
+      localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    window.location.href = `${config.urls.auth()}/login/complete?${new URLSearchParams(params).toString()}`;
+    return;
+  }
+
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
   clearCurrentTenantCookie();
   // Preserve the current path before clearing localStorage

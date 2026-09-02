@@ -29,6 +29,12 @@ vi.mock('../localstorage', () => ({
   }),
 }));
 
+// Controllable per-tab auth spies (default OFF, matching the real flag).
+const perTabMocks = vi.hoisted(() => ({
+  isPerTabAuthEnabled: vi.fn(() => false),
+  clearPerTabSession: vi.fn(),
+}));
+
 // Mock @iblai/web-utils
 vi.mock(import('@iblai/iblai-js/web-utils'), async (importOriginal) => {
   const actual = await importOriginal();
@@ -36,6 +42,18 @@ vi.mock(import('@iblai/iblai-js/web-utils'), async (importOriginal) => {
     ...actual,
     clearCurrentTenantCookie: vi.fn(),
     redirectToAuthSpa: vi.fn(),
+  };
+});
+
+// helpers.ts reads the per-tab flag + clears the tab session through the
+// app-local RSC-safe authStorage module (not the SDK barrel). Spy on those two
+// so the per-tab branches can be driven, keeping the real getAuthItem etc.
+vi.mock('@/utils/auth-storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/auth-storage')>();
+  return {
+    ...actual,
+    isPerTabAuthEnabled: perTabMocks.isPerTabAuthEnabled,
+    clearPerTabSession: perTabMocks.clearPerTabSession,
   };
 });
 
@@ -700,6 +718,24 @@ describe('helpers utility functions', () => {
       handleLogout('https://redirect.example.com');
       expect(locationHref).not.toContain('enforce-login');
     });
+
+    it('per-tab logout clears only this tab session and skips the shared wipe', () => {
+      perTabMocks.isPerTabAuthEnabled.mockReturnValueOnce(true);
+      Object.defineProperty(window, 'self', { value: window, configurable: true });
+      Object.defineProperty(window, 'top', { value: window, configurable: true });
+      localStorage.setItem('unrelated', 'keep-me');
+
+      handleLogout('https://redirect.example.com');
+
+      // Tab-local: the SDK's clearPerTabSession runs, scoped to this tab's tenant.
+      expect(perTabMocks.clearPerTabSession).toHaveBeenCalledWith({
+        clearSeedIfTenant: 'test-tenant',
+      });
+      // No localStorage.clear(): unrelated keys (and sibling tabs' seed) survive.
+      expect(localStorage.getItem('unrelated')).toBe('keep-me');
+      // Cross-SPA logout redirect still fires.
+      expect(locationHref).toContain('https://auth.example.com/logout');
+    });
   });
 
   describe('handleNotLoggedInAction', () => {
@@ -809,6 +845,23 @@ describe('helpers utility functions', () => {
       await handleTenantSwitch('new-tenant', false);
 
       expect(localStorage.getItem('redirect-to')).toBeNull();
+    });
+
+    it('per-tab switch forwards the edx-JWT and skips the shared wipe', async () => {
+      perTabMocks.isPerTabAuthEnabled.mockReturnValueOnce(true);
+      localStorage.setItem('edx_jwt_token', 'jwt-123');
+      localStorage.setItem('keep', 'me');
+
+      await handleTenantSwitch('new-tenant');
+
+      // Tab-local clear instead of localStorage.clear().
+      expect(perTabMocks.clearPerTabSession).toHaveBeenCalled();
+      // edx-JWT forwarded as a param so the auth SPA can silently re-mint.
+      expect(locationHref).toContain('https://auth.example.com/login/complete');
+      expect(locationHref).toContain('tenant=new-tenant');
+      expect(locationHref).toContain('token=jwt-123');
+      // Sibling tabs' seed (unrelated key) survives — no wholesale wipe.
+      expect(localStorage.getItem('keep')).toBe('me');
     });
   });
 

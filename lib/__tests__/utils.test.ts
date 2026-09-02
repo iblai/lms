@@ -42,6 +42,15 @@ vi.mock('@reduxjs/toolkit/query/react', () => ({
   }),
 }));
 
+// lib/utils.ts now imports getAuthItem (a value) from the SDK. Without mocking
+// it the real @iblai/iblai-js/web-utils runtime loads here (pulling data-layer's
+// redux-toolkit query, which this file mocks only partially). Mock it to the
+// flag-OFF localStorage passthrough — how getHeaders reads tokens today.
+vi.mock('@iblai/iblai-js/web-utils', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...(globalThis as any).__iblAuthStorageMock,
+}));
+
 describe('utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();

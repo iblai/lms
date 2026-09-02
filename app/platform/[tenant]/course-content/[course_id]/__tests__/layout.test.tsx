@@ -243,6 +243,8 @@ const mockTenantMetadata = vi.hoisted(() => ({
   current: { enable_course_voice_autoplay: true } as Record<string, unknown>,
 }));
 vi.mock('@iblai/iblai-js/web-utils', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...(globalThis as any).__iblAuthStorageMock,
   setAdvancedDisplayMonetizationCheckoutModal: (payload: unknown) => ({
     type: 'setAdvancedDisplayMonetizationCheckoutModal',
     payload,

@@ -10,6 +10,7 @@ import {
   LOCAL_STORAGE_KEYS,
   redirectToAuthSpa as sdkRedirectToAuthSpa,
 } from '@iblai/iblai-js/web-utils';
+import { getAuthItem, clearPerTabSession, isPerTabAuthEnabled } from '@/utils/auth-storage';
 
 // Set to true during any intentional navigation away from the app (tenant switch,
 // logout) to suppress concurrent auth redirects that would race and cancel it.
@@ -297,13 +298,13 @@ export function redirectToAuthSpaJoinTenant(
 }
 
 export function hasNonExpiredAuthToken() {
-  const token = window.localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+  const token = getAuthItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
   if (!token) {
     console.log('################### [hasNonExpiredAuthToken] axd token is not defined', token);
     return false;
   }
 
-  const tokenExpiry = window.localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN_EXPIRY);
+  const tokenExpiry = getAuthItem(LOCAL_STORAGE_KEYS.TOKEN_EXPIRY);
   if (!tokenExpiry) {
     console.log(
       '################### [hasNonExpiredAuthToken] axd token expiry is not defined',
@@ -426,10 +427,17 @@ export const handleLogout = (
 ) => {
   const tenant = alternateTenant ?? getTenant();
   _suppressAuthRedirect = true;
-  window.localStorage.clear();
-  window.localStorage.setItem(LOCALSTORAGE_KEYS.TENANT, tenant ?? '');
-
-  clearCookies();
+  if (isPerTabAuthEnabled()) {
+    // Per-tab logout: clear only this tab's session (+ its own most-recent
+    // seed); sibling tenant tabs, their seed and the shared cookies are left
+    // intact. The cross-SPA logout cookie below is still set, but the SDK
+    // AuthProvider ignores it under the flag (no cross-tab reload).
+    clearPerTabSession(tenant ? { clearSeedIfTenant: tenant } : undefined);
+  } else {
+    window.localStorage.clear();
+    window.localStorage.setItem(LOCALSTORAGE_KEYS.TENANT, tenant ?? '');
+    clearCookies();
+  }
   callback?.();
 
   if (!isInIframe()) {
@@ -481,6 +489,31 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
   // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
   // can call redirectToAuthSpa before the flag is set.
   _suppressAuthRedirect = true;
+
+  // Per-tab tenant switch: clear only this tab's session, forward the edx-JWT
+  // as a URL param so the auth SPA can silently re-mint the new tenant, and
+  // leave localStorage (the sibling tabs' seed) and cookies untouched.
+  if (isPerTabAuthEnabled()) {
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    const jwtToken = getAuthItem('edx_jwt_token');
+    clearPerTabSession();
+
+    const params: Record<string, string> = {
+      tenant,
+      'redirect-to': window.location.origin,
+    };
+    if (jwtToken) {
+      params.token = jwtToken;
+    }
+    if (saveRedirect) {
+      localStorage.setItem('redirect-to', currentPath);
+    }
+    window.location.href = `${config.urls.auth()}/login/complete?${new URLSearchParams(params).toString()}`;
+    setTimeout(() => {
+      _suppressAuthRedirect = false;
+    }, 2000);
+    return;
+  }
 
   // Clear current tenant cookie before switching
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');

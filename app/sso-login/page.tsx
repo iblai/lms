@@ -3,6 +3,7 @@
 import React, { Suspense } from 'react';
 // import { SsoLogin as SsoLoginComponent } from '@iblai/iblai-js/web-containers/next';
 import { LOCAL_STORAGE_KEYS } from '@iblai/iblai-js/web-utils';
+import { setAuthItem, removeAuthItem } from '@/utils/auth-storage';
 import { useSearchParams } from 'next/navigation';
 
 interface SsoLoginProps {
@@ -140,20 +141,24 @@ export const initializeLocalStorageWithObject = async (
 
   // Clear visiting_tenant to prevent stale tenant data from causing redirect issues
   // This is important during tenant switches where old visiting_tenant could redirect back to previous tenant
-  localStorage.removeItem('visiting_tenant');
+  // Routed through authStorage so per-tab mode clears this tab's session too.
+  removeAuthItem('visiting_tenant');
 
   // Clear current_tenant to ensure a fresh state on tenant switch
   // The new current_tenant will be set by TenantProvider after redirect
-  localStorage.removeItem('current_tenant');
-  localStorage.removeItem('tenants');
+  removeAuthItem('current_tenant');
+  removeAuthItem('tenants');
 
+  // Install auth tokens/tenant via authStorage: per-tab mode writes this tab's
+  // sessionStorage (source of truth) AND the localStorage most-recent seed;
+  // flag-off it is a plain localStorage write, byte-identical to before.
   Object.entries(data).forEach(([key, value]) => {
-    localStorage.setItem(key, value);
+    setAuthItem(key, value);
   });
 
   // Ensure tenant key is explicitly set from parsedData to prevent stale values
   if (data.tenant) {
-    localStorage.setItem('tenant', data.tenant);
+    setAuthItem('tenant', data.tenant);
   }
 
   console.log('#################### local storage after ', JSON.stringify(localStorage));
