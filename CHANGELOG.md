@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.75.3](https://github.com/iblai/lms/compare/skills-v0.75.2...skills-v0.75.3) (2026-09-02)
+
+### Bug Fixes
+
+* **pr-gate:** derive the verdict from the E2E job, not the workflow conclusion ([b583f6e](https://github.com/iblai/lms/commit/b583f6e7473e1a9be681ccfda75bafccd2304168)), closes [lms#232](https://github.com/iblai/lms/issues/232)
+
 ## [0.75.2](https://github.com/iblai/lms/compare/skills-v0.75.1...skills-v0.75.2) (2026-09-01)
 
 ### Performance
