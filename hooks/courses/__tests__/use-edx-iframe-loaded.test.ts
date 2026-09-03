@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createElement, Fragment, type ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import {
   EDX_IFRAME_LOAD_FALLBACK_MS,
@@ -73,6 +74,24 @@ describe('useEdxIframeLoaded', () => {
     const { unmount } = renderHook(() => useEdxIframeLoaded());
     unmount();
 
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('catches a load that lands between render and the effect subscribing', () => {
+    vi.useFakeTimers();
+    // Renders after the hook but before its effect runs, so the event is
+    // dispatched with no listener attached yet — only the module flag survives.
+    function LoadDuringRender() {
+      markEdxIframeLoaded();
+      return null;
+    }
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(Fragment, null, children, createElement(LoadDuringRender));
+
+    const { result } = renderHook(() => useEdxIframeLoaded(), { wrapper });
+
+    expect(result.current).toBe(true);
+    // Latched from the flag alone: no fallback timer was ever scheduled.
     expect(vi.getTimerCount()).toBe(0);
   });
 });
