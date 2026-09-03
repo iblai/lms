@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.76.1](https://github.com/iblai/lms/compare/skills-v0.76.0...skills-v0.76.1) (2026-09-03)
+
+### Bug Fixes
+
+* **sidebar:** correct rbackPermissions -> rbacPermissions prop typo ([85da26e](https://github.com/iblai/lms/commit/85da26eaafb435dafe6ffa19ebf8e16a72ba511a))
+
+### Chores
+
+* **deps:** bump @iblai/agent-ai 2.8.3 -> 2.9.0 ([5e3f13c](https://github.com/iblai/lms/commit/5e3f13c478c73a7750c737c85bbcead2fca6eb89))
+
 ## [0.76.0](https://github.com/iblai/lms/compare/skills-v0.75.4...skills-v0.76.0) (2026-09-02)
 
 ### Features
