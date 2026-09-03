@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-08-21 | 249 checkpoints | 35 journeys | 100% covered
+> Last updated: 2026-09-02 | 289 checkpoints | 40 journeys | 100% covered
 
 ## How This Works
 
@@ -512,4 +512,83 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
+## Journey 37: Role-Based Navigation — Sidebar and Profile Menu (9 checkpoints) — `journeys/37-role-based-navigation.spec.ts`
+
+**Source files:** `components/app-sidebar/index.tsx`, `components/nav-bar.tsx`, `components/header/profile/user-profile-button.tsx`
+
+- [x] Shared sidebar rows (Home, Courses, Programs, Pathways, Gradebook, Credentials, Skills) render for both an admin and a learner
+- [x] An admin sees the admin-only sidebar rows (Studio and/or Analytics, per tenant config)
+- [x] A learner sees neither Studio nor Analytics
+- [x] An admin sees the admin footer cluster (Management / Integrations / Advanced / Invites)
+- [x] A learner keeps Notifications but loses the admin footer cluster
+- [x] The Analytics row expands into its sub-menu for an admin
+- [x] The profile menu opens from the header for both roles and closes on Escape
+- [x] The profile menu exposes the tenant switcher listing the account tenants
+- [x] The sidebar collapses and expands from the rail toggle
+
+---
+
+## Journey 38: Course Content — Agent Tab Controls (10 checkpoints) — `journeys/38-course-content-agent-controls.spec.ts`
+
+**Source files:** `app/platform/[tenant]/course-content/[course_id]/layout.tsx`, `app/platform/[tenant]/course-content/[course_id]/agent/page.tsx`, `components/course-media-dropdown.tsx`, `components/course-agent-chat.tsx`
+
+- [x] The Agent tab is reachable from course content and its chat frame mounts
+- [x] The fullscreen toggle expands the agent and the exit control restores it
+- [x] The fullscreen control is absent on the Course tab (agent-only)
+- [x] The autoplay toggle flips state and confirms with a toast
+- [x] The autoplay control’s accessible name and title track its state
+- [x] The media dropdown lists the current unit’s media blocks
+- [x] Selecting a media block opens the preview dialog on the Agent tab (or toasts when it has no preview)
+- [x] The Learn/Assess switch flips the agent mode and restores it
+- [x] The New chat control is available once the agent has rendered and does not navigate away
+- [x] A mobile viewport collapses the course controls into the 3-dot popover and hides the inline ones
+
+---
+
+## Journey 39: Course Content — Agent Voice (5 checkpoints) — `journeys/39-course-content-agent-voice.spec.ts`
+
+**Source files:** `components/course-agent-chat.tsx`, `app/platform/[tenant]/course-content/[course_id]/agent/page.tsx`
+
+- [x] The agent iframe is created with a permissions policy that allows the microphone
+- [x] The agent chat exposes a voice/microphone affordance
+- [x] The agent chat exposes a voice-call affordance
+- [x] Granting microphone permission leaves the agent embed healthy
+- [x] The agent chat survives a unit change without tearing down
+
+---
+
+## Journey 40: Course Content — Tabs By Role (8 checkpoints) — `journeys/40-course-content-tabs-by-role.spec.ts`
+
+**Source files:** `app/platform/[tenant]/course-content/[course_id]/layout.tsx`, `components/course-content-tabs.tsx`
+
+- [x] Progress / Dates / Discussion render for both an admin and a learner
+- [x] An admin gets the Instructor tab
+- [x] A learner does not get the Instructor tab
+- [x] An admin gets the Configuration tab
+- [x] A learner does not get the Configuration tab
+- [x] The Authoring tab is admin-only and links out to Studio
+- [x] A learner deep-linking an admin tab does not get the admin tab
+- [x] The overflow menu exposes tabs that do not fit the tab row
+
+---
+
+## Journey 41: Learner Experience (non-admin account) (8 checkpoints) — `journeys/41-learner-experience-student.spec.ts`
+
+**Source files:** `components/app-sidebar/index.tsx`, `app/platform/[tenant]/course-content/[course_id]/layout.tsx`, `services/core.ts`
+
+- [x] A non-admin account lands on a tenant-scoped home page
+- [x] The learner sidebar has the shared rows and none of the admin-gated rows (Studio)
+- [x] The learner has no admin footer cluster, only Notifications
+- [x] The member-check endpoint reports the learner as a non-admin
+- [x] The Analytics entry point matches the account's RBAC permission — an offered row opens a real analytics page, an absent row means no analytics in the shell
+- [x] Learner course content has the learner tabs and none of the admin tabs
+- [x] A learner can open the Agent tab
+- [x] The learner profile menu opens and offers Logout
+
+---
+
 > **Note:** `auth.setup.ts` runs before all journeys to set up authentication. It is not a user journey.
+>
+> **Note:** Journey 41 runs only in the `skills-desktop-chrome-student` project, against the
+> non-admin session produced by the `authenticate non-admin` setup. It is skipped when
+> `PLAYWRIGHT_NONADMIN_USERNAME` / `PLAYWRIGHT_NONADMIN_PASSWORD` are not configured.
