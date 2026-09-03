@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.78.0](https://github.com/iblai/lms/compare/skills-v0.77.0...skills-v0.78.0) (2026-09-03)
+
+### Features
+
+* agent based lesson completion ([a4b4ff6](https://github.com/iblai/lms/commit/a4b4ff66698d96b92be669d7ddbbf61f4da840de))
+* agent based lesson completion > iblai-js bump ([f06252c](https://github.com/iblai/lms/commit/f06252cef3b975ecb009cbce72a537fe716f9bb0))
+* agent based lesson completion in porgress ([2274040](https://github.com/iblai/lms/commit/22740400b0fb39a580d43e63ba54542c03e888fe))
+* agent based unit completion integration on progress ([8cb7263](https://github.com/iblai/lms/commit/8cb72630d38cc66f556c361edae095fb0289a2a5))
+
+### Bug Fixes
+
+* agent mode course load optimization > test coverage ([9fa785c](https://github.com/iblai/lms/commit/9fa785c40acb54b2a33ee71c4b31a08f678d5185))
+* course agent load optimization ([a59a0c9](https://github.com/iblai/lms/commit/a59a0c9e76570a9d5fd71c9896405b7867e45ae4))
+
 ## [0.77.0](https://github.com/iblai/lms/compare/skills-v0.76.1...skills-v0.77.0) (2026-09-03)
 
 ### Features
