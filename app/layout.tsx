@@ -24,6 +24,7 @@ import {
   webSiteLd,
 } from '@/lib/utils/seo';
 import { JsonLd } from '@/components/json-ld';
+import { ChunkErrorRecovery } from '@/components/chunk-error-recovery';
 
 const openSans = Open_Sans({ subsets: ['latin'] });
 
@@ -206,6 +207,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${openSans.className} flex h-screen flex-col overflow-hidden`}>
+        {/* Installs global chunk-load recovery (webpack retry + reload budget)
+            early, before the providers whose chunks might fail. */}
+        <ChunkErrorRecovery />
         {siteJsonLd.length > 0 && <JsonLd data={siteJsonLd} />}
         <Script src="/env.js" strategy="afterInteractive" />
         <StoreProvider>

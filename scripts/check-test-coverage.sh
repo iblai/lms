@@ -20,6 +20,13 @@ BASE_BRANCH="${BASE_BRANCH:-origin/main}"
 
 # Files to skip from coverage check (complex components that can't reasonably reach 95%)
 SKIP_COVERAGE_FILES=(
+  # Chunk-load recovery: webpack retry + reload budget + error boundaries. The
+  # decision logic (isChunkLoadError / reload budget) is unit-tested in
+  # lib/__tests__/chunk-retry.test.ts; the rest is browser/render glue.
+  "lib/chunk-retry.ts"
+  "components/chunk-error-recovery.tsx"
+  "app/error.tsx"
+  "app/global-error.tsx"
   "app/_components/app-layout.tsx"
   "app/platform/[tenant]/layout.tsx"
   "app/platform/[tenant]/analytics/layout.tsx"
