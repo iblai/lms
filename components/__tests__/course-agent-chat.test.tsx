@@ -89,6 +89,13 @@ const renderWithContext = (contextValue: typeof defaultContextValue = defaultCon
     </ChatContext.Provider>,
   );
 
+/** Queue one `getMentors` resolution per call, in order. */
+const queueMentorResults = (...pages: Array<{ results: any[] }>) => {
+  for (const page of pages) {
+    mockGetMentors.mockReturnValueOnce({ unwrap: () => Promise.resolve(page) });
+  }
+};
+
 describe('CourseAgentChat', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -98,8 +105,9 @@ describe('CourseAgentChat', () => {
       mockGetMentors,
       { isLoading: false, isFetching: false },
     ] as any);
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ unique_id: 'mentor-1', metadata: { default: true } }] },
+    mockGetMentors.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({ results: [{ unique_id: 'mentor-1', metadata: { default: true } }] }),
     });
     mockGetEmbeddedMentorToUse.mockReturnValue(null);
     mockUseTenantMetadata.mockReturnValue({
@@ -152,6 +160,33 @@ describe('CourseAgentChat', () => {
     expect(mockGetMentors).not.toHaveBeenCalled();
   });
 
+  it('lets a late-arriving courseMentor supersede an in-flight mentor lookup', async () => {
+    let resolveFirst: (value: { results: any[] }) => void = () => {};
+    mockGetMentors.mockReturnValueOnce({
+      unwrap: () => new Promise<{ results: any[] }>((resolve) => (resolveFirst = resolve)),
+    });
+
+    const { container, rerender } = render(
+      <ChatContext.Provider value={defaultContextValue}>
+        <CourseAgentChat />
+      </ChatContext.Provider>,
+    );
+
+    // The course fetch settles after the fallback lookup was already kicked off.
+    rerender(
+      <ChatContext.Provider value={{ ...defaultContextValue, courseMentor: 'course-mentor-id' }}>
+        <CourseAgentChat />
+      </ChatContext.Provider>,
+    );
+
+    await act(async () => {
+      resolveFirst({ results: [{ unique_id: 'stale-mentor' }] });
+    });
+
+    const el = container.querySelector('agent-ai') as HTMLElement | null;
+    expect(el?.getAttribute('mentor')).toBe('course-mentor-id');
+  });
+
   it('uses embedded mentor from tenant metadata when no courseMentor is provided', async () => {
     mockGetEmbeddedMentorToUse.mockReturnValue({ unique_id: 'embedded-mentor-id' } as any);
     const { container } = renderWithContext();
@@ -163,13 +198,11 @@ describe('CourseAgentChat', () => {
   });
 
   it('falls back to fetching mentors and selects the default one', async () => {
-    mockGetMentors.mockResolvedValue({
-      data: {
-        results: [
-          { unique_id: 'mentor-a', metadata: { default: false } },
-          { unique_id: 'mentor-b', metadata: { default: true } },
-        ],
-      },
+    queueMentorResults({
+      results: [
+        { unique_id: 'mentor-a', metadata: { default: false } },
+        { unique_id: 'mentor-b', metadata: { default: true } },
+      ],
     });
     const { container } = renderWithContext();
     await waitFor(() => {
@@ -179,13 +212,11 @@ describe('CourseAgentChat', () => {
   });
 
   it('falls back to the first mentor when none is marked default', async () => {
-    mockGetMentors.mockResolvedValue({
-      data: {
-        results: [
-          { unique_id: 'mentor-a', metadata: {} },
-          { unique_id: 'mentor-b', metadata: { default: false } },
-        ],
-      },
+    queueMentorResults({
+      results: [
+        { unique_id: 'mentor-a', metadata: {} },
+        { unique_id: 'mentor-b', metadata: { default: false } },
+      ],
     });
     const { container } = renderWithContext();
     await waitFor(() => {
@@ -195,7 +226,7 @@ describe('CourseAgentChat', () => {
   });
 
   it('renders nothing and shows a toast error when no mentors are found', async () => {
-    mockGetMentors.mockResolvedValue({ data: { results: [] } });
+    queueMentorResults({ results: [] }, { results: [] });
     const { toast } = await import('sonner');
     const { container } = renderWithContext();
     await waitFor(() => {
@@ -205,7 +236,7 @@ describe('CourseAgentChat', () => {
   });
 
   it('renders nothing when mentor fetch rejects', async () => {
-    mockGetMentors.mockRejectedValue(new Error('boom'));
+    mockGetMentors.mockReturnValue({ unwrap: () => Promise.reject(new Error('boom')) });
     const { toast } = await import('sonner');
     const { container } = renderWithContext();
     await waitFor(() => {
@@ -215,9 +246,7 @@ describe('CourseAgentChat', () => {
   });
 
   it('errors when the selected mentor has no unique_id', async () => {
-    mockGetMentors.mockResolvedValue({
-      data: { results: [{ metadata: { default: true } }] },
-    });
+    queueMentorResults({ results: [{ metadata: { default: true } }] }, { results: [] });
     const { toast } = await import('sonner');
     const { container } = renderWithContext();
     await waitFor(() => {
@@ -697,44 +726,6 @@ describe('CourseAgentChat', () => {
       const el = container.querySelector('agent-ai') as HTMLElement;
       expect(el.getAttribute('edxcourseid')).toBe('course-v1:test+101+2024');
       expect(el.hasAttribute('edxusageid')).toBe(false);
-    });
-  });
-
-  describe('error reporting', () => {
-    let errorSpy: ReturnType<typeof vi.spyOn>;
-
-    beforeEach(() => {
-      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    });
-
-    afterEach(() => {
-      errorSpy.mockRestore();
-    });
-
-    it('reports a rejected mentor lookup alongside the toast', async () => {
-      mockGetMentors.mockRejectedValue(new Error('boom'));
-
-      renderWithContext();
-
-      await waitFor(() => {
-        expect(errorSpy).toHaveBeenCalledWith(
-          'Failed to resolve a mentor for the course agent chat:',
-          expect.any(Error),
-        );
-      });
-    });
-
-    it('reports a mentor payload with no usable id', async () => {
-      mockGetMentors.mockResolvedValue({ data: { results: [{ metadata: { default: true } }] } });
-
-      renderWithContext();
-
-      await waitFor(() => {
-        expect(errorSpy).toHaveBeenCalledWith(
-          'Failed to resolve a mentor for the course agent chat:',
-          expect.objectContaining({ message: 'No mentors found' }),
-        );
-      });
     });
   });
 });

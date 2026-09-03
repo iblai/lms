@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.76.1](https://github.com/iblai/lms/compare/skills-v0.76.0...skills-v0.76.1) (2026-09-03)
+
+### Bug Fixes
+
+* **sidebar:** correct rbackPermissions -> rbacPermissions prop typo ([85da26e](https://github.com/iblai/lms/commit/85da26eaafb435dafe6ffa19ebf8e16a72ba511a))
+
+### Chores
+
+* **deps:** bump @iblai/agent-ai 2.8.3 -> 2.9.0 ([5e3f13c](https://github.com/iblai/lms/commit/5e3f13c478c73a7750c737c85bbcead2fca6eb89))
+
+## [0.76.0](https://github.com/iblai/lms/compare/skills-v0.75.4...skills-v0.76.0) (2026-09-02)
+
+### Features
+
+* iblai-js bump > watcher transcript integration ([2e7d8a5](https://github.com/iblai/lms/commit/2e7d8a5e6085c9c10d6a5b45373fa46295e4f34e))
+
+### Bug Fixes
+
+* embedded agent id resolve optimized ([70a10d9](https://github.com/iblai/lms/commit/70a10d92dfe2018470c07bce888eb534b8850960))
+
+### Chores
+
+* bumped iblai-js to 2.7.12 ([715a100](https://github.com/iblai/lms/commit/715a100cf21c874ed8927c9e44b4c7d49ee48724))
+
+## [0.75.4](https://github.com/iblai/lms/compare/skills-v0.75.3...skills-v0.75.4) (2026-09-02)
+
+### Bug Fixes
+
+* **pr-gate:** defer only to a sibling run that is still running ([863d912](https://github.com/iblai/lms/commit/863d912d57baf82e06c219fda7371e2a3770162f)), closes [lms#232](https://github.com/iblai/lms/issues/232)
+
+## [0.75.3](https://github.com/iblai/lms/compare/skills-v0.75.2...skills-v0.75.3) (2026-09-02)
+
+### Bug Fixes
+
+* **pr-gate:** derive the verdict from the E2E job, not the workflow conclusion ([b583f6e](https://github.com/iblai/lms/commit/b583f6e7473e1a9be681ccfda75bafccd2304168)), closes [lms#232](https://github.com/iblai/lms/issues/232)
+
 ## [0.75.2](https://github.com/iblai/lms/compare/skills-v0.75.1...skills-v0.75.2) (2026-09-01)
 
 ### Performance
