@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.77.0](https://github.com/iblai/lms/compare/skills-v0.76.1...skills-v0.77.0) (2026-09-03)
+
+### Features
+
+* agent based lesson completion > test coverage ([d8629c4](https://github.com/iblai/lms/commit/d8629c4be3035b7214dcb846ef75c2479846e09a))
+
 ## [0.76.1](https://github.com/iblai/lms/compare/skills-v0.76.0...skills-v0.76.1) (2026-09-03)
 
 ### Bug Fixes
