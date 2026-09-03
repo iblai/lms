@@ -24,7 +24,15 @@ export class LocalStorageService implements StorageService {
   }
 
   async setItem<T>(key: string, item: T): Promise<void> {
-    window.localStorage.setItem(key, JSON.stringify(item));
+    // `getItem` reads raw, so a string must be written raw. Stringifying it
+    // here double-encodes the value: the SDK's cookie sync then parses it to a
+    // string rather than an object, reads `key`/`user_id` as undefined, treats
+    // every comparison as "changed", writes it back and refreshes the page —
+    // forever. Non-strings are still serialised so object callers keep working.
+    window.localStorage.setItem(
+      key,
+      typeof item === 'string' ? item : JSON.stringify(item),
+    );
   }
 
   async removeItem(key: string): Promise<void> {
