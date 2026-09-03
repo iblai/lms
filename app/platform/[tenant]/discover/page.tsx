@@ -6,7 +6,7 @@ import { CourseCardSkeleton } from '@/components/course-card-skeleton';
 import { useDiscover, ENROLLMENT_FACET_SLUG } from '@/hooks/discover/use-discover';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { DefaultEmptyBox } from '@/components/default-empty-box';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import React from 'react';
 import { DiscoverContentCard } from '@/components/discover-content-card';
 import AccessiblePaginate from '@/components/ui/accessible-paginate';
@@ -141,7 +141,7 @@ export default function DiscoverPage() {
               </div>
               {filterDrawerOpen && <DiscoverFilterDrawer />}
               {/* Content Type Filter */}
-              {!_.isEmpty(selectedFacets) && (
+              {!isEmpty(selectedFacets) && (
                 <div className="mb-6 flex items-center gap-3">
                   {Object.keys(selectedFacets).map((selectedFacet: string, index: number) => {
                     if (selectedFacets?.[selectedFacet]?.length === 0) {

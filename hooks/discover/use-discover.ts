@@ -3,7 +3,8 @@ import { usePersonnalizedCatalogQuery } from '../search/use-personnalized-catalo
 import { useRecommendedCourses } from '../courses/use-recommended-courses';
 import { useEffect, useMemo, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
 import { useDebounce } from 'use-debounce';
 import { config } from '@/lib/config';
 import { DiscoverContent } from '@/types/discover';
@@ -136,48 +137,48 @@ export const useDiscover = ({
       limit,
       offset: (page - 1) * limit,
       ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
-      ...(!_.isEmpty(selectedFacets?.q) && {
+      ...(!isEmpty(selectedFacets?.q) && {
         query: selectedFacets?.q[0],
       }),
-      ...(!_.isEmpty(selectedFacets?.content) && {
+      ...(!isEmpty(selectedFacets?.content) && {
         content: selectedFacets?.content,
       }),
-      ...(!_.isEmpty(selectedFacets?.language) && {
+      ...(!isEmpty(selectedFacets?.language) && {
         language: selectedFacets?.language,
       }),
-      ...(!_.isEmpty(selectedFacets?.level) && {
+      ...(!isEmpty(selectedFacets?.level) && {
         level: selectedFacets?.level,
       }),
-      ...(!_.isEmpty(selectedFacets?.provider) && {
+      ...(!isEmpty(selectedFacets?.provider) && {
         provider: selectedFacets?.provider,
       }),
-      ...(!_.isEmpty(selectedFacets?.topics) && {
+      ...(!isEmpty(selectedFacets?.topics) && {
         topics: selectedFacets?.topics,
       }),
-      ...(!_.isEmpty(selectedFacets?.tags) && {
+      ...(!isEmpty(selectedFacets?.tags) && {
         tags: selectedFacets?.tags,
       }),
-      ...(!_.isEmpty(selectedFacets?.promotion) && {
+      ...(!isEmpty(selectedFacets?.promotion) && {
         promotion: selectedFacets?.promotion,
       }),
-      ...(!_.isEmpty(selectedFacets?.['course duration']) && {
+      ...(!isEmpty(selectedFacets?.['course duration']) && {
         duration: selectedFacets?.['course duration'],
       }),
-      ...(!_.isEmpty(selectedFacets?.certificate) && {
+      ...(!isEmpty(selectedFacets?.certificate) && {
         certificate: selectedFacets?.certificate,
       }),
       // The "Format" facet (self-paced / instructor-led) maps to the
       // endpoint's `self_paced` parameter.
-      ...(!_.isEmpty(selectedFacets?.format) && {
+      ...(!isEmpty(selectedFacets?.format) && {
         selfPaced: selectedFacets?.format,
       }),
-      ...(!_.isEmpty(selectedFacets?.price) && {
+      ...(!isEmpty(selectedFacets?.price) && {
         price: selectedFacets?.price.at(-1),
       }),
-      ...(!_.isEmpty(selectedFacets?.subject) && {
+      ...(!isEmpty(selectedFacets?.subject) && {
         subject: selectedFacets?.subject,
       }),
-      ...(!_.isEmpty(selectedFacets?.skills) && {
+      ...(!isEmpty(selectedFacets?.skills) && {
         skills: selectedFacets?.skills,
       }),
     }),
@@ -188,7 +189,7 @@ export const useDiscover = ({
   // Soften rapid facet toggling like the old imperative debounce did; the
   // first value is emitted immediately, so the initial load is not delayed.
   const [debouncedContentSearchParams] = useDebounce(contentSearchParams, 500, {
-    equalityFn: _.isEqual,
+    equalityFn: isEqual,
   });
 
   const facetSearchParams = useMemo(
@@ -236,7 +237,7 @@ export const useDiscover = ({
     try {
       let formattedFacets: CourseFacet[] = [];
       Object.keys(allFacets).forEach((key) => {
-        if (!_.isEmpty(allFacets[key]?.terms)) {
+        if (!isEmpty(allFacets[key]?.terms)) {
           const terms = Object.keys(allFacets[key]?.terms || {})
             .filter((innerTerm) => allFacets[key]?.terms[innerTerm] > 0)
             .map((innerTerm) => {
@@ -406,7 +407,7 @@ export const useDiscover = ({
   const displayCards = useMemo<DiscoverContentCardProps[]>(() => {
     if (enrolledOnly || recommendedOnly) {
       const selectedTypes = (
-        !_.isEmpty(selectedFacets?.content)
+        !isEmpty(selectedFacets?.content)
           ? selectedFacets.content
           : ['courses', 'programs', 'pathways']
       ).filter((type): type is EnrolledContentType => type in enrolledCards);

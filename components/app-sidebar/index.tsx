@@ -219,6 +219,8 @@ export function AppSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const onboardingBasePath = window.location.origin + `/platform/${tenant}`;
+
   // Force-open the Analytics accordion when deep-linked into it.
   React.useEffect(() => {
     if (pathname?.includes('/analytics')) setOpenSection('analytics');
@@ -468,6 +470,8 @@ export function AppSidebar() {
         currentSpa={config.settings.appName() || 'skills'}
         platformBaseDomain={config.settings.platformBaseDomain()}
         showGradebookTab={true}
+        onboardingBasePath={onboardingBasePath}
+        rbacPermissions={rbacPermissions}
       />
 
       {inviteOpen && (

@@ -9,7 +9,7 @@ export const EdxIframeContext = createContext<{
   iframeUrl: string;
   setIframeUrl: (url: string) => void;
   courseOutline: CourseOutlineChildNode;
-  setActiveTab: (tab: string) => void;
+  /** Derived from the route by the course-content layout — read-only for consumers. */
   activeTab: string;
   courseID: string;
   currentlyInExamSubsection: boolean;
@@ -32,7 +32,6 @@ export const EdxIframeContext = createContext<{
   iframeUrl: '',
   setIframeUrl: () => {},
   courseOutline: {} as CourseOutlineChildNode,
-  setActiveTab: () => {},
   activeTab: '',
   courseID: '',
   currentlyInExamSubsection: false,

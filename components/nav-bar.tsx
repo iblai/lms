@@ -265,8 +265,11 @@ export function NavBar() {
         </button>
       )}
 
-      {/* Current course / program / pathway title on their detail pages */}
-      {isUserLoggedIn && isCoursePage && <CourseTitle />}
+      {/* Current course / program / pathway title on their detail pages.
+          The course title is NOT gated on login: the course about page is
+          publicly reachable, and the metadata request it resolves from falls
+          back to the anonymous (noAuth) endpoint. */}
+      {isCoursePage && <CourseTitle />}
       {isUserLoggedIn && isProgramPage && <ProgramTitle tenant={tenant} />}
       {isUserLoggedIn && isPathwayPage && <PathwayTitle tenant={tenant} />}
 

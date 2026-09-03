@@ -7,7 +7,7 @@ import {
   CourseOutlineResponse,
   CourseProgress,
 } from '@/types/courses';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { getTenant, getUserName, handleNotLoggedInAction, inIframe } from '@/utils/helpers';
 import { config } from '@/lib/config';
 import dayjs from 'dayjs';
@@ -232,7 +232,7 @@ export const useCourseDetail = (rawCourseId: string) => {
     }
 
     const courseEligibility = await handleFetchCourseEligibility(courseId);
-    if (!_.isEmpty(courseEligibility)) {
+    if (!isEmpty(courseEligibility)) {
       const enrollmentStarted = dayjs(course?.enrollment_start).diff(dayjs(), 'seconds') > 0;
       const isEnrolled = courseEligibility.is_enrolled;
       const canEnroll = courseEligibility.can_enroll;
@@ -321,7 +321,7 @@ export const useCourseDetail = (rawCourseId: string) => {
   // machine) entirely inside the hook so consumers don't have to remember to
   // wire it up.
   useEffect(() => {
-    if (_.isEmpty(course)) return;
+    if (isEmpty(course)) return;
     handleFetchCourseEligibilityInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course?.course_key]);
@@ -330,7 +330,7 @@ export const useCourseDetail = (rawCourseId: string) => {
     setCourseInfoLoadingState('loading');
     try {
       const courseMetaData = await handleFetchCourseMetaData(courseId);
-      if (!_.isEmpty(courseMetaData)) {
+      if (!isEmpty(courseMetaData)) {
         setCourse(courseMetaData as CourseEdxData);
         setCourseInfoLoadingState('successful');
       } else {
@@ -350,7 +350,7 @@ export const useCourseDetail = (rawCourseId: string) => {
     const courseCompletionOutlines = (await handleFetchCourseCompletionOutlines(courseId)) as
       | CourseOutlineResponse
       | Record<string, any>;
-    if (!_.isEmpty(courseCompletionOutlines)) {
+    if (!isEmpty(courseCompletionOutlines)) {
       //const coursesSyllabus = courseCompletionOutlines.children as CourseOutlineChildNode[];
       setCourseOutline(courseCompletionOutlines as CourseOutlineChildNode);
       if (setLoadingState) {
@@ -389,7 +389,7 @@ export const useCourseDetail = (rawCourseId: string) => {
         throw new Error('Error fetching course progress');
       }
       setCourseProgress(courseProgress.data || null);
-      if (!_.isEmpty(courseProgress.data)) {
+      if (!isEmpty(courseProgress.data)) {
         setCourseGradingPolicyActive(
           Array.isArray(courseProgress.data?.grading_policy?.assignment_policies) &&
             courseProgress.data?.grading_policy?.assignment_policies.length > 0,

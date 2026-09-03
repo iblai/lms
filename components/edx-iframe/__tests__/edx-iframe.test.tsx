@@ -55,7 +55,6 @@ vi.mock('../timed-exam', () => ({
 
 describe('EdxIframe - JWT PostMessage', () => {
   const mockSetIframeUrl = vi.fn();
-  const mockSetActiveTab = vi.fn();
   const mockSetCurrentlyInExamSubsection = vi.fn();
   const mockSetExamInfo = vi.fn();
   const mockSelectLesson = vi.fn();
@@ -79,7 +78,6 @@ describe('EdxIframe - JWT PostMessage', () => {
         },
       ],
     }, // Non-empty to trigger course load
-    setActiveTab: mockSetActiveTab,
     activeTab: 'forum',
     courseID: 'course-v1:test+course',
     currentlyInExamSubsection: false,

@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import { createContext, useContext, useEffect } from 'react';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 
 type CourseDetailContextValue = ReturnType<typeof useCourseDetail>;
@@ -28,7 +28,7 @@ export function CourseDetailProvider({
   const { handleFetchCourseInfo } = value;
 
   useEffect(() => {
-    if (_.isEmpty(courseId)) return;
+    if (isEmpty(courseId)) return;
     handleFetchCourseInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);

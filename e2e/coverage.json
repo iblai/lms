@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-08-21",
+  "lastUpdated": "2026-08-25",
   "summary": {
-    "totalCheckpoints": 249,
-    "coveredCheckpoints": 249,
+    "totalCheckpoints": 251,
+    "coveredCheckpoints": 251,
     "percent": 100,
     "totalJourneys": 35
   },
@@ -201,7 +201,8 @@
         "components/edx-iframe/edx-iframe.tsx",
         "hooks/courses/edx-iframe-context.ts",
         "services/course-metadata.ts",
-        "components/course-media-dropdown.tsx"
+        "components/course-media-dropdown.tsx",
+        "hooks/courses/use-course-user-roles.ts"
       ],
       "checkpoints": [
         {
@@ -372,6 +373,16 @@
         {
           "id": "tabs-34",
           "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-35",
+          "description": "Course content layout requests the signed-in user’s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-36",
+          "description": "Staff tabs follow the course-role gates: course-staff / course-instructor (and platform admins) see every staff tab including Authoring, course-limited-staff sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees none of them",
           "status": "covered"
         }
       ]

@@ -2,7 +2,7 @@ import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import { useEdxIframe } from '@/hooks/courses/use-edx-iframe';
 import { Loader2 } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -44,7 +44,7 @@ export const EdxIframe = () => {
   const [getExamInfo] = useLazyGetExamInfoQuery();
 
   const handleLoadCourse = useDebouncedCallback(() => {
-    if (!_.isEmpty(courseOutline)) {
+    if (!isEmpty(courseOutline)) {
       setExamInfo(null);
       setCurrentlyInExamSubsection(false);
       setFetchingIframeData(true);
@@ -227,7 +227,7 @@ export const EdxIframe = () => {
           )}
         >
           {examInfo && <TimedExam />}
-          {(!examInfo || (examInfo?.exam && !_.isEmpty(examInfo?.exam?.attempt))) && (
+          {(!examInfo || (examInfo?.exam && !isEmpty(examInfo?.exam?.attempt))) && (
             <iframe
               ref={iframeRef}
               src={iframeUrl}

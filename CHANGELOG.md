@@ -1,5 +1,91 @@
 # Changelog
 
+## [0.76.1](https://github.com/iblai/lms/compare/skills-v0.76.0...skills-v0.76.1) (2026-09-03)
+
+### Bug Fixes
+
+* **sidebar:** correct rbackPermissions -> rbacPermissions prop typo ([85da26e](https://github.com/iblai/lms/commit/85da26eaafb435dafe6ffa19ebf8e16a72ba511a))
+
+### Chores
+
+* **deps:** bump @iblai/agent-ai 2.8.3 -> 2.9.0 ([5e3f13c](https://github.com/iblai/lms/commit/5e3f13c478c73a7750c737c85bbcead2fca6eb89))
+
+## [0.76.0](https://github.com/iblai/lms/compare/skills-v0.75.4...skills-v0.76.0) (2026-09-02)
+
+### Features
+
+* iblai-js bump > watcher transcript integration ([2e7d8a5](https://github.com/iblai/lms/commit/2e7d8a5e6085c9c10d6a5b45373fa46295e4f34e))
+
+### Bug Fixes
+
+* embedded agent id resolve optimized ([70a10d9](https://github.com/iblai/lms/commit/70a10d92dfe2018470c07bce888eb534b8850960))
+
+### Chores
+
+* bumped iblai-js to 2.7.12 ([715a100](https://github.com/iblai/lms/commit/715a100cf21c874ed8927c9e44b4c7d49ee48724))
+
+## [0.75.4](https://github.com/iblai/lms/compare/skills-v0.75.3...skills-v0.75.4) (2026-09-02)
+
+### Bug Fixes
+
+* **pr-gate:** defer only to a sibling run that is still running ([863d912](https://github.com/iblai/lms/commit/863d912d57baf82e06c219fda7371e2a3770162f)), closes [lms#232](https://github.com/iblai/lms/issues/232)
+
+## [0.75.3](https://github.com/iblai/lms/compare/skills-v0.75.2...skills-v0.75.3) (2026-09-02)
+
+### Bug Fixes
+
+* **pr-gate:** derive the verdict from the E2E job, not the workflow conclusion ([b583f6e](https://github.com/iblai/lms/commit/b583f6e7473e1a9be681ccfda75bafccd2304168)), closes [lms#232](https://github.com/iblai/lms/issues/232)
+
+## [0.75.2](https://github.com/iblai/lms/compare/skills-v0.75.1...skills-v0.75.2) (2026-09-01)
+
+### Performance
+
+* **bundle:** deep-import lodash instead of the whole library ([d815d55](https://github.com/iblai/lms/commit/d815d55356b918936e6981d7c3168fc687f3926f))
+
+## [0.75.1](https://github.com/iblai/lms/compare/skills-v0.75.0...skills-v0.75.1) (2026-08-30)
+
+### Bug Fixes
+
+* platform account sheet props updated ([ebf5bc5](https://github.com/iblai/lms/commit/ebf5bc5b340839101c26af45e957fbb5d64cf069))
+
+## [0.75.0](https://github.com/iblai/lms/compare/skills-v0.74.1...skills-v0.75.0) (2026-08-28)
+
+### Features
+
+* bumped iblai-js to 2.8.3 ([451fc60](https://github.com/iblai/lms/commit/451fc60faedcd3146ba67076db4b900f9fbadf9e))
+
+## [0.74.1](https://github.com/iblai/lms/compare/skills-v0.74.0...skills-v0.74.1) (2026-08-28)
+
+### Chores
+
+* bumped iblai-js to 2.7.4 ([5c78d97](https://github.com/iblai/lms/commit/5c78d97ad639f2ec8a41f1820119a4cce1971779))
+
+## [0.74.0](https://github.com/iblai/lms/compare/skills-v0.73.2...skills-v0.74.0) (2026-08-28)
+
+### Features
+
+* agent tab race condition optimization ([bb4065a](https://github.com/iblai/lms/commit/bb4065a35d9e2ab71d46abf9e12f7f166d7c825e))
+* agent tab race condition optimization > gitignore updated ([1d2fadd](https://github.com/iblai/lms/commit/1d2fadd6885e66532ad53f3f95cc3680818de608))
+* agent tab race condition updated ([9952b27](https://github.com/iblai/lms/commit/9952b27c2af525545001e283a3fd89f6c00e935f))
+
+## [0.73.2](https://github.com/iblai/lms/compare/skills-v0.73.1...skills-v0.73.2) (2026-08-27)
+
+### Bug Fixes
+
+* **ci:** remove the paths filter that deadlocks the required PR Validation check ([31ce6e5](https://github.com/iblai/lms/commit/31ce6e5a9a42c6f51c33dc8cabe4255a35529e5f)), closes [os#462](https://github.com/iblai/os/issues/462)
+
+## [0.73.1](https://github.com/iblai/lms/compare/skills-v0.73.0...skills-v0.73.1) (2026-08-27)
+
+### Bug Fixes
+
+* course about page > no session title & login button fix ([eeba4e3](https://github.com/iblai/lms/commit/eeba4e38faf5c973ac8af34211b9bb2df83dcb6b))
+
+## [0.73.0](https://github.com/iblai/lms/compare/skills-v0.72.0...skills-v0.73.0) (2026-08-26)
+
+### Features
+
+* course content tabs now edx course roles based ([616a36a](https://github.com/iblai/lms/commit/616a36ae6944eb05c3208fd7f2a8a51ac820c004))
+
 ## [0.72.0](https://github.com/iblai/lms/compare/skills-v0.71.0...skills-v0.72.0) (2026-08-22)
 
 ### Features
