@@ -105,11 +105,12 @@ export function EditExperienceDialog({
             },
           });
           if (isErrorUpdating) {
-            throw new Error();
+            throw new Error('Update-experience request reported an error');
           }
           toast.success('Experience information updated successfully.');
           onSave();
-        } catch {
+        } catch (error) {
+          console.error('Failed to update experience information:', error);
           toast.error('Error updating experience information.');
         }
       } else {
@@ -125,11 +126,12 @@ export function EditExperienceDialog({
             },
           });
           if (isErrorCreating) {
-            throw new Error();
+            throw new Error('Create-experience request reported an error');
           }
           toast.success('Experience information created successfully.');
           onSave();
-        } catch {
+        } catch (error) {
+          console.error('Failed to create experience information:', error);
           toast.error('Error creating experience information.');
         }
       }
@@ -148,12 +150,13 @@ export function EditExperienceDialog({
           experience_id: experience?.id.toString(),
         });
         if (isErrorDeleting) {
-          throw new Error();
+          throw new Error('Delete-experience request reported an error');
         }
         toast.success('Experience information deleted successfully.');
         onOpenChange(false);
         onDelete(experience?.id.toString());
-      } catch {
+      } catch (error) {
+        console.error('Failed to delete experience information:', error);
         toast.error('Error deleting experience information.');
       }
     }

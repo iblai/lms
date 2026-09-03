@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import Providers from '../index';
 import '@testing-library/jest-dom';
@@ -70,6 +70,12 @@ vi.mock('next/navigation', () => ({
     refresh: vi.fn(),
     prefetch: vi.fn(),
   }),
+}));
+
+// SentryInit has its own suite; here it would only pull the real @sentry/nextjs
+// SDK into an otherwise fully mocked tree.
+vi.mock('@/components/sentry-init', () => ({
+  SentryInit: () => null,
 }));
 
 vi.mock('@/features/rbac', () => ({
@@ -148,6 +154,45 @@ describe('Providers', () => {
 
     await waitFor(() => {
       expect(initializeDataLayer).toHaveBeenCalled();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // Without env.js every runtime-configured URL silently falls back to a
+    // build-time default, so the app boots pointed at the wrong services.
+    it('reports a failure to load /env.js and still boots', async () => {
+      // @ts-expect-error deliberately unset so Providers injects the script.
+      delete window.__ENV__;
+      const store = createTestStore();
+
+      const { getByText } = render(
+        <Provider store={store}>
+          <Providers>
+            <div>Test Child</div>
+          </Providers>
+        </Provider>,
+      );
+
+      const script = document.querySelector('script[src="/env.js"]') as HTMLScriptElement;
+      expect(script).toBeTruthy();
+      script.onerror?.(new Event('error'));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load /env.js; falling back to build-time config',
+        );
+      });
+      await waitFor(() => expect(getByText('Test Child')).toBeInTheDocument());
     });
   });
 });

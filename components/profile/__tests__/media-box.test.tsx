@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -580,5 +580,65 @@ describe('MediaBox', () => {
     render(<MediaBox />);
     expect(screen.getByText('image.jpg')).toBeInTheDocument();
     expect(screen.getByText('video.mp4')).toBeInTheDocument();
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    const renderWithNoMedia = () => {
+      mockGetUserResumeQuery.mockReturnValue({
+        data: { files: [], links: [] },
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+      render(<MediaBox />);
+    };
+
+    it('reports a failed file upload alongside the toast', async () => {
+      mockCreateUserResume.mockRejectedValue(new Error('upload down'));
+      renderWithNoMedia();
+
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      Object.defineProperty(fileInput, 'files', {
+        value: [new File(['content'], 'test.pdf', { type: 'application/pdf' })],
+        configurable: true,
+      });
+      fireEvent.change(fileInput);
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Upload File'));
+      });
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to upload profile file:', expect.any(Error));
+      });
+    });
+
+    it('reports a failed link upload alongside the toast', async () => {
+      mockCreateUserResume.mockRejectedValue(new Error('upload down'));
+      renderWithNoMedia();
+
+      fireEvent.click(screen.getByText('Link Upload'));
+      fireEvent.change(screen.getByPlaceholderText('https://example.com/resource'), {
+        target: { value: 'https://example.com/new-link' },
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Add Link'));
+      });
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to upload profile media:', expect.any(Error));
+      });
+    });
   });
 });

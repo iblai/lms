@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
 const mockToast = { error: vi.fn(), success: vi.fn() };
@@ -224,5 +224,53 @@ describe('useCourseCreation', () => {
     });
 
     expect(mockToast.error).toHaveBeenCalledWith('Course creation failed. Please try again.');
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports the original failure alongside the toast', async () => {
+      mockCreateCourse.mockReturnValue({ unwrap: () => Promise.reject(new Error('studio down')) });
+      const { result } = renderHook(() => useCourseCreation());
+      fillFields(result);
+
+      await act(async () => {
+        await result.current.handleFormSubmit();
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to create course:', expect.any(Error));
+    });
+
+    // Rollback is best-effort, so a failure here leaves an orphaned course
+    // shell behind and is otherwise completely invisible.
+    it('reports a failed rollback of the partially created course', async () => {
+      mockUpdateCourseSettings.mockReturnValue({
+        unwrap: () => Promise.reject(new Error('settings down')),
+      });
+      mockDeleteCourse.mockReturnValue({
+        unwrap: () => Promise.reject(new Error('delete down')),
+      });
+      const { result } = renderHook(() => useCourseCreation());
+      fillFields(result);
+
+      await act(async () => {
+        await result.current.handleFormSubmit();
+      });
+
+      expect(mockDeleteCourse).toHaveBeenCalledWith({ courseKey: COURSE_KEY });
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to roll back partially created course:',
+        expect.any(Error),
+      );
+      expect(errorSpy).toHaveBeenCalledWith('Failed to create course:', expect.any(Error));
+    });
   });
 });

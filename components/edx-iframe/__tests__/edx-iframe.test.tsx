@@ -90,6 +90,7 @@ describe('EdxIframe - JWT PostMessage', () => {
     setAgentMode: vi.fn(),
     agentFullscreen: false,
     setAgentFullscreen: vi.fn(),
+    disableUnitAutoCompletion: false,
   };
 
   const defaultCourseOutlineValue = {
@@ -465,6 +466,139 @@ describe('EdxIframe - JWT PostMessage', () => {
       expect(iframe.className).toBe('');
       // Legacy learning-mode inline height is preserved.
       expect(iframe.style.height).toContain('100vh');
+    });
+  });
+  describe('unit auto-completion postMessage', () => {
+    const mountAgentIframe = async (contextOverrides: Record<string, unknown>) => {
+      const { container } = renderEdxIframe({
+        ...defaultContextValue,
+        activeTab: 'agent',
+        ...contextOverrides,
+      } as any);
+
+      await waitFor(() => {
+        expect(container.querySelector('iframe')).toBeInTheDocument();
+      });
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      const mockPostMessage = vi.fn();
+      Object.defineProperty(iframe, 'contentWindow', {
+        value: { postMessage: mockPostMessage },
+        writable: true,
+        configurable: true,
+      });
+
+      return { container, iframe, mockPostMessage };
+    };
+
+    it('tells the MFE to disable unit auto-completion once the agent-tab iframe loads', async () => {
+      const { iframe, mockPostMessage } = await mountAgentIframe({
+        disableUnitAutoCompletion: true,
+      });
+
+      // Nothing is sent before the MFE document is ready.
+      expect(mockPostMessage).not.toHaveBeenCalled();
+
+      await act(async () => {
+        fireEvent.load(iframe);
+      });
+
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        { type: 'unit.completion.config', disable_unit_auto_completion: true },
+        'https://apps.learn.example.com',
+      );
+    });
+
+    it('does not send the config when agent-based completion is off', async () => {
+      const { iframe, mockPostMessage } = await mountAgentIframe({
+        disableUnitAutoCompletion: false,
+      });
+
+      await act(async () => {
+        fireEvent.load(iframe);
+      });
+
+      expect(mockPostMessage).not.toHaveBeenCalled();
+    });
+
+    it('sends the config when the flag flips on after the iframe has loaded', async () => {
+      // Tenant/course settings can change live — no reload should be required.
+      const { container, rerender } = renderEdxIframe({
+        ...defaultContextValue,
+        activeTab: 'agent',
+        disableUnitAutoCompletion: false,
+      } as any);
+
+      await waitFor(() => {
+        expect(container.querySelector('iframe')).toBeInTheDocument();
+      });
+
+      const iframe = container.querySelector('iframe') as HTMLIFrameElement;
+      const mockPostMessage = vi.fn();
+      Object.defineProperty(iframe, 'contentWindow', {
+        value: { postMessage: mockPostMessage },
+        writable: true,
+        configurable: true,
+      });
+
+      await act(async () => {
+        fireEvent.load(iframe);
+      });
+      expect(mockPostMessage).not.toHaveBeenCalled();
+
+      rerender(
+        <EdxIframeContext.Provider
+          value={
+            {
+              ...defaultContextValue,
+              activeTab: 'agent',
+              disableUnitAutoCompletion: true,
+            } as any
+          }
+        >
+          <CourseOutlineContext.Provider value={defaultCourseOutlineValue}>
+            <EdxIframe />
+          </CourseOutlineContext.Provider>
+        </EdxIframeContext.Provider>,
+      );
+
+      await waitFor(() => {
+        expect(mockPostMessage).toHaveBeenCalledWith(
+          { type: 'unit.completion.config', disable_unit_auto_completion: true },
+          'https://apps.learn.example.com',
+        );
+      });
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // Previously logged as JSON.stringify(error), which reaches Sentry as "{}".
+    it('reports a failed exam-info lookup with the error object', async () => {
+      mockFindSequentialParent.mockImplementation(() => {
+        throw new Error('outline walk failed');
+      });
+
+      // The exam-info lookup only runs on the course/agent tabs.
+      renderEdxIframe({ ...defaultContextValue, activeTab: 'course' });
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch exam info for subsection:',
+          expect.any(Error),
+        );
+      });
+      // The iframe still loads; only the exam banner is dropped.
+      expect(mockSetCurrentlyInExamSubsection).toHaveBeenCalledWith(false);
     });
   });
 });

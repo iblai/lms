@@ -6,6 +6,7 @@ import React from 'react';
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
+  getUserId: vi.fn(() => 42),
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -25,6 +26,7 @@ const mockGetEmbeddedMentorToUse = vi.fn(() => null);
 const mockUseTenantMetadata = vi.fn(() => ({
   getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
   metadataLoaded: true,
+  metadata: {} as Record<string, unknown>,
 }));
 
 vi.mock('@iblai/iblai-js/web-utils', () => ({
@@ -77,6 +79,8 @@ const defaultContextValue = {
 
 import { CourseAgentChat } from '../course-agent-chat';
 import { ChatContext } from '../chat-button';
+import { CourseOutlineContext } from '@/contexts/course-outline-context';
+import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 
 const renderWithContext = (contextValue: typeof defaultContextValue = defaultContextValue) =>
   render(
@@ -109,6 +113,7 @@ describe('CourseAgentChat', () => {
     mockUseTenantMetadata.mockReturnValue({
       getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
       metadataLoaded: true,
+      metadata: {},
     });
   });
 
@@ -120,6 +125,7 @@ describe('CourseAgentChat', () => {
     mockUseTenantMetadata.mockReturnValue({
       getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
       metadataLoaded: false,
+      metadata: {},
     });
     const { container } = renderWithContext();
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
@@ -555,6 +561,171 @@ describe('CourseAgentChat', () => {
       expect(disconnect).toHaveBeenCalled();
 
       window.MutationObserver = originalMO;
+    });
+  });
+  describe('agent-based unit completion', () => {
+    const outlineWithUnits = {
+      id: 'course-v1:test+101+2024',
+      children: [
+        {
+          id: 'chapter-1',
+          children: [
+            {
+              id: 'sequential-1',
+              children: [
+                {
+                  id: 'block-v1:test+101+type@vertical+block@unit-1',
+                  display_name: 'Benefits of AI For Education.',
+                },
+                {
+                  id: 'block-v1:test+101+type@vertical+block@unit-2',
+                  display_name: 'Second Unit',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any;
+
+    const renderInCourse = ({
+      metadata = { enable_agent_based_unit_completion: true },
+      course = { agent_content_mode: true, enable_agent_based_completion: true },
+      activeTab = 'agent',
+      currentUnitID = 'block-v1:test+101+type@vertical+block@unit-1',
+      courseOutline = outlineWithUnits,
+    }: Record<string, any> = {}) => {
+      mockUseTenantMetadata.mockReturnValue({
+        getEmbeddedMentorToUse: mockGetEmbeddedMentorToUse,
+        metadataLoaded: true,
+        metadata,
+      });
+
+      return render(
+        <ChatContext.Provider value={defaultContextValue}>
+          <CourseOutlineContext.Provider value={{ course, currentUnitID } as any}>
+            <EdxIframeContext.Provider
+              value={
+                {
+                  courseID: 'course-v1:test+101+2024',
+                  activeTab,
+                  agentMode: 'learning',
+                  courseOutline,
+                } as any
+              }
+            >
+              <CourseAgentChat />
+            </EdxIframeContext.Provider>
+          </CourseOutlineContext.Provider>
+        </ChatContext.Provider>,
+      );
+    };
+
+    it('passes the edX course, unit and user ids when auto-completion is disabled', async () => {
+      const { container } = renderInCourse();
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxcourseid')).toBe('course-v1:test+101+2024');
+      expect(el.getAttribute('edxusageid')).toBe('block-v1:test+101+type@vertical+block@unit-1');
+      expect(el.getAttribute('edxuserid')).toBe('42');
+    });
+
+    it('passes the unit display name and turns lesson completion on', async () => {
+      const { container } = renderInCourse();
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxdisplayname')).toBe('Benefits of AI For Education.');
+      expect(el.hasAttribute('enablelessoncompletion')).toBe(true);
+    });
+
+    it('names the unit the learner is actually on', async () => {
+      const { container } = renderInCourse({
+        currentUnitID: 'block-v1:test+101+type@vertical+block@unit-2',
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxdisplayname')).toBe('Second Unit');
+    });
+
+    it('sends no display name when the unit is absent from the outline', async () => {
+      const { container } = renderInCourse({
+        currentUnitID: 'block-v1:other+course+type@vertical+block@unit-9',
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxusageid')).toBe(
+        'block-v1:other+course+type@vertical+block@unit-9',
+      );
+      expect(el.hasAttribute('edxdisplayname')).toBe(false);
+    });
+
+    it('sends no display name before the outline has loaded', async () => {
+      const { container } = renderInCourse({ courseOutline: {} });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.hasAttribute('edxdisplayname')).toBe(false);
+      expect(el.hasAttribute('enablelessoncompletion')).toBe(true);
+    });
+
+    it('omits the edX ids while edX still auto-completes units', async () => {
+      const { container } = renderInCourse({
+        metadata: { enable_agent_based_unit_completion: false },
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.hasAttribute('edxcourseid')).toBe(false);
+      expect(el.hasAttribute('edxusageid')).toBe(false);
+      expect(el.hasAttribute('edxuserid')).toBe(false);
+      expect(el.hasAttribute('edxdisplayname')).toBe(false);
+      expect(el.hasAttribute('enablelessoncompletion')).toBe(false);
+    });
+
+    it('omits the edX ids when the course opts out of agent-based completion', async () => {
+      const { container } = renderInCourse({
+        course: { agent_content_mode: true, enable_agent_based_completion: false },
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      expect(container.querySelector('agent-ai')?.hasAttribute('edxcourseid')).toBe(false);
+    });
+
+    it('leaves the unit id off until a unit is selected', async () => {
+      const { container } = renderInCourse({ currentUnitID: null });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      const el = container.querySelector('agent-ai') as HTMLElement;
+      expect(el.getAttribute('edxcourseid')).toBe('course-v1:test+101+2024');
+      expect(el.hasAttribute('edxusageid')).toBe(false);
     });
   });
 });

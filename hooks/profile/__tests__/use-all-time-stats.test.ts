@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -108,5 +108,56 @@ describe('useAllTimeStats', () => {
     expect(result.current.courses).toBe(0);
     expect(result.current.credentials).toBe(0);
     expect(result.current.skills).toBe(0);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports each all-time stat that fails to load', async () => {
+      mockGetUserReportedSkills.mockRejectedValue(new Error('network'));
+      mockGetUserDesiredSkills.mockRejectedValue(new Error('network'));
+      mockGetUserCredentials.mockRejectedValue(new Error('network'));
+      mockGetUserEnrolledCourses.mockRejectedValue(new Error('network'));
+
+      renderHook(() => useAllTimeStats());
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load all-time skills count:',
+          expect.any(Error),
+        );
+      });
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to load all-time credentials count:',
+        expect.any(Error),
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to load all-time courses count:',
+        expect.any(Error),
+      );
+    });
+
+    // An empty payload is a failure too — the hook throws its own Error so the
+    // report says which request came back unusable.
+    it('reports a named error when a response is empty', async () => {
+      renderHook(() => useAllTimeStats());
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load all-time credentials count:',
+          expect.objectContaining({
+            message: 'Credentials request failed or returned no data',
+          }),
+        );
+      });
+    });
   });
 });

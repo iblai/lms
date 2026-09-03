@@ -21,7 +21,8 @@ export default async function OpengraphImage() {
     const metadata = await fetchAppMetadata(host, tenantKey);
     title = metadata.title || title;
     description = metadata.description || description;
-  } catch {
+  } catch (error) {
+    console.error('Failed to resolve tenant metadata for the OG image:', error);
     // Fall back to defaults on any resolution error.
   }
 

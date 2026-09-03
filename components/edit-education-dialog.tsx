@@ -106,11 +106,12 @@ export function EditEducationDialog({
             },
           });
           if (isErrorUpdating) {
-            throw new Error();
+            throw new Error('Update-education request reported an error');
           }
           toast.success('Education information updated successfully.');
           onSave();
-        } catch {
+        } catch (error) {
+          console.error('Failed to update education information:', error);
           toast.error('Error updating education information.');
         }
       } else {
@@ -126,11 +127,12 @@ export function EditEducationDialog({
             },
           });
           if (isErrorCreating) {
-            throw new Error();
+            throw new Error('Create-education request reported an error');
           }
           toast.success('Education information created successfully.');
           onSave();
-        } catch {
+        } catch (error) {
+          console.error('Failed to create education information:', error);
           toast.error('Error creating education information.');
         }
       }
@@ -149,12 +151,13 @@ export function EditEducationDialog({
           education_id: education?.id.toString(),
         });
         if (isErrorDeleting) {
-          throw new Error();
+          throw new Error('Delete-education request reported an error');
         }
         toast.success('Education information deleted successfully.');
         onOpenChange(false);
         onDelete(education?.id.toString());
-      } catch {
+      } catch (error) {
+        console.error('Failed to delete education information:', error);
         toast.error('Error deleting education information.');
       }
     }

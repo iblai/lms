@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -130,6 +130,52 @@ describe('useCourseMetadata', () => {
       const res = await result.current.handleFetchCourseCompletionOutlines('course-1');
 
       expect(res).toEqual({});
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // All three fetchers degrade to an empty value, which the UI renders as
+    // "no metadata" — indistinguishable from an outage without a report.
+    it('reports a course metadata failure and returns an empty object', async () => {
+      mockGetCourseMetaData.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useCourseMetadata());
+
+      await expect(result.current.handleFetchCourseMetaData('course-1')).resolves.toEqual({});
+      expect(errorSpy).toHaveBeenCalledWith('Failed to fetch course metadata:', expect.any(Error));
+    });
+
+    it('reports a course eligibility failure and returns null', async () => {
+      mockGetCourseEligibility.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useCourseMetadata());
+
+      await expect(result.current.handleFetchCourseEligibility('course-1')).resolves.toBeNull();
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to fetch course eligibility:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a completion-outlines failure and returns an empty object', async () => {
+      mockGetCourseCompletionOutlines.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useCourseMetadata());
+
+      await expect(result.current.handleFetchCourseCompletionOutlines('course-1')).resolves.toEqual(
+        {},
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to fetch course completion outlines:',
+        expect.any(Error),
+      );
     });
   });
 });

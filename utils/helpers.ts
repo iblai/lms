@@ -458,6 +458,7 @@ export const parseMarkdownLinks = (markdownString: string): MarkdownMenuItem[] =
 
     return links;
   } catch (error) {
+    console.error('Failed to extract markdown links:', error);
     return [];
   }
 };

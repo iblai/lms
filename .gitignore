@@ -83,3 +83,6 @@ key.properties
 # Claude Code agent worktrees — throwaway checkouts of this repo.
 # Never part of the tree; excluded from lint/typecheck/test/coverage too.
 .claude/worktrees/
+
+# Sentry
+.sentryclirc

@@ -10,7 +10,7 @@ import { DefaultEmptyBox } from '../default-empty-box';
 try {
   pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 } catch (error) {
-  console.log('Failed to set pdfjs worker source:', error);
+  console.error('Failed to set pdfjs worker source:', error);
 }
 
 const ResumeBoxSkeleton = () => {

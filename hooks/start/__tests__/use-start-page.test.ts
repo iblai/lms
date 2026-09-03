@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -497,6 +497,39 @@ describe('useStartPage', () => {
       });
 
       expect(mockCreateUserResume).toHaveBeenCalled();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // This submission failure has no toast either, so the report is the only
+    // trace that a learner's roles and skills were never saved.
+    it('reports a failed roles/skills submission', async () => {
+      mockHandleDesiredRolesCreate.mockResolvedValue(false);
+      mockHandleSkillsCreate.mockResolvedValue(false);
+      mockUpdateUserMetadata.mockResolvedValue({});
+
+      const { result } = renderHook(() => useStartPage());
+      await act(async () => {
+        await result.current.handleSubmit();
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to submit start-page roles and skills:',
+        expect.objectContaining({
+          message: 'Failed to update your roles and skills. Please try again.',
+        }),
+      );
+      expect(mockPush).not.toHaveBeenCalled();
     });
   });
 });

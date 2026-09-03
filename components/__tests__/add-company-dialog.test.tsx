@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 vi.mock('@/utils/helpers', () => ({
@@ -7,8 +7,13 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: vi.fn(() => 'test-user'),
 }));
 
+const { mockCreateUserCompany, mockCreateState } = vi.hoisted(() => ({
+  mockCreateUserCompany: vi.fn(),
+  mockCreateState: { isError: false },
+}));
+
 vi.mock('@/services/career', () => ({
-  useCreateUserCompanyMutation: vi.fn(() => [vi.fn(), { isError: false }]),
+  useCreateUserCompanyMutation: vi.fn(() => [mockCreateUserCompany, mockCreateState]),
   useGetUserCompaniesQuery: vi.fn(() => ({ data: [] })),
 }));
 
@@ -30,7 +35,16 @@ vi.mock('@/components/ui/dialog', () => ({
 }));
 
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div data-testid="select">{children}</div>,
+  // Exposes a control the tests can use to satisfy the Select's validator,
+  // which the real Radix trigger can't drive in jsdom.
+  Select: ({ children, onValueChange }: any) => (
+    <div data-testid="select">
+      <button type="button" data-testid="select-pick" onClick={() => onValueChange?.('Technology')}>
+        pick
+      </button>
+      {children}
+    </div>
+  ),
   SelectContent: ({ children }: any) => <div>{children}</div>,
   SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
@@ -108,5 +122,58 @@ describe('AddCompanyDialog', () => {
     render(<AddCompanyDialog {...defaultProps} />);
     screen.getByText('Cancel').click();
     expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    const submit = async () => {
+      fireEvent.change(screen.getByPlaceholderText('e.g Google'), {
+        target: { value: 'Acme Inc' },
+      });
+      fireEvent.change(screen.getByPlaceholderText('e.g https://www.example.com'), {
+        target: { value: 'https://acme.example.com' },
+      });
+      fireEvent.click(screen.getByTestId('select-pick'));
+      await act(async () => {
+        fireEvent.click(screen.getByText('Save'));
+      });
+    };
+
+    beforeEach(() => {
+      mockCreateState.isError = false;
+      mockCreateUserCompany.mockResolvedValue({});
+    });
+
+    it('reports a rejected create request alongside the toast', async () => {
+      mockCreateUserCompany.mockRejectedValue(new Error('service down'));
+      render(<AddCompanyDialog {...defaultProps} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to create company:', expect.any(Error));
+    });
+
+    // The mutation resolves but the query state flags an error; the component
+    // throws a named Error so the report says which request failed.
+    it('reports a create request that comes back flagged as failed', async () => {
+      mockCreateState.isError = true;
+      render(<AddCompanyDialog {...defaultProps} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to create company:',
+        expect.objectContaining({ message: 'Create-company request reported an error' }),
+      );
+    });
   });
 });

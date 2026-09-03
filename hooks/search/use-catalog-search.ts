@@ -22,7 +22,7 @@ export const useCatalogSearch = () => {
       );
       return response;
     } catch (error) {
-      console.error(JSON.stringify(error));
+      console.error('Catalog search request failed:', error);
       return null;
     }
   };

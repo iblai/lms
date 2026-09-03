@@ -50,6 +50,7 @@ export const useProfilePathways = ({
         ) !== -1
       );
     } catch (error) {
+      console.error('Failed to check pathway enrollment:', error);
       return false;
     }
   };
@@ -71,7 +72,7 @@ export const useProfilePathways = ({
       setPathwayCompletions(pathwayCompletions as PathwayCompletionResponse[]);
       setPathwayCompletionsLoading(false);
     } catch (error) {
-      console.error(JSON.stringify(error));
+      console.error('Failed to fetch pathway completions:', error);
       setPathwayCompletions([]);
       setPathwayCompletionsLoading(false);
     }

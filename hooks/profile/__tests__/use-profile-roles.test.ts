@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -91,6 +91,35 @@ describe('useProfileRoles', () => {
       });
 
       expect(toast.success).toHaveBeenCalled();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a role-creation failure alongside the toast', async () => {
+      mockCreateCatalogRole.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useProfileRoles());
+
+      let response: unknown;
+      await act(async () => {
+        response = await result.current.handleDesiredRolesCreate({
+          roles: [{ name: 'Developer' }],
+          user_id: 42,
+        } as never);
+      });
+
+      expect(response).toBe(false);
+      expect(toast.error).toHaveBeenCalledWith('Failed to create roles');
+      expect(errorSpy).toHaveBeenCalledWith('Failed to create catalog roles:', expect.any(Error));
     });
   });
 });

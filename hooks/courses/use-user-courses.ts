@@ -96,6 +96,7 @@ export const useUserCourses = ({
           break;
       }
     } catch (error) {
+      console.error('Failed to fetch user courses:', error);
       setUserCoursesWithMetaData([]);
       setFilteredCoursesWithMetaData([]);
       setIsLoadingCoursesMetaData(false);
@@ -121,6 +122,7 @@ export const useUserCourses = ({
       setFilteredCoursesWithMetaData(coursesWithMetaData);
       setIsLoadingCoursesMetaData(false);
     } catch (error) {
+      console.error('Failed to fetch metadata for user courses:', error);
       setUserCoursesWithMetaData([]);
       setFilteredCoursesWithMetaData([]);
       setIsLoadingCoursesMetaData(false);

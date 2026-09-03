@@ -50,7 +50,8 @@ export const useCourseImages = (courseIds: string[]) => {
           const image = resolveLmsAssetUrl(data?.course_image_asset_path);
           if (!image || cancelled) continue;
           setImages((previous) => ({ ...previous, [courseId]: image }));
-        } catch {
+        } catch (error) {
+          console.error('Failed to fetch course metadata for card image:', error);
           // No metadata for this course — its card keeps the placeholder.
         }
       }
