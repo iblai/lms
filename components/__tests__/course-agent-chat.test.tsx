@@ -81,6 +81,7 @@ import { CourseAgentChat } from '../course-agent-chat';
 import { ChatContext } from '../chat-button';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { markEdxIframeLoaded, markEdxIframeUnloaded } from '@/hooks/courses/use-edx-iframe-loaded';
 
 const renderWithContext = (contextValue: typeof defaultContextValue = defaultContextValue) =>
   render(
@@ -115,9 +116,13 @@ describe('CourseAgentChat', () => {
       metadataLoaded: true,
       metadata: {},
     });
+    // The agent only mounts once the course iframe has loaded; these cases are
+    // about what it renders afterwards. The gate itself is covered separately.
+    markEdxIframeLoaded();
   });
 
   afterEach(() => {
+    markEdxIframeUnloaded();
     vi.clearAllMocks();
   });
 
@@ -726,6 +731,68 @@ describe('CourseAgentChat', () => {
       const el = container.querySelector('agent-ai') as HTMLElement;
       expect(el.getAttribute('edxcourseid')).toBe('course-v1:test+101+2024');
       expect(el.hasAttribute('edxusageid')).toBe(false);
+    });
+  });
+  describe('waiting on the course iframe', () => {
+    // The suite-wide beforeEach marks the iframe loaded; these cases are about
+    // the window before that happens.
+    beforeEach(() => {
+      markEdxIframeUnloaded();
+    });
+
+    it('shows the course-loading spinner instead of the agent until the iframe loads', async () => {
+      const { container, getByTestId } = renderWithContext();
+
+      await waitFor(() => {
+        expect(getByTestId('course-agent-chat-loading')).toBeInTheDocument();
+      });
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+      expect(container.querySelector('agent-ai')).not.toBeInTheDocument();
+    });
+
+    it('mounts the agent once the iframe reports it has loaded', async () => {
+      const { container } = renderWithContext();
+
+      await waitFor(() => {
+        expect(container.querySelector('[data-testid="course-agent-chat-loading"]')).toBeTruthy();
+      });
+
+      act(() => {
+        markEdxIframeLoaded();
+      });
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+    });
+
+    it('mounts the agent when the iframe loaded before the chat did', async () => {
+      markEdxIframeLoaded();
+
+      const { container } = renderWithContext();
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+      expect(
+        container.querySelector('[data-testid="course-agent-chat-loading"]'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('keeps the agent mounted when a unit switch reloads the iframe', async () => {
+      markEdxIframeLoaded();
+      const { container } = renderWithContext();
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+      const mounted = container.querySelector('agent-ai');
+
+      act(() => {
+        markEdxIframeUnloaded();
+      });
+
+      expect(container.querySelector('agent-ai')).toBe(mounted);
     });
   });
 });

@@ -49,6 +49,9 @@ vi.mock('lucide-react', () => ({
   FileText: () => <span data-testid="file-text">FileText</span>,
   Library: () => <span data-testid="library">Library</span>,
   PlaySquare: () => <span data-testid="play-square">PlaySquare</span>,
+  // Used by LessonCompletedDialog, rendered inside the layout.
+  CheckCircle2: () => <span data-testid="check-circle-2">CheckCircle2</span>,
+  ChevronLeft: () => <span data-testid="chevron-left">&lt;</span>,
 }));
 
 // Mock helpers
