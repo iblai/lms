@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, SquarePen } from 'lucide-react';
+import { SquarePen } from 'lucide-react';
 import { toast } from 'sonner';
 import '@iblai/agent-ai';
 import { useDispatch } from 'react-redux';
@@ -13,7 +13,9 @@ import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useDefaultMentor } from '@/hooks/use-default-mentor';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { useEdxIframeLoaded } from '@/hooks/courses/use-edx-iframe-loaded';
 import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
+import { Spinner } from '@/components/spinner';
 import type { CourseOutlineChildNode } from '@/types/courses';
 
 export function CourseAgentChat() {
@@ -32,6 +34,11 @@ export function CourseAgentChat() {
   const dispatch = useDispatch();
   const { course, currentUnitID } = useContext(CourseOutlineContext);
   const { courseID, activeTab, agentMode, courseOutline } = useContext(EdxIframeContext);
+  // The agent reads the unit the (hidden) course iframe is showing, so mounting
+  // it before that iframe has loaded both competes for the network on the tab's
+  // heaviest moment and gives the agent a unit that isn't rendered yet. Latched
+  // once true, so later unit switches never tear the mounted chat back down.
+  const edxIframeLoaded = useEdxIframeLoaded();
   const { unitAutoCompletionDisabled } = useUnitAutoCompletion({
     course,
     activeTab,
@@ -151,12 +158,8 @@ export function CourseAgentChat() {
     iframe?.contentWindow?.postMessage({ type: 'MENTOR:NEW_CHAT' }, '*');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-white">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-      </div>
-    );
+  if (isLoading || !edxIframeLoaded) {
+    return <CourseAgentChatLoading />;
   }
 
   if (!mentorInUse) {
@@ -190,6 +193,21 @@ export function CourseAgentChat() {
         extraparams: 'hide-sidebar=true&hide-navbar=true',
         ...edxCompletionProps,
       })}
+    </div>
+  );
+}
+
+// Stands in for the agent while the course iframe loads, so the tab shows the
+// app's usual loading spinner rather than an empty panel.
+function CourseAgentChatLoading() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading course…"
+      data-testid="course-agent-chat-loading"
+      className="flex h-full w-full items-center justify-center bg-white"
+    >
+      <Spinner className="h-14 w-14" />
     </div>
   );
 }

@@ -565,6 +565,66 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Agent tab renders agent-ai and keeps edX iframe wrapper hidden');
   });
 
+  test('Checkpoint 37: Agent tab holds a course-loading spinner until the edX iframe mounts', async ({
+    page,
+  }) => {
+    // Record the order in which the three markers first appear, so the assertion
+    // does not depend on catching a transient state at the right moment.
+    await page.addInitScript(() => {
+      const order: string[] = [];
+      const markers: Record<string, string> = {
+        loading: '[data-testid="course-agent-chat-loading"]',
+        edxIframe: 'iframe#edx-iframe',
+        agent: 'agent-ai',
+      };
+      const sweep = () => {
+        for (const [name, selector] of Object.entries(markers)) {
+          if (!order.includes(name) && document.querySelector(selector)) order.push(name);
+        }
+      };
+      (window as unknown as { __agentMountOrder: string[] }).__agentMountOrder = order;
+      new MutationObserver(sweep).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+      sweep();
+    });
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+
+    if (!hasAgentTab) {
+      test.skip();
+      return;
+    }
+
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+
+    await expect(page.locator('agent-ai').first()).toBeAttached({ timeout: 60_000 });
+
+    const order = await page.evaluate(
+      () => (window as unknown as { __agentMountOrder: string[] }).__agentMountOrder,
+    );
+
+    // The chat is the last of the three to appear: the spinner stands in for it,
+    // and the edX iframe is mounted before the agent takes over.
+    expect(order).toContain('loading');
+    expect(order).toContain('edxIframe');
+    expect(order.indexOf('agent')).toBe(order.length - 1);
+    expect(order.indexOf('loading')).toBeLessThan(order.indexOf('agent'));
+    expect(order.indexOf('edxIframe')).toBeLessThan(order.indexOf('agent'));
+
+    logger.info(`Agent tab mount order: ${order.join(' → ')}`);
+  });
+
   test('Checkpoint 15: Agent tab route redirect to course tab for courses with agent_content_mode !== true', async ({
     page,
   }) => {

@@ -64,10 +64,11 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useMediaQuery } from 'react-responsive';
 import { cn } from '@/lib/utils';
-
-// Safety net for mentor unit notifications when the course iframe never fires
-// a load event (e.g. an exam gate keeps it unmounted).
-const EDX_IFRAME_LOAD_FALLBACK_MS = 15_000;
+// Shared with the agent chat, which gates its own mount on the same signal.
+import {
+  EDX_IFRAME_LOAD_FALLBACK_MS,
+  EDX_IFRAME_LOADED_EVENT,
+} from '@/hooks/courses/use-edx-iframe-loaded';
 
 // Tab identity is derived from the route rather than pushed up from each page's
 // mount effect: an effect lands one commit *after* the new page renders, so the
@@ -312,8 +313,8 @@ export default function CourseContentLayout({
     const handleIframeLoaded = () => {
       edxIframeLoadedRef.current = true;
     };
-    window.addEventListener('edx-iframe:loaded', handleIframeLoaded);
-    return () => window.removeEventListener('edx-iframe:loaded', handleIframeLoaded);
+    window.addEventListener(EDX_IFRAME_LOADED_EVENT, handleIframeLoaded);
+    return () => window.removeEventListener(EDX_IFRAME_LOADED_EVENT, handleIframeLoaded);
   }, []);
 
   // Defers the toast + mentor:unit-switched dispatch until the hidden course
@@ -331,14 +332,14 @@ export default function CourseContentLayout({
     }
     const cancel = () => {
       clearTimeout(fallbackTimer);
-      window.removeEventListener('edx-iframe:loaded', send);
+      window.removeEventListener(EDX_IFRAME_LOADED_EVENT, send);
     };
     const send = () => {
       cancel();
       dispatch();
     };
     const fallbackTimer = setTimeout(send, EDX_IFRAME_LOAD_FALLBACK_MS);
-    window.addEventListener('edx-iframe:loaded', send, { once: true });
+    window.addEventListener(EDX_IFRAME_LOADED_EVENT, send, { once: true });
     return cancel;
   };
 
