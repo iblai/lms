@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
@@ -33,6 +33,13 @@ export interface LessonCompletedMessage {
 export const LESSON_COMPLETED_MESSAGE_TYPE = 'lesson.completed';
 
 /**
+ * How long the completed lesson stays on screen before the dialog opens. The
+ * agent announces the completion in its own words first, so interrupting the
+ * learner the same instant reads as the dialog talking over it.
+ */
+export const LESSON_COMPLETED_DIALOG_DELAY_MS = 2000;
+
+/**
  * Watches for the mentor's `lesson.completed` postMessage, refreshes the course
  * outline so the sidebar shows the new completion, and offers to move on.
  *
@@ -43,6 +50,16 @@ export function LessonCompletedDialog() {
   const { selectLesson, currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
   const { courseOutline, courseID } = useContext(EdxIframeContext);
   const [completedLesson, setCompletedLesson] = useState<LessonCompletedMessage | null>(null);
+  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelPendingOpen = () => {
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    openTimerRef.current = null;
+  };
+
+  // Unmount-only, so a new `refetchCourseOutline` identity re-subscribing the
+  // listener below never cancels an open the learner is already waiting on.
+  useEffect(() => cancelPendingOpen, []);
 
   const hasOutline = !_.isEmpty(courseOutline) && !!courseID;
   // A fresh navigator per render, positioned on the current unit — the same
@@ -69,7 +86,13 @@ export function LessonCompletedDialog() {
       // whether a learner is interrupted — re-check rather than trust it.
       if (message.completion !== 1) return;
 
-      setCompletedLesson(message as LessonCompletedMessage);
+      // Held back by `LESSON_COMPLETED_DIALOG_DELAY_MS`; a second completion
+      // arriving inside that window supersedes the one still waiting.
+      cancelPendingOpen();
+      openTimerRef.current = setTimeout(() => {
+        openTimerRef.current = null;
+        setCompletedLesson(message as LessonCompletedMessage);
+      }, LESSON_COMPLETED_DIALOG_DELAY_MS);
       // The sidebar's completion ticks come from the outline, so pull it fresh.
       // `false` keeps the loading state off: swapping the outline out for a
       // spinner behind the dialog would flash the whole page.
@@ -80,7 +103,10 @@ export function LessonCompletedDialog() {
     return () => window.removeEventListener('message', handleMessage);
   }, [refetchCourseOutline]);
 
-  const close = () => setCompletedLesson(null);
+  const close = () => {
+    cancelPendingOpen();
+    setCompletedLesson(null);
+  };
 
   const goToPrevious = () => {
     const target = navigator.moveToPrevious();

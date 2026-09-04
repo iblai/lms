@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -20,7 +20,10 @@ vi.mock('lodash', () => {
   return { default: { isEmpty }, isEmpty };
 });
 
-import { LessonCompletedDialog } from '../lesson-completed-dialog';
+import {
+  LESSON_COMPLETED_DIALOG_DELAY_MS,
+  LessonCompletedDialog,
+} from '../lesson-completed-dialog';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 
@@ -89,11 +92,23 @@ const postFromMentor = async (data: unknown, origin = MENTOR_ORIGIN) => {
   });
 };
 
+/** Runs out the delay the dialog waits through before it opens. */
+const flushOpenDelay = async () => {
+  await act(async () => {
+    vi.advanceTimersByTime(LESSON_COMPLETED_DIALOG_DELAY_MS);
+  });
+};
+
 describe('LessonCompletedDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     selectLesson = vi.fn();
     refetchCourseOutline = vi.fn();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('stays closed until a lesson.completed frame arrives', () => {
@@ -104,14 +119,32 @@ describe('LessonCompletedDialog', () => {
   it('opens naming the completed lesson and refetches the outline', async () => {
     renderDialog();
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => {
-      expect(screen.getByText('Lesson complete')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     expect(
       screen.getByText(/You've completed "Benefits of AI For Education\."/),
     ).toBeInTheDocument();
     expect(refetchCourseOutline).toHaveBeenCalledWith(false);
+  });
+
+  it('holds the dialog back for the delay, refreshing the outline straight away', async () => {
+    renderDialog();
+    await postFromMentor(completedFrame);
+
+    // The sidebar tick updates immediately; only the interruption waits.
+    expect(refetchCourseOutline).toHaveBeenCalledWith(false);
+    expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+
+    await act(async () => {
+      vi.advanceTimersByTime(LESSON_COMPLETED_DIALOG_DELAY_MS - 1);
+    });
+    expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
   });
 
   it('ignores frames from another origin', async () => {
@@ -141,8 +174,9 @@ describe('LessonCompletedDialog', () => {
   it('offers both directions from a middle unit and navigates forward', async () => {
     renderDialog({ currentUnitID: UNIT_2 });
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => expect(screen.getByText('Lesson complete')).toBeInTheDocument());
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous unit/i })).toBeInTheDocument();
 
     await act(async () => {
@@ -154,8 +188,9 @@ describe('LessonCompletedDialog', () => {
   it('navigates backward from a middle unit', async () => {
     renderDialog({ currentUnitID: UNIT_2 });
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => expect(screen.getByText('Lesson complete')).toBeInTheDocument());
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /previous unit/i }));
     });
@@ -165,8 +200,9 @@ describe('LessonCompletedDialog', () => {
   it('hides Previous on the first unit', async () => {
     renderDialog({ currentUnitID: UNIT_1 });
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => expect(screen.getByText('Lesson complete')).toBeInTheDocument());
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /previous unit/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /next unit/i })).toBeInTheDocument();
   });
@@ -174,8 +210,9 @@ describe('LessonCompletedDialog', () => {
   it('hides Next on the last unit', async () => {
     renderDialog({ currentUnitID: UNIT_3 });
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => expect(screen.getByText('Lesson complete')).toBeInTheDocument());
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /next unit/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous unit/i })).toBeInTheDocument();
   });
@@ -183,8 +220,9 @@ describe('LessonCompletedDialog', () => {
   it('offers no navigation while the outline is still empty', async () => {
     renderDialog({ courseOutline: {} });
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => expect(screen.getByText('Lesson complete')).toBeInTheDocument());
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /next unit/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /previous unit/i })).not.toBeInTheDocument();
   });
@@ -192,22 +230,22 @@ describe('LessonCompletedDialog', () => {
   it('closes without navigating on "Stay here"', async () => {
     renderDialog();
     await postFromMentor(completedFrame);
+    await flushOpenDelay();
 
-    await waitFor(() => expect(screen.getByText('Lesson complete')).toBeInTheDocument());
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /stay here/i }));
     });
 
-    await waitFor(() => expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument());
+    expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
     expect(selectLesson).not.toHaveBeenCalled();
   });
 
   it('falls back to generic copy when the frame carries no display name', async () => {
     renderDialog();
     await postFromMentor({ ...completedFrame, display_name: undefined });
+    await flushOpenDelay();
 
-    await waitFor(() => {
-      expect(screen.getByText(/You've completed this lesson\./)).toBeInTheDocument();
-    });
+    expect(screen.getByText(/You've completed this lesson\./)).toBeInTheDocument();
   });
 });
