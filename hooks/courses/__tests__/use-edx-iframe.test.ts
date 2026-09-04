@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
 
 vi.mock('@/utils/helpers', () => ({
   getUserName: vi.fn(() => 'test-user'),
@@ -426,6 +426,63 @@ describe('useEdxIframe', () => {
       const modules = [{ id: 'module-1' }];
       const info = result.current.getParentsInfosFromSublessonId(modules, 'sublesson-1');
       expect(info).toEqual({ module: {}, lesson: {} });
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports an unexpected course outline shape', () => {
+      const { result } = renderHook(() => useEdxIframe());
+
+      // `children[0].children` missing -> the traversal throws and falls back.
+      expect(
+        result.current.getFirstAvailableUnit({ start: '2020-01-01', children: [{}] }),
+      ).toBeNull();
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Unexpected course outline shape while resolving first available unit:',
+        expect.any(Error),
+      );
+    });
+
+    // The learner silently gets an iframe URL with no SSO token, i.e. a login
+    // wall inside the course — worth reporting even though the UI continues.
+    it('reports a failed SSO token exchange and still calls back', async () => {
+      mockGetEdxSsoAuthToken.mockRejectedValue(new Error('sso down'));
+      const { result } = renderHook(() => useEdxIframe());
+      const callback = vi.fn();
+
+      // A plain block id (no `:`) goes straight to the SSO URL builder.
+      result.current.getIframeURL('course-1', 'xblock-id', callback);
+
+      await waitFor(() => expect(callback).toHaveBeenCalled());
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to build edX SSO iframe URL; falling back to unauthenticated URL:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a sublesson that cannot be located in the outline', () => {
+      const { result } = renderHook(() => useEdxIframe());
+
+      expect(
+        result.current.getParentsInfosFromSublessonId(
+          [{ children: [{ children: [{ id: 'other' }] }] }],
+          'missing',
+        ),
+      ).toEqual({ module: {}, lesson: {} });
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to locate sublesson in course outline:',
+        expect.objectContaining({ message: 'Sublesson not found' }),
+      );
     });
   });
 });

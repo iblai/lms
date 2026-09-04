@@ -39,7 +39,7 @@ export function ProfileInfoCards() {
       setTopContent(sortedData[0]);
       setTopContentLoading(false);
     } catch (error) {
-      console.error(JSON.stringify(error));
+      console.error('Failed to load profile info cards:', error);
       setTopContent({
         name: '-',
         time_invested: 0,

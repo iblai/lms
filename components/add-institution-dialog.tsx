@@ -48,11 +48,12 @@ export function AddInstitutionDialog({ open, onOpenChange }: AddInstitutionDialo
           },
         });
         if (isErrorCreating) {
-          throw new Error();
+          throw new Error('Create-institution request reported an error');
         }
         toast.success('Institution created successfully');
         onOpenChange(false);
-      } catch {
+      } catch (error) {
+        console.error('Failed to create institution:', error);
         toast.error('Failed to create institution');
       }
     },

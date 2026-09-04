@@ -270,7 +270,9 @@ export const useStartPage = () => {
       }
       resetReportedSkills();
       router.push('/home');
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to submit start-page roles and skills:', error);
+    }
   };
 
   const handleResumeSelect = (file: File | null) => {

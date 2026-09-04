@@ -37,7 +37,7 @@ export const useAllTimeStats = () => {
       );
       let skillsCount = 0;
       if (isErrorGetUserDesiredSkills && isErrorGetUserReportedSkills) {
-        throw new Error();
+        throw new Error('Both reported- and desired-skills requests failed');
       }
       if (!isErrorGetUserReportedSkills) {
         skillsCount = reportedSkills?.data?.skills?.length || 0;
@@ -55,7 +55,8 @@ export const useAllTimeStats = () => {
         skillsCount += earnedSkills?.data?.skills?.length || 0;
       }
       setSkills(skillsCount);
-    } catch {
+    } catch (error) {
+      console.error('Failed to load all-time skills count:', error);
       setSkills(0);
     }
   };
@@ -70,10 +71,11 @@ export const useAllTimeStats = () => {
         true,
       );
       if (isErrorGetUserCredentials || isEmpty(response?.data)) {
-        throw new Error();
+        throw new Error('Credentials request failed or returned no data');
       }
       setCredentials(response?.data?.data?.length || 0);
-    } catch {
+    } catch (error) {
+      console.error('Failed to load all-time credentials count:', error);
       setCredentials(0);
     }
   };
@@ -87,10 +89,11 @@ export const useAllTimeStats = () => {
         true,
       );
       if (isErrorGetUserEnrolledCourses || isEmpty(response.data)) {
-        throw new Error();
+        throw new Error('Enrolled courses request failed or returned no data');
       }
       setCourses(response?.data?.count || 0);
-    } catch {
+    } catch (error) {
+      console.error('Failed to load all-time courses count:', error);
       setCourses(0);
     }
   };

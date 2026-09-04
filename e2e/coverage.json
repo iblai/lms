@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-08-25",
+  "lastUpdated": "2026-09-03",
   "summary": {
-    "totalCheckpoints": 251,
-    "coveredCheckpoints": 251,
+    "totalCheckpoints": 252,
+    "coveredCheckpoints": 252,
     "percent": 100,
     "totalJourneys": 35
   },
@@ -202,7 +202,8 @@
         "hooks/courses/edx-iframe-context.ts",
         "services/course-metadata.ts",
         "components/course-media-dropdown.tsx",
-        "hooks/courses/use-course-user-roles.ts"
+        "hooks/courses/use-course-user-roles.ts",
+        "hooks/courses/use-edx-iframe-loaded.ts"
       ],
       "checkpoints": [
         {
@@ -383,6 +384,11 @@
         {
           "id": "tabs-36",
           "description": "Staff tabs follow the course-role gates: course-staff / course-instructor (and platform admins) see every staff tab including Authoring, course-limited-staff sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees none of them",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-37",
+          "description": "The `/agent` tab shows a course-loading spinner and only mounts `<agent-ai>` once the hidden edX iframe has loaded",
           "status": "covered"
         }
       ]

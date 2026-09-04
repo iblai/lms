@@ -570,4 +570,35 @@ describe('EdxIframe - JWT PostMessage', () => {
       });
     });
   });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // Previously logged as JSON.stringify(error), which reaches Sentry as "{}".
+    it('reports a failed exam-info lookup with the error object', async () => {
+      mockFindSequentialParent.mockImplementation(() => {
+        throw new Error('outline walk failed');
+      });
+
+      // The exam-info lookup only runs on the course/agent tabs.
+      renderEdxIframe({ ...defaultContextValue, activeTab: 'course' });
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch exam info for subsection:',
+          expect.any(Error),
+        );
+      });
+      // The iframe still loads; only the exam banner is dropped.
+      expect(mockSetCurrentlyInExamSubsection).toHaveBeenCalledWith(false);
+    });
+  });
 });

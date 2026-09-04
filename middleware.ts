@@ -29,7 +29,8 @@ const assetCdnOrigin = (): string[] => {
   if (!/^https?:\/\//i.test(cdn)) cdn = `https://${cdn}`;
   try {
     return [new URL(cdn).origin];
-  } catch {
+  } catch (error) {
+    console.error('Invalid NEXT_PUBLIC_ASSET_CDN; CSP will omit the CDN origin:', error);
     return [];
   }
 };

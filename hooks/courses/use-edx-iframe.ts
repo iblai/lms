@@ -79,6 +79,7 @@ export const useEdxIframe = () => {
         if (element) return element; // Return the element if found
       }
     } catch (e) {
+      console.error('Unexpected course outline shape while resolving first available unit:', e);
       // In case of any error, safely return the upper level element if available
       if (
         data.hasOwnProperty('children') &&
@@ -176,6 +177,10 @@ export const useEdxIframe = () => {
       }
       callback(url);
     } catch (error) {
+      console.error(
+        'Failed to build edX SSO iframe URL; falling back to unauthenticated URL:',
+        error,
+      );
       callback(url);
     }
   }
@@ -293,6 +298,7 @@ export const useEdxIframe = () => {
       }
       throw new Error('Sublesson not found');
     } catch (error) {
+      console.error('Failed to locate sublesson in course outline:', error);
       return {
         module: {},
         lesson: {},
@@ -312,6 +318,6 @@ export const useEdxIframe = () => {
     getNextUnitIframe,
     addBookmarksTab,
     getParentsInfosFromSublessonId,
-    findVerticalById
+    findVerticalById,
   };
 };

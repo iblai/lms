@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -124,6 +124,32 @@ describe('ProfileInfoCards', () => {
     render(<ProfileInfoCards />);
     await waitFor(() => {
       expect(screen.getByText('Top Content')).toBeInTheDocument();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // Previously logged as JSON.stringify(error), which reaches Sentry as "{}".
+    it('reports an activity fetch failure with the error object', async () => {
+      mockGetPerLearnerActivity.mockRejectedValue(new Error('fail'));
+
+      render(<ProfileInfoCards />);
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to load profile info cards:',
+          expect.any(Error),
+        );
+      });
     });
   });
 });

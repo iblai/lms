@@ -440,6 +440,7 @@ export default function ProgramDetailPage() {
       setEnrollmentStatus(true);
       setTimeout(() => setIsEnrollmentSubmitting(false), 500);
     } catch (error) {
+      console.error('Failed to enroll into program:', error);
       toast.error('Failed to enroll into program');
       setIsEnrollmentSubmitting(false);
     }
@@ -452,7 +453,8 @@ export default function ProgramDetailPage() {
         Array.isArray(response.data) &&
           response.data.findIndex((pre: any) => pre.active && pre?.program_id === programId) !== -1,
       );
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch program enrollment status:', error);
       setEnrollmentStatus(false);
     }
   };
@@ -461,7 +463,8 @@ export default function ProgramDetailPage() {
     try {
       const response = await getProgramCompletion([{ programKey, username: getUserName() }]);
       setProgramCompletion(response.data as ProgramCompletionResponse);
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch program completion:', error);
       setProgramCompletion(null);
     }
   };
@@ -513,7 +516,8 @@ export default function ProgramDetailPage() {
 
         setProgramDetail({ ...programInfo, courses: programCourses });
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch program details:', error);
       toast.error('Error fetching program details');
     } finally {
       setProgramDetailLoading(false);
@@ -552,7 +556,8 @@ export default function ProgramDetailPage() {
           setLoadingState('failure');
           router.push(`/platform/${tenant}/error/403`);
         }
-      } catch {
+      } catch (error) {
+        console.error('Failed to fetch program:', error);
         if (cancelled) return;
         setLoadingState('failure');
         router.push(`/platform/${tenant}/error/403`);

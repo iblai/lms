@@ -56,7 +56,7 @@ export const useProfilePrograms = ({
       setProgramCompletions(programCompletions as ProgramCompletionResponse[]);
       setProgramCompletionsLoading(false);
     } catch (error) {
-      console.error(JSON.stringify(error));
+      console.error('Failed to fetch program completions:', error);
       setProgramCompletions([]);
       setProgramCompletionsLoading(false);
     }

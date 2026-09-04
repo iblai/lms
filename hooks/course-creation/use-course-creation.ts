@@ -115,11 +115,13 @@ export function useCourseCreation() {
       toast.success('Course created successfully.');
       setCreatedCourseKey(courseKey);
     } catch (error) {
+      console.error('Failed to create course:', error);
       // Roll back the partially created course so nothing incomplete is left.
       if (courseKey) {
         try {
           await deleteCourse({ courseKey }).unwrap();
-        } catch {
+        } catch (rollbackError) {
+          console.error('Failed to roll back partially created course:', rollbackError);
           // Rollback is best-effort — surface the original error below.
         }
       }

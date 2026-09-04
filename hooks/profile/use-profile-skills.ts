@@ -76,6 +76,7 @@ export const useProfileSkills = (showToast: boolean = true) => {
       }
       setFetchedSkills(skills?.data?.results || []);
     } catch (error) {
+      console.error('Failed to fetch skills:', error);
       toast.error('Failed to fetch skills');
       setFetchedSkills([]);
     }
@@ -246,6 +247,7 @@ export const useProfileSkills = (showToast: boolean = true) => {
       }
       return true;
     } catch (error) {
+      console.error('Failed to create user reported skills:', error);
       toast.error('Failed to create skills');
       return false;
     }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -705,6 +705,48 @@ describe('CreatePathwayModal', () => {
     // The selected course should still be visible
     await waitFor(() => {
       expect(screen.queryByText('Python Basics')).toBeInTheDocument();
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    const createPathway = async () => {
+      render(<CreatePathwayModal {...defaultProps} />);
+      fireEvent.change(screen.getByPlaceholderText('Enter pathway name'), {
+        target: { value: 'My Pathway' },
+      });
+
+      await waitFor(() => expect(screen.queryByText('Python Basics')).toBeInTheDocument());
+      await act(async () => {
+        screen
+          .getByText('Python Basics')
+          .closest('div.border')
+          ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Create Pathway'));
+        await Promise.resolve();
+      });
+    };
+
+    it('reports a rejected create request alongside the toast', async () => {
+      mockCreateCatalogPathway.mockRejectedValue(new Error('Network error'));
+
+      await createPathway();
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to create pathway:', expect.any(Error));
+      });
     });
   });
 });

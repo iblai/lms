@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -767,6 +767,32 @@ describe('useDiscover', () => {
         });
       });
       expect(result.current.displayCards.map((card) => card.id)).toEqual(['c2']);
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a malformed facet payload and falls back to no facets', async () => {
+      // A null facet bucket makes `Object.keys` throw while walking it.
+      mockCatalogQuery.facetsData = { facets: { subject: null } };
+
+      renderHook(() => useDiscover({}));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to build discover facets:',
+          expect.any(TypeError),
+        );
+      });
     });
   });
 });

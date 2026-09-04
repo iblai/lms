@@ -52,7 +52,8 @@ export async function generateMetadata({
       canonicalUrl,
       isPublic,
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to build program metadata:', error);
     return { robots: { index: false, follow: false } };
   }
 }
@@ -87,7 +88,8 @@ export default async function ProgramLayout({
         );
       }
     }
-  } catch {
+  } catch (error) {
+    console.error('Failed to build program JSON-LD:', error);
     jsonLd = [];
   }
 

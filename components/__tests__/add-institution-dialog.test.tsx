@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 vi.mock('@/utils/helpers', () => ({
@@ -7,8 +7,13 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: vi.fn(() => 'test-user'),
 }));
 
+const { mockCreateUserInstitution, mockCreateState } = vi.hoisted(() => ({
+  mockCreateUserInstitution: vi.fn(),
+  mockCreateState: { isError: false },
+}));
+
 vi.mock('@/services/career', () => ({
-  useCreateUserInstitutionMutation: vi.fn(() => [vi.fn(), { isError: false }]),
+  useCreateUserInstitutionMutation: vi.fn(() => [mockCreateUserInstitution, mockCreateState]),
 }));
 
 vi.mock('@iblai/iblai-api', () => ({
@@ -36,7 +41,17 @@ vi.mock('@/components/ui/dialog', () => ({
 }));
 
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div data-testid="select">{children}</div>,
+  // Exposes a control the tests can use to satisfy each Select's validator,
+  // which the real Radix trigger can't drive in jsdom. The validators only
+  // check for a non-empty value, so one placeholder value serves both selects.
+  Select: ({ children, onValueChange }: any) => (
+    <div data-testid="select">
+      <button type="button" data-testid="select-pick" onClick={() => onValueChange?.('selected')}>
+        pick
+      </button>
+      {children}
+    </div>
+  ),
   SelectContent: ({ children }: any) => <div>{children}</div>,
   SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
@@ -138,5 +153,58 @@ describe('AddInstitutionDialog', () => {
     render(<AddInstitutionDialog {...defaultProps} />);
     screen.getByText('Cancel').click();
     expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    const submit = async () => {
+      const fill = (placeholder: string, value: string) =>
+        fireEvent.change(screen.getByPlaceholderText(placeholder), { target: { value } });
+
+      fill('e.g Harvard University', 'Acme University');
+      fill('e.g WASC', 'WASC');
+      fill('e.g New York, NY', 'New York, NY');
+      fill('e.g https://www.example.com', 'https://acme.example.edu');
+      screen.getAllByTestId('select-pick').forEach((button) => fireEvent.click(button));
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Save'));
+      });
+    };
+
+    beforeEach(() => {
+      mockCreateState.isError = false;
+      mockCreateUserInstitution.mockResolvedValue({});
+    });
+
+    it('reports a rejected create request alongside the toast', async () => {
+      mockCreateUserInstitution.mockRejectedValue(new Error('service down'));
+      render(<AddInstitutionDialog {...defaultProps} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to create institution:', expect.any(Error));
+    });
+
+    it('reports a create request that comes back flagged as failed', async () => {
+      mockCreateState.isError = true;
+      render(<AddInstitutionDialog {...defaultProps} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to create institution:',
+        expect.objectContaining({ message: 'Create-institution request reported an error' }),
+      );
+    });
   });
 });

@@ -114,10 +114,17 @@ jobs:
             if [ -n "${{ inputs.next_image_patterns }}" ]; then
               BUILD_ARGS+=(--build-arg "NEXT_IMAGE_PATTERNS=${{ inputs.next_image_patterns }}")
             fi
-            if [ -n "$SENTRY_AUTH_TOKEN" ]; then
-              BUILD_ARGS+=(--build-arg "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN")
-            fi
           fi
+
+          # Apps whose Dockerfile declares ARG SENTRY_AUTH_TOKEN. Without the
+          # token their build skips sourcemap generation + upload entirely.
+          case "${{ inputs.app_name }}" in
+            mentor|lms)
+              if [ -n "$SENTRY_AUTH_TOKEN" ]; then
+                BUILD_ARGS+=(--build-arg "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN")
+              fi
+              ;;
+          esac
 
           # When the asset CDN is configured, bake versioned /_next/* URLs
           # (<cdn>/apps/<app>/<version>/…) into the image; the publish step below

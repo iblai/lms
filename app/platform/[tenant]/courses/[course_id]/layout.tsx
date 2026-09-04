@@ -53,7 +53,8 @@ export async function generateMetadata({
       siteName: course.org || undefined,
       isPublic,
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to build course metadata:', error);
     return { robots: { index: false, follow: false } };
   }
 }
@@ -90,7 +91,8 @@ export default async function CourseLayout({
         );
       }
     }
-  } catch {
+  } catch (error) {
+    console.error('Failed to build course JSON-LD:', error);
     jsonLd = [];
   }
 

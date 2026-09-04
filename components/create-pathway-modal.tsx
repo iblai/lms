@@ -122,7 +122,7 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
         },
       ]);
       if (isCreateCatalogPathwayError) {
-        throw new Error();
+        throw new Error('Create-pathway request reported an error');
       }
       toast.success('Pathway created successfully');
       onSave(response.data);
@@ -133,7 +133,8 @@ export function CreatePathwayModal({ open, onOpenChange, onSave }: CreatePathway
       setSearchedCourses([]);
       setSearchedResources([]);
       onOpenChange(false);
-    } catch {
+    } catch (error) {
+      console.error('Failed to create pathway:', error);
       toast.error('Failed to create pathway.');
     }
   };

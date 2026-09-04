@@ -11,6 +11,7 @@ import { CourseOutlineContext } from '@/contexts/course-outline-context';
 // @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
+import { markEdxIframeLoaded, markEdxIframeUnloaded } from '@/hooks/courses/use-edx-iframe-loaded';
 import { cn } from '@/lib/utils';
 
 // Only mounted inside a timed/special-exam subsection (examInfo set); defer its chunk.
@@ -76,7 +77,7 @@ export const EdxIframe = () => {
               setExamInfo(_examInfo?.data || null);
             }
           } catch (error) {
-            console.error(JSON.stringify(error));
+            console.error('Failed to fetch exam info for subsection:', error);
             setCurrentlyInExamSubsection(false);
           }
           //setIsExamSubsection(url.includes('exam'));
@@ -98,6 +99,7 @@ export const EdxIframe = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   useEffect(() => {
     setIframeLoaded(false);
+    markEdxIframeUnloaded();
   }, [iframeUrl]);
 
   // The agent decides when a unit is complete (see `useUnitAutoCompletion`,
@@ -235,9 +237,10 @@ export const EdxIframe = () => {
                 setFetchingIframeData(false);
                 setIframeLoaded(true);
                 refetchCourseOutline(false);
-                // The agent tab keeps this iframe hidden and defers its mentor
-                // unit notifications until the iframe has actually loaded.
-                window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+                // The agent tab keeps this iframe hidden, and defers both the
+                // mentor's mount and its unit notifications until the iframe
+                // has actually loaded.
+                markEdxIframeLoaded();
               }}
               id="edx-iframe"
               title="Forum InnerWare"

@@ -29,6 +29,7 @@ export const useProfileCredentials = ({
       setFilteredCredentials(response.data?.data || []);
       setCredentialsLoading(false);
     } catch (error) {
+      console.error('Failed to fetch profile credentials:', error);
       setFetchedCredentials([]);
       setFilteredCredentials([]);
       setCredentialsLoading(false);

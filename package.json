@@ -1,6 +1,6 @@
 {
   "name": "ibl-web-nextjs-skills-spa",
-  "version": "0.76.1-patch-1",
+  "version": "0.78.2",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
@@ -25,9 +25,9 @@
   "dependencies": {
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
-    "@iblai/agent-ai": "2.9.0",
+    "@iblai/agent-ai": "2.9.2",
     "@iblai/iblai-api": "4.166.0-ai",
-    "@iblai/iblai-js": "2.7.14",
+    "@iblai/iblai-js": "2.8.2",
     "@livekit/components-react": "2.8.1",
     "@livekit/components-styles": "1.1.4",
     "@radix-ui/react-accordion": "1.2.2",
@@ -57,6 +57,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
+    "@sentry/nextjs": "10.62.0",
     "@reduxjs/toolkit": "2.11.2",
     "@tanstack/react-form": "1.11.2",
     "@tauri-apps/api": "2.11.0",
@@ -136,7 +137,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "husky"
+      "husky",
+      "@sentry/cli"
     ]
   },
   "lint-staged": {

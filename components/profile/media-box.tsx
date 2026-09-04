@@ -121,6 +121,7 @@ export const MediaBox = () => {
             toast.success('Media uploaded successfully');
             form.reset();
           } catch (error) {
+            console.error('Failed to upload profile media:', error);
             toast.error('Error uploading media');
           }
           break;
@@ -152,6 +153,7 @@ export const MediaBox = () => {
             toast.success('Media uploaded successfully');
             form.reset();
           } catch (error) {
+            console.error('Failed to upload profile file:', error);
             toast.error('Error uploading media');
           }
           break;

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -61,7 +61,17 @@ vi.mock('@/components/ui/dialog', () => ({
 }));
 
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div data-testid="select">{children}</div>,
+  // Exposes a control the tests can use to satisfy each Select's validator,
+  // which the real Radix trigger can't drive in jsdom. The validators only
+  // check for a non-empty value.
+  Select: ({ children, onValueChange }: any) => (
+    <div data-testid="select">
+      <button type="button" data-testid="select-pick" onClick={() => onValueChange?.('selected')}>
+        pick
+      </button>
+      {children}
+    </div>
+  ),
   SelectContent: ({ children }: any) => <div>{children}</div>,
   SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
@@ -163,5 +173,67 @@ describe('EditExperienceDialog', () => {
     render(<EditExperienceDialog {...defaultProps} />);
     fireEvent.click(screen.getByText('Add new company'));
     expect(defaultProps.setOpenAddCompanyDialog).toHaveBeenCalledWith(true);
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    const submit = async () => {
+      fireEvent.change(screen.getByPlaceholderText('e.g., Software Engineer'), {
+        target: { value: 'Software Engineer' },
+      });
+      screen.getAllByTestId('select-pick').forEach((button) => fireEvent.click(button));
+      await act(async () => {
+        fireEvent.click(screen.getByText('Save'));
+      });
+    };
+
+    it('reports a failed experience update alongside the toast', async () => {
+      mockUpdateUserExperience.mockRejectedValue(new Error('service down'));
+      render(<EditExperienceDialog {...defaultProps} experience={{ id: 1 } as any} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to update experience information:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a failed experience creation alongside the toast', async () => {
+      mockCreateUserExperience.mockRejectedValue(new Error('service down'));
+      render(<EditExperienceDialog {...defaultProps} />);
+
+      await submit();
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to create experience information:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a failed experience deletion alongside the toast', async () => {
+      mockDeleteExperience.mockRejectedValue(new Error('service down'));
+      render(
+        <EditExperienceDialog {...defaultProps} experience={{ id: 1 } as any} onDelete={vi.fn()} />,
+      );
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Delete Experience'));
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to delete experience information:',
+        expect.any(Error),
+      );
+    });
   });
 });

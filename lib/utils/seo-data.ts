@@ -67,7 +67,8 @@ export const getProgramSeoData = cache(
         language: typeof meta.language === 'string' ? meta.language : undefined,
         org,
       };
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch entity SEO data:', error);
       return null;
     }
   },
@@ -97,7 +98,8 @@ export const getCourseSeoData = cache(async (courseKey: string): Promise<EntityS
       price: typeof edx?.course_price === 'string' ? edx.course_price : undefined,
       org: typeof edx?.org === 'string' ? edx.org : undefined,
     };
-  } catch {
+  } catch (error) {
+    console.error('Failed to fetch course SEO data:', error);
     return null;
   }
 });

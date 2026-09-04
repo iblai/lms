@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-08-25 | 251 checkpoints | 35 journeys | 100% covered
+> Last updated: 2026-09-03 | 252 checkpoints | 35 journeys | 100% covered
 
 ## How This Works
 
@@ -69,9 +69,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 5: Course Content — Tab Navigation & Iframes (36 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
+## Journey 5: Course Content — Tab Navigation & Iframes (37 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `hooks/courses/use-edx-iframe-loaded.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -87,6 +87,7 @@ When adding a new page or modifying an existing user flow:
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
 - [x] Agent tab is visible when `course.agent_content_mode === true` and its link points at `/course-content/<id>/agent`
 - [x] `/agent` route mounts the `<agent-ai>` chat full-width and keeps the edX iframe attached but hidden via Tailwind's `hidden` class
+- [x] The `/agent` tab shows a course-loading spinner and only mounts `<agent-ai>` once the hidden edX iframe has loaded
 - [x] `CourseAccessGuard` redirects to `/error/403` when visiting `/agent` on a course where `agent_content_mode !== true`
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast

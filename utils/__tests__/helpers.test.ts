@@ -961,4 +961,31 @@ describe('helpers utility functions', () => {
       expect(DEFAULT_OVERVIEW_PLACEHOLDER).toContain('Frequently Asked Questions');
     });
   });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a markdown link-extraction failure', () => {
+      const originalExec = RegExp.prototype.exec;
+      RegExp.prototype.exec = function () {
+        throw new Error('boom');
+      };
+
+      try {
+        expect(parseMarkdownLinks('[anything](https://x.com)')).toEqual([]);
+      } finally {
+        RegExp.prototype.exec = originalExec;
+      }
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to extract markdown links:', expect.any(Error));
+    });
+  });
 });

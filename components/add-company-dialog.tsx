@@ -45,12 +45,13 @@ export function AddCompanyDialog({ open, onOpenChange }: AddCompanyDialogProps) 
           company: value,
         });
         if (isErrorCreating) {
-          throw new Error();
+          throw new Error('Create-company request reported an error');
         } else {
           toast.success('Company created successfully');
           onOpenChange(false);
         }
-      } catch {
+      } catch (error) {
+        console.error('Failed to create company:', error);
         toast.error('Failed to create institution');
       }
     },

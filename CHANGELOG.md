@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.78.2](https://github.com/iblai/lms/compare/skills-v0.78.1...skills-v0.78.2) (2026-09-04)
+
+### Chores
+
+* iblai-js bump to 2.8.2 & agent-ai bump to 2.9.1 ([3f30b2a](https://github.com/iblai/lms/commit/3f30b2a2f3fcd52cb9d0d4fe72db8942eb5138ee))
+* iblai-js bump to 2.8.2 & agent-ai bump to 2.9.1 > pnpm lock update ([1bc9f77](https://github.com/iblai/lms/commit/1bc9f77494109edb3725ca012c1fa28588349664))
+
+## [0.78.1](https://github.com/iblai/lms/compare/skills-v0.78.0...skills-v0.78.1) (2026-09-04)
+
+### Chores
+
+* **deps:** bump agent-ai to 2.9.2 ([cad14d4](https://github.com/iblai/lms/commit/cad14d48100defc7826b295ad06c520e32b4a0c5)), closes [iblai-web-frontend#2062](https://github.com/iblai/iblai-web-frontend/issues/2062)
+
+## [0.78.0](https://github.com/iblai/lms/compare/skills-v0.77.0...skills-v0.78.0) (2026-09-03)
+
+### Features
+
+* agent based lesson completion ([a4b4ff6](https://github.com/iblai/lms/commit/a4b4ff66698d96b92be669d7ddbbf61f4da840de))
+* agent based lesson completion > iblai-js bump ([f06252c](https://github.com/iblai/lms/commit/f06252cef3b975ecb009cbce72a537fe716f9bb0))
+* agent based lesson completion in porgress ([2274040](https://github.com/iblai/lms/commit/22740400b0fb39a580d43e63ba54542c03e888fe))
+* agent based unit completion integration on progress ([8cb7263](https://github.com/iblai/lms/commit/8cb72630d38cc66f556c361edae095fb0289a2a5))
+
+### Bug Fixes
+
+* agent mode course load optimization > test coverage ([9fa785c](https://github.com/iblai/lms/commit/9fa785c40acb54b2a33ee71c4b31a08f678d5185))
+* course agent load optimization ([a59a0c9](https://github.com/iblai/lms/commit/a59a0c9e76570a9d5fd71c9896405b7867e45ae4))
+
+## [0.77.0](https://github.com/iblai/lms/compare/skills-v0.76.1...skills-v0.77.0) (2026-09-03)
+
+### Features
+
+* agent based lesson completion > test coverage ([d8629c4](https://github.com/iblai/lms/commit/d8629c4be3035b7214dcb846ef75c2479846e09a))
+
 ## [0.76.1](https://github.com/iblai/lms/compare/skills-v0.76.0...skills-v0.76.1) (2026-09-03)
 
 ### Bug Fixes

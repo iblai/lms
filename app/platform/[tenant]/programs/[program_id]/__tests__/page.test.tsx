@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -924,5 +924,89 @@ describe('ProgramDetailPage', () => {
     });
     expect(replaceStateSpy).toHaveBeenCalled();
     replaceStateSpy.mockRestore();
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    // The page redirects to /error/403 for both "no such program" and "search
+    // is down"; only the report tells the two apart.
+    it('reports a failed program lookup', async () => {
+      mockHandleSearch.mockRejectedValue(new Error('boom'));
+
+      render(<ProgramDetailPage />);
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to fetch program:', expect.any(Error));
+      });
+    });
+
+    it('reports a failed enrollment-status fetch', async () => {
+      mockGetUserEnrolledPrograms.mockRejectedValue(new Error('fail'));
+
+      await renderPage();
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch program enrollment status:',
+          expect.any(Error),
+        );
+      });
+    });
+
+    it('reports a failed completion fetch', async () => {
+      mockGetProgramCompletion.mockRejectedValue(new Error('completion error'));
+
+      await renderPage();
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch program completion:',
+          expect.any(Error),
+        );
+      });
+    });
+
+    it('reports a failed enrollment alongside the toast', async () => {
+      mockCreateCatalogProgramSelfEnrollment.mockRejectedValue(new Error('network error'));
+      await renderPage();
+
+      fireEvent.click(await screen.findByTestId('program-page-cta'));
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith('Failed to enroll into program:', expect.any(Error));
+      });
+    });
+
+    it('reports a failed program-details fetch alongside the toast', async () => {
+      // The first lookup resolves the program; the follow-up detail fetch fails.
+      setSearchToReturnProgram();
+      const resolveOnce = mockHandleSearch.getMockImplementation()!;
+      let firstCall = true;
+      mockHandleSearch.mockImplementation(async (args: any) => {
+        if (firstCall) {
+          firstCall = false;
+          return resolveOnce(args);
+        }
+        throw new Error('detail fetch failed');
+      });
+
+      render(<ProgramDetailPage />);
+
+      await waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          'Failed to fetch program details:',
+          expect.any(Error),
+        );
+      });
+    });
   });
 });

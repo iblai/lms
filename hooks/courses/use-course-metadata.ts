@@ -25,6 +25,7 @@ export const useCourseMetadata = () => {
       );
       return courseMetaData;
     } catch (error) {
+      console.error('Failed to fetch course metadata:', error);
       return {};
     }
   };
@@ -36,6 +37,7 @@ export const useCourseMetadata = () => {
       const { data: courseEligibility } = await getCourseEligibility({ courseKey });
       return courseEligibility || null;
     } catch (error) {
+      console.error('Failed to fetch course eligibility:', error);
       return null;
     }
   };
@@ -45,6 +47,7 @@ export const useCourseMetadata = () => {
       const { data: courseCompletionOutlines } = await getCourseCompletionOutlines({ courseKey });
       return courseCompletionOutlines;
     } catch (error) {
+      console.error('Failed to fetch course completion outlines:', error);
       return {};
     }
   };

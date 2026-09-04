@@ -32,7 +32,7 @@ export const useProfileTimeSpent = () => {
         true,
       );
       if (isErrorGetOverTimeActivity || isEmpty(response?.data?.data)) {
-        throw new Error();
+        throw new Error('Time-spent request failed or returned no data');
       }
       setTimeSpent(
         Object.entries(response?.data?.data || {})?.map(([date, seconds]) => ({
@@ -41,7 +41,8 @@ export const useProfileTimeSpent = () => {
         })),
       );
       setTimeSpentLoading(false);
-    } catch {
+    } catch (error) {
+      console.error('Failed to load profile time spent:', error);
       setTimeSpent([]);
       setTimeSpentLoading(false);
     }

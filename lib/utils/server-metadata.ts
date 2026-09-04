@@ -207,7 +207,8 @@ export function extractTenantFromCookies(cookieString: string | null): string | 
       if (parsed?.key) {
         return parsed.key;
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to parse ibl_current_tenant cookie:', error);
       // If parsing fails, the cookie might be corrupted, continue to fallback
     }
   }

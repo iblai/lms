@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
@@ -564,6 +564,57 @@ describe('useCourseDetail', () => {
 
       expect(result.current.courseEligibility.btn_label).toBe('Enroll Now');
       expect(result.current.courseEligibilityLoading).toBe(false);
+    });
+  });
+
+  describe('error reporting', () => {
+    let errorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      errorSpy.mockRestore();
+    });
+
+    it('reports a failed checkout session alongside the toast', async () => {
+      mockCreateStripeCheckoutSession.mockReturnValue({
+        unwrap: () => Promise.reject(new Error('stripe down')),
+      });
+      const { result } = renderHook(() => useCourseDetail('course-123'));
+
+      await act(async () => {
+        await result.current.handleCreateCheckoutSession();
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to create course checkout session:',
+        expect.any(Error),
+      );
+    });
+
+    it('reports a failed enrollment alongside the toast', async () => {
+      mockCreateCourseEnrollment.mockRejectedValue(new Error('enrollment down'));
+      const { result } = renderHook(() => useCourseDetail('course-123'));
+
+      await act(async () => {
+        await result.current.handleEnrollToCourse();
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to enroll in course:', expect.any(Error));
+    });
+
+    it('reports a failed course-info fetch', async () => {
+      mockHandleFetchCourseMetaData.mockRejectedValue(new Error('metadata down'));
+      const { result } = renderHook(() => useCourseDetail('course-123'));
+
+      await act(async () => {
+        await result.current.handleFetchCourseInfo();
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith('Failed to fetch course info:', expect.any(Error));
+      expect(result.current.courseInfoLoadingState).toBe('failure');
     });
   });
 });
