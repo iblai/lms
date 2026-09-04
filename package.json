@@ -1,6 +1,6 @@
 {
   "name": "ibl-web-nextjs-skills-spa",
-  "version": "0.78.0",
+  "version": "0.78.1",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
@@ -25,7 +25,7 @@
   "dependencies": {
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
-    "@iblai/agent-ai": "2.9.1",
+    "@iblai/agent-ai": "2.9.2",
     "@iblai/iblai-api": "4.166.0-ai",
     "@iblai/iblai-js": "2.8.2",
     "@livekit/components-react": "2.8.1",
