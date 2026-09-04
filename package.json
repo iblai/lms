@@ -25,7 +25,7 @@
   "dependencies": {
     "@emotion/is-prop-valid": "1.4.0",
     "@hookform/resolvers": "3.10.0",
-    "@iblai/agent-ai": "2.9.0",
+    "@iblai/agent-ai": "2.9.2",
     "@iblai/iblai-api": "4.166.0-ai",
     "@iblai/iblai-js": "2.7.14",
     "@livekit/components-react": "2.8.1",
