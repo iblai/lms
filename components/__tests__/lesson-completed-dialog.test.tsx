@@ -180,7 +180,7 @@ describe('LessonCompletedDialog', () => {
     expect(screen.getByRole('button', { name: /previous unit/i })).toBeInTheDocument();
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /next unit/i }));
+      fireEvent.click(screen.getByRole('button', { name: /keep learning/i }));
     });
     expect(selectLesson).toHaveBeenCalledWith(UNIT_3);
   });
@@ -204,7 +204,7 @@ describe('LessonCompletedDialog', () => {
 
     expect(screen.getByText('Lesson complete')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /previous unit/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /next unit/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /keep learning/i })).toBeInTheDocument();
   });
 
   it('hides Next on the last unit', async () => {
@@ -213,7 +213,7 @@ describe('LessonCompletedDialog', () => {
     await flushOpenDelay();
 
     expect(screen.getByText('Lesson complete')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /next unit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /keep learning/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous unit/i })).toBeInTheDocument();
   });
 
@@ -223,7 +223,7 @@ describe('LessonCompletedDialog', () => {
     await flushOpenDelay();
 
     expect(screen.getByText('Lesson complete')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /next unit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /keep learning/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /previous unit/i })).not.toBeInTheDocument();
   });
 

@@ -130,8 +130,8 @@ export function LessonCompletedDialog() {
           </DialogTitle>
           <DialogDescription>
             {completedLesson?.display_name
-              ? `You've completed "${completedLesson.display_name}". Where would you like to go next?`
-              : "You've completed this lesson. Where would you like to go next?"}
+              ? `You've completed "${completedLesson.display_name}". Ready to keep learning?`
+              : "You've completed this lesson. Ready to keep learning?"}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-between">
@@ -147,7 +147,7 @@ export function LessonCompletedDialog() {
             )}
             {hasNext && (
               <Button onClick={goToNext}>
-                Next unit
+                Keep Learning
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
