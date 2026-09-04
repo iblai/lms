@@ -1,18 +1,21 @@
 {
   "version": 2,
-  "lastUpdated": "2026-09-03",
+  "lastUpdated": "2026-09-04",
   "summary": {
-    "totalCheckpoints": 252,
-    "coveredCheckpoints": 252,
+    "totalCheckpoints": 256,
+    "coveredCheckpoints": 256,
     "percent": 100,
-    "totalJourneys": 35
+    "totalJourneys": 36
   },
   "journeys": [
     {
       "id": "authentication",
       "name": "Authentication",
       "spec": "01-authentication.spec.ts",
-      "sourceFiles": ["app/sso-login/page.tsx", "app/sso-login-complete/page.tsx"],
+      "sourceFiles": [
+        "app/sso-login/page.tsx",
+        "app/sso-login-complete/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "auth-01",
@@ -38,7 +41,7 @@
     },
     {
       "id": "onboarding-first-time-user",
-      "name": "Onboarding — First-Time User",
+      "name": "Onboarding \u2014 First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": [
         "app/start/page.tsx",
@@ -172,7 +175,7 @@
     },
     {
       "id": "course-content-tabs",
-      "name": "Course Content — Tab Navigation & Iframes",
+      "name": "Course Content \u2014 Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
@@ -373,12 +376,12 @@
         },
         {
           "id": "tabs-34",
-          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
           "status": "covered"
         },
         {
           "id": "tabs-35",
-          "description": "Course content layout requests the signed-in user’s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
+          "description": "Course content layout requests the signed-in user\u2019s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
           "status": "covered"
         },
         {
@@ -439,7 +442,7 @@
     },
     {
       "id": "profile-skills",
-      "name": "Profile — Skills",
+      "name": "Profile \u2014 Skills",
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
@@ -477,9 +480,12 @@
     },
     {
       "id": "profile-credentials",
-      "name": "Profile — Credentials",
+      "name": "Profile \u2014 Credentials",
       "spec": "08-profile-credentials.spec.ts",
-      "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
+      "sourceFiles": [
+        "app/profile/credentials/page.tsx",
+        "components/credential-box.tsx"
+      ],
       "checkpoints": [
         {
           "id": "cred-01",
@@ -510,7 +516,7 @@
     },
     {
       "id": "profile-pathways",
-      "name": "Profile — Pathways",
+      "name": "Profile \u2014 Pathways",
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": [
         "app/profile/pathways/page.tsx",
@@ -546,9 +552,12 @@
     },
     {
       "id": "profile-programs",
-      "name": "Profile — Programs",
+      "name": "Profile \u2014 Programs",
       "spec": "10-profile-programs.spec.ts",
-      "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
+      "sourceFiles": [
+        "app/profile/programs/page.tsx",
+        "app/programs/[program_id]/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "prog-01",
@@ -587,7 +596,7 @@
         },
         {
           "id": "prog-08",
-          "description": "Tab switching About → Courses → Settings updates content",
+          "description": "Tab switching About \u2192 Courses \u2192 Settings updates content",
           "status": "covered"
         },
         {
@@ -604,9 +613,11 @@
     },
     {
       "id": "profile-courses",
-      "name": "Profile — Courses",
+      "name": "Profile \u2014 Courses",
       "spec": "11-profile-courses.spec.ts",
-      "sourceFiles": ["app/profile/courses/page.tsx"],
+      "sourceFiles": [
+        "app/profile/courses/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "pcrs-01",
@@ -632,9 +643,11 @@
     },
     {
       "id": "profile-public",
-      "name": "Profile — Public",
+      "name": "Profile \u2014 Public",
       "spec": "12-profile-public.spec.ts",
-      "sourceFiles": ["app/profile/public/page.tsx"],
+      "sourceFiles": [
+        "app/profile/public/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "pub-01",
@@ -657,7 +670,9 @@
       "id": "recommended-courses",
       "name": "Recommended Courses",
       "spec": "13-recommended-courses.spec.ts",
-      "sourceFiles": ["app/recommended/page.tsx"],
+      "sourceFiles": [
+        "app/recommended/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "rec-01",
@@ -748,7 +763,10 @@
       "id": "notifications",
       "name": "Notifications",
       "spec": "15-notifications.spec.ts",
-      "sourceFiles": ["app/notifications/page.tsx", "app/notifications/[notificationId]/page.tsx"],
+      "sourceFiles": [
+        "app/notifications/page.tsx",
+        "app/notifications/[notificationId]/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "notif-01",
@@ -873,7 +891,7 @@
     },
     {
       "id": "analytics-content",
-      "name": "Analytics Content — Courses & Programs",
+      "name": "Analytics Content \u2014 Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
       "sourceFiles": [
         "app/analytics/courses/page.tsx",
@@ -1056,7 +1074,10 @@
       "id": "search",
       "name": "Search",
       "spec": "21-search.spec.ts",
-      "sourceFiles": ["app/discover/page.tsx", "components/nav-bar.tsx"],
+      "sourceFiles": [
+        "app/discover/page.tsx",
+        "components/nav-bar.tsx"
+      ],
       "checkpoints": [
         {
           "id": "search-01",
@@ -1087,7 +1108,7 @@
     },
     {
       "id": "navigation-navbar",
-      "name": "Navigation — NavBar & Sidebar",
+      "name": "Navigation \u2014 NavBar & Sidebar",
       "spec": "22-navigation-navbar.spec.ts",
       "sourceFiles": [
         "components/nav-bar.tsx",
@@ -1146,7 +1167,9 @@
       "id": "edit-profile-dialog",
       "name": "Edit Profile Dialog",
       "spec": "23-edit-profile-dialog.spec.ts",
-      "sourceFiles": ["components/edit-profile-dialog.tsx"],
+      "sourceFiles": [
+        "components/edit-profile-dialog.tsx"
+      ],
       "checkpoints": [
         {
           "id": "ep-01",
@@ -1239,9 +1262,12 @@
     },
     {
       "id": "chat-embed",
-      "name": "Chat Embed — Mentor Widget",
+      "name": "Chat Embed \u2014 Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
-      "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
+      "sourceFiles": [
+        "components/chat-button.tsx",
+        "components/chat/index.tsx"
+      ],
       "checkpoints": [
         {
           "id": "chat-01",
@@ -1279,7 +1305,10 @@
       "id": "error-pages",
       "name": "Error Pages",
       "spec": "26-error-pages.spec.ts",
-      "sourceFiles": ["app/error/[code]/page.tsx", "app/not-found.tsx"],
+      "sourceFiles": [
+        "app/error/[code]/page.tsx",
+        "app/not-found.tsx"
+      ],
       "checkpoints": [
         {
           "id": "err-01",
@@ -1307,7 +1336,11 @@
       "id": "ui-render-console-errors",
       "name": "UI Render Console Errors",
       "spec": "27-ui-render-console-errors.spec.ts",
-      "sourceFiles": ["app/home/page.tsx", "app/discover/page.tsx", "app/profile/page.tsx"],
+      "sourceFiles": [
+        "app/home/page.tsx",
+        "app/discover/page.tsx",
+        "app/profile/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "ui-01",
@@ -1330,7 +1363,10 @@
       "id": "tenant-management-invitations",
       "name": "Tenant Management & Invitations",
       "spec": "28-tenant-management-invitations.spec.ts",
-      "sourceFiles": ["components/account-dialog.tsx", "components/account-button.tsx"],
+      "sourceFiles": [
+        "components/account-dialog.tsx",
+        "components/account-button.tsx"
+      ],
       "checkpoints": [
         {
           "id": "tm-01",
@@ -1376,7 +1412,7 @@
     },
     {
       "id": "accessibility-wcag",
-      "name": "Accessibility — WCAG 2.1 AA",
+      "name": "Accessibility \u2014 WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
@@ -1440,9 +1476,12 @@
     },
     {
       "id": "course-access-guard-tenant-redirect",
-      "name": "Course Access Guard — Cross-Tenant Redirect",
+      "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
-      "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
+      "sourceFiles": [
+        "components/course-access-guard.tsx",
+        "utils/helpers.ts"
+      ],
       "checkpoints": [
         {
           "id": "cag-01",
@@ -1498,7 +1537,7 @@
         },
         {
           "id": "pdp-05",
-          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
+          "description": "Tab switching About \u2192 Courses \u2192 Settings updates aria-selected and tab content",
           "status": "covered"
         },
         {
@@ -1558,7 +1597,9 @@
       "id": "admin-onboarding-wizard",
       "name": "Admin Onboarding Wizard",
       "spec": "34-admin-onboarding-wizard.spec.ts",
-      "sourceFiles": ["app/platform/[tenant]/onboarding/page.tsx"],
+      "sourceFiles": [
+        "app/platform/[tenant]/onboarding/page.tsx"
+      ],
       "checkpoints": [
         {
           "id": "adminonb-01",
@@ -1624,14 +1665,14 @@
         },
         {
           "id": "useronb-04",
-          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
+          "description": "The member flow holds the onboarding route \u2014 a tenant with no form configured shows the notice instead of redirecting away",
           "status": "covered"
         }
       ]
     },
     {
       "id": "user-onboarding-agent-link",
-      "name": "User Onboarding — Per-Agent Links",
+      "name": "User Onboarding \u2014 Per-Agent Links",
       "spec": "36-user-onboarding-agent-link.spec.ts",
       "sourceFiles": [
         "app/platform/[tenant]/onboarding/[agentId]/page.tsx",
@@ -1661,6 +1702,38 @@
         {
           "id": "agentlink-05",
           "description": "An admin can still switch to the setup flow from an agent link; a member cannot",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "mentor-embed-loads",
+      "name": "Mentor Embed Loads",
+      "spec": "37-mentor-embed-loads.spec.ts",
+      "sourceFiles": [
+        "components/course-agent-chat.tsx",
+        "components/chat-button.tsx",
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "embed-01",
+          "description": "The host renders the agent-ai component pointed at this tenant's mentor",
+          "status": "covered"
+        },
+        {
+          "id": "embed-02",
+          "description": "The embed reaches the mentor app inside the iframe rather than a spinner or an error",
+          "status": "covered"
+        },
+        {
+          "id": "embed-03",
+          "description": "The embed runs on the same tenant as the host, not a stale one",
+          "status": "covered"
+        },
+        {
+          "id": "embed-04",
+          "description": "The embed settles instead of re-navigating in an auth-handshake loop",
           "status": "covered"
         }
       ]

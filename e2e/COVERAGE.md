@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-09-03 | 252 checkpoints | 35 journeys | 100% covered
+> Last updated: 2026-09-04 | 256 checkpoints | 36 journeys | 100% covered
 
 ## How This Works
 
@@ -512,6 +512,22 @@ When adding a new page or modifying an existing user flow:
 - [x] The tenant's default onboarding agent is reachable by its own per-agent link
 - [x] The agent-scoped route never shows the admin setup steps, even for an admin
 - [x] An admin can still switch to the setup flow from an agent link; a member cannot
+
+---
+
+## Journey 37: Mentor Embed Loads (4 checkpoints) — `journeys/37-mentor-embed-loads.spec.ts`
+
+**Source files:** `components/course-agent-chat.tsx`, `components/chat-button.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`
+
+The mentor is embedded through the `agent-ai` web component, which puts the mentor app in an
+iframe inside its own shadow root. The host owns the auth and answers the embed over
+`postMessage`; none of that handshake is visible from outside, so when it breaks the embed does
+not error — it spins. These checkpoints assert what an outside observer can distinguish.
+
+- [x] The host renders the `agent-ai` component pointed at this tenant's mentor
+- [x] The embed reaches the mentor app inside the iframe rather than a spinner or an error
+- [x] The embed runs on the same tenant as the host, not a stale one
+- [x] The embed settles instead of re-navigating in an auth-handshake loop
 
 ---
 
