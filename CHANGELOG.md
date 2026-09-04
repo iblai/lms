@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.79.0](https://github.com/iblai/lms/compare/skills-v0.78.2...skills-v0.79.0) (2026-09-04)
+
+### Features
+
+* autp completion disabled for course tabs too when unitautocompletion disabled ([52850c8](https://github.com/iblai/lms/commit/52850c811e014a97c1ffdd5fcf50585a3abcc8bc))
+* lesson completed dialog placeholders updated ([927e05f](https://github.com/iblai/lms/commit/927e05f9ad5be1a0730f6ceadb5c347f75bfc1e6))
+
 ## [0.78.2](https://github.com/iblai/lms/compare/skills-v0.78.1...skills-v0.78.2) (2026-09-04)
 
 ### Chores
