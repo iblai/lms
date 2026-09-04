@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.78.2](https://github.com/iblai/lms/compare/skills-v0.78.1...skills-v0.78.2) (2026-09-04)
+
+### Chores
+
+* iblai-js bump to 2.8.2 & agent-ai bump to 2.9.1 ([3f30b2a](https://github.com/iblai/lms/commit/3f30b2a2f3fcd52cb9d0d4fe72db8942eb5138ee))
+* iblai-js bump to 2.8.2 & agent-ai bump to 2.9.1 > pnpm lock update ([1bc9f77](https://github.com/iblai/lms/commit/1bc9f77494109edb3725ca012c1fa28588349664))
+
 ## [0.78.1](https://github.com/iblai/lms/compare/skills-v0.78.0...skills-v0.78.1) (2026-09-04)
 
 ### Chores
