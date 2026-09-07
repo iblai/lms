@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.79.1](https://github.com/iblai/lms/compare/skills-v0.79.0...skills-v0.79.1) (2026-09-07)
+
+### Chores
+
+* **deps:** bump agent-ai to 2.9.3 ([fca59f0](https://github.com/iblai/lms/commit/fca59f00e19a140344a9eec5512595e7d8e0e533)), closes [iblai-web-frontend#2063](https://github.com/iblai/iblai-web-frontend/issues/2063) [#2062](https://github.com/iblai/lms/issues/2062)
+
 ## [0.79.0](https://github.com/iblai/lms/compare/skills-v0.78.2...skills-v0.79.0) (2026-09-04)
 
 ### Features
