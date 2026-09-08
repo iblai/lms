@@ -6,10 +6,7 @@ import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
-import {
-  redirectToAuthSpa as sdkRedirectToAuthSpa,
-  handleTenantSwitch as sdkHandleTenantSwitch,
-} from '@iblai/iblai-js/web-utils/auth';
+import { handleTenantSwitch as sdkHandleTenantSwitch } from '@iblai/iblai-js/web-utils/auth';
 
 export class LocalStorageService implements StorageService {
   private static instance: LocalStorageService;
