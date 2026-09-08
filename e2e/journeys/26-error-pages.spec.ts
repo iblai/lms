@@ -20,12 +20,26 @@ test.describe('Journey 26: Error Pages', () => {
     await expect(forbiddenText).toBeVisible({ timeout: 120_000 });
   });
 
-  test('CP-3: Non-existent route shows 404', async ({ page }) => {
+  test('CP-3: Non-existent route shows 404 in place, without redirecting', async ({ page }) => {
     const randomPath = `this-page-does-not-exist-${Date.now()}`;
     await gotoTenantPage(page, randomPath, { timeout: 120_000 });
+    const unmatchedUrl = page.url();
 
-    const heading = page.getByRole('heading', { level: 1, name: '404' });
-    await expect(heading).toBeVisible({ timeout: 120_000 });
+    // `not-found.tsx` renders the same body as `/error/404`: the code sits in a
+    // badge and the <h1> carries the title.
+    await expect(page.getByRole('heading', { level: 1, name: 'Page Not Found' })).toBeVisible({
+      timeout: 120_000,
+    });
+    await expect(page.getByText('404', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+
+    // The page renders in place rather than redirecting to /error/404, so the
+    // URL is untouched and the response still carries a 404 status.
+    expect(page.url()).toBe(unmatchedUrl);
+    expect(page.url()).toContain(randomPath);
+    expect(page.url()).not.toContain('/error/');
+
+    const response = await page.reload({ timeout: 120_000 });
+    expect(response?.status()).toBe(404);
   });
 
   test('CP-4: Error pages have a Home link', async ({ page }) => {

@@ -40,8 +40,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setTenant(getTenant());
   }, []);
-  const { tenant: requestedTenant } = useParams<{ tenant: string }>();
-  console.log('##requestedTenant', requestedTenant);
+  const { tenant: routeTenant } = useParams<{ tenant: string }>();
+  // A URL that matches no route (e.g. `/platform/kaplan/<typo>`) is rendered by
+  // `not-found.tsx` with no dynamic segment matched, so `useParams()` carries no
+  // `tenant`. Read it off the pathname in that case, otherwise the guard below
+  // blanks the page out instead of showing the 404.
+  const requestedTenant = routeTenant || pathname.match(/^\/platform\/([^/]+)/)?.[1] || '';
   const [ready, setReady] = useState(false);
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
