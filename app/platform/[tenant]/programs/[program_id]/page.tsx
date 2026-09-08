@@ -54,7 +54,12 @@ import { config } from '@/lib/config';
 import { usePersonnalizedCatalog } from '@/hooks/search/use-personnalized-catalog';
 import { useGetProgramMetadataQuery, useUpdateProgramMetadataMutation } from '@/services/studio';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
-import { getRandomCourseImage, getUserName, handleNotLoggedInAction } from '@/utils/helpers';
+import {
+  getErrorPageUrl,
+  getRandomCourseImage,
+  getUserName,
+  handleNotLoggedInAction,
+} from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { canMonetize, useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
 
@@ -554,13 +559,13 @@ export default function ProgramDetailPage() {
           setLoadingState('success');
         } else {
           setLoadingState('failure');
-          router.push(`/platform/${tenant}/error/403`);
+          router.push(getErrorPageUrl(403, tenant));
         }
       } catch (error) {
         console.error('Failed to fetch program:', error);
         if (cancelled) return;
         setLoadingState('failure');
-        router.push(`/platform/${tenant}/error/403`);
+        router.push(getErrorPageUrl(403, tenant));
       }
     };
     fetchProgram();

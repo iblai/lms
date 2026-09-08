@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { gotoTenantPage } from '../utils/navigation';
+import { gotoErrorPage, gotoTenantPage } from '../utils/navigation';
 
 test.describe('Journey 26: Error Pages', () => {
   test.setTimeout(200000);
 
   test('CP-1: /error/404 shows Page Not Found', async ({ page }) => {
-    await gotoTenantPage(page, 'error/404', { timeout: 120_000 });
+    await gotoErrorPage(page, 404, { timeout: 120_000 });
 
     // Should display a "Page Not Found" or "404" message
     const notFoundText = page.getByText(/page not found|404|not found/i).first();
@@ -13,23 +13,37 @@ test.describe('Journey 26: Error Pages', () => {
   });
 
   test('CP-2: /error/403 shows Forbidden', async ({ page }) => {
-    await gotoTenantPage(page, 'error/403', { timeout: 120_000 });
+    await gotoErrorPage(page, 403, { timeout: 120_000 });
 
     // Should display a "Forbidden" or "403" or "Access Denied" message
     const forbiddenText = page.getByText(/forbidden|403|access denied|not authorized/i).first();
     await expect(forbiddenText).toBeVisible({ timeout: 120_000 });
   });
 
-  test('CP-3: Non-existent route shows 404', async ({ page }) => {
+  test('CP-3: Non-existent route shows 404 in place, without redirecting', async ({ page }) => {
     const randomPath = `this-page-does-not-exist-${Date.now()}`;
     await gotoTenantPage(page, randomPath, { timeout: 120_000 });
+    const unmatchedUrl = page.url();
 
-    const heading = page.getByRole('heading', { level: 1, name: '404' });
-    await expect(heading).toBeVisible({ timeout: 120_000 });
+    // `not-found.tsx` renders the same body as `/error/404`: the code sits in a
+    // badge and the <h1> carries the title.
+    await expect(page.getByRole('heading', { level: 1, name: 'Page Not Found' })).toBeVisible({
+      timeout: 120_000,
+    });
+    await expect(page.getByText('404', { exact: true }).first()).toBeVisible({ timeout: 30_000 });
+
+    // The page renders in place rather than redirecting to /error/404, so the
+    // URL is untouched and the response still carries a 404 status.
+    expect(page.url()).toBe(unmatchedUrl);
+    expect(page.url()).toContain(randomPath);
+    expect(page.url()).not.toContain('/error/');
+
+    const response = await page.reload({ timeout: 120_000 });
+    expect(response?.status()).toBe(404);
   });
 
   test('CP-4: Error pages have a Home link', async ({ page }) => {
-    await gotoTenantPage(page, 'error/404', { timeout: 120_000 });
+    await gotoErrorPage(page, 404, { timeout: 120_000 });
 
     // Look for a link that navigates back to home
     const homeLink = page

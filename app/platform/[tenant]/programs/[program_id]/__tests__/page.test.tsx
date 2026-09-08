@@ -58,6 +58,8 @@ vi.mock('@iblai/iblai-js/data-layer', () => ({
 }));
 
 vi.mock('@/utils/helpers', () => ({
+  getErrorPageUrl: (code: string | number, tenant?: string) =>
+    tenant ? `/error/${code}?tenant=${encodeURIComponent(tenant)}` : `/error/${code}`,
   getRandomCourseImage: vi.fn(() => '/random.png'),
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
@@ -271,7 +273,7 @@ describe('ProgramDetailPage', () => {
     mockHandleSearch.mockResolvedValue({ data: { results: [] } });
     render(<ProgramDetailPage />);
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
     });
   });
 
@@ -279,7 +281,7 @@ describe('ProgramDetailPage', () => {
     mockHandleSearch.mockRejectedValue(new Error('boom'));
     render(<ProgramDetailPage />);
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
     });
   });
 

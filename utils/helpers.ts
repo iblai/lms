@@ -48,6 +48,23 @@ export const inIframe = () => {
 };
 
 /**
+ * Builds the canonical error-page URL.
+ *
+ * Error pages live at the root (`/error/[code]`) rather than under
+ * `/platform/[tenant]/`, because the tenant segment is guarded: a tenant
+ * mismatch or auth failure is exactly the case that must still be able to
+ * render. The tenant travels as a query param so the page can still resolve
+ * the tenant support email.
+ *
+ * @param {string | number} code - Error code (e.g. `403`) or slug.
+ * @param {string} [tenant] - Tenant the error happened in; omitted when unknown.
+ * @returns {string} - The `/error/...` URL to navigate to.
+ */
+export function getErrorPageUrl(code: string | number, tenant?: string | null) {
+  return tenant ? `/error/${code}?tenant=${encodeURIComponent(tenant)}` : `/error/${code}`;
+}
+
+/**
  * Retrieves the current tenant from localStorage
  * @returns {Promise<string>} - Returns the tenant string from localStorage or empty string if not found
  */
@@ -481,6 +498,8 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
   // Suppress concurrent auth redirects SYNCHRONOUSLY before any await, so no
   // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
   // can call redirectToAuthSpa before the flag is set.
+
+  console.log('##handleTenantSwitch', tenant, saveRedirect);
   _suppressAuthRedirect = true;
 
   // Clear current tenant cookie before switching
