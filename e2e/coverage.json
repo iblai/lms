@@ -1279,7 +1279,11 @@
       "id": "error-pages",
       "name": "Error Pages",
       "spec": "26-error-pages.spec.ts",
-      "sourceFiles": ["app/error/[code]/page.tsx", "app/not-found.tsx"],
+      "sourceFiles": [
+        "app/error/[code]/page.tsx",
+        "app/not-found.tsx",
+        "components/error-page-content.tsx"
+      ],
       "checkpoints": [
         {
           "id": "err-01",
@@ -1293,7 +1297,7 @@
         },
         {
           "id": "err-03",
-          "description": "Non-existent route shows 404",
+          "description": "Non-existent route renders the 404 page in place — URL unchanged, 404 status",
           "status": "covered"
         },
         {

@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.80.0](https://github.com/iblai/lms/compare/skills-v0.79.1...skills-v0.80.0) (2026-09-08)
+
+### Features
+
+* sdk tenant auth provider issue fixed + error logic updated ([6cbce23](https://github.com/iblai/lms/commit/6cbce235c6b64f4c44f67fe2abd3bccfc35b56ab))
+* sdk tenant auth provider issue fixed + error logic updated ([a73bbbf](https://github.com/iblai/lms/commit/a73bbbfad382e264685e1ed19140336277723434))
+* sdk tenant auth provider issue fixed + error logic updated ([c9e4ca7](https://github.com/iblai/lms/commit/c9e4ca72b21f4014bcf08a7851920c4a2e13a6be))
+* sdk tenant auth provider issue fixed + error logic updated > test coverage ([93fea1c](https://github.com/iblai/lms/commit/93fea1c9fc23d0794539ed49f92dc0a1a08dfcbd))
+* sdk tenant auth provider issue fixed + error logic updated > test coverage ([7c3e7e4](https://github.com/iblai/lms/commit/7c3e7e418bb4b8a6793d5857e7ef6d01d26caa57))
+
+## [0.79.1](https://github.com/iblai/lms/compare/skills-v0.79.0...skills-v0.79.1) (2026-09-07)
+
+### Chores
+
+* **deps:** bump agent-ai to 2.9.3 ([fca59f0](https://github.com/iblai/lms/commit/fca59f00e19a140344a9eec5512595e7d8e0e533)), closes [iblai-web-frontend#2063](https://github.com/iblai/iblai-web-frontend/issues/2063) [#2062](https://github.com/iblai/lms/issues/2062)
+
+## [0.79.0](https://github.com/iblai/lms/compare/skills-v0.78.2...skills-v0.79.0) (2026-09-04)
+
+### Features
+
+* autp completion disabled for course tabs too when unitautocompletion disabled ([52850c8](https://github.com/iblai/lms/commit/52850c811e014a97c1ffdd5fcf50585a3abcc8bc))
+* lesson completed dialog placeholders updated ([927e05f](https://github.com/iblai/lms/commit/927e05f9ad5be1a0730f6ceadb5c347f75bfc1e6))
+
 ## [0.78.2](https://github.com/iblai/lms/compare/skills-v0.78.1...skills-v0.78.2) (2026-09-04)
 
 ### Chores

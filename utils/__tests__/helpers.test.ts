@@ -53,6 +53,7 @@ import {
   inIframe,
   getTenant,
   getTenants,
+  getErrorPageUrl,
   getOrg,
   getUserId,
   getUserName,
@@ -192,6 +193,28 @@ describe('helpers utility functions', () => {
     it('should return empty string when tenant is not found', () => {
       vi.mocked(getLocalStorageItem).mockReturnValueOnce(null);
       expect(getTenant()).toBe('');
+    });
+  });
+
+  describe('getErrorPageUrl', () => {
+    it('builds a root-level error URL carrying the tenant', () => {
+      expect(getErrorPageUrl(403, 'test-tenant')).toBe('/error/403?tenant=test-tenant');
+    });
+
+    it('accepts a string code', () => {
+      expect(getErrorPageUrl('unauthorized-tenant', 'test-tenant')).toBe(
+        '/error/unauthorized-tenant?tenant=test-tenant',
+      );
+    });
+
+    it('encodes the tenant', () => {
+      expect(getErrorPageUrl(409, 'a b&c')).toBe('/error/409?tenant=a%20b%26c');
+    });
+
+    it('omits the query when the tenant is unknown', () => {
+      expect(getErrorPageUrl(500)).toBe('/error/500');
+      expect(getErrorPageUrl(500, '')).toBe('/error/500');
+      expect(getErrorPageUrl(500, null)).toBe('/error/500');
     });
   });
 

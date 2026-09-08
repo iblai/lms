@@ -6,6 +6,7 @@ import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import { config } from '@/lib/config';
 import { Tenant } from '@iblai/iblai-js/web-utils';
+import { handleTenantSwitch as sdkHandleTenantSwitch } from '@iblai/iblai-js/web-utils/auth';
 
 export class LocalStorageService implements StorageService {
   private static instance: LocalStorageService;
@@ -157,31 +158,42 @@ export const handleTenantSwitch = async (
   redirectUrl?: string,
 ) => {
   const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
-  clearCurrentTenantCookie();
-  // Preserve the current path before clearing localStorage
-  const currentPath = `${window.location.pathname}${window.location.search}`;
-  // Get JWT token before clearing localStorage
-  const jwtToken = localStorage.getItem('edx_jwt_token');
-  localStorage.clear();
+  return sdkHandleTenantSwitch(tenant, {
+    authUrl: config.urls.auth(),
+    redirectPathStorageKey: LOCALSTORAGE_KEYS.REDIRECT_PATH,
+    queryParams: { redirectTo: LOCALSTORAGE_KEYS.REDIRECT_TO },
+    clearCurrentTenantCookie,
+    saveRedirect,
+    redirectUrl,
+  });
 
-  const url = `${config.urls.auth()}/login/complete`;
-  const params: Record<string, string> = {
-    tenant,
-    [LOCALSTORAGE_KEYS.REDIRECT_TO]: redirectUrl ?? window.location.origin,
-  };
+  // console.log('##handleTenantSwitch1', tenant, saveRedirect, redirectUrl);
+  // const { clearCurrentTenantCookie } = await import('@iblai/iblai-js/web-utils');
+  // clearCurrentTenantCookie();
+  // // Preserve the current path before clearing localStorage
+  // const currentPath = `${window.location.pathname}${window.location.search}`;
+  // // Get JWT token before clearing localStorage
+  // const jwtToken = localStorage.getItem('edx_jwt_token');
+  // localStorage.clear();
 
-  // Add token if it exists
-  if (jwtToken) {
-    params.token = jwtToken;
-  }
+  // const url = `${config.urls.auth()}/login/complete`;
+  // const params: Record<string, string> = {
+  //   tenant,
+  //   [LOCALSTORAGE_KEYS.REDIRECT_TO]: redirectUrl ?? window.location.origin,
+  // };
 
-  const param = new URLSearchParams(params).toString();
+  // // Add token if it exists
+  // if (jwtToken) {
+  //   params.token = jwtToken;
+  // }
 
-  localStorage.setItem('tenant', tenant);
-  if (saveRedirect) {
-    // Restore the redirect path after setting tenant
-    localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
-  }
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  window.location.href = `${url}?${param}`;
+  // const param = new URLSearchParams(params).toString();
+
+  // localStorage.setItem('tenant', tenant);
+  // if (saveRedirect) {
+  //   // Restore the redirect path after setting tenant
+  //   localStorage.setItem(LOCALSTORAGE_KEYS.REDIRECT_PATH, currentPath);
+  // }
+  // await new Promise((resolve) => setTimeout(resolve, 100));
+  // window.location.href = `${url}?${param}`;
 };

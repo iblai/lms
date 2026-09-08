@@ -9,6 +9,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/utils/helpers', () => ({
+  getErrorPageUrl: (code: string | number, tenant?: string) =>
+    tenant ? `/error/${code}?tenant=${encodeURIComponent(tenant)}` : `/error/${code}`,
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
@@ -119,7 +121,7 @@ describe('MonetizationWrapper', () => {
     );
     render(<MonetizationWrapper />);
     fireEvent.click(screen.getByTestId('paywall-close'));
-    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/402');
+    expect(mockPush).toHaveBeenCalledWith('/error/402?tenant=test-tenant');
     expect(mockDispatch).toHaveBeenCalled();
   });
 
