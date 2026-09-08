@@ -11,6 +11,7 @@ import {
   isAgentContentModeOn,
   isCourseContentModeOn,
 } from '@/utils/course-content-mode';
+import { getErrorPageUrl } from '@/utils/helpers';
 
 export function CourseAccessGuard({
   course,
@@ -80,9 +81,9 @@ export function CourseAccessGuard({
       const siblingPath = pathname.replace(/\/(agent|course)$/, `/${siblingTab}`);
       router.replace(siblingPath);
     } else if (isTabDisabled) {
-      router.push(`/platform/${tenant}/error/403`);
+      router.push(getErrorPageUrl(403, tenant));
     } else if (isNotFound) {
-      router.push(`/platform/${tenant}/error/404`);
+      router.push(getErrorPageUrl(404, tenant));
     }
   }, [isNotFound, isTabDisabled, shouldRedirectToSibling, shouldRedirectAgentToCourse]);
 

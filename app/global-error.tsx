@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getTenant } from '@/utils/helpers';
+import { getErrorPageUrl, getTenant } from '@/utils/helpers';
 
 export default function GlobalError({
   error,
@@ -15,7 +15,7 @@ export default function GlobalError({
   useEffect(() => {
     console.error('Unhandled global error:', error);
     const tenant = getTenant();
-    router.replace(tenant ? `/platform/${tenant}/error/500` : '/');
+    router.replace(getErrorPageUrl(500, tenant));
   }, [error, router]);
 
   return (

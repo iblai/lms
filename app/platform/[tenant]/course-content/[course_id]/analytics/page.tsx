@@ -10,6 +10,7 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
+import { getErrorPageUrl } from '@/utils/helpers';
 
 export default function AnalyticsPage() {
   const params = useParams();
@@ -33,7 +34,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     if (permissionsResolved && !canViewAnalytics) {
-      router.push(`/platform/${tenant}/error/403`);
+      router.push(getErrorPageUrl(403, tenant));
     }
   }, [permissionsResolved, canViewAnalytics, tenant, router]);
 

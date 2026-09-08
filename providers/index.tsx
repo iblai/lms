@@ -21,8 +21,8 @@ import {
   TenantProvider,
   useCurrentTenant,
 } from '@iblai/iblai-js/web-utils';
-import { getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { getErrorPageUrl, getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
+import { useParams, usePathname } from 'next/navigation';
 import { updateRbacPermissions } from '@/features/rbac';
 import { Spinner } from '@/components/spinner';
 import { SkillsTimeTrackingProvider } from '@/hooks/use-time-tracking';
@@ -40,13 +40,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setTenant(getTenant());
   }, []);
-  const router = useRouter();
   const { tenant: requestedTenant } = useParams<{ tenant: string }>();
+  console.log('##requestedTenant', requestedTenant);
   const [ready, setReady] = useState(false);
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
   const isVersionRoute = /^\/version/.test(pathname);
+  // The error page is where a failed auth check or an unresolvable tenant
+  // lands, so it must render without the providers whose failure sent the user
+  // there — otherwise the same failure fires again and bounces them off it.
+  const isErrorRoute = /^\/error(\/|$)/.test(pathname);
 
   const loadDataLayer = () => {
     initializeDataLayer(
@@ -99,6 +103,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // allow user to go to version page without auth
     map.set(new RegExp('^\/version'), async () => false);
 
+    // Error pages must render for everyone: they are where a failed auth or a
+    // tenant mismatch lands, so gating them behind the auth check would bounce
+    // the visitor straight back to the auth SPA instead of showing the reason.
+    map.set(new RegExp('^/error(/|$)'), async () => false);
+
     // Discover / course-about / program-about let everyone past the root auth
     // gate. The actual anonymous-access decision (does the tenant allow
     // self-linking?) is made at the URL-route level via `SelfLinkingGuard`,
@@ -130,13 +139,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     dispatch(updateRbacPermissions(rbacPermissions ?? {}));
   }
 
+  if (!requestedTenant && window.location.pathname.startsWith('/platform/')) return null;
+
   return (
     <>
       {/* Mounted past the `ready` gate so `/env.js` — the source of the runtime
           Sentry DSN — has already been loaded by the effect above. */}
       <SentryInit />
       <AuthProvider
-        skip={isSsoLoginRoute || isVersionRoute}
+        skip={isSsoLoginRoute || isVersionRoute || isErrorRoute}
         redirectToAuthSpa={(
           redirectTo = undefined,
           platformKey = undefined,
@@ -149,7 +160,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         pathname={pathname}
       >
         <TenantProvider
-          skip={isSsoLoginRoute || isVersionRoute}
+          skip={isSsoLoginRoute || isVersionRoute || isErrorRoute}
           currentTenant={tenant || ''}
           requestedTenant={requestedTenant || ''}
           saveCurrentTenant={(currentTenant) => {
@@ -163,10 +174,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           username={getUserName() || ''}
           onAuthFailure={(reason) => {
             console.error('[TenantProvider] Auth failure:', reason);
-            router.push(`/platform/${tenant}/error/403`);
+            window.location.href = getErrorPageUrl(409, tenant);
           }}
           onLoadPlatformPermissions={onLoadPlatformpermissions}
           fallback={spinnerFallback}
+          onTenantMismatch={() => {
+            window.location.href = getErrorPageUrl(409, tenant);
+          }}
         >
           <SkillsTimeTrackingProvider />
           {children}

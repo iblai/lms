@@ -75,6 +75,23 @@ export async function gotoTenantPage(
 }
 
 /**
+ * Navigate to the error page. Error routes live at the root (`/error/<code>`),
+ * outside the guarded `/platform/[tenant]` segment, and carry the tenant as a
+ * query param.
+ */
+export async function gotoErrorPage(
+  page: Page,
+  code: string | number,
+  options: { timeout?: number } = {},
+): Promise<void> {
+  const tenant = await getCurrentTenant(page);
+  const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+  await page.goto(`${SKILL_HOST}/error/${code}${query}`, {
+    timeout: options.timeout ?? 120_000,
+  });
+}
+
+/**
  * Navigate to the skills home page (authenticated).
  */
 export async function navigateToHome(page: Page): Promise<void> {
