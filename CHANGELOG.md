@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.82.0](https://github.com/iblai/lms/compare/skills-v0.81.0...skills-v0.82.0) (2026-09-10)
+
+### Features
+
+* **auth:** require a valid edx JWT in hasNonExpiredAuthToken ([3a1a4d6](https://github.com/iblai/lms/commit/3a1a4d6248800e33c4e2b15832e2bc2fdca99777))
+
 ## [0.81.0](https://github.com/iblai/lms/compare/skills-v0.80.1...skills-v0.81.0) (2026-09-10)
 
 ### Features
