@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.81.0](https://github.com/iblai/lms/compare/skills-v0.80.1...skills-v0.81.0) (2026-09-10)
+
+### Features
+
+* **ci:** self-signed Windows build pipeline (x64 + arm64) ([8f05a51](https://github.com/iblai/lms/commit/8f05a51225043289f7cd61e8234e08a301bcee0a))
+
 ## [0.80.1](https://github.com/iblai/lms/compare/skills-v0.80.0...skills-v0.80.1) (2026-09-09)
 
 ### Chores
