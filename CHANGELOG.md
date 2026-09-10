@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.82.2](https://github.com/iblai/lms/compare/skills-v0.82.1...skills-v0.82.2) (2026-09-10)
+
+### Tests
+
+* **e2e:** assert the mentor embed loads and settles ([e3b3a54](https://github.com/iblai/lms/commit/e3b3a5424267b1c01f2d9e14670ebcd7ff98d28f))
+
 ## [0.82.1](https://github.com/iblai/lms/compare/skills-v0.82.0...skills-v0.82.1) (2026-09-10)
 
 ### Chores
