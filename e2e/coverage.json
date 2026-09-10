@@ -12,10 +12,7 @@
       "id": "authentication",
       "name": "Authentication",
       "spec": "01-authentication.spec.ts",
-      "sourceFiles": [
-        "app/sso-login/page.tsx",
-        "app/sso-login-complete/page.tsx"
-      ],
+      "sourceFiles": ["app/sso-login/page.tsx", "app/sso-login-complete/page.tsx"],
       "checkpoints": [
         {
           "id": "auth-01",
@@ -482,10 +479,7 @@
       "id": "profile-credentials",
       "name": "Profile \u2014 Credentials",
       "spec": "08-profile-credentials.spec.ts",
-      "sourceFiles": [
-        "app/profile/credentials/page.tsx",
-        "components/credential-box.tsx"
-      ],
+      "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
         {
           "id": "cred-01",
@@ -554,10 +548,7 @@
       "id": "profile-programs",
       "name": "Profile \u2014 Programs",
       "spec": "10-profile-programs.spec.ts",
-      "sourceFiles": [
-        "app/profile/programs/page.tsx",
-        "app/programs/[program_id]/page.tsx"
-      ],
+      "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
         {
           "id": "prog-01",
@@ -615,9 +606,7 @@
       "id": "profile-courses",
       "name": "Profile \u2014 Courses",
       "spec": "11-profile-courses.spec.ts",
-      "sourceFiles": [
-        "app/profile/courses/page.tsx"
-      ],
+      "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
         {
           "id": "pcrs-01",
@@ -645,9 +634,7 @@
       "id": "profile-public",
       "name": "Profile \u2014 Public",
       "spec": "12-profile-public.spec.ts",
-      "sourceFiles": [
-        "app/profile/public/page.tsx"
-      ],
+      "sourceFiles": ["app/profile/public/page.tsx"],
       "checkpoints": [
         {
           "id": "pub-01",
@@ -670,9 +657,7 @@
       "id": "recommended-courses",
       "name": "Recommended Courses",
       "spec": "13-recommended-courses.spec.ts",
-      "sourceFiles": [
-        "app/recommended/page.tsx"
-      ],
+      "sourceFiles": ["app/recommended/page.tsx"],
       "checkpoints": [
         {
           "id": "rec-01",
@@ -763,10 +748,7 @@
       "id": "notifications",
       "name": "Notifications",
       "spec": "15-notifications.spec.ts",
-      "sourceFiles": [
-        "app/notifications/page.tsx",
-        "app/notifications/[notificationId]/page.tsx"
-      ],
+      "sourceFiles": ["app/notifications/page.tsx", "app/notifications/[notificationId]/page.tsx"],
       "checkpoints": [
         {
           "id": "notif-01",
@@ -1074,10 +1056,7 @@
       "id": "search",
       "name": "Search",
       "spec": "21-search.spec.ts",
-      "sourceFiles": [
-        "app/discover/page.tsx",
-        "components/nav-bar.tsx"
-      ],
+      "sourceFiles": ["app/discover/page.tsx", "components/nav-bar.tsx"],
       "checkpoints": [
         {
           "id": "search-01",
@@ -1167,9 +1146,7 @@
       "id": "edit-profile-dialog",
       "name": "Edit Profile Dialog",
       "spec": "23-edit-profile-dialog.spec.ts",
-      "sourceFiles": [
-        "components/edit-profile-dialog.tsx"
-      ],
+      "sourceFiles": ["components/edit-profile-dialog.tsx"],
       "checkpoints": [
         {
           "id": "ep-01",
@@ -1264,10 +1241,7 @@
       "id": "chat-embed",
       "name": "Chat Embed \u2014 Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
-      "sourceFiles": [
-        "components/chat-button.tsx",
-        "components/chat/index.tsx"
-      ],
+      "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
         {
           "id": "chat-01",
@@ -1307,7 +1281,8 @@
       "spec": "26-error-pages.spec.ts",
       "sourceFiles": [
         "app/error/[code]/page.tsx",
-        "app/not-found.tsx"
+        "app/not-found.tsx",
+        "components/error-page-content.tsx"
       ],
       "checkpoints": [
         {
@@ -1322,7 +1297,7 @@
         },
         {
           "id": "err-03",
-          "description": "Non-existent route shows 404",
+          "description": "Non-existent route renders the 404 page in place — URL unchanged, 404 status",
           "status": "covered"
         },
         {
@@ -1336,11 +1311,7 @@
       "id": "ui-render-console-errors",
       "name": "UI Render Console Errors",
       "spec": "27-ui-render-console-errors.spec.ts",
-      "sourceFiles": [
-        "app/home/page.tsx",
-        "app/discover/page.tsx",
-        "app/profile/page.tsx"
-      ],
+      "sourceFiles": ["app/home/page.tsx", "app/discover/page.tsx", "app/profile/page.tsx"],
       "checkpoints": [
         {
           "id": "ui-01",
@@ -1363,10 +1334,7 @@
       "id": "tenant-management-invitations",
       "name": "Tenant Management & Invitations",
       "spec": "28-tenant-management-invitations.spec.ts",
-      "sourceFiles": [
-        "components/account-dialog.tsx",
-        "components/account-button.tsx"
-      ],
+      "sourceFiles": ["components/account-dialog.tsx", "components/account-button.tsx"],
       "checkpoints": [
         {
           "id": "tm-01",
@@ -1478,10 +1446,7 @@
       "id": "course-access-guard-tenant-redirect",
       "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
-      "sourceFiles": [
-        "components/course-access-guard.tsx",
-        "utils/helpers.ts"
-      ],
+      "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
       "checkpoints": [
         {
           "id": "cag-01",
@@ -1597,9 +1562,7 @@
       "id": "admin-onboarding-wizard",
       "name": "Admin Onboarding Wizard",
       "spec": "34-admin-onboarding-wizard.spec.ts",
-      "sourceFiles": [
-        "app/platform/[tenant]/onboarding/page.tsx"
-      ],
+      "sourceFiles": ["app/platform/[tenant]/onboarding/page.tsx"],
       "checkpoints": [
         {
           "id": "adminonb-01",

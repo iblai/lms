@@ -110,7 +110,7 @@ describe('AnalyticsPage', () => {
   it('redirects to the 403 error page when resolved and the permission is missing', () => {
     mockCheckRbacPermission.mockReturnValue(false);
     renderPage();
-    expect(mockRouterPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+    expect(mockRouterPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
     expect(screen.queryByTestId('analytics-course-detail')).not.toBeInTheDocument();
   });
 

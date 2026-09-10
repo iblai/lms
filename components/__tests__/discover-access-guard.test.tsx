@@ -50,7 +50,7 @@ describe('DiscoverAccessGuard', () => {
     vi.mocked(config.settings.hideDiscoverTab).mockReturnValue(true);
     render(<DiscoverAccessGuard>{child}</DiscoverAccessGuard>);
     expect(screen.queryByTestId('discover-content')).not.toBeInTheDocument();
-    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+    expect(mockReplace).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
   });
 
   it('redirects to 403 when enable_discover_page is false', () => {
@@ -61,7 +61,7 @@ describe('DiscoverAccessGuard', () => {
     } as any);
     render(<DiscoverAccessGuard>{child}</DiscoverAccessGuard>);
     expect(screen.queryByTestId('discover-content')).not.toBeInTheDocument();
-    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+    expect(mockReplace).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
   });
 
   it('renders children when enable_discover_page is null/undefined (truthy default)', () => {
@@ -94,6 +94,6 @@ describe('DiscoverAccessGuard', () => {
       isError: false,
     } as any);
     render(<DiscoverAccessGuard>{child}</DiscoverAccessGuard>);
-    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+    expect(mockReplace).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
   });
 });

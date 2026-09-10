@@ -12,6 +12,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/utils/helpers', () => ({
+  getErrorPageUrl: (code: string | number, tenant?: string) =>
+    tenant ? `/error/${code}?tenant=${encodeURIComponent(tenant)}` : `/error/${code}`,
   getTenant: vi.fn(() => 'test-tenant'),
   getTenants: vi.fn(() => []),
 }));
@@ -168,7 +170,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/404');
+      expect(mockPush).toHaveBeenCalledWith('/error/404?tenant=test-tenant');
     });
 
     it('shows spinner instead of children when course is null', () => {
@@ -247,7 +249,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -284,7 +286,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -384,7 +386,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
       expect(mockReplace).not.toHaveBeenCalled();
       expect(screen.queryByText('content')).not.toBeInTheDocument();
     });
@@ -408,7 +410,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -453,7 +455,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -542,7 +544,7 @@ describe('CourseAccessGuard', () => {
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/error/403');
+      expect(mockPush).toHaveBeenCalledWith('/error/403?tenant=test-tenant');
     });
 
     it('waits (spinner) and does not redirect while the admin check is unresolved', () => {

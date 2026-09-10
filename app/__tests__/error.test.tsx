@@ -11,6 +11,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/utils/helpers', () => ({
+  getErrorPageUrl: (code: string | number, tenant?: string) =>
+    tenant ? `/error/${code}?tenant=${encodeURIComponent(tenant)}` : `/error/${code}`,
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
@@ -25,7 +27,7 @@ describe('Error boundary', () => {
   it('redirects to /error/500', () => {
     const error = new Error('Test error');
     render(<ErrorBoundary error={error} reset={() => {}} />);
-    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/error/500');
+    expect(mockReplace).toHaveBeenCalledWith('/error/500?tenant=test-tenant');
   });
 
   it('logs the error to console', () => {

@@ -389,11 +389,11 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 26: Error Pages (4 checkpoints) — `journeys/26-error-pages.spec.ts`
 
-**Source files:** `app/error/[code]/page.tsx`, `app/not-found.tsx`
+**Source files:** `app/error/[code]/page.tsx`, `app/not-found.tsx`, `components/error-page-content.tsx`
 
 - [x] Navigating to /error/404 displays a "Page Not Found" error page
 - [x] Navigating to /error/403 displays a "Forbidden" error page
-- [x] Navigating to a non-existent route displays the 404 not-found page
+- [x] Navigating to a non-existent route renders the 404 page in place (URL unchanged, 404 status)
 - [x] Error pages include a link or button to navigate back to Home
 
 ---
