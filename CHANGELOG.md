@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.82.1](https://github.com/iblai/lms/compare/skills-v0.82.0...skills-v0.82.1) (2026-09-10)
+
+### Chores
+
+* release 2.9.10 ([6d7d19b](https://github.com/iblai/lms/commit/6d7d19b9f6fa21cacb7dfc291a02278b8f6032fc))
+
 ## [0.82.0](https://github.com/iblai/lms/compare/skills-v0.81.0...skills-v0.82.0) (2026-09-10)
 
 ### Features
