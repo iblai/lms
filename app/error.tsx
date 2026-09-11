@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getTenant } from '@/utils/helpers';
+import { getErrorPageUrl, getTenant } from '@/utils/helpers';
 
 export default function Error({
   error,
@@ -15,7 +15,7 @@ export default function Error({
   useEffect(() => {
     console.error('Unhandled client error:', error);
     const tenant = getTenant();
-    router.replace(tenant ? `/platform/${tenant}/error/500` : '/');
+    router.replace(getErrorPageUrl(500, tenant));
   }, [error, router]);
 
   return null;

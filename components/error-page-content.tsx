@@ -1,12 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { config } from '@/lib/config';
-import { hideInitialLoader } from '@/lib/initial-loader';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
-import { useTenantParam } from '@/hooks/use-tenant-param';
 
 const ERROR_MAP: Record<string, { title: string; description: string; icon: React.ReactNode }> = {
   '401': {
@@ -85,6 +81,26 @@ const ERROR_MAP: Record<string, { title: string; description: string; icon: Reac
       </svg>
     ),
   },
+  '409': {
+    title: 'Unauthorized Organization',
+    description:
+      "The resource you're trying to access belongs to an organization you do not have access to.",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        className="h-16 w-16"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+        />
+      </svg>
+    ),
+  },
   '500': {
     title: 'Server Error',
     description: 'Something went wrong on our end. Please try again later.',
@@ -146,18 +162,16 @@ const DEFAULT_ERROR = {
   ),
 };
 
-export default function ErrorPage() {
-  const params = useParams();
-  const code = params.code as string;
-  const tenant = useTenantParam();
+/**
+ * The error page body, shared by the `/error/[code]` route and by
+ * `not-found.tsx` — an unmatched URL keeps its own path and its 404 status
+ * while showing the same page a redirect to `/error/404` would have shown.
+ */
+export function ErrorPageContent({ code, tenant = '' }: { code: string; tenant?: string }) {
   const { getSupportEmail } = useTenantMetadata({ org: tenant });
   const supportEmail = getSupportEmail() || config.settings.supportEmail();
 
   const { title, description, icon } = ERROR_MAP[code] ?? DEFAULT_ERROR;
-
-  useEffect(() => {
-    hideInitialLoader();
-  }, []);
 
   return (
     <div className="flex flex-1 items-center justify-center px-6">
@@ -178,7 +192,7 @@ export default function ErrorPage() {
         {/* Actions */}
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href={`/platform/${tenant}`}
+            href={`/`}
             className="w-full rounded-md bg-amber-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-600 sm:w-auto"
           >
             Back to Home

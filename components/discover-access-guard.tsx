@@ -7,6 +7,7 @@ import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { config } from '@/lib/config';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+import { getErrorPageUrl } from '@/utils/helpers';
 
 /**
  * Gates the Discover page itself. Redirects to a 403 when Discover is disabled —
@@ -31,7 +32,7 @@ export function DiscoverAccessGuard({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!discoverEnabled) {
-      router.replace(`/platform/${tenant}/error/403`);
+      router.replace(getErrorPageUrl(403, tenant));
     }
   }, [discoverEnabled, tenant]);
 

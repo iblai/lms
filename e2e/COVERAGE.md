@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-09-04 | 292 checkpoints | 40 journeys | 100% covered
+> Last updated: 2026-09-11 | 296 checkpoints | 41 journeys | 100% covered
 
 ## How This Works
 
@@ -389,11 +389,11 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 26: Error Pages (4 checkpoints) — `journeys/26-error-pages.spec.ts`
 
-**Source files:** `app/error/[code]/page.tsx`, `app/not-found.tsx`
+**Source files:** `app/error/[code]/page.tsx`, `app/not-found.tsx`, `components/error-page-content.tsx`
 
 - [x] Navigating to /error/404 displays a "Page Not Found" error page
 - [x] Navigating to /error/403 displays a "Forbidden" error page
-- [x] Navigating to a non-existent route displays the 404 not-found page
+- [x] Navigating to a non-existent route renders the 404 page in place (URL unchanged, 404 status)
 - [x] Error pages include a link or button to navigate back to Home
 
 ---
@@ -587,6 +587,22 @@ When adding a new page or modifying an existing user flow:
 - [x] Learner course content has the learner tabs and none of the admin tabs
 - [x] A learner can open the Agent tab
 - [x] The learner profile menu opens and offers Logout
+
+---
+
+## Journey 42: Mentor Embed Loads (4 checkpoints) — `journeys/42-mentor-embed-loads.spec.ts`
+
+**Source files:** `components/course-agent-chat.tsx`, `components/chat-button.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`
+
+The mentor is embedded through the `agent-ai` web component, which puts the mentor app in an
+iframe inside its own shadow root. The host owns the auth and answers the embed over
+`postMessage`; none of that handshake is visible from outside, so when it breaks the embed does
+not error — it spins. These checkpoints assert what an outside observer can distinguish.
+
+- [x] The host renders the `agent-ai` component pointed at this tenant's mentor
+- [x] The embed reaches the mentor app inside the iframe rather than a spinner or an error
+- [x] The embed runs on the same tenant as the host, not a stale one
+- [x] The embed settles instead of re-navigating in an auth-handshake loop
 
 ---
 

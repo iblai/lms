@@ -213,12 +213,7 @@ export default function CourseContentLayout({
   // complete on view — the agent decides instead. The EdxIframe relays this to
   // the MFE; the agent chat forwards the edX identifiers the agent needs to
   // complete units itself.
-  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({
-    course,
-    activeTab,
-    agentMode,
-    tenant,
-  });
+  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({ course, tenant });
 
   // Needed on both agent (mentor xblock detection + media preview) and course
   // (media scroll-to) tabs.

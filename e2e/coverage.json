@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-09-04",
+  "lastUpdated": "2026-09-11",
   "summary": {
-    "totalCheckpoints": 292,
-    "coveredCheckpoints": 292,
+    "totalCheckpoints": 296,
+    "coveredCheckpoints": 296,
     "percent": 100,
-    "totalJourneys": 40
+    "totalJourneys": 41
   },
   "journeys": [
     {
@@ -1279,7 +1279,11 @@
       "id": "error-pages",
       "name": "Error Pages",
       "spec": "26-error-pages.spec.ts",
-      "sourceFiles": ["app/error/[code]/page.tsx", "app/not-found.tsx"],
+      "sourceFiles": [
+        "app/error/[code]/page.tsx",
+        "app/not-found.tsx",
+        "components/error-page-content.tsx"
+      ],
       "checkpoints": [
         {
           "id": "err-01",
@@ -1293,7 +1297,7 @@
         },
         {
           "id": "err-03",
-          "description": "Non-existent route shows 404",
+          "description": "Non-existent route renders the 404 page in place — URL unchanged, 404 status",
           "status": "covered"
         },
         {
@@ -1920,6 +1924,38 @@
         {
           "id": "learner-08",
           "description": "The learner profile menu opens and offers Logout",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "mentor-embed-loads",
+      "name": "Mentor Embed Loads",
+      "spec": "42-mentor-embed-loads.spec.ts",
+      "sourceFiles": [
+        "components/course-agent-chat.tsx",
+        "components/chat-button.tsx",
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "embed-01",
+          "description": "The host renders the agent-ai component pointed at this tenant's mentor",
+          "status": "covered"
+        },
+        {
+          "id": "embed-02",
+          "description": "The embed reaches the mentor app inside the iframe rather than a spinner or an error",
+          "status": "covered"
+        },
+        {
+          "id": "embed-03",
+          "description": "The embed runs on the same tenant as the host, not a stale one",
+          "status": "covered"
+        },
+        {
+          "id": "embed-04",
+          "description": "The embed settles instead of re-navigating in an auth-handshake loop",
           "status": "covered"
         }
       ]

@@ -9,6 +9,7 @@ import { TopBanner, PaywallModal } from '@iblai/iblai-js/web-containers';
 import { setDisplayMonetizationCheckoutModal } from '@iblai/iblai-js/web-utils';
 import { MONETIZATION_CLOSE_PAYLOAD } from '@/constants/global';
 import { useRouter } from 'next/navigation';
+import { getErrorPageUrl } from '@/utils/helpers';
 
 export function MonetizationWrapper() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export function MonetizationWrapper() {
 
   const handleModalClose = () => {
     if (onClosePayload === MONETIZATION_CLOSE_PAYLOAD.redirect_402) {
-      router.push(`/platform/${platformKey}/error/402`);
+      router.push(getErrorPageUrl(402, platformKey));
     }
     dispatch(setDisplayMonetizationCheckoutModal(false));
   };

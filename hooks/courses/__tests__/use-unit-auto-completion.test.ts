@@ -20,8 +20,6 @@ const renderUnitAutoCompletion = (params: Record<string, unknown> = {}) =>
   renderHook(() =>
     useUnitAutoCompletion({
       course: agentCourse,
-      activeTab: 'agent',
-      agentMode: 'learning',
       ...params,
     } as any),
   );
@@ -32,19 +30,13 @@ describe('useUnitAutoCompletion', () => {
     mockMetadata.current = { enable_agent_based_unit_completion: true };
   });
 
+  // Where the learner is — agent tab or course tab, learning or assessment —
+  // no longer factors in: the flags alone decide.
   it('disables auto-completion when the tenant flag and both course flags are on', () => {
     const { result } = renderUnitAutoCompletion();
 
     expect(result.current.unitAutoCompletionDisabled).toBe(true);
     expect(result.current.unitAutoCompletionEnabled).toBe(false);
-  });
-
-  it('disables auto-completion in assessment mode too', () => {
-    // Assessment runs inside the same agent experience, so the agent still owns
-    // completion there.
-    const { result } = renderUnitAutoCompletion({ agentMode: 'assessment' });
-
-    expect(result.current.unitAutoCompletionDisabled).toBe(true);
   });
 
   it('leaves auto-completion on when the tenant flag is off', () => {
@@ -81,12 +73,6 @@ describe('useUnitAutoCompletion', () => {
 
   it('leaves auto-completion on with no course loaded', () => {
     const { result } = renderUnitAutoCompletion({ course: null });
-
-    expect(result.current.unitAutoCompletionEnabled).toBe(true);
-  });
-
-  it('leaves auto-completion on outside the agent tab', () => {
-    const { result } = renderUnitAutoCompletion({ activeTab: 'course' });
 
     expect(result.current.unitAutoCompletionEnabled).toBe(true);
   });

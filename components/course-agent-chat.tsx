@@ -33,18 +33,13 @@ export function CourseAgentChat() {
   const mentorElementRef = useRef<HTMLElement | null>(null);
   const dispatch = useDispatch();
   const { course, currentUnitID } = useContext(CourseOutlineContext);
-  const { courseID, activeTab, agentMode, courseOutline } = useContext(EdxIframeContext);
+  const { courseID, courseOutline } = useContext(EdxIframeContext);
   // The agent reads the unit the (hidden) course iframe is showing, so mounting
   // it before that iframe has loaded both competes for the network on the tab's
   // heaviest moment and gives the agent a unit that isn't rendered yet. Latched
   // once true, so later unit switches never tear the mounted chat back down.
   const edxIframeLoaded = useEdxIframeLoaded();
-  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({
-    course,
-    activeTab,
-    agentMode,
-    tenant,
-  });
+  const { unitAutoCompletionDisabled } = useUnitAutoCompletion({ course, tenant });
 
   // The agent names the lesson it completes, so it needs the unit's title on
   // top of its ids. Matched on id alone: an outline that has not loaded yet —

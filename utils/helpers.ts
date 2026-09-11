@@ -48,6 +48,23 @@ export const inIframe = () => {
 };
 
 /**
+ * Builds the canonical error-page URL.
+ *
+ * Error pages live at the root (`/error/[code]`) rather than under
+ * `/platform/[tenant]/`, because the tenant segment is guarded: a tenant
+ * mismatch or auth failure is exactly the case that must still be able to
+ * render. The tenant travels as a query param so the page can still resolve
+ * the tenant support email.
+ *
+ * @param {string | number} code - Error code (e.g. `403`) or slug.
+ * @param {string} [tenant] - Tenant the error happened in; omitted when unknown.
+ * @returns {string} - The `/error/...` URL to navigate to.
+ */
+export function getErrorPageUrl(code: string | number, tenant?: string | null) {
+  return tenant ? `/error/${code}?tenant=${encodeURIComponent(tenant)}` : `/error/${code}`;
+}
+
+/**
  * Retrieves the current tenant from localStorage
  * @returns {Promise<string>} - Returns the tenant string from localStorage or empty string if not found
  */
@@ -296,7 +313,41 @@ export function redirectToAuthSpaJoinTenant(
   window.location.href = joinUrl;
 }
 
+/* Reads a JWT's `exp` claim and reports whether it is in the past. A token that
+ * cannot be decoded (or is malformed) is treated as expired; a token with no
+ * `exp` claim is treated as non-expiring (mirrors the axd "no expiry" case).
+ */
+export function isJwtExpired(token: string): boolean {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return true;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const claims = JSON.parse(atob(padded)) as { exp?: number };
+    if (typeof claims.exp !== 'number') return false;
+    return claims.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
 export function hasNonExpiredAuthToken() {
+  // The edx JWT is stored alongside the axd token at SSO login; a valid session
+  // requires it to be present and unexpired too, so re-auth is triggered when
+  // it is missing or its `exp` has passed.
+  const edxToken = window.localStorage.getItem(LOCAL_STORAGE_KEYS.EDX_TOKEN_KEY);
+  if (!edxToken) {
+    console.log(
+      '################### [hasNonExpiredAuthToken] edx_jwt_token is not defined',
+      edxToken,
+    );
+    return false;
+  }
+  if (isJwtExpired(edxToken)) {
+    console.log('################### [hasNonExpiredAuthToken] edx_jwt_token is expired');
+    return false;
+  }
+
   const token = window.localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
   if (!token) {
     console.log('################### [hasNonExpiredAuthToken] axd token is not defined', token);
@@ -481,6 +532,8 @@ export const handleTenantSwitch = async (tenant: string, saveRedirect = false) =
   // Suppress concurrent auth redirects SYNCHRONOUSLY before any await, so no
   // pending microtask (e.g. an in-flight syncCookiesToLocalStorage completing)
   // can call redirectToAuthSpa before the flag is set.
+
+  console.log('##handleTenantSwitch', tenant, saveRedirect);
   _suppressAuthRedirect = true;
 
   // Clear current tenant cookie before switching
