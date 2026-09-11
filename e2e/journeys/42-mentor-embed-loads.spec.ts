@@ -3,7 +3,7 @@ import { logger } from '@iblai/iblai-js/playwright';
 import { gotoTenantPage } from '../utils/navigation';
 
 /**
- * Journey 37: Mentor Embed Loads
+ * Journey 42: Mentor Embed Loads
  *
  * SkillsAI embeds the mentor through the `agent-ai` web component, which puts
  * the mentor app in an iframe inside its own shadow root. The host owns the
@@ -26,7 +26,7 @@ import { gotoTenantPage } from '../utils/navigation';
  * bounded number of times; a broken auth handshake re-navigates every few
  * seconds for as long as you watch.
  */
-test.describe('Journey 37: Mentor Embed Loads', () => {
+test.describe('Journey 42: Mentor Embed Loads', () => {
   test.setTimeout(200000);
 
   type Page = import('@playwright/test').Page;
