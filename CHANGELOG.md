@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.82.4](https://github.com/iblai/lms/compare/skills-v0.82.3...skills-v0.82.4) (2026-09-14)
+
+### Bug Fixes
+
+* sentry build issue ([aa3c9bd](https://github.com/iblai/lms/commit/aa3c9bd1347ac97c47efadf67ea4ef516dfa4e5e))
+
+## [0.82.3-patch.1](https://github.com/iblai/lms/compare/skills-v0.82.3...skills-v0.82.4) (2026-09-14)
+
+### Bug Fixes
+
+* sentry build issue ([15219da](https://github.com/iblai/lms/commit/15219daaa30ab19d0fb99a5970d14b26e5b8c92a))
+
 ## [0.82.3](https://github.com/iblai/lms/compare/skills-v0.82.2...skills-v0.82.3) (2026-09-11)
 
 ### Chores
