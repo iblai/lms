@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { getEnv } from '@/lib/config';
+import { getClientSentryOptions } from '@/lib/sentry-client-options';
 
 /**
  * Re-initializes Sentry with the DSN that `/env.js` supplies at runtime.
@@ -27,21 +28,9 @@ export function SentryInit() {
     if (currentDsn === runtimeDsn) return;
 
     Sentry.close();
-    Sentry.init({
-      dsn: runtimeDsn,
-      integrations: [
-        Sentry.captureConsoleIntegration({ levels: ['error'] }),
-        Sentry.replayIntegration({
-          maskAllText: false,
-          blockAllMedia: false,
-        }),
-      ],
-      tracesSampleRate: 1.0,
-      normalizeDepth: 3,
-      environment: getEnv('NODE_ENV'),
-      replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1.0,
-    });
+    // Shares the boot-time init's replay integration — constructing a second
+    // one throws "Multiple Sentry Session Replay instances are not supported".
+    Sentry.init(getClientSentryOptions(runtimeDsn));
   }, []);
 
   return null;
