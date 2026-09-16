@@ -20,9 +20,10 @@ vi.mock('@/utils/helpers', () => ({
 
 // Mock the web-containers module
 vi.mock('@iblai/iblai-js/web-containers', () => ({
-  AnalyticsProgramDetail: vi.fn(({ tenantKey, mentorId, programId, onBack }) => (
+  AnalyticsProgramDetail: vi.fn(({ tenantKey, currentSPA, mentorId, programId, onBack }) => (
     <div data-testid="analytics-program-detail">
       <span data-testid="tenant-key">{tenantKey}</span>
+      <span data-testid="current-spa">{currentSPA}</span>
       <span data-testid="mentor-id">{mentorId}</span>
       <span data-testid="program-id">{programId}</span>
       <button data-testid="back-button" onClick={onBack}>
@@ -53,6 +54,11 @@ describe('ProgramDetailPage', () => {
   it('passes the correct tenantKey from getTenant', () => {
     render(<ProgramDetailPage />);
     expect(screen.getByTestId('tenant-key')).toHaveTextContent('test-tenant');
+  });
+
+  it('passes currentSPA from the app name config', () => {
+    render(<ProgramDetailPage />);
+    expect(screen.getByTestId('current-spa')).toHaveTextContent('skills');
   });
 
   it('passes empty string for mentorId (Skills app does not use mentor)', () => {

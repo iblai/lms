@@ -7,9 +7,10 @@ vi.mock('@/utils/helpers', () => ({
 }));
 
 vi.mock('@iblai/iblai-js/web-containers', () => ({
-  AnalyticsFinancialStats: vi.fn(({ tenantKey, mentorId, usergroupIds }) => (
+  AnalyticsFinancialStats: vi.fn(({ tenantKey, currentSPA, mentorId, usergroupIds }) => (
     <div data-testid="analytics-financial-stats">
       <span data-testid="tenant-key">{tenantKey}</span>
+      <span data-testid="current-spa">{currentSPA}</span>
       <span data-testid="mentor-id">{mentorId}</span>
       <span data-testid="usergroup-ids">{JSON.stringify(usergroupIds)}</span>
     </div>
@@ -37,6 +38,11 @@ describe('FinancialPage', () => {
   it('passes the correct tenantKey from getTenant', () => {
     render(<FinancialPage />);
     expect(screen.getByTestId('tenant-key')).toHaveTextContent('test-tenant');
+  });
+
+  it('passes currentSPA from the app name config', () => {
+    render(<FinancialPage />);
+    expect(screen.getByTestId('current-spa')).toHaveTextContent('skills');
   });
 
   it('passes empty string for mentorId', () => {

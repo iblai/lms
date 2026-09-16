@@ -45,6 +45,14 @@ describe('AuditPage', () => {
     expect(getByTestId('tenant-key')).toHaveTextContent('test-tenant');
   });
 
+  it('passes currentSPA from the app name config', () => {
+    render(<AuditPage />);
+    expect(AnalyticsAuditLogStats).toHaveBeenCalledWith(
+      expect.objectContaining({ currentSPA: 'skills' }),
+      undefined,
+    );
+  });
+
   it('passes empty string for mentorId and selectedMentorId (Skills app does not use mentor)', () => {
     render(<AuditPage />);
     expect(AnalyticsAuditLogStats).toHaveBeenCalledWith(
