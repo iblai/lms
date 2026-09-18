@@ -9,11 +9,12 @@ vi.mock('@/utils/helpers', () => ({
 
 // Mock the web-containers module
 vi.mock('@iblai/iblai-js/web-containers', () => ({
-  AnalyticsCourses: vi.fn(({ tenantKey, mentorId, basePath }) => (
+  AnalyticsCourses: vi.fn(({ tenantKey, mentorId, basePath, getCourseURL }) => (
     <div data-testid="analytics-courses">
       <span data-testid="tenant-key">{tenantKey}</span>
       <span data-testid="mentor-id">{mentorId}</span>
       <span data-testid="base-path">{basePath}</span>
+      <span data-testid="course-url">{getCourseURL?.('course-1')}</span>
     </div>
   )),
 }));
@@ -48,5 +49,12 @@ describe('CoursesPage', () => {
   it('passes correct basePath', () => {
     render(<CoursesPage />);
     expect(screen.getByTestId('base-path')).toHaveTextContent('/analytics');
+  });
+
+  it("points the course id at the course's own page, not the analytics one", () => {
+    render(<CoursesPage />);
+    expect(screen.getByTestId('course-url')).toHaveTextContent(
+      '/platform/test-tenant/courses/course-1',
+    );
   });
 });
