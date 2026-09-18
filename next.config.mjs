@@ -1,4 +1,9 @@
 import { withSentryConfig } from '@sentry/nextjs';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+// Locale is resolved per-request from cookies (see i18n/request.ts), so there
+// is no routing segment and no middleware — existing routes are untouched.
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 // Sourcemap generation is heavy (multi-GB) and only pays off if the maps are
 // actually uploaded to Sentry — which requires SENTRY_AUTH_TOKEN at build time.
@@ -119,4 +124,4 @@ const sentryWebpackPluginOptions = {
   },
 };
 
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default withSentryConfig(withNextIntl(nextConfig), sentryWebpackPluginOptions);

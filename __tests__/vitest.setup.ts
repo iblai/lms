@@ -72,3 +72,33 @@ if (typeof global.ResizeObserver === 'undefined') {
     disconnect() {}
   };
 }
+
+// next-intl: `NextIntlClientProvider` is mounted in the root layout, which unit
+// tests never render — so `useTranslations` would throw in every component test.
+// Resolve against the real `messages/en.json` instead of a passthrough stub, so
+// assertions keep matching the strings a user actually sees and a key that is
+// missing from the catalog fails the test loudly rather than silently rendering
+// its own name.
+vi.mock('next-intl', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('next-intl')>();
+  const messages = (await import('../messages/en.json')).default as Record<
+    string,
+    Record<string, string>
+  >;
+
+  return {
+    ...actual,
+    useTranslations: (namespace?: string) => {
+      const dict = namespace ? (messages[namespace] ?? {}) : {};
+      return (key: string) => {
+        const value = dict[key];
+        if (value === undefined) {
+          throw new Error(
+            `Missing message: ${namespace ? `${namespace}.` : ''}${key} (messages/en.json)`,
+          );
+        }
+        return value;
+      };
+    },
+  };
+});
