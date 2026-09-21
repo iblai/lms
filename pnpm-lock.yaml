@@ -929,7 +929,9 @@ packages:
     peerDependencies:
       '@iblai/agent-ai': 2.10.0
       '@iblai/data-layer': 1.17.0
+      '@iblai/data-layer': 1.17.0
       '@iblai/iblai-api': 4.166.0-ai
+      '@iblai/web-utils': 2.4.8
       '@iblai/web-utils': 2.4.8
       '@livekit/components-react': 2.8.1
       '@radix-ui/react-dialog': ^1.1.7
@@ -952,6 +954,8 @@ packages:
       sonner:
         optional: true
 
+  '@iblai/web-utils@2.4.8':
+    resolution: {integrity: sha512-I6mj9cjjMuq2UXBRm+Zzh8QbXRCUVOsAQ0pxJnKp3RUysSNDO/XzCcN9mH9sc/31YaTNsy9hD5zc3ejcq9vCtw==}
   '@iblai/web-utils@2.4.8':
     resolution: {integrity: sha512-I6mj9cjjMuq2UXBRm+Zzh8QbXRCUVOsAQ0pxJnKp3RUysSNDO/XzCcN9mH9sc/31YaTNsy9hD5zc3ejcq9vCtw==}
     engines: {node: 25.3.0}

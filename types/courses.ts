@@ -107,6 +107,8 @@ export interface Course {
   platform_key?: string;
   platform_name?: string;
   item_id?: string;
+  /** Set by the catalog search for the requesting user. */
+  is_enrolled?: boolean;
   edx_data?: CourseEdxData;
   active?: boolean;
   user_id?: number;
@@ -158,7 +160,8 @@ export interface CourseFacet {
 
 export interface CourseFacetTerm {
   key: string;
-  count: number;
+  /** Omitted when not known yet — the term renders without a count. */
+  count?: number;
 }
 
 export interface OutlineNode {
