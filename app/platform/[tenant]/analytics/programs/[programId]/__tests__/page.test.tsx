@@ -18,6 +18,13 @@ vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
+// Mock appName from config
+const mockAppName = vi.fn((): string => 'skills');
+
+vi.mock('@/lib/config', () => ({
+  config: { settings: { appName: () => mockAppName() } },
+}));
+
 // Mock the web-containers module
 vi.mock('@iblai/iblai-js/web-containers', () => ({
   AnalyticsProgramDetail: vi.fn(({ tenantKey, currentSPA, mentorId, programId, onBack }) => (
@@ -38,6 +45,7 @@ import ProgramDetailPage from '../page';
 describe('ProgramDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAppName.mockReturnValue('skills');
     mockUseParams.mockReturnValue({ programId: 'test-program-123' });
   });
 
@@ -56,7 +64,16 @@ describe('ProgramDetailPage', () => {
     expect(screen.getByTestId('tenant-key')).toHaveTextContent('test-tenant');
   });
 
-  it('passes currentSPA from the app name config', () => {
+  it('passes the configured app name as currentSPA', () => {
+    mockAppName.mockReturnValue('custom-spa');
+
+    render(<ProgramDetailPage />);
+    expect(screen.getByTestId('current-spa')).toHaveTextContent('custom-spa');
+  });
+
+  it("falls back to 'skills' for currentSPA when no app name is configured", () => {
+    mockAppName.mockReturnValue('');
+
     render(<ProgramDetailPage />);
     expect(screen.getByTestId('current-spa')).toHaveTextContent('skills');
   });
