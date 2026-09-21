@@ -119,6 +119,20 @@ describe('DiscoverFacetsFilter', () => {
     expect(screen.getByText('science (3)')).toBeInTheDocument();
   });
 
+  it('renders a term without a count when the count is not known yet', () => {
+    const facets = [
+      {
+        slug: 'enrollment',
+        label: 'Access',
+        expanded: true,
+        terms: [{ key: 'Enrolled' }, { key: 'Recommended', count: 0 }],
+      },
+    ];
+    renderWithContext({ facets });
+    expect(screen.getByText('Enrolled')).toBeInTheDocument();
+    expect(screen.getByText('Recommended (0)')).toBeInTheDocument();
+  });
+
   it('does not show terms when facet is collapsed', () => {
     const facets = [
       {

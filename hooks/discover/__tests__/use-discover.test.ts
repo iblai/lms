@@ -4,8 +4,9 @@ import '@testing-library/jest-dom';
 
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
-  getUserName: vi.fn(() => 'test-user'),
   isRecommendedTabHidden: vi.fn(() => false),
+  resolveLmsAssetUrl: (path?: string | null) =>
+    !path ? '' : String(path).startsWith('http') ? String(path) : `https://lms.example.com${path}`,
 }));
 
 vi.mock('@/lib/config', () => ({
@@ -32,8 +33,8 @@ const mockCatalogQuery = vi.hoisted(() => ({
   isError: false,
   calls: [] as { params: any; skip: boolean }[],
 }));
-vi.mock('@/hooks/search/use-personnalized-catalog', () => ({
-  usePersonnalizedCatalogQuery: vi.fn(({ params, skip }: any) => {
+vi.mock('@/hooks/search/use-global-catalog', () => ({
+  useGlobalCatalogQuery: vi.fn(({ params, skip }: any) => {
     mockCatalogQuery.calls.push({ params, skip: !!skip });
     const isFacetsQuery = !!params?.returnFacet;
     const data = mockCatalogQuery.isError
@@ -78,7 +79,7 @@ vi.mock('use-debounce', () => ({
 const mockEnrollments = vi.hoisted(() => ({
   enrolledIds: new Set<string>(),
   enrolledCards: { courses: [] as any[], programs: [] as any[], pathways: [] as any[] },
-  enrolledTotal: 0,
+  enrolledTotal: 0 as number | undefined,
   enrollmentsLoading: false,
 }));
 vi.mock('../use-user-enrollments', () => ({
@@ -96,6 +97,10 @@ vi.mock('../../courses/use-recommended-courses', () => ({
 }));
 
 import { useDiscover } from '../use-discover';
+import { useUserEnrollments } from '../use-user-enrollments';
+
+/** Options the enrollments hook was last subscribed with. */
+const lastEnrollmentsArgs = () => vi.mocked(useUserEnrollments).mock.calls.at(-1)?.[0];
 
 // The one synthetic Access facet carries both user-scoped terms.
 const ACCESS_FACET = {
@@ -173,10 +178,17 @@ describe('useDiscover', () => {
       expect(facetCalls().length).toBeGreaterThan(0);
     });
     expect(facetCalls()[0].params).toMatchObject({
-      username: 'test-user',
       returnFacet: true,
       tenant: 'test-tenant',
     });
+  });
+
+  it('searches the global catalog without a username', async () => {
+    renderHook(() => useDiscover({}));
+    await waitFor(() => {
+      expect(mockCatalogQuery.calls.length).toBeGreaterThan(0);
+    });
+    expect(mockCatalogQuery.calls.every((call) => !('username' in call.params))).toBe(true);
   });
 
   it('omits tenant when skills_include_community_courses is true', async () => {
@@ -470,6 +482,38 @@ describe('useDiscover', () => {
       data: { name: 'P', program_id: 'p', program_key: 'pk', data: { card_image: '/i.png' } },
     } as any);
     expect(formatted.image).toBe('https://lms.example.com/i.png');
+  });
+
+  it('handleFormatContents flags search results enrolled from their is_enrolled flag', async () => {
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    const format = (type: string, data: Record<string, unknown>) =>
+      result.current.handleFormatContents({ type, data } as any).enrolled;
+    expect(format('course', { course_id: 'c1', is_enrolled: true })).toBe(true);
+    expect(format('course', { course_id: 'c2', is_enrolled: false })).toBe(false);
+    expect(format('program', { program_id: 'p1', is_enrolled: true })).toBe(true);
+    expect(format('pathway', { pathway_uuid: 'w1', is_enrolled: true })).toBe(true);
+  });
+
+  it('handleFormatContents falls back to the loaded enrollments for payloads without a flag', async () => {
+    mockEnrollments.enrolledIds = new Set(['r1']);
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    const formatted = result.current.handleFormatContents({
+      type: 'course',
+      data: { name: 'Rec', course_id: 'r1' },
+    } as any);
+    expect(formatted.enrolled).toBe(true);
+  });
+
+  it('handleFormatContents leaves the course image empty when edx_data has none', async () => {
+    const { result } = renderHook(() => useDiscover({}));
+    await waitFor(() => expect(result.current.facetsLoading).toBe(false));
+    const formatted = result.current.handleFormatContents({
+      type: 'course',
+      data: { name: 'No art', course_id: 'c1', edx_data: { title: 'No art' } },
+    } as any);
+    expect(formatted.image).toBe('');
   });
 
   it('handleFormatContents falls back to empty image when none provided', async () => {
@@ -767,6 +811,52 @@ describe('useDiscover', () => {
         });
       });
       expect(result.current.displayCards.map((card) => card.id)).toEqual(['c2']);
+    });
+  });
+
+  describe('enrollment endpoints', () => {
+    it('stays idle in the catalog view — search results carry is_enrolled', () => {
+      renderHook(() => useDiscover({}));
+      expect(lastEnrollmentsArgs()).toMatchObject({ skip: true, withCardImages: false });
+    });
+
+    it('loads enrollments, with card images, for the Enrolled view', async () => {
+      const { result } = renderHook(() => useDiscover({}));
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Enrolled');
+      });
+      await waitFor(() => {
+        expect(lastEnrollmentsArgs()).toMatchObject({ skip: false, withCardImages: true });
+      });
+    });
+
+    it('loads enrollments, without card images, for the Recommended view', async () => {
+      const { result } = renderHook(() => useDiscover({}));
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Recommended');
+      });
+      await waitFor(() => {
+        expect(lastEnrollmentsArgs()).toMatchObject({ skip: false, withCardImages: false });
+      });
+    });
+
+    it('shows the Enrolled term without a count until the enrollments are known', async () => {
+      mockEnrollments.enrolledTotal = undefined;
+      const { result } = renderHook(() => useDiscover({}));
+      await waitFor(() => expect(result.current.facets.length).toBeGreaterThan(0));
+      expect(result.current.facets[0].terms[0]).toEqual({ key: 'Enrolled', count: undefined });
+    });
+
+    it('keeps showing the Enrolled count once known', async () => {
+      mockEnrollments.enrolledTotal = 3;
+      const { result, rerender } = renderHook(() => useDiscover({}));
+      await waitFor(() => {
+        expect(result.current.facets[0]?.terms[0]).toEqual({ key: 'Enrolled', count: 3 });
+      });
+      // The filter is switched off and the enrollment hook goes idle again.
+      mockEnrollments.enrolledTotal = undefined;
+      rerender();
+      expect(result.current.facets[0].terms[0]).toEqual({ key: 'Enrolled', count: 3 });
     });
   });
 
