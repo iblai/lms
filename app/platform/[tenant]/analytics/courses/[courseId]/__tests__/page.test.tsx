@@ -18,11 +18,19 @@ vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
 }));
 
+// Mock appName from config
+const mockAppName = vi.fn((): string => 'skills');
+
+vi.mock('@/lib/config', () => ({
+  config: { settings: { appName: () => mockAppName() } },
+}));
+
 // Mock the web-containers module
 vi.mock('@iblai/iblai-js/web-containers', () => ({
-  AnalyticsCourseDetail: vi.fn(({ tenantKey, mentorId, courseId, onBack }) => (
+  AnalyticsCourseDetail: vi.fn(({ tenantKey, currentSPA, mentorId, courseId, onBack }) => (
     <div data-testid="analytics-course-detail">
       <span data-testid="tenant-key">{tenantKey}</span>
+      <span data-testid="current-spa">{currentSPA}</span>
       <span data-testid="mentor-id">{mentorId}</span>
       <span data-testid="course-id">{courseId}</span>
       <button data-testid="back-button" onClick={onBack}>
@@ -37,6 +45,7 @@ import CourseDetailPage from '../page';
 describe('CourseDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAppName.mockReturnValue('skills');
     mockUseParams.mockReturnValue({ courseId: 'test-course-123' });
   });
 
@@ -53,6 +62,20 @@ describe('CourseDetailPage', () => {
   it('passes the correct tenantKey from getTenant', () => {
     render(<CourseDetailPage />);
     expect(screen.getByTestId('tenant-key')).toHaveTextContent('test-tenant');
+  });
+
+  it('passes the configured app name as currentSPA', () => {
+    mockAppName.mockReturnValue('custom-spa');
+
+    render(<CourseDetailPage />);
+    expect(screen.getByTestId('current-spa')).toHaveTextContent('custom-spa');
+  });
+
+  it("falls back to 'skills' for currentSPA when no app name is configured", () => {
+    mockAppName.mockReturnValue('');
+
+    render(<CourseDetailPage />);
+    expect(screen.getByTestId('current-spa')).toHaveTextContent('skills');
   });
 
   it('passes empty string for mentorId (Skills app does not use mentor)', () => {

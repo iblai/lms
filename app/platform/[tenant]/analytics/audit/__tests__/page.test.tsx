@@ -12,6 +12,13 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: () => mockGetUserName(),
 }));
 
+// Mock appName from config
+const mockAppName = vi.fn((): string => 'skills');
+
+vi.mock('@/lib/config', () => ({
+  config: { settings: { appName: () => mockAppName() } },
+}));
+
 // Mock the web-containers module
 vi.mock('@iblai/iblai-js/web-containers', () => ({
   AnalyticsAuditLogStats: vi.fn(({ tenantKey, mentorId, userId, selectedMentorId }) => (
@@ -27,6 +34,7 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
 describe('AuditPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAppName.mockReturnValue('skills');
     mockGetUserName.mockReturnValue('test-user');
   });
 
@@ -43,6 +51,26 @@ describe('AuditPage', () => {
   it('passes the correct tenantKey from getTenant', () => {
     const { getByTestId } = render(<AuditPage />);
     expect(getByTestId('tenant-key')).toHaveTextContent('test-tenant');
+  });
+
+  it('passes the configured app name as currentSPA', () => {
+    mockAppName.mockReturnValue('custom-spa');
+
+    render(<AuditPage />);
+    expect(AnalyticsAuditLogStats).toHaveBeenCalledWith(
+      expect.objectContaining({ currentSPA: 'custom-spa' }),
+      undefined,
+    );
+  });
+
+  it("falls back to 'skills' for currentSPA when no app name is configured", () => {
+    mockAppName.mockReturnValue('');
+
+    render(<AuditPage />);
+    expect(AnalyticsAuditLogStats).toHaveBeenCalledWith(
+      expect.objectContaining({ currentSPA: 'skills' }),
+      undefined,
+    );
   });
 
   it('passes empty string for mentorId and selectedMentorId (Skills app does not use mentor)', () => {

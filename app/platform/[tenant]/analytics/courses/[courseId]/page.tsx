@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { config } from '@/lib/config';
 import { AnalyticsCourseDetail } from '@iblai/iblai-js/web-containers';
 
 export default function CourseDetailPage() {
@@ -17,6 +18,7 @@ export default function CourseDetailPage() {
   return (
     <AnalyticsCourseDetail
       tenantKey={tenant}
+      currentSPA={config.settings.appName() || 'skills'}
       mentorId={''}
       courseId={courseId}
       onBack={handleBack}

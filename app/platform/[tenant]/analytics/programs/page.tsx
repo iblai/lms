@@ -10,6 +10,8 @@ export default function ProgramsPage() {
       tenantKey={tenant}
       mentorId={''}
       basePath={`/platform/${tenant}/analytics`}
+      // The id cell links to the program itself; the row still opens analytics.
+      getProgramURL={(programId) => `/platform/${tenant}/programs/${programId}`}
     />
   );
 }
