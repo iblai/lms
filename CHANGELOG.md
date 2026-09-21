@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.83.0](https://github.com/iblai/lms/compare/skills-v0.82.5...skills-v0.83.0) (2026-09-21)
+
+### Features
+
+* getcourserul & getprogramurl passed to analytics program detail page ([41dd71b](https://github.com/iblai/lms/commit/41dd71b5715d5ad7c3bd3b586e4b5a4ca02c7851))
+* getcourserul & getprogramurl passed to analytics program detail page ([6886470](https://github.com/iblai/lms/commit/6886470a4ef11e356d4bc4e19a3326d52f332769))
+* getcourserul & getprogramurl passed to analytics program detail page > iblai js bump ([5942352](https://github.com/iblai/lms/commit/594235278d22d1ac72a858bfbf771b521b2869fb))
+* getcourserul & getprogramurl passed to analytics program detail page > test coverage ([2befee8](https://github.com/iblai/lms/commit/2befee88bee934c8bde131a10ec0c69e706dd855))
+* gradebook enabling on analytics ([0909b6b](https://github.com/iblai/lms/commit/0909b6baf2b0768d114a4e4c1be41e8e1241ef59))
+
 ## [0.82.5](https://github.com/iblai/lms/compare/skills-v0.82.4...skills-v0.82.5) (2026-09-15)
 
 ### Chores
