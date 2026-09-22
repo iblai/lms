@@ -1,5 +1,5 @@
-import { getUserName, isRecommendedTabHidden } from '@/utils/helpers';
-import { usePersonnalizedCatalogQuery } from '../search/use-personnalized-catalog';
+import { isRecommendedTabHidden, resolveLmsAssetUrl } from '@/utils/helpers';
+import { useGlobalCatalogQuery } from '../search/use-global-catalog';
 import { useRecommendedCourses } from '../courses/use-recommended-courses';
 import { useEffect, useMemo, useState } from 'react';
 import { Course, CourseFacet } from '@/types/courses';
@@ -46,9 +46,6 @@ export const useDiscover = ({
   const { metadata, isLoading: metadataLoading } = useTenantMetadata({
     org: tenant,
   });
-  const { enrolledIds, enrolledCards, enrolledTotal, enrollmentsLoading } = useUserEnrollments({
-    tenant,
-  });
   const recommendationsEnabled = isUserLoggedIn && !isRecommendedTabHidden();
   const { recommendedCourses, isLoading: recommendationsLoading } = useRecommendedCourses({
     limit: RECOMMENDATIONS_LIMIT,
@@ -86,7 +83,26 @@ export const useDiscover = ({
     recommendationsEnabled &&
     !!selectedFacets?.[ENROLLMENT_FACET_SLUG]?.includes(RECOMMENDED_FACET_TERM);
 
-  const buildAccessFacet = (enrolledCount: number, recommendedCount: number): CourseFacet => ({
+  // Catalog search results carry their own `is_enrolled` flag and course
+  // metadata (`edx_data`), so the enrollment endpoints — and the per-course
+  // metadata lookups for enrolled card images — only run for the views that
+  // list the user's own content.
+  const { enrolledIds, enrolledCards, enrolledTotal, enrollmentsLoading } = useUserEnrollments({
+    tenant,
+    skip: !enrolledOnly && !recommendedOnly,
+    withCardImages: enrolledOnly,
+  });
+  // The Enrolled count is unknown until that view is first opened; once
+  // known, keep showing it after the filter is switched back off.
+  const [knownEnrolledTotal, setKnownEnrolledTotal] = useState<number>();
+  useEffect(() => {
+    if (enrolledTotal !== undefined) setKnownEnrolledTotal(enrolledTotal);
+  }, [enrolledTotal]);
+
+  const buildAccessFacet = (
+    enrolledCount: number | undefined,
+    recommendedCount: number,
+  ): CourseFacet => ({
     slug: ENROLLMENT_FACET_SLUG,
     label: 'Access',
     expanded: true,
@@ -133,7 +149,6 @@ export const useDiscover = ({
 
   const contentSearchParams = useMemo(
     () => ({
-      username: getUserName(),
       limit,
       offset: (page - 1) * limit,
       ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
@@ -194,7 +209,6 @@ export const useDiscover = ({
 
   const facetSearchParams = useMemo(
     () => ({
-      username: getUserName(),
       returnFacet: true,
       ...(!metadata?.skills_include_community_courses && { tenant: tenant }),
     }),
@@ -205,18 +219,16 @@ export const useDiscover = ({
   // search is tenant-scoped, and fetching earlier would fire a throwaway
   // request under the wrong cache key.
   const searchesSkipped = metadataLoading;
-  const contentsQuery = usePersonnalizedCatalogQuery({
+  const contentsQuery = useGlobalCatalogQuery({
     params: debouncedContentSearchParams,
-    isLoggedIn: isUserLoggedIn,
     skip: searchesSkipped,
   });
-  const facetsQuery = usePersonnalizedCatalogQuery({
+  const facetsQuery = useGlobalCatalogQuery({
     params: facetSearchParams,
-    isLoggedIn: isUserLoggedIn,
     skip: searchesSkipped,
   });
 
-  const contents: DiscoverContent[] = contentsQuery.data?.results ?? [];
+  const contents = (contentsQuery.data?.results ?? []) as unknown as DiscoverContent[];
   /** True only while there is nothing to render yet — cached payloads
    * display instantly and background refreshes never re-trigger it. */
   const contentsLoading = contentsQuery.isLoading;
@@ -319,10 +331,10 @@ export const useDiscover = ({
       return;
     }
     if (!facetsQuery.data) return;
-    const allFacets = facetsQuery.data.facets;
+    const allFacets = facetsQuery.data.facets ?? {};
     const formattedFacets = isUserLoggedIn
       ? [
-          buildAccessFacet(enrolledTotal, recommendedCourses.length),
+          buildAccessFacet(knownEnrolledTotal, recommendedCourses.length),
           ...handleFormatFacets(allFacets),
         ]
       : handleFormatFacets(allFacets);
@@ -338,13 +350,13 @@ export const useDiscover = ({
     const syncCount = (list: CourseFacet[]) =>
       list.map((facet) =>
         facet.slug === ENROLLMENT_FACET_SLUG
-          ? buildAccessFacet(enrolledTotal, recommendedCourses.length)
+          ? buildAccessFacet(knownEnrolledTotal, recommendedCourses.length)
           : facet,
       );
     setFacets(syncCount);
     setFilteredFacets(syncCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enrolledTotal, recommendedCourses.length, facetsLoading]);
+  }, [knownEnrolledTotal, recommendedCourses.length, facetsLoading]);
 
   const handleFormatContents = ({ type, data }: DiscoverContent): DiscoverContentCardProps => {
     switch (type) {
@@ -360,7 +372,10 @@ export const useDiscover = ({
               : config.urls.lms() + data?.data?.card_image
             : '',
           id: data?.program_id,
-          enrolled: enrolledIds.has(data?.program_id) || enrolledIds.has(data?.program_key),
+          enrolled:
+            !!data?.is_enrolled ||
+            enrolledIds.has(data?.program_id) ||
+            enrolledIds.has(data?.program_key),
         };
       case 'pathway':
         return {
@@ -372,7 +387,10 @@ export const useDiscover = ({
           )}&user_related=false&pathway_id=${encodeURIComponent(data?.pathway_id)}`,
           image: '',
           id: data?.pathway_uuid,
-          enrolled: enrolledIds.has(data?.pathway_uuid) || enrolledIds.has(data?.pathway_id),
+          enrolled:
+            !!data?.is_enrolled ||
+            enrolledIds.has(data?.pathway_uuid) ||
+            enrolledIds.has(data?.pathway_id),
         };
       //case "course":
       default:
@@ -382,9 +400,11 @@ export const useDiscover = ({
           title: course?.name,
           contentType: type,
           url: `/courses/${course?.course_id}`,
-          image: `${config.urls.lms()}${course?.edx_data?.course_image_asset_path}`,
+          image: resolveLmsAssetUrl(course?.edx_data?.course_image_asset_path),
           id: course?.course_id,
-          enrolled: enrolledIds.has(course?.course_id),
+          // Search results carry `is_enrolled`; recommendations don't, and
+          // fall back to the enrollments loaded for the Recommended view.
+          enrolled: !!course?.is_enrolled || enrolledIds.has(course?.course_id),
           recommended: recommendedIds.has(course?.course_id),
         };
       /* case "article":
@@ -401,7 +421,7 @@ export const useDiscover = ({
    *  - "Enrolled" / "Recommended" filters active → the union of the user's
    *    enrollments and their recommended courses (narrowed by the selected
    *    content types and the search query, all client-side);
-   *  - otherwise → the personalized catalog search results, each flagged
+   *  - otherwise → the global catalog search results, each flagged
    *    `enrolled` / `recommended` when applicable.
    */
   const displayCards = useMemo<DiscoverContentCardProps[]>(() => {

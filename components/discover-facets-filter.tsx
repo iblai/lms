@@ -71,7 +71,8 @@ export const DiscoverFacetsFilter = () => {
                     htmlFor={`${facet.slug}-${term.key}`}
                     className="ml-2 text-sm text-gray-700 capitalize"
                   >
-                    {term.key} ({term.count})
+                    {term.key}
+                    {term.count !== undefined && ` (${term.count})`}
                   </label>
                 </div>
               ))}

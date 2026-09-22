@@ -25,13 +25,31 @@ export type EnrolledContentType = 'courses' | 'programs' | 'pathways';
  * The learner's enrollments (courses, programs, pathways) shaped for the
  * centralized catalog page:
  *  - `enrolledIds` — every id the user is enrolled in, to pin an
- *    "Enrolled" pill on matching catalog search results;
+ *    "Enrolled" pill on cards whose payload carries no enrollment flag
+ *    (e.g. recommendations);
  *  - `enrolledCards` — the enrollments as ready-to-render catalog cards,
- *    for the "Enrolled" filter view.
+ *    for the "Enrolled" filter view;
+ *  - `enrolledTotal` — undefined until the enrollments have been fetched.
+ *
+ * Catalog search results already carry `is_enrolled`, so callers should
+ * `skip` this hook unless they render the user's own content.
  */
-export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
+export const useUserEnrollments = ({
+  tenant,
+  skip: skipRequested = false,
+  withCardImages = true,
+}: {
+  tenant: string;
+  /** Leave the enrollment endpoints idle. */
+  skip?: boolean;
+  /**
+   * Resolve the enrolled course cards' images — one course-metadata request
+   * per course, so only worth it when those cards are actually rendered.
+   */
+  withCardImages?: boolean;
+}) => {
   const username = getUserName();
-  const skip = !isLoggedIn() || !username || !tenant;
+  const skip = skipRequested || !isLoggedIn() || !username || !tenant;
 
   const coursesQ = useGetUserEnrolledCoursesQuery(
     {
@@ -57,10 +75,12 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
    */
   const enrolledCourseIds = useMemo(
     () =>
-      (coursesQ.data?.results ?? [])
-        .filter((course) => course.course_name)
-        .map((course) => course.course_id),
-    [coursesQ.data],
+      withCardImages
+        ? (coursesQ.data?.results ?? [])
+            .filter((course) => course.course_name)
+            .map((course) => course.course_id)
+        : [],
+    [coursesQ.data, withCardImages],
   );
   const courseImages = useCourseImages(enrolledCourseIds);
 
@@ -127,11 +147,17 @@ export const useUserEnrollments = ({ tenant }: { tenant: string }) => {
     return ids;
   }, [coursesQ.data, programsQ.data, pathwaysQ.data]);
 
+  const enrollmentsLoading = coursesQ.isLoading || programsQ.isLoading || pathwaysQ.isLoading;
+
   return {
     enrolledIds,
     enrolledCards,
     enrolledTotal:
-      enrolledCards.courses.length + enrolledCards.programs.length + enrolledCards.pathways.length,
-    enrollmentsLoading: coursesQ.isLoading || programsQ.isLoading || pathwaysQ.isLoading,
+      skip || enrollmentsLoading
+        ? undefined
+        : enrolledCards.courses.length +
+          enrolledCards.programs.length +
+          enrolledCards.pathways.length,
+    enrollmentsLoading,
   };
 };

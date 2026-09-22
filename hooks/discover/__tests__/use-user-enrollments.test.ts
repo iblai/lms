@@ -275,5 +275,23 @@ describe('useUserEnrollments', () => {
     mockPathwaysQuery.mockReturnValue({ data: undefined, isLoading: true });
     const { result } = renderHook(() => useUserEnrollments({ tenant: 'test-tenant' }));
     expect(result.current.enrollmentsLoading).toBe(true);
+    expect(result.current.enrolledTotal).toBeUndefined();
+  });
+
+  it('skips every enrollment query when asked to', () => {
+    const { result } = renderHook(() => useUserEnrollments({ tenant: 'test-tenant', skip: true }));
+    for (const query of [mockCoursesQuery, mockProgramsQuery, mockPathwaysQuery]) {
+      expect(query.mock.calls[0][1]).toMatchObject({ skip: true });
+    }
+    expect(result.current.enrolledTotal).toBeUndefined();
+  });
+
+  it('requests no course images when card images are not needed', () => {
+    mockCoursesQuery.mockReturnValue({
+      data: { results: [{ course_id: 'course-1', course_name: 'Course One' }] },
+      isLoading: false,
+    });
+    renderHook(() => useUserEnrollments({ tenant: 'test-tenant', withCardImages: false }));
+    expect(mockUseCourseImages).toHaveBeenLastCalledWith([]);
   });
 });
