@@ -1,0 +1,27 @@
+{
+  "Sidebar": {
+    "home": "Accueil",
+    "courses": "Cours",
+    "programs": "Programmes",
+    "pathways": "Parcours",
+    "discover": "Découvrir",
+    "studio": "Studio",
+    "gradebook": "Carnet de notes",
+    "gradebookDescription": "Vos notes et votre progression dans les cours, les programmes et les parcours.",
+    "credentials": "Certifications",
+    "credentialsDescription": "Les certifications que vous avez obtenues.",
+    "skills": "Compétences",
+    "skillsDescription": "Vos compétences acquises, auto-déclarées et souhaitées.",
+    "analytics": "Analyses",
+    "analyticsOverview": "Vue d'ensemble",
+    "analyticsUsers": "Utilisateurs",
+    "analyticsCourses": "Cours",
+    "analyticsPrograms": "Programmes",
+    "analyticsTopics": "Sujets",
+    "analyticsTranscripts": "Transcriptions",
+    "analyticsMemory": "Mémoire",
+    "analyticsCosts": "Coûts",
+    "analyticsAudit": "Audit",
+    "analyticsReports": "Rapports de données"
+  }
+}

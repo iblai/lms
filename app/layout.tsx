@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { Open_Sans } from 'next/font/google';
 import { headers } from 'next/headers';
 import './globals.css';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import Providers from '@/providers';
 import { ClientLayout } from '@/components/client-layout';
 import Script from 'next/script';
@@ -205,16 +207,25 @@ export default async function RootLayout({
 
   const siteJsonLd = await getSiteJsonLd();
 
+  // Resolved from the shared Open edX language cookie, falling back to this
+  // app's own NEXT_LOCALE (see i18n/request.ts). Driving <html lang> from it
+  // keeps the document language honest for screen readers and crawlers
+  // (WCAG 3.1.1) instead of always claiming English.
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${openSans.className} flex h-screen flex-col overflow-hidden`}>
         {siteJsonLd.length > 0 && <JsonLd data={siteJsonLd} />}
         <Script src="/env.js" strategy="afterInteractive" />
-        <StoreProvider>
-          <Providers>
-            <ClientLayout>{children}</ClientLayout>
-          </Providers>
-        </StoreProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <StoreProvider>
+            <Providers>
+              <ClientLayout>{children}</ClientLayout>
+            </Providers>
+          </StoreProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
