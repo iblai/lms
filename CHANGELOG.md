@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.84.0](https://github.com/iblai/lms/compare/skills-v0.83.0...skills-v0.84.0) (2026-09-22)
+
+### Features
+
+* use discover hook refactored to use global search endpoint ([a8a2e7f](https://github.com/iblai/lms/commit/a8a2e7f9c07f26cd76fde50968852bd30114603f))
+
 ## [0.83.0](https://github.com/iblai/lms/compare/skills-v0.82.5...skills-v0.83.0) (2026-09-21)
 
 ### Features
