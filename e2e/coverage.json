@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-09-04",
+  "lastUpdated": "2026-09-11",
   "summary": {
-    "totalCheckpoints": 256,
-    "coveredCheckpoints": 256,
+    "totalCheckpoints": 296,
+    "coveredCheckpoints": 296,
     "percent": 100,
-    "totalJourneys": 36
+    "totalJourneys": 41
   },
   "journeys": [
     {
@@ -38,7 +38,7 @@
     },
     {
       "id": "onboarding-first-time-user",
-      "name": "Onboarding \u2014 First-Time User",
+      "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": [
         "app/start/page.tsx",
@@ -172,7 +172,7 @@
     },
     {
       "id": "course-content-tabs",
-      "name": "Course Content \u2014 Tab Navigation & Iframes",
+      "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
@@ -373,12 +373,12 @@
         },
         {
           "id": "tabs-34",
-          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
           "status": "covered"
         },
         {
           "id": "tabs-35",
-          "description": "Course content layout requests the signed-in user\u2019s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
+          "description": "Course content layout requests the signed-in user’s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
           "status": "covered"
         },
         {
@@ -439,7 +439,7 @@
     },
     {
       "id": "profile-skills",
-      "name": "Profile \u2014 Skills",
+      "name": "Profile — Skills",
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
@@ -477,7 +477,7 @@
     },
     {
       "id": "profile-credentials",
-      "name": "Profile \u2014 Credentials",
+      "name": "Profile — Credentials",
       "spec": "08-profile-credentials.spec.ts",
       "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
@@ -510,7 +510,7 @@
     },
     {
       "id": "profile-pathways",
-      "name": "Profile \u2014 Pathways",
+      "name": "Profile — Pathways",
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": [
         "app/profile/pathways/page.tsx",
@@ -546,7 +546,7 @@
     },
     {
       "id": "profile-programs",
-      "name": "Profile \u2014 Programs",
+      "name": "Profile — Programs",
       "spec": "10-profile-programs.spec.ts",
       "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
@@ -587,7 +587,7 @@
         },
         {
           "id": "prog-08",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates content",
+          "description": "Tab switching About → Courses → Settings updates content",
           "status": "covered"
         },
         {
@@ -604,7 +604,7 @@
     },
     {
       "id": "profile-courses",
-      "name": "Profile \u2014 Courses",
+      "name": "Profile — Courses",
       "spec": "11-profile-courses.spec.ts",
       "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
@@ -632,7 +632,7 @@
     },
     {
       "id": "profile-public",
-      "name": "Profile \u2014 Public",
+      "name": "Profile — Public",
       "spec": "12-profile-public.spec.ts",
       "sourceFiles": ["app/profile/public/page.tsx"],
       "checkpoints": [
@@ -873,7 +873,7 @@
     },
     {
       "id": "analytics-content",
-      "name": "Analytics Content \u2014 Courses & Programs",
+      "name": "Analytics Content — Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
       "sourceFiles": [
         "app/analytics/courses/page.tsx",
@@ -1087,7 +1087,7 @@
     },
     {
       "id": "navigation-navbar",
-      "name": "Navigation \u2014 NavBar & Sidebar",
+      "name": "Navigation — NavBar & Sidebar",
       "spec": "22-navigation-navbar.spec.ts",
       "sourceFiles": [
         "components/nav-bar.tsx",
@@ -1239,7 +1239,7 @@
     },
     {
       "id": "chat-embed",
-      "name": "Chat Embed \u2014 Mentor Widget",
+      "name": "Chat Embed — Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
       "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
@@ -1380,7 +1380,7 @@
     },
     {
       "id": "accessibility-wcag",
-      "name": "Accessibility \u2014 WCAG 2.1 AA",
+      "name": "Accessibility — WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
@@ -1444,7 +1444,7 @@
     },
     {
       "id": "course-access-guard-tenant-redirect",
-      "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
+      "name": "Course Access Guard — Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
       "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
       "checkpoints": [
@@ -1502,7 +1502,7 @@
         },
         {
           "id": "pdp-05",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates aria-selected and tab content",
+          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
           "status": "covered"
         },
         {
@@ -1628,14 +1628,14 @@
         },
         {
           "id": "useronb-04",
-          "description": "The member flow holds the onboarding route \u2014 a tenant with no form configured shows the notice instead of redirecting away",
+          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
           "status": "covered"
         }
       ]
     },
     {
       "id": "user-onboarding-agent-link",
-      "name": "User Onboarding \u2014 Per-Agent Links",
+      "name": "User Onboarding — Per-Agent Links",
       "spec": "36-user-onboarding-agent-link.spec.ts",
       "sourceFiles": [
         "app/platform/[tenant]/onboarding/[agentId]/page.tsx",
@@ -1670,9 +1670,268 @@
       ]
     },
     {
+      "id": "role-based-navigation",
+      "name": "Role-Based Navigation — Sidebar and Profile Menu",
+      "spec": "37-role-based-navigation.spec.ts",
+      "sourceFiles": [
+        "components/app-sidebar/index.tsx",
+        "components/nav-bar.tsx",
+        "components/header/profile/user-profile-button.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "rolenav-01",
+          "description": "Shared sidebar rows (Home, Courses, Programs, Pathways, Gradebook, Credentials, Skills) render for both an admin and a learner",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-02",
+          "description": "An admin sees the admin-only sidebar rows (Studio and/or Analytics, per tenant config)",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-03",
+          "description": "A learner sees neither Studio nor Analytics",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-04",
+          "description": "An admin sees the admin footer cluster (Management / Integrations / Advanced / Invites)",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-05",
+          "description": "A learner keeps Notifications but loses the admin footer cluster",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-06",
+          "description": "The Analytics row expands into its sub-menu for an admin",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-07",
+          "description": "The profile menu opens from the header for both roles and closes on Escape",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-08",
+          "description": "The profile menu exposes the tenant switcher listing the account tenants",
+          "status": "covered"
+        },
+        {
+          "id": "rolenav-09",
+          "description": "The sidebar collapses and expands from the rail toggle",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "course-content-agent-controls",
+      "name": "Course Content — Agent Tab Controls",
+      "spec": "38-course-content-agent-controls.spec.ts",
+      "sourceFiles": [
+        "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/agent/page.tsx",
+        "components/course-media-dropdown.tsx",
+        "components/course-agent-chat.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "agentctl-01",
+          "description": "The Agent tab is reachable from course content and its chat frame mounts",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-02",
+          "description": "The fullscreen toggle expands the agent and the exit control restores it",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-03",
+          "description": "The fullscreen control is absent on the Course tab (agent-only)",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-04",
+          "description": "The autoplay toggle flips state and confirms with a toast",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-05",
+          "description": "The autoplay control’s accessible name and title track its state",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-06",
+          "description": "The media dropdown lists the current unit’s media blocks",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-07",
+          "description": "Selecting a media block opens the preview dialog on the Agent tab (or toasts when it has no preview)",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-08",
+          "description": "The Learn/Assess switch flips the agent mode and restores it",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-09",
+          "description": "The New chat control is available once the agent has rendered and does not navigate away",
+          "status": "covered"
+        },
+        {
+          "id": "agentctl-10",
+          "description": "A mobile viewport collapses the course controls into the 3-dot popover and hides the inline ones",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "course-content-agent-voice",
+      "name": "Course Content — Agent Voice",
+      "spec": "39-course-content-agent-voice.spec.ts",
+      "sourceFiles": [
+        "components/course-agent-chat.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/agent/page.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "agentvoice-01",
+          "description": "The agent iframe is created with a permissions policy that allows the microphone",
+          "status": "covered"
+        },
+        {
+          "id": "agentvoice-02",
+          "description": "The agent chat exposes a voice/microphone affordance",
+          "status": "covered"
+        },
+        {
+          "id": "agentvoice-03",
+          "description": "The agent chat exposes a voice-call affordance",
+          "status": "covered"
+        },
+        {
+          "id": "agentvoice-04",
+          "description": "Granting microphone permission leaves the agent embed healthy",
+          "status": "covered"
+        },
+        {
+          "id": "agentvoice-05",
+          "description": "The agent chat survives a unit change without tearing down",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "course-content-tabs-by-role",
+      "name": "Course Content — Tabs By Role",
+      "spec": "40-course-content-tabs-by-role.spec.ts",
+      "sourceFiles": [
+        "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
+        "components/course-content-tabs.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "tabsrole-01",
+          "description": "Progress / Dates / Discussion render for both an admin and a learner",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-02",
+          "description": "An admin gets the Instructor tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-03",
+          "description": "A learner does not get the Instructor tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-04",
+          "description": "An admin gets the Configuration tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-05",
+          "description": "A learner does not get the Configuration tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-06",
+          "description": "The Authoring tab is admin-only and links out to Studio",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-07",
+          "description": "A learner deep-linking an admin tab does not get the admin tab",
+          "status": "covered"
+        },
+        {
+          "id": "tabsrole-08",
+          "description": "The overflow menu exposes tabs that do not fit the tab row",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "learner-experience",
+      "name": "Learner Experience (non-admin account)",
+      "spec": "41-learner-experience-student.spec.ts",
+      "sourceFiles": [
+        "components/app-sidebar/index.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
+        "services/core.ts"
+      ],
+      "checkpoints": [
+        {
+          "id": "learner-01",
+          "description": "A non-admin account lands on a tenant-scoped home page",
+          "status": "covered"
+        },
+        {
+          "id": "learner-02",
+          "description": "The learner sidebar has the shared rows and none of the admin-gated rows (Studio)",
+          "status": "covered"
+        },
+        {
+          "id": "learner-03",
+          "description": "The learner has no admin footer cluster, only Notifications",
+          "status": "covered"
+        },
+        {
+          "id": "learner-04",
+          "description": "The member-check endpoint reports the learner as a non-admin",
+          "status": "covered"
+        },
+        {
+          "id": "learner-05",
+          "description": "The Analytics entry point matches the account's RBAC permission — an offered row opens a real analytics page, an absent row means no analytics in the shell",
+          "status": "covered"
+        },
+        {
+          "id": "learner-06",
+          "description": "Learner course content has the learner tabs and none of the admin tabs",
+          "status": "covered"
+        },
+        {
+          "id": "learner-07",
+          "description": "A learner can open the Agent tab",
+          "status": "covered"
+        },
+        {
+          "id": "learner-08",
+          "description": "The learner profile menu opens and offers Logout",
+          "status": "covered"
+        }
+      ]
+    },
+    {
       "id": "mentor-embed-loads",
       "name": "Mentor Embed Loads",
-      "spec": "37-mentor-embed-loads.spec.ts",
+      "spec": "42-mentor-embed-loads.spec.ts",
       "sourceFiles": [
         "components/course-agent-chat.tsx",
         "components/chat-button.tsx",
