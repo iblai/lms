@@ -67,7 +67,8 @@ let refetchCourseOutline: ReturnType<typeof vi.fn>;
 const renderDialog = ({
   currentUnitID = UNIT_2,
   courseOutline = outline,
-}: { currentUnitID?: string | null; courseOutline?: any } = {}) =>
+  popupEnabled = true,
+}: { currentUnitID?: string | null; courseOutline?: any; popupEnabled?: boolean } = {}) =>
   render(
     <CourseOutlineContext.Provider
       value={{ selectLesson, currentUnitID, refetchCourseOutline } as any}
@@ -75,7 +76,7 @@ const renderDialog = ({
       <EdxIframeContext.Provider
         value={{ courseOutline, courseID: 'course-v1:test+101+2024' } as any}
       >
-        <LessonCompletedDialog />
+        <LessonCompletedDialog popupEnabled={popupEnabled} />
       </EdxIframeContext.Provider>
     </CourseOutlineContext.Provider>,
   );
@@ -247,5 +248,58 @@ describe('LessonCompletedDialog', () => {
     await flushOpenDelay();
 
     expect(screen.getByText(/You've completed this lesson\./)).toBeInTheDocument();
+  });
+
+  describe('with the tenant popup flag off', () => {
+    it('still refreshes the outline, but never opens the dialog', async () => {
+      renderDialog({ popupEnabled: false });
+      await postFromMentor(completedFrame);
+
+      expect(refetchCourseOutline).toHaveBeenCalledWith(false);
+
+      await flushOpenDelay();
+      expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+    });
+
+    it('drops a completion already waiting out its delay when the flag goes off', async () => {
+      const { rerender } = renderDialog({ popupEnabled: true });
+      await postFromMentor(completedFrame);
+
+      rerender(
+        <CourseOutlineContext.Provider
+          value={{ selectLesson, currentUnitID: UNIT_2, refetchCourseOutline } as any}
+        >
+          <EdxIframeContext.Provider
+            value={{ courseOutline: outline, courseID: 'course-v1:test+101+2024' } as any}
+          >
+            <LessonCompletedDialog popupEnabled={false} />
+          </EdxIframeContext.Provider>
+        </CourseOutlineContext.Provider>,
+      );
+
+      await flushOpenDelay();
+      expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+    });
+
+    it('closes a dialog already on screen when the flag goes off', async () => {
+      const { rerender } = renderDialog({ popupEnabled: true });
+      await postFromMentor(completedFrame);
+      await flushOpenDelay();
+      expect(screen.getByText('Lesson complete')).toBeInTheDocument();
+
+      rerender(
+        <CourseOutlineContext.Provider
+          value={{ selectLesson, currentUnitID: UNIT_2, refetchCourseOutline } as any}
+        >
+          <EdxIframeContext.Provider
+            value={{ courseOutline: outline, courseID: 'course-v1:test+101+2024' } as any}
+          >
+            <LessonCompletedDialog popupEnabled={false} />
+          </EdxIframeContext.Provider>
+        </CourseOutlineContext.Provider>,
+      );
+
+      expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+    });
   });
 });

@@ -209,6 +209,12 @@ export default function CourseContentLayout({
   const autoplayToggleVisible =
     course?.agent_autoplay === true && metadata?.enable_course_voice_autoplay === true;
 
+  // Tenant opt-in for the agent's "lesson complete" popup. Off (the default),
+  // the mentor's `lesson.completed` relay still refreshes the course outline —
+  // only the dialog is suppressed. Read live off the metadata, so flipping the
+  // setting takes effect without a reload.
+  const completionPopupEnabled = metadata?.enable_agent_based_completion_popup === true;
+
   // When the agent owns unit completion, the edX unit must stop marking itself
   // complete on view — the agent decides instead. The EdxIframe relays this to
   // the MFE; the agent chat forwards the edX identifiers the agent needs to
@@ -528,9 +534,10 @@ export default function CourseContentLayout({
       >
         <CourseOutlineDrawer />
         <EdxIframeContext.Provider value={edxIframeValue}>
-          {/* Listens for the mentor's `lesson.completed` relay: refreshes the
-              outline and offers to move to the next/previous unit. */}
-          <LessonCompletedDialog />
+          {/* Listens for the mentor's `lesson.completed` relay: always refreshes
+              the outline, and — on tenants with the popup flag on — offers to
+              move to the next/previous unit. */}
+          <LessonCompletedDialog popupEnabled={completionPopupEnabled} />
           <main className="flex flex-1 overflow-hidden">
             {/* Course sidebar (collapsible on tablet / small screens) */}
             <CourseOutlineSidebar />

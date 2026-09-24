@@ -39,14 +39,27 @@ export const LESSON_COMPLETED_MESSAGE_TYPE = 'lesson.completed';
  */
 export const LESSON_COMPLETED_DIALOG_DELAY_MS = 2000;
 
+export interface LessonCompletedDialogProps {
+  /**
+   * The tenant's `enable_agent_based_completion_popup` flag, resolved by the
+   * course-content layout. Off, the completion still refreshes the outline —
+   * only the interruption is suppressed.
+   */
+  popupEnabled: boolean;
+}
+
 /**
  * Watches for the mentor's `lesson.completed` postMessage, refreshes the course
  * outline so the sidebar shows the new completion, and offers to move on.
  *
  * Rendered inside both course contexts — it needs the outline (for next/previous
  * availability), `selectLesson` to navigate, and `refetchCourseOutline`.
+ *
+ * Always mounted: the outline refresh is what keeps the sidebar's completion
+ * ticks in step with the agent, so it runs on every tenant. `popupEnabled` gates
+ * the dialog alone.
  */
-export function LessonCompletedDialog() {
+export function LessonCompletedDialog({ popupEnabled }: LessonCompletedDialogProps) {
   const { selectLesson, currentUnitID, refetchCourseOutline } = useContext(CourseOutlineContext);
   const { courseOutline, courseID } = useContext(EdxIframeContext);
   const [completedLesson, setCompletedLesson] = useState<LessonCompletedMessage | null>(null);
@@ -86,6 +99,14 @@ export function LessonCompletedDialog() {
       // whether a learner is interrupted — re-check rather than trust it.
       if (message.completion !== 1) return;
 
+      // The sidebar's completion ticks come from the outline, so pull it fresh.
+      // `false` keeps the loading state off: swapping the outline out for a
+      // spinner behind the dialog would flash the whole page. Runs whether or
+      // not the popup is enabled — a stale outline is wrong either way.
+      refetchCourseOutline(false);
+
+      if (!popupEnabled) return;
+
       // Held back by `LESSON_COMPLETED_DIALOG_DELAY_MS`; a second completion
       // arriving inside that window supersedes the one still waiting.
       cancelPendingOpen();
@@ -93,15 +114,19 @@ export function LessonCompletedDialog() {
         openTimerRef.current = null;
         setCompletedLesson(message as LessonCompletedMessage);
       }, LESSON_COMPLETED_DIALOG_DELAY_MS);
-      // The sidebar's completion ticks come from the outline, so pull it fresh.
-      // `false` keeps the loading state off: swapping the outline out for a
-      // spinner behind the dialog would flash the whole page.
-      refetchCourseOutline(false);
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [refetchCourseOutline]);
+  }, [refetchCourseOutline, popupEnabled]);
+
+  // Metadata is live, so the flag can go off with a completion already waiting
+  // or on screen — drop it rather than let it out after the tenant said no.
+  useEffect(() => {
+    if (popupEnabled) return;
+    cancelPendingOpen();
+    setCompletedLesson(null);
+  }, [popupEnabled]);
 
   const close = () => {
     cancelPendingOpen();
