@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.85.0](https://github.com/iblai/lms/compare/skills-v0.84.0...skills-v0.85.0) (2026-09-24)
+
+### Features
+
+* agent based completion popup behind flag ([9063346](https://github.com/iblai/lms/commit/9063346de4f7a2d24d624a9e159495660b6ac492))
+
 ## [0.84.0](https://github.com/iblai/lms/compare/skills-v0.83.0...skills-v0.84.0) (2026-09-22)
 
 ### Features
