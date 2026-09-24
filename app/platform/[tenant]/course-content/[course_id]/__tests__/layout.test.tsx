@@ -277,11 +277,13 @@ vi.mock('@/hoc', () => ({
   checkRbacPermission: mockCheckRbacPermission,
 }));
 
-// Mock config — layout reads studioUrl for the Authoring tab
+// Mock config — layout reads studioUrl for the Authoring tab; LessonCompletedDialog
+// (rendered inside the layout) checks `lesson.completed` frames against the mentor origin.
 vi.mock('@/lib/config', () => ({
   config: {
     urls: {
       studioUrl: vi.fn(() => 'https://studio.example.com'),
+      mentor: vi.fn(() => 'https://mentor.example.com'),
     },
   },
 }));
@@ -301,6 +303,7 @@ vi.mock('react', async () => {
 });
 
 import CourseContentLayout from '../layout';
+import { LESSON_COMPLETED_DIALOG_DELAY_MS } from '@/components/lesson-completed-dialog';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
@@ -2329,5 +2332,95 @@ describe('CourseContentLayout', () => {
         expect(contentArea.className).not.toContain('overflow-y-auto');
       },
     );
+  });
+
+  describe('agent-based completion popup (tenant gate)', () => {
+    const MENTOR_ORIGIN = 'https://mentor.example.com';
+    const completedFrame = {
+      type: 'lesson.completed',
+      course_id: 'course-v1:test+course+2024',
+      usage_id: 'block-v1:test+course+2024+type@html+block@unit-1',
+      completion: 1,
+      display_name: 'First Unit',
+    };
+
+    // jsdom pins `event.origin` to '' on dispatched MessageEvents, so the mentor
+    // origin has to be forced on the instance for the dialog's allow-list.
+    const postCompletionFromMentor = async () => {
+      const event = new MessageEvent('message', { data: completedFrame });
+      Object.defineProperty(event, 'origin', { value: MENTOR_ORIGIN });
+      await act(async () => {
+        window.dispatchEvent(event);
+        // The dialog holds the completion back before opening.
+        await vi.advanceTimersByTimeAsync(LESSON_COMPLETED_DIALOG_DELAY_MS + 100);
+      });
+    };
+
+    const renderAndCompleteLesson = async () => {
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      await postCompletionFromMentor();
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('opens the dialog when enable_agent_based_completion_popup is true', async () => {
+      mockTenantMetadata.current = { enable_agent_based_completion_popup: true };
+      await renderAndCompleteLesson();
+      expect(screen.getByText('Lesson complete')).toBeInTheDocument();
+    });
+
+    it.each([
+      ['false', false],
+      ['missing', undefined],
+      ['truthy but not true ("true")', 'true'],
+      ['truthy but not true (1)', 1],
+    ])('keeps the dialog closed when the tenant flag is %s', async (_label, value) => {
+      mockTenantMetadata.current =
+        value === undefined ? {} : { enable_agent_based_completion_popup: value };
+      await renderAndCompleteLesson();
+      expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['on', true],
+      ['off', false],
+    ])(
+      'refreshes the course outline on completion with the popup %s',
+      async (_label, popupEnabled) => {
+        mockTenantMetadata.current = { enable_agent_based_completion_popup: popupEnabled };
+        await renderAndCompleteLesson();
+        expect(mockHandleFetchCourseSyllabus).toHaveBeenCalledWith(false);
+      },
+    );
+
+    it('stops opening the dialog — but keeps refreshing — when the flag is turned off', async () => {
+      mockTenantMetadata.current = { enable_agent_based_completion_popup: true };
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      mockTenantMetadata.current = { enable_agent_based_completion_popup: false };
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      await postCompletionFromMentor();
+
+      expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
+      expect(mockHandleFetchCourseSyllabus).toHaveBeenCalledWith(false);
+    });
   });
 });
