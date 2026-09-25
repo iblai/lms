@@ -708,6 +708,37 @@ describe('CourseContentLayout', () => {
     expect(tabLink('Instructor')).toBeInTheDocument();
   });
 
+  it('hides Gradebook tab when user is not platform admin', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false },
+    } as any);
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(queryTabLink('Gradebook')).not.toBeInTheDocument();
+  });
+
+  it('shows Gradebook tab right after Progress for platform admins', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: true },
+    } as any);
+
+    const { container } = render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(tabLink('Gradebook')).toBeInTheDocument();
+
+    const tabLabels = Array.from(container.querySelectorAll('a')).map(
+      (a) => a.textContent?.trim() ?? '',
+    );
+    expect(tabLabels.indexOf('Gradebook')).toBe(tabLabels.indexOf('Progress') + 1);
+  });
+
   describe('Authoring tab (platform admin only)', () => {
     it('renders Authoring tab for platform admin', () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
@@ -1011,6 +1042,7 @@ describe('CourseContentLayout', () => {
       ['/course-content/course-v1:test+course+2024/agent', 'agent'],
       ['/course-content/course-v1:test+course+2024/course', 'course'],
       ['/course-content/course-v1:test+course+2024/progress', 'progress'],
+      ['/course-content/course-v1:test+course+2024/gradebook', 'gradebook'],
       ['/course-content/course-v1:test+course+2024/analytics', 'analytics'],
       // The discussion route is still called "forum" by the edX iframe URL builder.
       ['/course-content/course-v1:test+course+2024/discussion', 'forum'],

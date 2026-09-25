@@ -183,6 +183,7 @@ export const EdxIframe = () => {
         // Send JWT token now that MFE is ready - inline to avoid dependency
         const isMFETab =
           currentActiveTab === 'progress' ||
+          currentActiveTab === 'gradebook' ||
           currentActiveTab === 'dates' ||
           currentActiveTab === 'forum';
         if (!isMFETab || !iframeRef.current || !currentIframeUrl) return;

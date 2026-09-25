@@ -79,6 +79,7 @@ const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
   agent: 'agent',
   course: 'course',
   progress: 'progress',
+  gradebook: 'gradebook',
   dates: 'dates',
   discussion: 'forum',
   bookmarks: 'bookmarks',
@@ -417,8 +418,12 @@ export default function CourseContentLayout({
         href: `${courseBasePath}/course${currentCourseInfo?.id ? `?unit_id=${currentCourseInfo.id}` : ''}`,
       });
     }
+    tabs.push({ key: 'progress', label: 'Progress', href: `${courseBasePath}/progress` });
+    // The edX gradebook MFE is staff-only; learners would just get an access error.
+    if (canViewStaffTabs) {
+      tabs.push({ key: 'gradebook', label: 'Gradebook', href: `${courseBasePath}/gradebook` });
+    }
     tabs.push(
-      { key: 'progress', label: 'Progress', href: `${courseBasePath}/progress` },
       { key: 'dates', label: 'Dates', href: `${courseBasePath}/dates` },
       { key: 'forum', label: 'Discussion', href: `${courseBasePath}/discussion` },
     );
