@@ -42,6 +42,22 @@ describe('useEdxIframe', () => {
     expect(result.current).toHaveProperty('getParentsInfosFromSublessonId');
   });
 
+  describe('getIframeURL for MFE tabs', () => {
+    it('builds the gradebook MFE URL without an SSO exchange', async () => {
+      const { result } = renderHook(() => useEdxIframe());
+      const callback = vi.fn();
+
+      result.current.getIframeURL('course-v1:test+course+2024', 'gradebook', callback);
+
+      await waitFor(() =>
+        expect(callback).toHaveBeenCalledWith(
+          'http://mfe.example.com/gradebook/course-v1:test+course+2024',
+        ),
+      );
+      expect(mockGetEdxSsoAuthToken).not.toHaveBeenCalled();
+    });
+  });
+
   describe('flattenVerticalBlocks', () => {
     it('returns empty array for null/undefined input', () => {
       const { result } = renderHook(() => useEdxIframe());

@@ -209,6 +209,45 @@ describe('EdxIframe - JWT PostMessage', () => {
     });
   });
 
+  it('sends the JWT token to the gradebook MFE on the gradebook tab', async () => {
+    const testToken = 'test-jwt-token-12345';
+    localStorage.setItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY, testToken);
+
+    const { container } = renderEdxIframe({
+      ...defaultContextValue,
+      activeTab: 'gradebook',
+      iframeUrl: 'https://apps.learn.example.com/gradebook/course-v1:test+course',
+    });
+
+    await waitFor(() => {
+      expect(container.querySelector('iframe')).toBeInTheDocument();
+    });
+
+    const iframe = container.querySelector('iframe');
+    const mockPostMessage = vi.fn();
+    Object.defineProperty(iframe, 'contentWindow', {
+      value: { postMessage: mockPostMessage },
+      writable: true,
+      configurable: true,
+    });
+
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'auth.jwt.ready' },
+          origin: 'https://apps.learn.example.com',
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        { type: 'auth.jwt.token', edx_jwt_token: testToken },
+        'https://apps.learn.example.com',
+      );
+    });
+  });
+
   it('does not send JWT token if not in localStorage', async () => {
     // Don't set any token in localStorage
     const { container } = renderEdxIframe();
@@ -359,7 +398,7 @@ describe('EdxIframe - JWT PostMessage', () => {
       expect(courseInfoArg).not.toBe('agent');
     });
 
-    it.each(['forum', 'notes', 'progress', 'dates', 'bookmarks'])(
+    it.each(['forum', 'notes', 'progress', 'gradebook', 'dates', 'bookmarks'])(
       "passes the activeTab string when activeTab is '%s'",
       async (tab) => {
         renderEdxIframe({ ...defaultContextValue, activeTab: tab });

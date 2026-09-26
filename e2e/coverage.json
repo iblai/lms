@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-09-04",
+  "lastUpdated": "2026-09-25",
   "summary": {
-    "totalCheckpoints": 256,
-    "coveredCheckpoints": 256,
+    "totalCheckpoints": 257,
+    "coveredCheckpoints": 257,
     "percent": 100,
     "totalJourneys": 36
   },
@@ -186,6 +186,7 @@
         "app/platform/[tenant]/course-content/[course_id]/course/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/agent/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/progress/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/gradebook/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/dates/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/discussion/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/instructor/page.tsx",
@@ -203,7 +204,8 @@
         "services/course-metadata.ts",
         "components/course-media-dropdown.tsx",
         "hooks/courses/use-course-user-roles.ts",
-        "hooks/courses/use-edx-iframe-loaded.ts"
+        "hooks/courses/use-edx-iframe-loaded.ts",
+        "hooks/courses/use-edx-iframe.ts"
       ],
       "checkpoints": [
         {
@@ -389,6 +391,11 @@
         {
           "id": "tabs-37",
           "description": "The `/agent` tab shows a course-loading spinner and only mounts `<agent-ai>` once the hidden edX iframe has loaded",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-38",
+          "description": "Gradebook tab (staff only, same gate as Instructor) navigates to `/gradebook` and iframes `<mfe-url>/gradebook/<course-id>`",
           "status": "covered"
         }
       ]

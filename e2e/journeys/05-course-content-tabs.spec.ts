@@ -435,6 +435,39 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Instructor tab content loaded');
   });
 
+  test('Checkpoint 38: Gradebook tab (staff) iframes the gradebook MFE', async ({ page }) => {
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const [gradebookTab, instructorTab] = await Promise.all([
+      getCourseContentTab(page, 'Gradebook'),
+      getCourseContentTab(page, 'Instructor'),
+    ]);
+
+    // Gradebook shares the staff-tab gate with Instructor.
+    expect(Boolean(gradebookTab)).toBe(Boolean(instructorTab));
+
+    if (!gradebookTab) {
+      logger.info('Viewer holds no staff role on this course — no Gradebook tab, as expected');
+      return;
+    }
+
+    await gradebookTab.click();
+    await expect(page).toHaveURL(/\/gradebook(\?|$)/, { timeout: 30000 });
+
+    const iframeElement = page.locator('#edx-iframe');
+    await expect(iframeElement).toBeVisible({ timeout: 120000 });
+    await expect(iframeElement).toHaveAttribute('src', /\/gradebook\/course-v1:/);
+
+    const bodyLocator = page.frameLocator('#edx-iframe').locator('body');
+    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
+    logger.info('Gradebook tab content loaded');
+  });
+
   test('Checkpoint 10: Bookmarks tab (optional)', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 

@@ -910,3 +910,447 @@ input[type='checkbox']:checked {
 body .fa {
   font-family: 'FontAwesome' !important;
 }
+
+/* =============================================
+   GRADEBOOK PAGE - PARENT WINDOW UNIFORMITY CSS
+   Scoped to the gradebook MFE only
+   ============================================= */
+header.site-header-desktop,
+.gradebook-header {
+  display: none !important;
+}
+
+/* --- 1. LAYOUT --- */
+body:has(.gradebook-header) #root,
+body:has(.gradebook-header) .gradebook-container,
+body:has(.gradebook-header) .container,
+body:has(.gradebook-header) .container-fluid {
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+}
+body:has(.gradebook-header) .gradebook-container {
+  padding: 16px 16px 0 0 !important;
+}
+
+/* --- 2. TYPOGRAPHY (Step 1 / Step 2 headings, labels) --- */
+body:has(.gradebook-header) h3,
+body:has(.gradebook-header) h4,
+body:has(.gradebook-header) .step-message-1,
+body:has(.gradebook-header) .step-message-2 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin: 20px 0 12px !important;
+}
+body:has(.gradebook-header) label,
+body:has(.gradebook-header) .form-label,
+body:has(.gradebook-header) .pgn__form-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+  margin-bottom: 6px !important;
+}
+body:has(.gradebook-header) .form-text,
+body:has(.gradebook-header) .text-muted,
+body:has(.gradebook-header) small {
+  font-size: 12px !important;
+  color: #9ca3af !important;
+}
+body:has(.gradebook-header) div,
+body:has(.gradebook-header) span {
+  color: inherit;
+}
+body:has(.gradebook-header) {
+  color: #4a5568 !important;
+}
+
+/* --- 3. BUTTONS --- */
+body:has(.gradebook-header) .btn {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 7px 14px !important;
+  line-height: 1.4 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+/* Primary (Edit Filters, Save Grade, Import...) — parent "Keep Learning" gradient */
+body:has(.gradebook-header) .btn-primary,
+body:has(.gradebook-header) #edit-filters-btn {
+  background: linear-gradient(to right, #2563eb, #93c5fd) !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+body:has(.gradebook-header) .btn-primary:hover,
+body:has(.gradebook-header) #edit-filters-btn:hover {
+  opacity: 0.9 !important;
+}
+body:has(.gradebook-header) .btn-primary .pgn__icon,
+body:has(.gradebook-header) .btn-primary svg,
+body:has(.gradebook-header) #edit-filters-btn .pgn__icon,
+body:has(.gradebook-header) #edit-filters-btn svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+/* Secondary / outline — parent "Previous Unit" style */
+body:has(.gradebook-header) .btn-outline-primary,
+body:has(.gradebook-header) .btn-outline-secondary,
+body:has(.gradebook-header) .btn-secondary,
+body:has(.gradebook-header) .btn-tertiary {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #4b5563 !important;
+}
+body:has(.gradebook-header) .btn-outline-primary:hover,
+body:has(.gradebook-header) .btn-outline-secondary:hover,
+body:has(.gradebook-header) .btn-secondary:hover,
+body:has(.gradebook-header) .btn-tertiary:hover {
+  background: #f9fafb !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+/* Link buttons (grade cells, Cancel, clear filters) */
+body:has(.gradebook-header) .btn-link,
+body:has(.gradebook-header) .grade-button {
+  background: transparent !important;
+  border: none !important;
+  color: #2563eb !important;
+  padding: 0 !important;
+  font-weight: 500 !important;
+}
+body:has(.gradebook-header) .btn-link:hover,
+body:has(.gradebook-header) .grade-button:hover {
+  color: #1d4ed8 !important;
+  text-decoration: underline !important;
+}
+body:has(.gradebook-header) .btn:disabled,
+body:has(.gradebook-header) .btn.disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* --- 4. INPUTS / SELECTS / SEARCH --- */
+body:has(.gradebook-header) .form-control,
+body:has(.gradebook-header) input[type='text'],
+body:has(.gradebook-header) input[type='number'],
+body:has(.gradebook-header) input[type='search'],
+body:has(.gradebook-header) select {
+  height: 36px !important;
+  font-size: 14px !important;
+  color: #484848 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  box-shadow: none !important;
+}
+body:has(.gradebook-header) select,
+body:has(.gradebook-header) select.form-control {
+  padding-right: 32px !important;
+  min-width: 120px;
+}
+body:has(.gradebook-header) .form-control::placeholder,
+body:has(.gradebook-header) input::placeholder {
+  color: #9ca3af !important;
+}
+body:has(.gradebook-header) .form-control:focus,
+body:has(.gradebook-header) input:focus,
+body:has(.gradebook-header) select:focus {
+  border-color: #d0e0ff !important;
+  box-shadow: 0 0 0 2px #d0e0ff !important;
+  outline: none !important;
+}
+/* Search field */
+body:has(.gradebook-header) .pgn__searchfield {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+body:has(.gradebook-header) .pgn__searchfield:focus-within {
+  border-color: #d0e0ff !important;
+  box-shadow: 0 0 0 2px #d0e0ff !important;
+}
+body:has(.gradebook-header) .pgn__searchfield input,
+body:has(.gradebook-header) .pgn__searchfield .form-control {
+  border: none !important;
+  box-shadow: none !important;
+  height: 34px !important;
+}
+body:has(.gradebook-header) .pgn__searchfield .btn,
+body:has(.gradebook-header) .pgn__searchfield button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 10px !important;
+}
+body:has(.gradebook-header) .pgn__searchfield .pgn__icon,
+body:has(.gradebook-header) .pgn__searchfield svg {
+  color: #9ca3af !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+/* Checkboxes / radios */
+body:has(.gradebook-header) input[type='checkbox'],
+body:has(.gradebook-header) input[type='radio'] {
+  accent-color: #2563eb !important;
+}
+
+/* --- 5. GRADES TABLE --- */
+body:has(.gradebook-header) .table-responsive,
+body:has(.gradebook-header) .pgn__data-table-wrapper,
+body:has(.gradebook-header) .gradebook-container .table-container {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  overflow: auto !important;
+  box-shadow: none !important;
+}
+body:has(.gradebook-header) table,
+body:has(.gradebook-header) .table,
+body:has(.gradebook-header) .pgn__data-table {
+  width: 100% !important;
+  margin: 0 !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  font-size: 13px !important;
+  background: #ffffff !important;
+}
+body:has(.gradebook-header) table thead th,
+body:has(.gradebook-header) .pgn__data-table thead th {
+  background-color: #f9fafb !important;
+  color: #374151 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  padding: 10px 12px !important;
+  border: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  vertical-align: bottom !important;
+  white-space: nowrap;
+}
+body:has(.gradebook-header) table tbody td,
+body:has(.gradebook-header) table tbody th,
+body:has(.gradebook-header) .pgn__data-table tbody td {
+  color: #4a5568 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  padding: 10px 12px !important;
+  border: none !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+  background-color: #ffffff !important;
+  vertical-align: middle !important;
+}
+body:has(.gradebook-header) table tbody tr:nth-child(even) td,
+body:has(.gradebook-header) table tbody tr:nth-child(even) th {
+  background-color: #fafafa !important;
+}
+body:has(.gradebook-header) table tbody tr:hover td,
+body:has(.gradebook-header) table tbody tr:hover th {
+  background-color: #eff6ff !important;
+}
+body:has(.gradebook-header) table tbody tr:last-child td,
+body:has(.gradebook-header) table tbody tr:last-child th {
+  border-bottom: none !important;
+}
+/* Undo the progress-page "last column bold blue" rule */
+body:has(.gradebook-header) .pgn__data-table tbody td:last-child {
+  font-weight: 400 !important;
+  color: #4a5568 !important;
+}
+/* Sticky username column */
+body:has(.gradebook-header) table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+body:has(.gradebook-header) table tbody td:first-child,
+body:has(.gradebook-header) table tbody th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  font-weight: 500 !important;
+  color: #374151 !important;
+}
+/* Header info icons */
+body:has(.gradebook-header) table th .pgn__icon,
+body:has(.gradebook-header) table th svg,
+body:has(.gradebook-header) table th .fa {
+  color: #9ca3af !important;
+  font-size: 12px !important;
+}
+
+/* --- 6. FILTER SIDEBAR --- */
+body:has(.gradebook-header) .sidebar,
+body:has(.gradebook-header) .filter-sidebar {
+  background: #ffffff !important;
+  border-right: 1px solid #e5e7eb !important;
+  padding: 16px 16px 0 0 !important;
+}
+body:has(.gradebook-header) .sidebar-container {
+  padding: O 16px 0 0 !important;
+}
+body:has(.gradebook-header) .collapsible-card,
+body:has(.gradebook-header) .collapsible-basic,
+body:has(.gradebook-header) .pgn_collapsible {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  margin-bottom: 12px !important;
+  box-shadow: none !important;
+}
+body:has(.gradebook-header) .collapsible-trigger {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  padding: 10px 12px !important;
+  background: transparent !important;
+}
+body:has(.gradebook-header) .collapsible-body {
+  padding: 12px !important;
+  border-top: 1px solid #f3f4f6 !important;
+}
+body:has(.gradebook-header) .input-percent-label {
+  color: #9ca3af !important;
+}
+
+/* --- 7. FILTER BADGES --- */
+body:has(.gradebook-header) .badge,
+body:has(.gradebook-header) .filter-badges .badge {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe !important;
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 4px 10px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+body:has(.gradebook-header) .badge .btn,
+body:has(.gradebook-header) .badge button {
+  color: #2563eb !important;
+  padding: 0 0 0 4px !important;
+}
+
+/* --- 8. TABS (Grades / Bulk Management) --- */
+body:has(.gradebook-header) .nav-tabs {
+  border-bottom: 1px solid #e5e7eb !important;
+}
+body:has(.gradebook-header) .nav-tabs .nav-link {
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+  color: #4b5563 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 10px 16px !important;
+}
+body:has(.gradebook-header) .nav-tabs .nav-link:hover {
+  color: #2563eb !important;
+}
+body:has(.gradebook-header) .nav-tabs .nav-link.active {
+  color: #2563eb !important;
+  border-bottom-color: #2563eb !important;
+}
+
+/* --- 9. ALERTS --- */
+body:has(.gradebook-header) .alert {
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  border: 1px solid transparent !important;
+}
+body:has(.gradebook-header) .alert-success {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+  color: #166534 !important;
+}
+body:has(.gradebook-header) .alert-danger {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
+}
+body:has(.gradebook-header) .alert-info,
+body:has(.gradebook-header) .alert-warning {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #1e40af !important;
+}
+
+/* --- 10. PAGINATION --- */
+body:has(.gradebook-header) .pagination .page-link {
+  border: 1px solid #e5e7eb !important;
+  color: #4b5563 !important;
+  font-size: 13px !important;
+}
+body:has(.gradebook-header) .pagination .page-item.active .page-link {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* --- 11. EDIT GRADE MODAL (re-enable; shared CSS hides all pgn modals) --- */
+body:has(.gradebook-header) .pgn__modal-layer {
+  display: block !important;
+}
+body:has(.gradebook-header) .pgn__modal-backdrop {
+  display: block !important;
+  background: rgba(17, 24, 39, 0.4) !important;
+}
+body:has(.gradebook-header) .pgn__modal-content-container {
+  display: flex !important;
+}
+body:has(.gradebook-header) .pgn__modal,
+body:has(.gradebook-header) .pgn__modal-body,
+body:has(.gradebook-header) .pgn__modal-body-content {
+  display: block !important;
+}
+body:has(.gradebook-header) .pgn__modal-footer,
+body:has(.gradebook-header) .pgn__action-row {
+  display: flex !important;
+}
+body:has(.gradebook-header) .pgn__modal,
+body:has(.gradebook-header) .modal-content {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+}
+body:has(.gradebook-header) .pgn__modal-header,
+body:has(.gradebook-header) .modal-header {
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 16px 20px !important;
+}
+body:has(.gradebook-header) .pgn__modal-title,
+body:has(.gradebook-header) .modal-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+}
+body:has(.gradebook-header) .pgn__modal-footer,
+body:has(.gradebook-header) .modal-footer {
+  border-top: 1px solid #e5e7eb !important;
+  padding: 12px 20px !important;
+  gap: 8px;
+}
+
+/* --- 12. ICON COLOR RESET (shared CSS greys all icons) --- */
+body:has(.gradebook-header) .btn-link .pgn__icon,
+body:has(.gradebook-header) .nav-link.active .pgn__icon {
+  color: currentColor !important;
+}
+.search-container {
+  margin-right: 16px !important;
+}
+
+.gradebook-container .pgn__data-table-status-bar {
+  padding: 0px !important;
+}
+
+.gradebook-content > div.d-flex.justify-content-center {
+  padding-bottom: 60px !important;
+}
+
+body:has(.gradebook-header) .site-header-mobile {
+  display: none !important;
+}

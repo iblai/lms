@@ -157,6 +157,9 @@ export const useEdxIframe = () => {
         case 'progress':
           url = `${config.urls.mfe()}/learning/course/${course_id}/progress/`;
           break;
+        case 'gradebook':
+          url = `${config.urls.mfe()}/gradebook/${course_id}`;
+          break;
         case 'dates':
           url = `${config.urls.mfe()}/learning/course/${course_id}/dates/`;
           break;
