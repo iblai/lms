@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.86.0](https://github.com/iblai/lms/compare/skills-v0.85.0...skills-v0.86.0) (2026-09-26)
+
+### Features
+
+* course content gradebook tab integration ([9c9ea26](https://github.com/iblai/lms/commit/9c9ea261cb07d1acaa32fb47690be0afc005cd5e))
+* course content gradebook tab integration > test coverage ([1ef1c14](https://github.com/iblai/lms/commit/1ef1c14c7b655927baee01da0221833bbfeee3dc))
+
 ## [0.85.0](https://github.com/iblai/lms/compare/skills-v0.84.0...skills-v0.85.0) (2026-09-24)
 
 ### Features
