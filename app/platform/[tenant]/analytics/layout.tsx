@@ -12,11 +12,15 @@ import {
 import { useLazyPlatformUserGroupsQuery } from '@iblai/iblai-js/data-layer';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { Tenant, useCurrentTenant, useUserTenants } from '@iblai/iblai-js/web-utils';
+import { canMonetize } from '@/utils/localstorage';
 
 export default function AnalyticsLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const tenant = useTenantParam();
+  const { currentTenant } = useCurrentTenant();
+  const { userTenants } = useUserTenants();
   const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
 
@@ -24,6 +28,8 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
     useLazyPlatformUserGroupsQuery();
 
   const basePath = `/platform/${tenant}/analytics`;
+
+  const monetizationEnabled = canMonetize(currentTenant as Tenant, userTenants as Tenant[]);
 
   // Fetch groups on mount
   useEffect(() => {
@@ -86,6 +92,7 @@ export default function AnalyticsLayoutWrapper({ children }: { children: React.R
           activeTabClassName="!text-amber-600"
           beforeDataReports={groupsFilterDropdown}
           showPicker={true}
+          enableMonetization={monetizationEnabled}
         >
           {children}
         </AnalyticsLayout>
