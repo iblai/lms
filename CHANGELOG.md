@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.87.0](https://github.com/iblai/lms/compare/skills-v0.86.0...skills-v0.87.0) (2026-09-28)
+
+### Features
+
+* lesson completion post message origin untightened from mentor url to * > sdk bump ([d5cae76](https://github.com/iblai/lms/commit/d5cae76dd10ed398c75d460d53a21eb983b5d957))
+
+## [0.86.0-patch.1](https://github.com/iblai/lms/compare/skills-v0.86.0...skills-v0.87.0) (2026-09-28)
+
+### Features
+
+* lesson completion post message origin untightened from mentor url to * ([415b052](https://github.com/iblai/lms/commit/415b0528f4c7956df09442ea4c802129a75f1bcf))
+* lesson completion post message origin untightened from mentor url to * > version patch ([539fe85](https://github.com/iblai/lms/commit/539fe85ad24c68e5a9a3ac114a34c2e99c0869f4))
+
 ## [0.86.0](https://github.com/iblai/lms/compare/skills-v0.85.0...skills-v0.86.0) (2026-09-26)
 
 ### Features
