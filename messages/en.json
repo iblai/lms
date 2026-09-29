@@ -1,0 +1,27 @@
+{
+  "Sidebar": {
+    "home": "Home",
+    "courses": "Courses",
+    "programs": "Programs",
+    "pathways": "Pathways",
+    "discover": "Discover",
+    "studio": "Studio",
+    "gradebook": "Gradebook",
+    "gradebookDescription": "Your grades and progress across courses, programs, and pathways.",
+    "credentials": "Credentials",
+    "credentialsDescription": "Credentials you have earned.",
+    "skills": "Skills",
+    "skillsDescription": "Your earned, self-reported, and desired skills.",
+    "analytics": "Analytics",
+    "analyticsOverview": "Overview",
+    "analyticsUsers": "Users",
+    "analyticsCourses": "Courses",
+    "analyticsPrograms": "Programs",
+    "analyticsTopics": "Topics",
+    "analyticsTranscripts": "Transcripts",
+    "analyticsMemory": "Memory",
+    "analyticsCosts": "Costs",
+    "analyticsAudit": "Audit",
+    "analyticsReports": "Data Reports"
+  }
+}

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Award,
   ClipboardList,
@@ -69,24 +70,26 @@ type LibraryDialogId = 'gradebook' | 'credentials' | 'skills';
 const LIBRARY_DIALOGS: Record<
   LibraryDialogId,
   {
-    title: string;
-    description: string;
+    /** Keys into the `Sidebar` message namespace; resolved at render because
+     * this table is module-level and cannot call the translation hook. */
+    titleKey: string;
+    descriptionKey: string;
     render: (ctx: { org: string; username: string }) => React.ReactNode;
   }
 > = {
   gradebook: {
-    title: 'Gradebook',
-    description: 'Your grades and progress across courses, programs, and pathways.',
+    titleKey: 'gradebook',
+    descriptionKey: 'gradebookDescription',
     render: ({ org, username }) => <GradebookTab org={org} username={username} />,
   },
   credentials: {
-    title: 'Credentials',
-    description: 'Credentials you have earned.',
+    titleKey: 'credentials',
+    descriptionKey: 'credentialsDescription',
     render: () => <ProfileCredentialsContent />,
   },
   skills: {
-    title: 'Skills',
-    description: 'Your earned, self-reported, and desired skills.',
+    titleKey: 'skills',
+    descriptionKey: 'skillsDescription',
     render: () => <ProfileSkillsContent />,
   },
 };
@@ -218,6 +221,7 @@ export function AppSidebar() {
   const [openSection, setOpenSection] = React.useState<SidebarOpenSection | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations('Sidebar');
 
   const onboardingBasePath = window.location.origin + `/platform/${tenant}`;
 
@@ -249,43 +253,59 @@ export function AppSidebar() {
     // Data Reports only; everyone else keeps the full list, as before.
     const visibleTabs = getVisibleAnalyticsTabs(rbacPermissions, currentTenant);
     const rows: ReadonlyArray<{ tab: AnalyticsTab; item: PlatformSidebarMenu['items'][number] }> = [
-      { tab: '', item: { id: 'analytics-overview', label: 'Overview', href: base, exact: true } },
-      { tab: 'users', item: { id: 'analytics-users', label: 'Users', href: `${base}/users` } },
+      {
+        tab: '',
+        item: { id: 'analytics-overview', label: t('analyticsOverview'), href: base, exact: true },
+      },
+      {
+        tab: 'users',
+        item: { id: 'analytics-users', label: t('analyticsUsers'), href: `${base}/users` },
+      },
       {
         tab: 'courses',
-        item: { id: 'analytics-courses', label: 'Courses', href: `${base}/courses` },
+        item: { id: 'analytics-courses', label: t('analyticsCourses'), href: `${base}/courses` },
       },
       {
         tab: 'programs',
-        item: { id: 'analytics-programs', label: 'Programs', href: `${base}/programs` },
+        item: { id: 'analytics-programs', label: t('analyticsPrograms'), href: `${base}/programs` },
       },
-      { tab: 'topics', item: { id: 'analytics-topics', label: 'Topics', href: `${base}/topics` } },
+      {
+        tab: 'topics',
+        item: { id: 'analytics-topics', label: t('analyticsTopics'), href: `${base}/topics` },
+      },
       {
         tab: 'transcripts',
-        item: { id: 'analytics-transcripts', label: 'Transcripts', href: `${base}/transcripts` },
+        item: {
+          id: 'analytics-transcripts',
+          label: t('analyticsTranscripts'),
+          href: `${base}/transcripts`,
+        },
       },
       {
         tab: 'memory',
-        item: { id: 'analytics-memory', label: 'Memory', href: `${base}/memory` },
+        item: { id: 'analytics-memory', label: t('analyticsMemory'), href: `${base}/memory` },
       },
       {
         tab: 'financial',
-        item: { id: 'analytics-costs', label: 'Costs', href: `${base}/financial` },
+        item: { id: 'analytics-costs', label: t('analyticsCosts'), href: `${base}/financial` },
       },
-      { tab: 'audit', item: { id: 'analytics-audit', label: 'Audit', href: `${base}/audit` } },
+      {
+        tab: 'audit',
+        item: { id: 'analytics-audit', label: t('analyticsAudit'), href: `${base}/audit` },
+      },
       {
         tab: 'reports',
-        item: { id: 'analytics-reports', label: 'Data Reports', href: `${base}/reports` },
+        item: { id: 'analytics-reports', label: t('analyticsReports'), href: `${base}/reports` },
       },
     ];
 
     return {
       id: 'analytics',
-      label: 'Analytics',
+      label: t('analytics'),
       icon: LineChart,
       items: rows.filter(({ tab }) => visibleTabs.includes(tab)).map(({ item }) => item),
     };
-  }, [tenant, rbacPermissions, currentTenant]);
+  }, [tenant, rbacPermissions, currentTenant, t]);
 
   // Analytics is visible to users with the RBAC permission OR watchers
   // (same rule main applied to the old navbar's AI Analytics link).
@@ -357,28 +377,28 @@ export function AppSidebar() {
       });
 
     const list: PlatformSidebarSectionConfig[] = [
-      flat('home', Home, 'Home', `/platform/${tenant}/home`),
-      catalogItem('courses', GraduationCap, 'Courses', 'courses'),
-      catalogItem('programs', Layers, 'Programs', 'programs'),
-      catalogItem('pathways', Route, 'Pathways', 'pathways'),
+      flat('home', Home, t('home'), `/platform/${tenant}/home`),
+      catalogItem('courses', GraduationCap, t('courses'), 'courses'),
+      catalogItem('programs', Layers, t('programs'), 'programs'),
+      catalogItem('pathways', Route, t('pathways'), 'pathways'),
     ];
     if (discoverEnabled) {
       list.push(
-        flat('discover', Compass, 'Discover', catalogBase, {
+        flat('discover', Compass, t('discover'), catalogBase, {
           activeOverride: onCatalogPage && !catalogEnrolled,
         }),
       );
     }
     list.push({ type: 'divider', id: 'library-divider' });
     if (studioAllowed) {
-      list.push(flat('studio', PencilRuler, 'Studio', config.urls.studioUrl()));
+      list.push(flat('studio', PencilRuler, t('studio'), config.urls.studioUrl()));
     }
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
     }
-    list.push(dialogRow('gradebook', ClipboardList, 'Gradebook'));
-    list.push(dialogRow('credentials', Award, 'Credentials'));
-    list.push(dialogRow('skills', Sparkles, 'Skills'));
+    list.push(dialogRow('gradebook', ClipboardList, t('gradebook')));
+    list.push(dialogRow('credentials', Award, t('credentials')));
+    list.push(dialogRow('skills', Sparkles, t('skills')));
     return list;
   }, [
     tenant,
@@ -390,6 +410,7 @@ export function AppSidebar() {
     onCatalogPage,
     catalogEnrolled,
     catalogContent,
+    t,
   ]);
 
   const handleFooterAction = React.useCallback(
@@ -424,7 +445,7 @@ export function AppSidebar() {
     <>
       <PlatformSidebar
         logo={
-          <Link href={`/platform/${tenant}/home`} aria-label="Home">
+          <Link href={`/platform/${tenant}/home`} aria-label={t('home')}>
             <Logo className="h-9 w-auto max-w-full object-contain" />
           </Link>
         }
@@ -495,10 +516,10 @@ export function AppSidebar() {
         <DialogContent className="mx-auto my-auto flex h-[85vh] w-[95vw] max-w-none flex-col gap-0 rounded-lg p-0 sm:max-w-7xl">
           <DialogHeader className="flex-shrink-0 border-b border-gray-200 p-4 pt-[30px]">
             <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {libraryDialog ? LIBRARY_DIALOGS[libraryDialog].title : ''}
+              {libraryDialog ? t(LIBRARY_DIALOGS[libraryDialog].titleKey) : ''}
             </DialogTitle>
             <DialogDescription className="text-sm leading-relaxed text-gray-600">
-              {libraryDialog ? LIBRARY_DIALOGS[libraryDialog].description : ''}
+              {libraryDialog ? t(LIBRARY_DIALOGS[libraryDialog].descriptionKey) : ''}
             </DialogDescription>
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-y-auto p-6">
