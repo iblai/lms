@@ -116,12 +116,28 @@ describe('LocalStorageService', () => {
     expect(result).toBeNull();
   });
 
-  it('setItem calls localStorage.setItem with JSON-stringified value', async () => {
+  it('setItem JSON-stringifies a non-string value', async () => {
     await service.setItem('user', { name: 'Alice' });
     expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
       'user',
       JSON.stringify({ name: 'Alice' }),
     );
+  });
+
+  it('setItem writes a string as-is, so it round-trips through getItem', async () => {
+    // Stringifying here would double-encode: the SDK's cookie sync parses the
+    // result to a string rather than an object, sees `key` as undefined, and
+    // refreshes the page on every poll.
+    const tenant = JSON.stringify({ key: 'demo' });
+    await service.setItem('current_tenant', tenant);
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'current_tenant',
+      tenant,
+    );
+
+    mockLocalStorage.getItem.mockReturnValue(tenant);
+    const readBack = await service.getItem<string>('current_tenant');
+    expect(JSON.parse(readBack as string)).toEqual({ key: 'demo' });
   });
 
   it('removeItem calls localStorage.removeItem', async () => {
