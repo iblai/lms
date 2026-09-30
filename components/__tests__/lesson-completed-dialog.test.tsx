@@ -3,14 +3,6 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-vi.mock('@/lib/config', () => ({
-  config: {
-    urls: {
-      mentor: vi.fn(() => 'https://mentor.example.com'),
-    },
-  },
-}));
-
 vi.mock('lodash', () => {
   const isEmpty = (val: any) =>
     val == null ||
@@ -82,8 +74,9 @@ const renderDialog = ({
   );
 
 /**
- * jsdom fixes `event.origin` to '' for dispatched MessageEvents, so the origin
- * has to be forced on the instance to exercise the allow-list.
+ * jsdom fixes `event.origin` to '' for dispatched MessageEvents. The origin is
+ * still forced on the instance so a test can show it plays no part in whether a
+ * frame is accepted — the dialog no longer allow-lists the sender.
  */
 const postFromMentor = async (data: unknown, origin = MENTOR_ORIGIN) => {
   const event = new MessageEvent('message', { data });
@@ -148,12 +141,15 @@ describe('LessonCompletedDialog', () => {
     expect(screen.getByText('Lesson complete')).toBeInTheDocument();
   });
 
-  it('ignores frames from another origin', async () => {
+  it('accepts a frame from any origin, not just the mentor', async () => {
     renderDialog();
-    await postFromMentor(completedFrame, 'https://evil.example.com');
+    // Relayed through the edX unit iframe the frame arrives with that
+    // iframe's origin, so the sender must not be allow-listed.
+    await postFromMentor(completedFrame, 'https://learn.example.com');
+    await flushOpenDelay();
 
-    expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
-    expect(refetchCourseOutline).not.toHaveBeenCalled();
+    expect(screen.getByText('Lesson complete')).toBeInTheDocument();
+    expect(refetchCourseOutline).toHaveBeenCalledWith(false);
   });
 
   it('ignores a frame that is not a finished lesson', async () => {

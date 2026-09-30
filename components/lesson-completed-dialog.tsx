@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
-import { config } from '@/lib/config';
 
 /**
  * The `lesson.completed` frame the mentor relays out of its iframe once the
@@ -88,10 +87,10 @@ export function LessonCompletedDialog({ popupEnabled }: LessonCompletedDialogPro
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // The mentor SPA is the only origin allowed to declare a lesson complete;
-      // acting on any frame would let an arbitrary embed navigate the learner.
-      if (event.origin !== new URL(config.urls.mentor()).origin) return;
-
+      // Accepted from any origin. The frame can reach us relayed through an
+      // intermediate iframe (the edX unit page) rather than straight from the
+      // mentor SPA, so `event.origin` is no longer a usable allow-list; the
+      // payload checks below are the only gate.
       const message = event.data;
       if (!message || typeof message !== 'object') return;
       if (message.type !== LESSON_COMPLETED_MESSAGE_TYPE) return;
