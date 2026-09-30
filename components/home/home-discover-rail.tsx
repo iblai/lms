@@ -136,6 +136,11 @@ function HomeCoursesRail({
   } = useDiscover({
     limit: RAIL_LIMIT,
     initialFacets: initialFacetsFor(display),
+    // The rail has no Access facet, so in enrolled mode recommendations
+    // would only pin "Recommended" pills on the user's own courses — not
+    // worth a request that competes with the cards. Catalog cards keep the
+    // pills, and recommended mode loads them regardless.
+    recommendationBadges: display !== 'enrolled',
   });
 
   /** Cards come from the user's own endpoints, not the catalog search. */

@@ -17,11 +17,14 @@ export const useRecommendedCourses = ({
   search = '',
   forceLimit = false,
   tenant = '',
+  skip = false,
 }: {
   limit?: number;
   search?: string;
   forceLimit?: boolean;
   tenant?: string;
+  /** Leave the recommendations endpoint idle. */
+  skip?: boolean;
 }) => {
   const { metadata, isLoading: metadataLoading } = useTenantMetadata({
     org: getTenant(),
@@ -45,7 +48,7 @@ export const useRecommendedCourses = ({
       // Tenant metadata decides `include_main_catalog` — subscribing before
       // it resolves would fire a throwaway request under the wrong cache
       // key.
-      skip: metadataLoading,
+      skip: skip || metadataLoading,
       refetchOnMountOrArgChange: RECOMMENDATIONS_REFRESH_AFTER_SECONDS,
     },
   );
@@ -100,7 +103,7 @@ export const useRecommendedCourses = ({
   return {
     recommendedCourses: filteredCoursesWithMetaData,
     allRecommendedCourses: userCoursesWithMetaData,
-    isLoading: metadataLoading || (isLoadingRecommendedCourses && !aiSearchResponse),
+    isLoading: !skip && (metadataLoading || (isLoadingRecommendedCourses && !aiSearchResponse)),
     isError: errorRecommendedCourses,
   };
 };

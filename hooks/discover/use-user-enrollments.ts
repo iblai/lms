@@ -6,7 +6,6 @@ import {
   useGetUserCatalogPathwaysQuery,
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
-import { useCourseImages } from '@/hooks/courses/use-course-images';
 import { DiscoverContentCardProps } from '@/types/discover';
 import { CustomProgramEnrollmentPlus } from '@/types/program';
 
@@ -37,16 +36,10 @@ export type EnrolledContentType = 'courses' | 'programs' | 'pathways';
 export const useUserEnrollments = ({
   tenant,
   skip: skipRequested = false,
-  withCardImages = true,
 }: {
   tenant: string;
   /** Leave the enrollment endpoints idle. */
   skip?: boolean;
-  /**
-   * Resolve the enrolled course cards' images — one course-metadata request
-   * per course, so only worth it when those cards are actually rendered.
-   */
-  withCardImages?: boolean;
 }) => {
   const username = getUserName();
   const skip = skipRequested || !isLoggedIn() || !username || !tenant;
@@ -67,23 +60,6 @@ export const useUserEnrollments = ({
     { skip, refetchOnMountOrArgChange: ENROLLMENTS_REFRESH_AFTER_SECONDS },
   );
 
-  /**
-   * The enrollment endpoint returns no artwork, so the course cards' images
-   * come from each course's metadata — without it every enrolled card falls
-   * back to a random placeholder while the same course shows its real image
-   * in the catalog.
-   */
-  const enrolledCourseIds = useMemo(
-    () =>
-      withCardImages
-        ? (coursesQ.data?.results ?? [])
-            .filter((course) => course.course_name)
-            .map((course) => course.course_id)
-        : [],
-    [coursesQ.data, withCardImages],
-  );
-  const courseImages = useCourseImages(enrolledCourseIds);
-
   const enrolledCards = useMemo<Record<EnrolledContentType, DiscoverContentCardProps[]>>(() => {
     const courses = (coursesQ.data?.results ?? [])
       .filter((course) => course.course_name)
@@ -91,7 +67,10 @@ export const useUserEnrollments = ({
         title: course.course_name,
         contentType: 'course',
         url: `/courses/${course.course_id}`,
-        image: courseImages[course.course_id] ?? '',
+        // The enrollment endpoint returns no artwork — the card looks it up
+        // in the course's metadata once it scrolls into view.
+        image: '',
+        imageCourseId: course.course_id,
         id: course.course_id,
         enrolled: true,
       }));
@@ -131,7 +110,7 @@ export const useUserEnrollments = ({
       }));
 
     return { courses, programs, pathways };
-  }, [coursesQ.data, programsQ.data, pathwaysQ.data, courseImages]);
+  }, [coursesQ.data, programsQ.data, pathwaysQ.data]);
 
   const enrolledIds = useMemo(() => {
     const ids = new Set<string>();

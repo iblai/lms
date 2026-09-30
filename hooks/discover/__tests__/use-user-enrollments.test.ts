@@ -9,11 +9,6 @@ vi.mock('@/utils/helpers', () => ({
     !path ? '' : String(path).startsWith('http') ? String(path) : `https://lms.test${path}`,
 }));
 
-const mockUseCourseImages = vi.hoisted(() => vi.fn(() => ({}) as Record<string, string>));
-vi.mock('@/hooks/courses/use-course-images', () => ({
-  useCourseImages: mockUseCourseImages,
-}));
-
 const mockIsLoggedIn = vi.hoisted(() => vi.fn(() => true));
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: mockIsLoggedIn,
@@ -41,7 +36,6 @@ describe('useUserEnrollments', () => {
     mockCoursesQuery.mockReturnValue({ data: undefined, isLoading: false });
     mockProgramsQuery.mockReturnValue({ data: undefined, isLoading: false });
     mockPathwaysQuery.mockReturnValue({ data: undefined, isLoading: false });
-    mockUseCourseImages.mockReturnValue({});
   });
 
   it('returns empty enrollments when no query has data', () => {
@@ -110,6 +104,7 @@ describe('useUserEnrollments', () => {
         contentType: 'course',
         url: '/courses/course-1',
         image: '',
+        imageCourseId: 'course-1',
         id: 'course-1',
         enrolled: true,
       },
@@ -120,26 +115,20 @@ describe('useUserEnrollments', () => {
     expect(result.current.enrolledTotal).toBe(1);
   });
 
-  it('takes course card images from the course metadata lookup', () => {
+  it('leaves course artwork to a lazy per-card lookup', () => {
     mockCoursesQuery.mockReturnValue({
-      data: {
-        results: [
-          { course_id: 'course-1', course_name: 'Course One' },
-          { course_id: 'course-2', course_name: 'Course Two' },
-          // Unnamed courses are hidden, so their image is never looked up.
-          { course_id: 'course-3', course_name: '' },
-        ],
-      },
+      data: { results: [{ course_id: 'course-1', course_name: 'Course One' }] },
       isLoading: false,
     });
-    mockUseCourseImages.mockReturnValue({ 'course-1': 'https://lms.test/one.png' });
 
     const { result } = renderHook(() => useUserEnrollments({ tenant: 'test-tenant' }));
 
-    expect(mockUseCourseImages).toHaveBeenCalledWith(['course-1', 'course-2']);
-    expect(result.current.enrolledCards.courses[0].image).toBe('https://lms.test/one.png');
-    // Still resolving (or imageless) — the card falls back to a placeholder.
-    expect(result.current.enrolledCards.courses[1].image).toBe('');
+    // No image up front — the card fetches it once it nears the viewport,
+    // so no course_metadata requests fan out here.
+    expect(result.current.enrolledCards.courses[0]).toMatchObject({
+      image: '',
+      imageCourseId: 'course-1',
+    });
   });
 
   it('builds program cards with title and id fallbacks', () => {
@@ -284,14 +273,5 @@ describe('useUserEnrollments', () => {
       expect(query.mock.calls[0][1]).toMatchObject({ skip: true });
     }
     expect(result.current.enrolledTotal).toBeUndefined();
-  });
-
-  it('requests no course images when card images are not needed', () => {
-    mockCoursesQuery.mockReturnValue({
-      data: { results: [{ course_id: 'course-1', course_name: 'Course One' }] },
-      isLoading: false,
-    });
-    renderHook(() => useUserEnrollments({ tenant: 'test-tenant', withCardImages: false }));
-    expect(mockUseCourseImages).toHaveBeenLastCalledWith([]);
   });
 });

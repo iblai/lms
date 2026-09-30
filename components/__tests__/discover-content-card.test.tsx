@@ -24,9 +24,63 @@ vi.mock('@/utils/helpers', () => ({
   getRandomCourseImage: vi.fn(() => '/default-course-image.jpg'),
 }));
 
+// Lazy course-artwork lookup — tests set what it resolves to.
+const mockCardImage = vi.hoisted(() => ({
+  value: { image: '', isPending: false },
+  calls: [] as (string | undefined)[],
+}));
+vi.mock('@/hooks/courses/use-course-card-image', () => ({
+  useCourseCardImage: (courseId: string | undefined) => {
+    mockCardImage.calls.push(courseId);
+    return mockCardImage.value;
+  },
+}));
+
 describe('DiscoverContentCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCardImage.value = { image: '', isPending: false };
+    mockCardImage.calls = [];
+  });
+
+  describe('lazy course artwork (imageCourseId)', () => {
+    const enrolledCard = {
+      id: 'course-1',
+      title: 'Enrolled Course',
+      url: '/courses/course-1',
+      image: '',
+      imageCourseId: 'course-1',
+      contentType: 'course',
+    };
+
+    it('looks the image up for the given course', () => {
+      render(<DiscoverContentCard content={enrolledCard} />);
+      expect(mockCardImage.calls.at(-1)).toBe('course-1');
+    });
+
+    it('renders the looked-up image', () => {
+      mockCardImage.value = { image: 'https://lms.test/one.png', isPending: false };
+      render(<DiscoverContentCard content={enrolledCard} />);
+      expect(screen.getByTestId('next-image')).toHaveAttribute('src', 'https://lms.test/one.png');
+    });
+
+    it('shows a neutral pending block, not a random placeholder, while it resolves', () => {
+      mockCardImage.value = { image: '', isPending: true };
+      render(<DiscoverContentCard content={enrolledCard} />);
+      expect(screen.getByTestId('card-image-pending')).toBeInTheDocument();
+      expect(screen.queryByTestId('next-image')).not.toBeInTheDocument();
+    });
+
+    it('falls back to the placeholder when the course has no artwork', () => {
+      render(<DiscoverContentCard content={enrolledCard} />);
+      expect(screen.getByTestId('next-image')).toHaveAttribute('src', '/default-course-image.jpg');
+    });
+
+    it('skips the lookup when the payload already carries an image', () => {
+      render(<DiscoverContentCard content={{ ...enrolledCard, image: '/own.jpg' }} />);
+      expect(mockCardImage.calls).toEqual([]);
+      expect(screen.getByTestId('next-image')).toHaveAttribute('src', '/own.jpg');
+    });
   });
 
   it('renders content card with title and image', () => {

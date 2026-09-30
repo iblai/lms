@@ -66,6 +66,15 @@ describe('useRecommendedCourses', () => {
     expect(mockRecommendationsQuery.calls[0].options.skip).toBe(false);
   });
 
+  it('stays idle, and not loading, when asked to skip', () => {
+    const { result } = renderHook(() =>
+      useRecommendedCourses({ limit: 8, search: '', forceLimit: false, skip: true }),
+    );
+    expect(mockRecommendationsQuery.calls[0].options.skip).toBe(true);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.recommendedCourses).toEqual([]);
+  });
+
   it('skips the query while tenant metadata is loading', () => {
     (useTenantMetadata as ReturnType<typeof vi.fn>).mockReturnValue({
       metadata: undefined,

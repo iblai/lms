@@ -3,6 +3,12 @@ export interface DiscoverContentCardProps {
   contentType: string;
   url: string;
   image: string;
+  /**
+   * Course whose metadata supplies the artwork when `image` is empty —
+   * enrollment payloads carry none. Looked up lazily, once the card is
+   * near the viewport.
+   */
+  imageCourseId?: string;
   id: string;
   /** The current user is enrolled in this content ("Enrolled" pill). */
   enrolled?: boolean;
