@@ -16,7 +16,7 @@ vi.mock('react', async () => {
   return { ...actual, cache: (fn: unknown) => fn };
 });
 
-import { getProgramSeoData, getCourseSeoData } from '../seo-data';
+import { getProgramSeoData, getCourseSeoData, getCourseServerData } from '../seo-data';
 
 const okJson = (body: unknown) =>
   vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(body) });
@@ -180,6 +180,46 @@ describe('seo-data', () => {
         'Failed to fetch course SEO data:',
         expect.any(Error),
       );
+    });
+  });
+
+  describe('getCourseServerData', () => {
+    it('keeps the raw overview HTML and display facts', async () => {
+      global.fetch = okJson({
+        edx_data: {
+          title: 'Advising 101',
+          description: 'Caseload management',
+          overview: '<h2>Overview</h2><p>296 advisees per advisor.</p>',
+          course_image_asset_path: '/asset/a.png',
+          course_price: '0.00',
+          language: 'en',
+          duration: '6 weeks',
+          start_date: '2027-01-01',
+          org: 'highered',
+        },
+      }) as unknown as typeof fetch;
+
+      await expect(getCourseServerData('course-server-1')).resolves.toEqual({
+        title: 'Advising 101',
+        description: 'Caseload management',
+        overview: '<h2>Overview</h2><p>296 advisees per advisor.</p>',
+        image: 'https://lms.example.com/asset/a.png',
+        price: '0.00',
+        language: 'en',
+        duration: '6 weeks',
+        startDate: '2027-01-01',
+        org: 'highered',
+      });
+    });
+
+    it('returns null when the payload has no title', async () => {
+      global.fetch = okJson({ overview: '<p>orphan</p>' }) as unknown as typeof fetch;
+      await expect(getCourseServerData('course-server-2')).resolves.toBeNull();
+    });
+
+    it('returns null on a non-ok response', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+      await expect(getCourseServerData('course-server-3')).resolves.toBeNull();
     });
   });
 });

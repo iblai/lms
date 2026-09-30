@@ -17,6 +17,15 @@ import { redirectToAuthSpa } from '@/utils/helpers';
  * - Anonymous users pass through only when the tenant has public registration /
  *   self-linking enabled (`allow_self_linking` from the public membership
  *   endpoint); otherwise they are redirected to the auth SPA.
+ *
+ * The children are rendered unconditionally (never gated behind a spinner) so
+ * the server-rendered course/program/discover content reaches the initial HTML
+ * — crawlers and the JS-less first pass see the real content. The anonymous
+ * access decision is enforced on the client: once the public membership query
+ * resolves, a disallowed anonymous visitor is redirected to the auth SPA. On a
+ * public tenant this is a no-op; on a private one the content is briefly visible
+ * before the redirect, which is acceptable — the content is public metadata,
+ * already exposed via the page's Open Graph tags.
  */
 export function SelfLinkingGuard({ children }: { children: React.ReactNode }) {
   const tenant = useTenantParam();
@@ -38,14 +47,6 @@ export function SelfLinkingGuard({ children }: { children: React.ReactNode }) {
       redirectToAuthSpa();
     }
   }, [shouldRedirect]);
-
-  if (!userIsLoggedIn && (isResolving || shouldRedirect)) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
-      </div>
-    );
-  }
 
   return <>{children}</>;
 }
