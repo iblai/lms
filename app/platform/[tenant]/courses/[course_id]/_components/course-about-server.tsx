@@ -1,4 +1,4 @@
-import { DEFAULT_OVERVIEW_PLACEHOLDER } from '@/utils/helpers';
+import { DEFAULT_OVERVIEW_PLACEHOLDER } from '@/utils/overview-placeholder';
 import type { CourseServerData } from '@/lib/utils/seo-data';
 
 /**
