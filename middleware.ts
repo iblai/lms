@@ -91,11 +91,14 @@ export function middleware(request: NextRequest) {
   // crawl. NOTE: if the route is force-dynamic, Next may still emit its own
   // Cache-Control on the page response and override this — verify on a deploy; the
   // durable fix is to make the route cacheable (drop force-dynamic / no-store).
-  if (ABOUT_PATH.test(request.nextUrl.pathname)) {
-    response.headers.set(
-      'Cache-Control',
-      'public, s-maxage=600, stale-while-revalidate=86400',
-    );
+  const pathname = request.nextUrl.pathname;
+  if (ABOUT_PATH.test(pathname)) {
+    response.headers.set('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=86400');
+  } else if (/^\/sitemap(\.xml|\/)/.test(pathname)) {
+    // The sitemap is generated live from the catalog; cache it at the CDN so
+    // crawls don't re-query the catalog on every fetch (new courses still show
+    // up within the window).
+    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
   }
 
   return response;

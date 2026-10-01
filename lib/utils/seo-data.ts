@@ -104,6 +104,54 @@ export const getCourseSeoData = cache(async (courseKey: string): Promise<EntityS
   }
 });
 
+export interface CourseSitemapEntry {
+  courseId: string;
+  lastModified?: string;
+}
+
+/**
+ * Enumerates a tenant's public courses for the sitemap via the public
+ * search/global catalog endpoint (no auth), paging until exhausted. Returns the
+ * literal course keys (the canonical URL form) with a stable last-modified proxy
+ * (course start date) so crawlers aren't told every URL changed on each fetch.
+ * Capped at the 50k single-sitemap limit.
+ */
+export const getTenantCourseEntries = cache(
+  async (tenant: string): Promise<CourseSitemapEntry[]> => {
+    const entries: CourseSitemapEntry[] = [];
+    const limit = 100;
+    const MAX = 50000;
+    let offset = 0;
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (entries.length < MAX) {
+        const url =
+          `${config.urls.dm()}/api/search/global/?content=courses&return_items=true` +
+          `&return_facet=false&tenant=${encodeURIComponent(tenant)}&limit=${limit}&offset=${offset}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) break;
+        const data = await res.json();
+        const results: unknown[] = Array.isArray(data?.results) ? data.results : [];
+        for (const r of results) {
+          const d = (r as { data?: Record<string, unknown> })?.data ?? {};
+          const courseId = typeof d.course_id === 'string' ? d.course_id : '';
+          if (!courseId) continue;
+          const startDate = (d.edx_data as { start_date?: unknown } | undefined)?.start_date;
+          entries.push({
+            courseId,
+            lastModified: typeof startDate === 'string' ? startDate : undefined,
+          });
+        }
+        if (!data?.next || results.length === 0) break;
+        offset += limit;
+      }
+    } catch (error) {
+      console.error('Failed to fetch tenant course entries for sitemap:', error);
+    }
+    return entries;
+  },
+);
+
 export interface CourseServerData {
   title: string;
   description: string;
