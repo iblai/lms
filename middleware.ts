@@ -62,6 +62,15 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Crawlable hub: the bare /platform/<tenant>/courses path has no page (404).
+  // 301 it to the tenant's discover page so the entity-list URL resolves.
+  const coursesHub = request.nextUrl.pathname.match(/^\/platform\/([^/]+)\/courses\/?$/);
+  if (coursesHub) {
+    const dest = request.nextUrl.clone();
+    dest.pathname = `/platform/${coursesHub[1]}/discover`;
+    return NextResponse.redirect(dest, 301);
+  }
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
   const partners = partnerHosts();
