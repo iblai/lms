@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.88.0](https://github.com/iblai/lms/compare/skills-v0.87.0...skills-v0.88.0) (2026-10-01)
+
+### Features
+
+* analytics monetization update ([b2d4606](https://github.com/iblai/lms/commit/b2d46062efc02e67fe913da739d090609ca37687))
+
+### Bug Fixes
+
+* dashboard enrolled courses image load very slow ([057bfbe](https://github.com/iblai/lms/commit/057bfbe26f21105f28ae6522cf73dedfe61578db))
+* dashboard enrolled courses image load very slow ([79a6e51](https://github.com/iblai/lms/commit/79a6e5156e833ca9d87c3f8396adc21abe689163))
+
 ## [0.87.0](https://github.com/iblai/lms/compare/skills-v0.86.0...skills-v0.87.0) (2026-09-28)
 
 ### Features
