@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-09-25",
+  "lastUpdated": "2026-10-01",
   "summary": {
-    "totalCheckpoints": 257,
-    "coveredCheckpoints": 257,
+    "totalCheckpoints": 263,
+    "coveredCheckpoints": 263,
     "percent": 100,
-    "totalJourneys": 36
+    "totalJourneys": 37
   },
   "journeys": [
     {
@@ -38,7 +38,7 @@
     },
     {
       "id": "onboarding-first-time-user",
-      "name": "Onboarding \u2014 First-Time User",
+      "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": [
         "app/start/page.tsx",
@@ -172,7 +172,7 @@
     },
     {
       "id": "course-content-tabs",
-      "name": "Course Content \u2014 Tab Navigation & Iframes",
+      "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
@@ -375,12 +375,12 @@
         },
         {
           "id": "tabs-34",
-          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
           "status": "covered"
         },
         {
           "id": "tabs-35",
-          "description": "Course content layout requests the signed-in user\u2019s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
+          "description": "Course content layout requests the signed-in user’s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
           "status": "covered"
         },
         {
@@ -446,7 +446,7 @@
     },
     {
       "id": "profile-skills",
-      "name": "Profile \u2014 Skills",
+      "name": "Profile — Skills",
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
@@ -484,7 +484,7 @@
     },
     {
       "id": "profile-credentials",
-      "name": "Profile \u2014 Credentials",
+      "name": "Profile — Credentials",
       "spec": "08-profile-credentials.spec.ts",
       "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
@@ -517,7 +517,7 @@
     },
     {
       "id": "profile-pathways",
-      "name": "Profile \u2014 Pathways",
+      "name": "Profile — Pathways",
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": [
         "app/profile/pathways/page.tsx",
@@ -553,7 +553,7 @@
     },
     {
       "id": "profile-programs",
-      "name": "Profile \u2014 Programs",
+      "name": "Profile — Programs",
       "spec": "10-profile-programs.spec.ts",
       "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
@@ -594,7 +594,7 @@
         },
         {
           "id": "prog-08",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates content",
+          "description": "Tab switching About → Courses → Settings updates content",
           "status": "covered"
         },
         {
@@ -611,7 +611,7 @@
     },
     {
       "id": "profile-courses",
-      "name": "Profile \u2014 Courses",
+      "name": "Profile — Courses",
       "spec": "11-profile-courses.spec.ts",
       "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
@@ -639,7 +639,7 @@
     },
     {
       "id": "profile-public",
-      "name": "Profile \u2014 Public",
+      "name": "Profile — Public",
       "spec": "12-profile-public.spec.ts",
       "sourceFiles": ["app/profile/public/page.tsx"],
       "checkpoints": [
@@ -880,7 +880,7 @@
     },
     {
       "id": "analytics-content",
-      "name": "Analytics Content \u2014 Courses & Programs",
+      "name": "Analytics Content — Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
       "sourceFiles": [
         "app/analytics/courses/page.tsx",
@@ -1094,7 +1094,7 @@
     },
     {
       "id": "navigation-navbar",
-      "name": "Navigation \u2014 NavBar & Sidebar",
+      "name": "Navigation — NavBar & Sidebar",
       "spec": "22-navigation-navbar.spec.ts",
       "sourceFiles": [
         "components/nav-bar.tsx",
@@ -1246,7 +1246,7 @@
     },
     {
       "id": "chat-embed",
-      "name": "Chat Embed \u2014 Mentor Widget",
+      "name": "Chat Embed — Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
       "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
@@ -1387,7 +1387,7 @@
     },
     {
       "id": "accessibility-wcag",
-      "name": "Accessibility \u2014 WCAG 2.1 AA",
+      "name": "Accessibility — WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
@@ -1451,7 +1451,7 @@
     },
     {
       "id": "course-access-guard-tenant-redirect",
-      "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
+      "name": "Course Access Guard — Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
       "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
       "checkpoints": [
@@ -1509,7 +1509,7 @@
         },
         {
           "id": "pdp-05",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates aria-selected and tab content",
+          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
           "status": "covered"
         },
         {
@@ -1635,14 +1635,14 @@
         },
         {
           "id": "useronb-04",
-          "description": "The member flow holds the onboarding route \u2014 a tenant with no form configured shows the notice instead of redirecting away",
+          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
           "status": "covered"
         }
       ]
     },
     {
       "id": "user-onboarding-agent-link",
-      "name": "User Onboarding \u2014 Per-Agent Links",
+      "name": "User Onboarding — Per-Agent Links",
       "spec": "36-user-onboarding-agent-link.spec.ts",
       "sourceFiles": [
         "app/platform/[tenant]/onboarding/[agentId]/page.tsx",
@@ -1704,6 +1704,54 @@
         {
           "id": "embed-04",
           "description": "The embed settles instead of re-navigating in an auth-handshake loop",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "product-tour",
+      "name": "Product Tour",
+      "spec": "38-product-tour.spec.ts",
+      "sourceFiles": [
+        "components/product-tour/product-tour.tsx",
+        "components/product-tour/tour-steps.ts",
+        "components/product-tour/tour-targets.ts",
+        "components/product-tour/tour-tooltip.tsx",
+        "components/product-tour/tour-runner.tsx",
+        "components/product-tour/use-tour-completion.ts",
+        "components/nav-bar.tsx",
+        "components/app-sidebar/index.tsx",
+        "app/_components/app-layout.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "tour-01",
+          "description": "User opens the app with ?tour=1 and the tour starts on the profile menu (1 of N, no Back)",
+          "status": "covered"
+        },
+        {
+          "id": "tour-02",
+          "description": "Next moves the tour to the search box, then to the sidebar Discover row",
+          "status": "covered"
+        },
+        {
+          "id": "tour-03",
+          "description": "Back returns to the previous step",
+          "status": "covered"
+        },
+        {
+          "id": "tour-04",
+          "description": "Admin/watcher reaches the account tools (sidebar footer) step last — skips for a learner",
+          "status": "covered"
+        },
+        {
+          "id": "tour-05",
+          "description": "Done finishes the tour, records it, and it does not start again on the next visit",
+          "status": "covered"
+        },
+        {
+          "id": "tour-06",
+          "description": "The close (X) button dismisses the tour and records it as skipped",
           "status": "covered"
         }
       ]
