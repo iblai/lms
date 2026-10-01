@@ -98,6 +98,7 @@ vi.mock('../../courses/use-recommended-courses', () => ({
 
 import { useDiscover } from '../use-discover';
 import { useUserEnrollments } from '../use-user-enrollments';
+import { useRecommendedCourses } from '../../courses/use-recommended-courses';
 
 /** Options the enrollments hook was last subscribed with. */
 const lastEnrollmentsArgs = () => vi.mocked(useUserEnrollments).mock.calls.at(-1)?.[0];
@@ -814,29 +815,86 @@ describe('useDiscover', () => {
     });
   });
 
+  describe('catalog contents search', () => {
+    const lastContentCall = () => contentCalls().at(-1);
+
+    it('runs in the catalog view', () => {
+      renderHook(() => useDiscover({}));
+      expect(lastContentCall()?.skip).toBe(false);
+    });
+
+    it.each([['Enrolled'], ['Recommended']])(
+      'is skipped in the %s view, whose cards come from the user endpoints',
+      (term) => {
+        const { result } = renderHook(() => useDiscover({ initialFacets: { enrollment: [term] } }));
+        expect(lastContentCall()?.skip).toBe(true);
+        // A skipped search must not hold the cards behind a loader.
+        expect(result.current.contentsLoading).toBe(false);
+        // The unfiltered facet probe still runs — it drives the empty states.
+        expect(facetCalls().at(-1)?.skip).toBe(false);
+      },
+    );
+
+    it('resumes when the user-scoped filter is switched off', () => {
+      const { result } = renderHook(() =>
+        useDiscover({ initialFacets: { enrollment: ['Enrolled'] } }),
+      );
+      act(() => {
+        result.current.handleSelectFacets('enrollment', 'Enrolled');
+      });
+      expect(lastContentCall()?.skip).toBe(false);
+    });
+  });
+
+  describe('recommendations', () => {
+    const lastRecommendationsArgs = () => vi.mocked(useRecommendedCourses).mock.calls.at(-1)?.[0];
+
+    it('load by default, for the card pills and the Access facet count', () => {
+      renderHook(() => useDiscover({}));
+      expect(lastRecommendationsArgs()).toMatchObject({ skip: false });
+    });
+
+    it('stay idle when the caller shows no recommendation badges', () => {
+      renderHook(() =>
+        useDiscover({ recommendationBadges: false, initialFacets: { enrollment: ['Enrolled'] } }),
+      );
+      expect(lastRecommendationsArgs()).toMatchObject({ skip: true });
+    });
+
+    it('still load for the Recommended view, whose cards they are', () => {
+      renderHook(() =>
+        useDiscover({
+          recommendationBadges: false,
+          initialFacets: { enrollment: ['Recommended'] },
+        }),
+      );
+      expect(lastRecommendationsArgs()).toMatchObject({ skip: false });
+    });
+  });
+
   describe('enrollment endpoints', () => {
     it('stays idle in the catalog view — search results carry is_enrolled', () => {
       renderHook(() => useDiscover({}));
-      expect(lastEnrollmentsArgs()).toMatchObject({ skip: true, withCardImages: false });
+      expect(lastEnrollmentsArgs()).toMatchObject({ skip: true });
     });
 
-    it('loads enrollments, with card images, for the Enrolled view', async () => {
+    it('loads enrollments for the Enrolled view', async () => {
       const { result } = renderHook(() => useDiscover({}));
       act(() => {
         result.current.handleSelectFacets('enrollment', 'Enrolled');
       });
       await waitFor(() => {
-        expect(lastEnrollmentsArgs()).toMatchObject({ skip: false, withCardImages: true });
+        expect(lastEnrollmentsArgs()).toMatchObject({ skip: false });
       });
     });
 
-    it('loads enrollments, without card images, for the Recommended view', async () => {
+    it('loads enrollments for the Recommended view', async () => {
       const { result } = renderHook(() => useDiscover({}));
       act(() => {
         result.current.handleSelectFacets('enrollment', 'Recommended');
       });
       await waitFor(() => {
-        expect(lastEnrollmentsArgs()).toMatchObject({ skip: false, withCardImages: false });
+        expect(lastEnrollmentsArgs()).toMatchObject({ skip: false });
       });
     });
 

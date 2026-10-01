@@ -118,7 +118,11 @@ describe('HomeDiscoverRail', () => {
 
     it('requests the catalog with the rail limit and no seeded filter', () => {
       render(<HomeDiscoverRail />);
-      expect(mockUseDiscover).toHaveBeenCalledWith({ limit: 16, initialFacets: undefined });
+      expect(mockUseDiscover).toHaveBeenCalledWith({
+        limit: 16,
+        initialFacets: undefined,
+        recommendationBadges: true,
+      });
     });
 
     it('links "See More" to the unfiltered tenant discover page', () => {
@@ -177,6 +181,7 @@ describe('HomeDiscoverRail', () => {
       render(<HomeDiscoverRail />);
       expect(mockUseDiscover).toHaveBeenCalledWith({
         limit: 16,
+        recommendationBadges: false,
         initialFacets: { enrollment: ['Enrolled'] },
       });
     });
@@ -248,6 +253,7 @@ describe('HomeDiscoverRail', () => {
       render(<HomeDiscoverRail />);
       expect(mockUseDiscover).toHaveBeenCalledWith({
         limit: 16,
+        recommendationBadges: true,
         initialFacets: { enrollment: ['Recommended'] },
       });
     });
@@ -296,7 +302,11 @@ describe('HomeDiscoverRail', () => {
         isLoading: false,
       } as any);
       render(<HomeDiscoverRail />);
-      expect(mockUseDiscover).toHaveBeenCalledWith({ limit: 16, initialFacets: undefined });
+      expect(mockUseDiscover).toHaveBeenCalledWith({
+        limit: 16,
+        initialFacets: undefined,
+        recommendationBadges: true,
+      });
       expect(screen.getByRole('heading', { name: 'Explore' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /See More/ })).toHaveAttribute(
         'href',
@@ -310,7 +320,11 @@ describe('HomeDiscoverRail', () => {
         isLoading: false,
       } as any);
       render(<HomeDiscoverRail />);
-      expect(mockUseDiscover).toHaveBeenCalledWith({ limit: 16, initialFacets: undefined });
+      expect(mockUseDiscover).toHaveBeenCalledWith({
+        limit: 16,
+        initialFacets: undefined,
+        recommendationBadges: true,
+      });
       expect(screen.getByRole('heading', { name: 'Explore' })).toBeInTheDocument();
     });
 
@@ -318,7 +332,11 @@ describe('HomeDiscoverRail', () => {
       setDisplaySetting('enrolled');
       vi.mocked(isLoggedIn).mockReturnValue(false);
       render(<HomeDiscoverRail />);
-      expect(mockUseDiscover).toHaveBeenCalledWith({ limit: 16, initialFacets: undefined });
+      expect(mockUseDiscover).toHaveBeenCalledWith({
+        limit: 16,
+        initialFacets: undefined,
+        recommendationBadges: true,
+      });
     });
 
     it('holds on skeletons until the setting has loaded, so the mode is settled before mount', () => {
@@ -330,7 +348,11 @@ describe('HomeDiscoverRail', () => {
 
     it('switches mode when the setting changes, with no page reload', () => {
       const { rerender } = render(<HomeDiscoverRail />);
-      expect(mockUseDiscover).toHaveBeenLastCalledWith({ limit: 16, initialFacets: undefined });
+      expect(mockUseDiscover).toHaveBeenLastCalledWith({
+        limit: 16,
+        initialFacets: undefined,
+        recommendationBadges: true,
+      });
       expect(screen.getByRole('heading', { name: 'Explore' })).toBeInTheDocument();
 
       // The admin saves a new value; `updateTenantMetadata` invalidates the
@@ -342,6 +364,7 @@ describe('HomeDiscoverRail', () => {
       // Re-seeded, which only happens on a fresh mount of the inner rail.
       expect(mockUseDiscover).toHaveBeenLastCalledWith({
         limit: 16,
+        recommendationBadges: true,
         initialFacets: { enrollment: ['Recommended'] },
       });
       expect(screen.getByRole('heading', { name: 'Recommended for You' })).toBeInTheDocument();

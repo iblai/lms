@@ -277,8 +277,7 @@ vi.mock('@/hoc', () => ({
   checkRbacPermission: mockCheckRbacPermission,
 }));
 
-// Mock config — layout reads studioUrl for the Authoring tab; LessonCompletedDialog
-// (rendered inside the layout) checks `lesson.completed` frames against the mentor origin.
+// Mock config — layout reads studioUrl for the Authoring tab.
 vi.mock('@/lib/config', () => ({
   config: {
     urls: {
@@ -2367,7 +2366,6 @@ describe('CourseContentLayout', () => {
   });
 
   describe('agent-based completion popup (tenant gate)', () => {
-    const MENTOR_ORIGIN = 'https://mentor.example.com';
     const completedFrame = {
       type: 'lesson.completed',
       course_id: 'course-v1:test+course+2024',
@@ -2376,11 +2374,10 @@ describe('CourseContentLayout', () => {
       display_name: 'First Unit',
     };
 
-    // jsdom pins `event.origin` to '' on dispatched MessageEvents, so the mentor
-    // origin has to be forced on the instance for the dialog's allow-list.
+    // The dialog accepts `lesson.completed` from any origin, so jsdom's '' on a
+    // dispatched MessageEvent needs no override here.
     const postCompletionFromMentor = async () => {
       const event = new MessageEvent('message', { data: completedFrame });
-      Object.defineProperty(event, 'origin', { value: MENTOR_ORIGIN });
       await act(async () => {
         window.dispatchEvent(event);
         // The dialog holds the completion back before opening.

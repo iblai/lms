@@ -30,8 +30,15 @@ const RECOMMENDATIONS_LIMIT = 20;
 export const useDiscover = ({
   limit = 12,
   initialFacets,
+  recommendationBadges = true,
 }: {
   limit?: number;
+  /**
+   * Load recommendations even while the Recommended filter is off, to pin
+   * "Recommended" pills on the cards and count the Access facet. Callers
+   * that show neither can turn it off to save the request.
+   */
+  recommendationBadges?: boolean;
   /**
    * Deep-linked facets (q / content / enrollment) known at mount time.
    * Seeding them here — instead of only via an effect after mount — lets
@@ -47,18 +54,6 @@ export const useDiscover = ({
     org: tenant,
   });
   const recommendationsEnabled = isUserLoggedIn && !isRecommendedTabHidden();
-  const { recommendedCourses, isLoading: recommendationsLoading } = useRecommendedCourses({
-    limit: RECOMMENDATIONS_LIMIT,
-    forceLimit: true,
-    tenant,
-  });
-  const recommendedIds = useMemo(
-    () =>
-      new Set(
-        recommendedCourses.map((course) => course.data?.course_id).filter(Boolean) as string[],
-      ),
-    [recommendedCourses],
-  );
 
   const [facets, setFacets] = useState<CourseFacet[]>([]);
   const [filteredFacets, setFilteredFacets] = useState<CourseFacet[]>([]);
@@ -83,14 +78,29 @@ export const useDiscover = ({
     recommendationsEnabled &&
     !!selectedFacets?.[ENROLLMENT_FACET_SLUG]?.includes(RECOMMENDED_FACET_TERM);
 
+  /** Cards come from the user's own endpoints, not the catalog search. */
+  const userContentOnly = enrolledOnly || recommendedOnly;
+
+  const { recommendedCourses, isLoading: recommendationsLoading } = useRecommendedCourses({
+    limit: RECOMMENDATIONS_LIMIT,
+    forceLimit: true,
+    tenant,
+    skip: !recommendedOnly && !recommendationBadges,
+  });
+  const recommendedIds = useMemo(
+    () =>
+      new Set(
+        recommendedCourses.map((course) => course.data?.course_id).filter(Boolean) as string[],
+      ),
+    [recommendedCourses],
+  );
+
   // Catalog search results carry their own `is_enrolled` flag and course
-  // metadata (`edx_data`), so the enrollment endpoints — and the per-course
-  // metadata lookups for enrolled card images — only run for the views that
-  // list the user's own content.
+  // metadata (`edx_data`), so the enrollment endpoints only run for the
+  // views that list the user's own content.
   const { enrolledIds, enrolledCards, enrolledTotal, enrollmentsLoading } = useUserEnrollments({
     tenant,
-    skip: !enrolledOnly && !recommendedOnly,
-    withCardImages: enrolledOnly,
+    skip: !userContentOnly,
   });
   // The Enrolled count is unknown until that view is first opened; once
   // known, keep showing it after the filter is switched back off.
@@ -219,9 +229,11 @@ export const useDiscover = ({
   // search is tenant-scoped, and fetching earlier would fire a throwaway
   // request under the wrong cache key.
   const searchesSkipped = metadataLoading;
+  // The user-scoped views render their cards from the user's endpoints,
+  // so the catalog page search would be a throwaway request there.
   const contentsQuery = useGlobalCatalogQuery({
     params: debouncedContentSearchParams,
-    skip: searchesSkipped,
+    skip: searchesSkipped || userContentOnly,
   });
   const facetsQuery = useGlobalCatalogQuery({
     params: facetSearchParams,
@@ -231,7 +243,7 @@ export const useDiscover = ({
   const contents = (contentsQuery.data?.results ?? []) as unknown as DiscoverContent[];
   /** True only while there is nothing to render yet — cached payloads
    * display instantly and background refreshes never re-trigger it. */
-  const contentsLoading = contentsQuery.isLoading;
+  const contentsLoading = !userContentOnly && contentsQuery.isLoading;
   const facetsLoading = facetsQuery.isLoading;
   const isError = contentsQuery.isError || facetsQuery.isError;
   const pagination = contentsQuery.pagination;
