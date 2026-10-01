@@ -22,8 +22,11 @@ async function resolveCourseSeo(params: Promise<CourseParams>) {
   const host = headersList.get('host') || headersList.get('x-forwarded-host');
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   const baseUrl = getSiteUrl(host, protocol);
+  // Canonical uses the literal (decoded) course key — the same form the app's
+  // internal links use (/courses/${course_id}); the percent-encoded form is
+  // 301'd to this one in middleware so crawlers see a single URL.
   const canonicalUrl = baseUrl
-    ? `${baseUrl}/platform/${tenant}/courses/${encodeURIComponent(courseKey)}`
+    ? `${baseUrl}/platform/${tenant}/courses/${courseKey}`
     : undefined;
 
   const [course, seoFlags] = await Promise.all([

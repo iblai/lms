@@ -44,7 +44,10 @@ export function CourseSidebar({ course }: { course: CourseServerData }) {
         {startDate?.isValid() && (
           <div className="flex items-center text-gray-600">
             <Calendar className="mr-3 h-5 w-5 text-amber-500" />
-            <span>{startDate.format('MMM D, YYYY')}</span>
+            {/* Machine-readable freshness signal for search/AI crawlers. */}
+            <time dateTime={startDate.format('YYYY-MM-DD')}>
+              {startDate.format('MMM D, YYYY')}
+            </time>
           </div>
         )}
       </div>

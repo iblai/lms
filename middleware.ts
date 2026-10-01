@@ -1,5 +1,8 @@
-import type { NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { applyCsp } from '@iblai/iblai-js/security/next';
+
+// Public entity "about" pages: /platform/<tenant>/{courses|programs|pathways}/<id>.
+const ABOUT_PATH = /^\/platform\/[^/]+\/(courses|programs|pathways)\/[^/]+\/?$/;
 
 // IBL infrastructure on non-`.app` domains. Production runs on `*.iblai.app`
 // (covered by the SDK's built-in allowlist), but staging and some environments
@@ -40,6 +43,25 @@ const assetCdnOrigin = (): string[] => {
 // branch on the current route (used to fetch the public platform-membership
 // config server-side before rendering `Providers`).
 export function middleware(request: NextRequest) {
+  // Canonicalize entity "about" URLs: 301 the percent-encoded course/program/
+  // pathway id (course-v1%3A…%2B…) to the literal form the app links to and
+  // declares canonical (course-v1:…+…). Crawlers compare URLs as strings, so
+  // serving both forms at 200 is duplicate content.
+  const rawPath = new URL(request.url).pathname; // preserves %-encoding
+  if (rawPath.includes('%')) {
+    let decodedPath = rawPath;
+    try {
+      decodedPath = decodeURIComponent(rawPath);
+    } catch {
+      decodedPath = rawPath;
+    }
+    if (decodedPath !== rawPath && ABOUT_PATH.test(decodedPath)) {
+      const dest = new URL(request.url);
+      dest.pathname = decodedPath;
+      return NextResponse.redirect(dest, 301);
+    }
+  }
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
   const partners = partnerHosts();
@@ -54,7 +76,7 @@ export function middleware(request: NextRequest) {
   // @2.x ENFORCES by default; local dev is report-only via .env.development
   // (CSP_MODE=report-only). applyCsp stamps the nonce onto these same request
   // headers — preserving x-pathname — and returns the response with the header.
-  return applyCsp(request, {
+  const response = applyCsp(request, {
     requestHeaders,
     // CDN-hosted CSS + fonts are cross-origin; style-src/font-src don't get the
     // strict-dynamic/`https:` fallback, so allow the CDN origin explicitly.
@@ -63,6 +85,20 @@ export function middleware(request: NextRequest) {
     connectSrc: [...IBL_ALT_HTTP, ...IBL_ALT_WS, ...partners, ...partnerWs, ...assetCdn],
     frameSrc: [...IBL_ALT_HTTP, ...partners], // edX + partner content in iframes
   });
+
+  // Public about pages are safe to cache at the CDN — make them cacheable instead
+  // of the dynamic default (private, no-store), which blocks CDN caching and slows
+  // crawl. NOTE: if the route is force-dynamic, Next may still emit its own
+  // Cache-Control on the page response and override this — verify on a deploy; the
+  // durable fix is to make the route cacheable (drop force-dynamic / no-store).
+  if (ABOUT_PATH.test(request.nextUrl.pathname)) {
+    response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=600, stale-while-revalidate=86400',
+    );
+  }
+
+  return response;
 }
 
 export const config = {
