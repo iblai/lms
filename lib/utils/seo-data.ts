@@ -103,3 +103,103 @@ export const getCourseSeoData = cache(async (courseKey: string): Promise<EntityS
     return null;
   }
 });
+
+export interface CourseSitemapEntry {
+  courseId: string;
+  lastModified?: string;
+}
+
+/**
+ * Enumerates a tenant's public courses for the sitemap via the public
+ * search/global catalog endpoint (no auth), paging until exhausted. Returns the
+ * literal course keys (the canonical URL form) with a stable last-modified proxy
+ * (course start date) so crawlers aren't told every URL changed on each fetch.
+ * Capped at the 50k single-sitemap limit.
+ */
+export const getTenantCourseEntries = cache(
+  async (tenant: string): Promise<CourseSitemapEntry[]> => {
+    const entries: CourseSitemapEntry[] = [];
+    const limit = 100;
+    const MAX = 50000;
+    let offset = 0;
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (entries.length < MAX) {
+        const url =
+          `${config.urls.dm()}/api/search/global/?content=courses&return_items=true` +
+          `&return_facet=false&tenant=${encodeURIComponent(tenant)}&limit=${limit}&offset=${offset}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) break;
+        const data = await res.json();
+        const results: unknown[] = Array.isArray(data?.results) ? data.results : [];
+        for (const r of results) {
+          const d = (r as { data?: Record<string, unknown> })?.data ?? {};
+          const courseId = typeof d.course_id === 'string' ? d.course_id : '';
+          if (!courseId) continue;
+          const startDate = (d.edx_data as { start_date?: unknown } | undefined)?.start_date;
+          entries.push({
+            courseId,
+            lastModified: typeof startDate === 'string' ? startDate : undefined,
+          });
+        }
+        if (!data?.next || results.length === 0) break;
+        offset += limit;
+      }
+    } catch (error) {
+      console.error('Failed to fetch tenant course entries for sitemap:', error);
+    }
+    return entries;
+  },
+);
+
+export interface CourseServerData {
+  title: string;
+  description: string;
+  overview: string;
+  image?: string;
+  price?: string;
+  language?: string;
+  duration?: string;
+  startDate?: string;
+  org?: string;
+}
+
+const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
+
+/**
+ * Fetches the full public course record for server-rendering the page body
+ * (title/description/overview HTML/image/facts) so crawlers that don't execute
+ * JS still see the real content. Same public course_metadata endpoint as
+ * getCourseSeoData; unlike that helper it keeps the raw `overview` HTML and the
+ * display facts. Returns null on any failure so the page can fall back to the
+ * client-rendered experience.
+ */
+export const getCourseServerData = cache(
+  async (courseKey: string): Promise<CourseServerData | null> => {
+    try {
+      const url = `${config.urls.lms()}/api/ibl/v1/course_metadata?course_key=${encodeURIComponent(
+        courseKey,
+      )}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const edx = data?.edx_data ?? data;
+      const title = asString(edx?.title) || asString(edx?.display_name) || asString(data?.name);
+      if (!title) return null;
+      return {
+        title,
+        description: asString(edx?.description) || asString(edx?.short_description),
+        overview: asString(edx?.overview),
+        image: resolveLmsImage(edx?.course_image_asset_path || edx?.banner_image_asset_path),
+        price: asString(edx?.course_price) || undefined,
+        language: asString(edx?.language) || undefined,
+        duration: asString(edx?.duration) || undefined,
+        startDate: asString(edx?.start_date) || undefined,
+        org: asString(edx?.org) || undefined,
+      };
+    } catch (error) {
+      console.error('Failed to fetch course server data:', error);
+      return null;
+    }
+  },
+);
