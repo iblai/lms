@@ -245,6 +245,14 @@ describe('NavBar', () => {
     expect(bell).toHaveAttribute('data-user', 'test-user');
   });
 
+  it('marks the profile wrapper as the product-tour target', () => {
+    render(<NavBar />);
+    expect(screen.getByTestId('user-profile-button').parentElement).toHaveAttribute(
+      'data-tour',
+      'profile',
+    );
+  });
+
   describe('search', () => {
     it('redirects to the discover page with the query', () => {
       render(<NavBar />);

@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-09-25 | 257 checkpoints | 36 journeys | 100% covered
+> Last updated: 2026-10-01 | 263 checkpoints | 37 journeys | 100% covered
 
 ## How This Works
 
@@ -529,6 +529,25 @@ not error — it spins. These checkpoints assert what an outside observer can di
 - [x] The embed reaches the mentor app inside the iframe rather than a spinner or an error
 - [x] The embed runs on the same tenant as the host, not a stale one
 - [x] The embed settles instead of re-navigating in an auth-handshake loop
+
+---
+
+## Journey 38: Product Tour (6 checkpoints) — `journeys/38-product-tour.spec.ts`
+
+**Source files:** `components/product-tour/product-tour.tsx`, `components/product-tour/tour-steps.ts`, `components/product-tour/tour-targets.ts`, `components/product-tour/tour-tooltip.tsx`, `components/product-tour/tour-runner.tsx`, `components/product-tour/use-tour-completion.ts`, `components/nav-bar.tsx`, `components/app-sidebar/index.tsx`, `app/_components/app-layout.tsx`
+
+First-visit react-joyride tour over the app chrome: profile menu → search box → sidebar Discover row →
+(admins / watchers) the account / management tools in the sidebar footer. It runs once per user
+and is skipped on mobile and on the onboarding, start and course-content routes. Whether it was seen is
+stored on the user's metadata (`public_metadata["skills-product-tour"]`); `auth.setup.ts` marks it there
+through the same endpoint so it never blocks other journeys; `?tour=1` replays it.
+
+- [x] User opens the app with ?tour=1 and the tour starts on the profile menu (1 of N, no Back)
+- [x] Next moves the tour to the search box, then to the sidebar Discover row
+- [x] Back returns to the previous step
+- [x] Admin/watcher reaches the account tools (sidebar footer) step last — skips for a learner
+- [x] Done finishes the tour, saves it to the user metadata (public_metadata.skills-product-tour), and it does not start again on the next visit
+- [x] The close (X) button dismisses the tour and saves it to the user metadata as skipped
 
 ---
 

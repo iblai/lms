@@ -297,6 +297,14 @@ describe('AppSidebar', () => {
     expect(expandedRow('courses')).toHaveTextContent('Courses');
   });
 
+  it('marks the Discover row as the product-tour target in both rails', () => {
+    render(<AppSidebar />);
+    expect(expandedRow('discover')).toHaveAttribute('data-tour', 'discover');
+    expect(collapsedRow('discover')).toHaveAttribute('data-tour', 'discover');
+    expect(expandedRow('home')).not.toHaveAttribute('data-tour');
+    expect(collapsedRow('courses')).not.toHaveAttribute('data-tour');
+  });
+
   describe('navigation clicks', () => {
     it('routes Home through the router and fires onAfterNav', () => {
       render(<AppSidebar />);
