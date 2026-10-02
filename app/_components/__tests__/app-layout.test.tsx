@@ -96,6 +96,12 @@ vi.mock('@/components/app-sidebar', () => ({
   AppSidebar: () => <div data-testid="app-sidebar" />,
 }));
 
+// Mock the product tour — it reads the sidebar context, the RBAC store and
+// the role query, all out of scope here; AppLayout only decides when to mount it.
+vi.mock('@/components/product-tour', () => ({
+  ProductTour: () => <div data-testid="product-tour" />,
+}));
+
 import AppLayout from '../app-layout';
 import { usePathname } from 'next/navigation';
 import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
@@ -184,6 +190,29 @@ describe('AppLayout', () => {
 
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
+  });
+
+  it('mounts the product tour next to the sidebar for logged-in users', () => {
+    vi.mocked(usePathname).mockReturnValue('/platform/test-tenant/home');
+    render(<AppLayout>Content</AppLayout>);
+    expect(screen.getByTestId('product-tour')).toBeInTheDocument();
+  });
+
+  it('does not mount the product tour when logged out', async () => {
+    const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+    vi.mocked(isLoggedIn).mockReturnValue(false);
+    try {
+      render(<AppLayout>Content</AppLayout>);
+      expect(screen.queryByTestId('product-tour')).not.toBeInTheDocument();
+    } finally {
+      vi.mocked(isLoggedIn).mockReturnValue(true);
+    }
+  });
+
+  it('does not mount the product tour on non-auth pages', () => {
+    vi.mocked(usePathname).mockReturnValue('/platform/test-tenant/start');
+    render(<AppLayout>Content</AppLayout>);
+    expect(screen.queryByTestId('product-tour')).not.toBeInTheDocument();
   });
 
   it('renders children within auth layout', () => {

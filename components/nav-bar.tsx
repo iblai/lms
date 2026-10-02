@@ -31,6 +31,7 @@ import {
 } from '@/constants/global';
 // import { resolveOnboardingFlow } from '@/lib/onboarding-flow';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 // import { useIsAdmin } from '@/utils/localstorage';
 
 /** Shared navbar page-title rendering (course / program / catalog). */
@@ -400,7 +401,7 @@ export function NavBar() {
         }
         profile={
           isUserLoggedIn ? (
-            <div className="relative">
+            <div className="relative" data-tour={TOUR_TARGET.profile}>
               <UserProfileButton />
             </div>
           ) : undefined

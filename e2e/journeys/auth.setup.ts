@@ -1,5 +1,6 @@
 import { test as setup, expect } from '@playwright/test';
 import path from 'path';
+import { markProductTourSeen } from '../utils/product-tour';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 const AUTH_HOST = process.env.AUTH_HOST || '';
@@ -61,6 +62,10 @@ setup('authenticate', async ({ page }, testInfo) => {
       timeout: 120_000,
     });
   }
+
+  // The first-visit product tour would otherwise start, and block the page,
+  // in every journey. Journey 38 replays it with `?tour=1`.
+  await markProductTourSeen(page);
 
   // Save storage state
   await page.context().storageState({ path: storageStatePath });

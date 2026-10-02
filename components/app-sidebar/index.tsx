@@ -55,6 +55,7 @@ import { checkRbacPermission } from '@/hoc';
 import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 import { getUserEmail, getUserName } from '@/utils/helpers';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
 import { ProfileCredentialsContent } from '@/components/profile/profile-credentials-content';
 import { ProfileSkillsContent } from '@/components/profile/profile-skills-content';
@@ -107,6 +108,7 @@ function FlatNavRow({
   activeOverride,
   onClick,
   onAfterNav,
+  tourId,
 }: {
   collapsed: boolean;
   icon: PlatformSidebarNavIcon;
@@ -120,6 +122,8 @@ function FlatNavRow({
   activeOverride?: boolean;
   onClick?: () => void;
   onAfterNav?: () => void;
+  /** Marks the row as a product-tour target (`data-tour`). */
+  tourId?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -158,6 +162,7 @@ function FlatNavRow({
             active && 'bg-[#eef6fc]',
           )}
           aria-label={label}
+          data-tour={tourId}
         >
           <Icon
             className="size-4 shrink-0"
@@ -177,6 +182,7 @@ function FlatNavRow({
         'flex h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 text-left text-[14px] font-normal transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#cfe8fa] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fafafa]',
         active ? 'bg-[#eef6fc] text-[#1e40af]' : 'text-[#5f5f61] hover:bg-[#f4f4f4]',
       )}
+      data-tour={tourId}
     >
       <Icon
         className="size-4 shrink-0"
@@ -307,7 +313,7 @@ export function AppSidebar() {
       icon: PlatformSidebarNavIcon,
       label: string,
       href: string,
-      opts?: { exact?: boolean; activeOverride?: boolean },
+      opts?: { exact?: boolean; activeOverride?: boolean; tourId?: string },
     ): PlatformSidebarSectionConfig => ({
       type: 'custom',
       id,
@@ -319,6 +325,7 @@ export function AppSidebar() {
           href={href}
           exact={opts?.exact}
           activeOverride={opts?.activeOverride}
+          tourId={opts?.tourId}
           onAfterNav={ctx.onAfterNav}
         />
       ),
@@ -366,6 +373,7 @@ export function AppSidebar() {
       list.push(
         flat('discover', Compass, 'Discover', catalogBase, {
           activeOverride: onCatalogPage && !catalogEnrolled,
+          tourId: TOUR_TARGET.discover,
         }),
       );
     }

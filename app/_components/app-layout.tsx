@@ -1,6 +1,7 @@
 import { Footer as FooterBase } from '@/components/footer';
 import { NavBar as NavBarBase } from '@/components/nav-bar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { ProductTour } from '@/components/product-tour';
 import { isNonAuthPathname } from '@/constants/global';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -89,6 +90,9 @@ export default function AppLayout({ children }: { children: any }) {
             overlaying it. */}
         <SidebarProvider defaultOpen={false} className="min-h-0 flex-1">
           {userIsLoggedIn && <AppSidebar />}
+          {/* First-visit product tour (react-joyride). Inside the SidebarProvider
+              so it can read the sidebar's own mobile state. */}
+          {userIsLoggedIn && <ProductTour />}
           <SidebarInset
             asChild
             className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white"
