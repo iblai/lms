@@ -8,8 +8,10 @@ export {
 export { buildTourSteps, type TourStep, type TourStepId, type TourViewer } from './tour-steps';
 export {
   PRODUCT_TOUR_VERSION,
-  productTourStorageKey,
+  productTourMetadataKey,
+  readTourRecord,
   useTourCompletion,
+  type ProductTourRecord,
   type TourOutcome,
 } from './use-tour-completion';
 export { TOUR_TOOLTIP_TEST_ID, TOUR_PROGRESS_TEST_ID } from './tour-tooltip';

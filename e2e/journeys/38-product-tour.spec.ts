@@ -1,14 +1,15 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
-import { readTourOutcome } from '../utils/product-tour';
+import { saveTourOutcome } from '../utils/product-tour';
 
 /**
  * Journey 38: Product Tour
  *
  * First-visit react-joyride tour over the app chrome: the profile menu, the
  * search box, the sidebar's Discover row and, for admins and watchers, the
- * account / management tools in the sidebar footer. The auth setup marks the
- * tour as seen for the test user, so each checkpoint replays it with `?tour=1`.
+ * account / management tools in the sidebar footer. Whether it was seen is
+ * stored on the user's metadata; the auth setup marks it there for the test
+ * user, so each checkpoint replays the tour with `?tour=1`.
  */
 
 const tooltip = (page: Page) => page.getByTestId('product-tour-tooltip');
@@ -101,15 +102,17 @@ test.describe('Journey 38: Product Tour', () => {
     await expect(tip.getByRole('button', { name: 'Skip tour' })).toHaveCount(0);
   });
 
-  test('CP-5: user finishes the tour and it stays dismissed on the next visit', async ({
+  test('CP-5: user finishes the tour, it is saved to the user metadata, and it stays dismissed on the next visit', async ({
     page,
   }) => {
     const tip = await openTour(page);
     await goToLastStep(page);
 
-    await tip.getByRole('button', { name: 'Done' }).click();
+    const saved = await saveTourOutcome(page, () =>
+      tip.getByRole('button', { name: 'Done' }).click(),
+    );
     await expect(tip).toHaveCount(0);
-    expect(await readTourOutcome(page)).toBe('finished');
+    expect(saved?.status).toBe('finished');
 
     // Without ?tour=1 the finished tour must not come back.
     await gotoTenantPage(page, 'home', { timeout: 120_000 });
@@ -118,11 +121,15 @@ test.describe('Journey 38: Product Tour', () => {
     await expect(tooltip(page)).toHaveCount(0);
   });
 
-  test('CP-6: user closes the tour with the X and it is recorded as skipped', async ({ page }) => {
+  test('CP-6: user closes the tour with the X and it is saved to the user metadata as skipped', async ({
+    page,
+  }) => {
     const tip = await openTour(page);
 
-    await tip.getByRole('button', { name: 'Close tour' }).click();
+    const saved = await saveTourOutcome(page, () =>
+      tip.getByRole('button', { name: 'Close tour' }).click(),
+    );
     await expect(tip).toHaveCount(0);
-    expect(await readTourOutcome(page)).toBe('skipped');
+    expect(saved?.status).toBe('skipped');
   });
 });

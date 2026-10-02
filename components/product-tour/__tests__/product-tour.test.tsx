@@ -13,6 +13,14 @@ const state = vi.hoisted(() => ({
     isLoading: false,
   },
   rbac: [] as string[],
+  tour: {
+    completed: false,
+    outcome: null as string | null,
+    isLoading: false,
+    isError: false,
+    markCompleted: vi.fn(),
+  },
+  tourUsername: undefined as unknown,
 }));
 
 vi.mock('next/navigation', () => ({
@@ -78,6 +86,13 @@ vi.mock('../tour-steps', () => ({
   filterVisibleTourSteps: (list: unknown[]) => steps.filter(list),
 }));
 
+vi.mock('../use-tour-completion', () => ({
+  useTourCompletion: (username: unknown) => {
+    state.tourUsername = username;
+    return state.tour;
+  },
+}));
+
 vi.mock('../tour-runner', () => ({
   TourRunner: ({ steps: list, run, onEnd }: any) => (
     <div
@@ -98,10 +113,8 @@ import {
   TOUR_START_MAX_ATTEMPTS,
   TOUR_START_RETRY_MS,
 } from '../product-tour';
-import { productTourStorageKey } from '../use-tour-completion';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
-
-const STORAGE_KEY = productTourStorageKey('test-user');
+import { getUserName } from '@/utils/helpers';
 
 async function advance(ms: number) {
   await act(async () => {
@@ -154,13 +167,20 @@ describe('isTourExcludedPath', () => {
 describe('ProductTour', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    window.localStorage.clear();
     state.pathname = '/platform/test-tenant/home';
     state.search = '';
     state.isMobile = false;
     state.metadata = { metadata: {}, metadataLoaded: true };
     state.role = { data: { is_platform_admin: false }, isLoading: false };
     state.rbac = [];
+    state.tour = {
+      completed: false,
+      outcome: null,
+      isLoading: false,
+      isError: false,
+      markCompleted: vi.fn(),
+    };
+    vi.mocked(getUserName).mockReturnValue('test-user');
     steps.build.mockReset().mockReturnValue(steps.all);
     steps.filter.mockReset().mockImplementation((list) => list);
     vi.mocked(isDiscoverEnabled).mockReturnValue(true);
@@ -184,6 +204,7 @@ describe('ProductTour', () => {
       viewer: { isAdmin: false, isWatcher: false },
       discoverEnabled: true,
     });
+    expect(state.tourUsername).toBe('test-user');
   });
 
   it('hands the admin, watcher, and Discover signals to the step builder', async () => {
@@ -232,7 +253,8 @@ describe('ProductTour', () => {
   });
 
   it.each(['finished', 'skipped'])('does not run again once the user %s it', async (outcome) => {
-    window.localStorage.setItem(STORAGE_KEY, outcome);
+    state.tour.completed = true;
+    state.tour.outcome = outcome;
     render(<ProductTour />);
 
     await advance(settleTime);
@@ -242,7 +264,8 @@ describe('ProductTour', () => {
   });
 
   it('replays with ?tour=1 even after it was completed', async () => {
-    window.localStorage.setItem(STORAGE_KEY, 'finished');
+    state.tour.completed = true;
+    state.tour.outcome = 'finished';
     state.search = 'tour=1';
     render(<ProductTour />);
 
@@ -250,7 +273,8 @@ describe('ProductTour', () => {
   });
 
   it('ignores other values of the tour param', async () => {
-    window.localStorage.setItem(STORAGE_KEY, 'finished');
+    state.tour.completed = true;
+    state.tour.outcome = 'finished';
     state.search = 'tour=0';
     render(<ProductTour />);
 
@@ -298,6 +322,35 @@ describe('ProductTour', () => {
     expect(await startTour()).toBeInTheDocument();
   });
 
+  it('waits for the user metadata (tour state) before starting', async () => {
+    state.tour.isLoading = true;
+    const { rerender } = render(<ProductTour />);
+    await advance(settleTime);
+    expect(steps.build).not.toHaveBeenCalled();
+
+    state.tour = { ...state.tour, isLoading: false };
+    rerender(<ProductTour />);
+    expect(await startTour()).toBeInTheDocument();
+  });
+
+  it('stays quiet when the metadata could not be read, unless a replay is forced', async () => {
+    state.tour.isError = true;
+    const { rerender } = render(<ProductTour />);
+    await advance(settleTime);
+    expect(steps.build).not.toHaveBeenCalled();
+
+    state.search = 'tour=1';
+    rerender(<ProductTour />);
+    expect(await startTour()).toBeInTheDocument();
+  });
+
+  it('stays quiet without a logged-in username', async () => {
+    vi.mocked(getUserName).mockReturnValue(null);
+    render(<ProductTour />);
+    await advance(settleTime);
+    expect(steps.build).not.toHaveBeenCalled();
+  });
+
   it('cancels a pending start when the page becomes ineligible', async () => {
     const { rerender } = render(<ProductTour />);
     await advance(TOUR_START_DELAY_MS / 2);
@@ -318,7 +371,7 @@ describe('ProductTour', () => {
 
     fireEvent.click(screen.getByText(button));
 
-    expect(window.localStorage.getItem(STORAGE_KEY)).toBe(outcome);
+    expect(state.tour.markCompleted).toHaveBeenCalledWith(outcome);
     expect(screen.queryByTestId('tour-runner')).not.toBeInTheDocument();
   });
 
