@@ -1746,12 +1746,12 @@
         },
         {
           "id": "tour-05",
-          "description": "Done finishes the tour, records it, and it does not start again on the next visit",
+          "description": "Done finishes the tour, saves it to the user metadata (public_metadata.skills-product-tour), and it does not start again on the next visit",
           "status": "covered"
         },
         {
           "id": "tour-06",
-          "description": "The close (X) button dismisses the tour and records it as skipped",
+          "description": "The close (X) button dismisses the tour and saves it to the user metadata as skipped",
           "status": "covered"
         }
       ]

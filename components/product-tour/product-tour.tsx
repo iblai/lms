@@ -48,8 +48,9 @@ type TourSession = 'idle' | 'running' | 'done';
 /**
  * First-visit product tour over the app chrome: profile menu, search box,
  * the sidebar's Discover row and, for admins and watchers, the account /
- * management tools. Runs once per user (per browser), on tablet and desktop
- * only — the search box and the sidebar rail are hidden on mobile.
+ * management tools. Runs once per user — the outcome is stored on the user's
+ * metadata, so it follows the account — on tablet and desktop only, as the
+ * search box and the sidebar rail are hidden on mobile.
  *
  * Mounted inside the SDK `SidebarProvider` (see `AppLayout`) so it can read
  * the sidebar's own mobile state.
@@ -64,7 +65,12 @@ export function ProductTour() {
   const { data: departmentMemberCheck, isLoading: isRoleLoading } =
     useGetDepartmentMemberCheckQuery({ platform_key: tenant }, { skip: !tenant });
   const rbacPermissions = useAppSelector(selectRbacPermissions);
-  const { completed, markCompleted } = useTourCompletion(username);
+  const {
+    completed,
+    isLoading: isTourStateLoading,
+    isError: isTourStateUnknown,
+    markCompleted,
+  } = useTourCompletion(username);
 
   const [session, setSession] = useState<TourSession>('idle');
   const [steps, setSteps] = useState<TourStep[]>([]);
@@ -77,13 +83,17 @@ export function ProductTour() {
   });
   const forced = searchParams?.get(TOUR_QUERY_PARAM) === '1';
 
+  // Without a username there is nobody to remember the tour for; when the
+  // metadata can't be read, don't guess — only an explicit replay runs.
   const eligible =
     session === 'idle' &&
+    !!username &&
     metadataLoaded &&
     !isRoleLoading &&
+    !isTourStateLoading &&
     !isMobile &&
     !isTourExcludedPath(pathname) &&
-    (forced || !completed);
+    (forced || (!isTourStateUnknown && !completed));
 
   // Start once the targets are on the page. The role and Discover gates are
   // settled by then (`eligible`), so the step list is built once and frozen
@@ -115,7 +125,7 @@ export function ProductTour() {
 
   const handleEnd = useCallback(
     (outcome: TourOutcome) => {
-      markCompleted(outcome);
+      void markCompleted(outcome);
       setSession('done');
     },
     [markCompleted],
