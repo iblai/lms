@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.88.1](https://github.com/iblai/lms/compare/skills-v0.88.0...skills-v0.88.1) (2026-10-01)
+
+### Documentation
+
+* add "comment only when necessary" rule to CLAUDE.md/AGENTS.md ([90e8b6b](https://github.com/iblai/lms/commit/90e8b6bae3e1a4a5913834aa442b05cc6e9a8302))
+
 ## [0.88.0](https://github.com/iblai/lms/compare/skills-v0.87.0...skills-v0.88.0) (2026-10-01)
 
 ### Features
