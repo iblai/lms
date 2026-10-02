@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.90.0](https://github.com/iblai/lms/compare/skills-v0.89.0...skills-v0.90.0) (2026-10-02)
+
+### Features
+
+* tour tooltip implemented ([e5de7e9](https://github.com/iblai/lms/commit/e5de7e90ba5b5d61d211cf31c2388e54b1b9d47c))
+* tour tooltip implemented ([2abb181](https://github.com/iblai/lms/commit/2abb181ce22e19a949f50406be6d2c27e6d34569))
+* tour tooltip implemented > saving into user public metadata ([ddb5ae7](https://github.com/iblai/lms/commit/ddb5ae7fdcf127b75099e5b467fdb55353d8d7e3))
+
 ## [0.89.0](https://github.com/iblai/lms/compare/skills-v0.88.1...skills-v0.89.0) (2026-10-02)
 
 ### Features
