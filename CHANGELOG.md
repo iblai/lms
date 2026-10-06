@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.90.1](https://github.com/iblai/lms/compare/skills-v0.90.0...skills-v0.90.1) (2026-10-06)
+
+### Bug Fixes
+
+* hide view student gradebook UI section on MFE student admin iframe ([c9a7b64](https://github.com/iblai/lms/commit/c9a7b645a5c89c2e55589c6216786a91cd0ddd7a))
+
 ## [0.90.0](https://github.com/iblai/lms/compare/skills-v0.89.0...skills-v0.90.0) (2026-10-02)
 
 ### Features
