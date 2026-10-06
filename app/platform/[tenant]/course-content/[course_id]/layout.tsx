@@ -5,15 +5,26 @@ import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
-  ChevronRight,
+  BookOpen,
+  CalendarDays,
+  ChartColumn,
+  ChartNoAxesColumn,
   CirclePause,
   CirclePlay,
+  ClipboardList,
+  Lightbulb,
   ListTree,
   Maximize,
+  MessageSquarePlus,
+  MessagesSquare,
   MoreVertical,
+  Presentation,
+  Settings2,
+  Sparkles,
+  SquarePen,
+  Users,
   X,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -31,6 +42,7 @@ import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
 import { LessonCompletedDialog } from '@/components/lesson-completed-dialog';
 import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
+import { CourseProgressSummary, CourseUnitBreadcrumb } from '@/components/course-content-header';
 import {
   CourseMediaDropdown,
   CourseMediaMenuItems,
@@ -54,6 +66,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { MONETIZATION_CLOSE_PAYLOAD, NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
 import { config } from '@/lib/config';
 import { selectMentorSpinnerHidden } from '@/features/mentor';
+import { requestCourseAgentNewChat } from '@/utils/course-agent';
 import {
   canViewContentModeAudience,
   isAgentContentModeOn,
@@ -234,6 +247,9 @@ export default function CourseContentLayout({
   );
   const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
   const fullscreenToggleVisible = currentTab === 'agent';
+  // Only once the mentor has finished loading — before that there is no chat
+  // to reset, and the iframe isn't listening yet.
+  const newChatVisible = currentTab === 'agent' && mentorSpinnerHidden;
   const unitMediaVisible =
     blockDetailsTab && getUnitMediaBlocks(courseBlockDetails?.blocks).length > 0;
 
@@ -404,37 +420,59 @@ export default function CourseContentLayout({
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
   const courseBasePath = `/platform/${tenant}/course-content/${resolvedParams.course_id}`;
-  // Ordered tab list; the tab bar hides whatever doesn't fit behind a 3-dot
-  // dropdown so it never overlaps the course controls / unit navigator.
+  // Ordered tab list. Learner tabs (`learn` / `about`) sit inline and collapse
+  // into a "More" menu when they don't fit; staff tabs (`teach`) always live
+  // in the separate Staff tools menu, so their position here only orders that menu.
   const courseTabs = useMemo<CourseContentTab[]>(() => {
     const tabs: CourseContentTab[] = [];
     if (agentTabVisible) {
-      tabs.push({ key: 'agent', label: 'Agent', href: `${courseBasePath}/agent` });
+      tabs.push({
+        key: 'agent',
+        label: 'Agent',
+        href: `${courseBasePath}/agent`,
+        icon: Sparkles,
+        group: 'learn',
+      });
     }
     if (courseTabVisible) {
       tabs.push({
         key: 'course',
         label: 'Course',
         href: `${courseBasePath}/course${currentCourseInfo?.id ? `?unit_id=${currentCourseInfo.id}` : ''}`,
+        icon: BookOpen,
+        group: 'learn',
       });
     }
-    tabs.push({ key: 'progress', label: 'Progress', href: `${courseBasePath}/progress` });
-    // The edX gradebook MFE is staff-only; learners would just get an access error.
-    if (canViewStaffTabs) {
-      tabs.push({ key: 'gradebook', label: 'Gradebook', href: `${courseBasePath}/gradebook` });
-    }
     tabs.push(
-      { key: 'dates', label: 'Dates', href: `${courseBasePath}/dates` },
-      { key: 'forum', label: 'Discussion', href: `${courseBasePath}/discussion` },
+      {
+        key: 'progress',
+        label: 'Progress',
+        href: `${courseBasePath}/progress`,
+        icon: ChartNoAxesColumn,
+        group: 'learn',
+      },
+      {
+        key: 'dates',
+        label: 'Dates',
+        href: `${courseBasePath}/dates`,
+        icon: CalendarDays,
+        group: 'learn',
+      },
+      {
+        key: 'forum',
+        label: 'Discussions',
+        href: `${courseBasePath}/discussion`,
+        icon: MessagesSquare,
+        group: 'learn',
+      },
     );
-    if (canViewStaffTabs) {
-      tabs.push({ key: 'instructor', label: 'Instructor', href: `${courseBasePath}/instructor` });
-    }
     if (course?.learning_info && course.learning_info.length > 0) {
       tabs.push({
         key: 'learning-info',
         label: 'Learning Info',
         href: `${courseBasePath}/learning-info`,
+        icon: Lightbulb,
+        group: 'about',
       });
     }
     if (course?.instructor_info?.instructors && course.instructor_info.instructors.length > 0) {
@@ -442,6 +480,37 @@ export default function CourseContentLayout({
         key: 'instructors',
         label: 'Instructors',
         href: `${courseBasePath}/instructors`,
+        icon: Users,
+        group: 'about',
+      });
+    }
+    // The edX instructor dashboard and gradebook MFE are staff-only; learners
+    // would just get an access error.
+    if (canViewStaffTabs) {
+      tabs.push(
+        {
+          key: 'instructor',
+          label: 'Instructor',
+          href: `${courseBasePath}/instructor`,
+          icon: Presentation,
+          group: 'teach',
+        },
+        {
+          key: 'gradebook',
+          label: 'Gradebook',
+          href: `${courseBasePath}/gradebook`,
+          icon: ClipboardList,
+          group: 'teach',
+        },
+      );
+    }
+    if (canViewAnalytics || hasCourseStaffAccess) {
+      tabs.push({
+        key: 'analytics',
+        label: 'Analytics',
+        href: `${courseBasePath}/analytics`,
+        icon: ChartColumn,
+        group: 'teach',
       });
     }
     if (canViewStaffTabs) {
@@ -449,16 +518,17 @@ export default function CourseContentLayout({
         key: 'configuration',
         label: 'Configuration',
         href: `${courseBasePath}/configuration`,
+        icon: Settings2,
+        group: 'teach',
       });
-    }
-    if (canViewAnalytics || hasCourseStaffAccess) {
-      tabs.push({ key: 'analytics', label: 'Analytics', href: `${courseBasePath}/analytics` });
     }
     if (canViewAuthoringTab) {
       tabs.push({
         key: 'authoring',
         label: 'Authoring',
         href: `${config.urls.studioUrl()}/course/${courseId}`,
+        icon: SquarePen,
+        group: 'teach',
         external: true,
       });
     }
@@ -548,154 +618,200 @@ export default function CourseContentLayout({
             <CourseOutlineSidebar />
 
             {/* Main content area */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-              {/* Course navigation tabs */}
-              <div className="border-b border-gray-200">
-                {/* Skills innercourseware tabs */}
-                <div className="flex w-full items-center justify-between">
-                  <CourseContentTabs tabs={courseTabs} activeTab={activeTab} />
-                  {/* Course controls (autoplay, media dropdown, fullscreen,
-                      Learn/Assess) render in the top navbar — left of the
-                      search bar — via the NavBar's portal slot; their state
-                      stays in this layout. */}
-                  {navbarControlsSlot &&
-                    createPortal(
-                      <div className="flex items-center gap-3">
-                        {autoplayToggleVisible && (
-                          <button
-                            type="button"
-                            onClick={() => setAgentAutoplay(!agentAutoplayOn)}
-                            role="switch"
-                            aria-checked={agentAutoplayOn}
-                            aria-label={
-                              agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
-                            }
-                            title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
-                            data-testid="agent-autoplay-toggle"
-                            className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
-                              agentAutoplayOn
-                                ? 'text-amber-600 hover:text-amber-700'
-                                : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            {agentAutoplayOn ? (
-                              <CirclePause className="h-5 w-5" />
-                            ) : (
-                              <CirclePlay className="h-5 w-5" />
-                            )}
-                          </button>
-                        )}
-                        {unitMediaVisible && (
-                          <div className="hidden items-center md:flex">
-                            <CourseMediaDropdown
-                              blocks={courseBlockDetails?.blocks}
-                              currentTab={currentTab}
-                            />
-                          </div>
-                        )}
-                        {fullscreenToggleVisible && (
-                          <button
-                            type="button"
-                            onClick={() => setAgentFullscreen(true)}
-                            aria-label="Enter fullscreen"
-                            title="Fullscreen"
-                            data-testid="agent-fullscreen-toggle"
-                            className="hidden rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex"
-                          >
-                            <Maximize className="h-5 w-5" />
-                          </button>
-                        )}
-                        {assessmentToggleVisible && (
-                          <Popover
-                            open={agentModeHintOpen}
-                            onOpenChange={(open) => {
-                              if (!open) {
-                                dismissAgentModeHint();
-                              }
-                            }}
-                          >
-                            <PopoverAnchor asChild>
-                              <div
-                                className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
-                                role="group"
-                                aria-label="Agent display mode"
-                              >
-                                <span
-                                  className={
-                                    agentMode === 'learning' ? 'font-medium text-amber-600' : ''
-                                  }
-                                >
-                                  Learn
-                                </span>
-                                <Switch
-                                  checked={agentMode === 'assessment'}
-                                  onCheckedChange={(checked) =>
-                                    setAgentMode(checked ? 'assessment' : 'learning')
-                                  }
-                                  aria-label="Toggle assessment mode"
-                                  className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                                />
-                                <span
-                                  className={
-                                    agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
-                                  }
-                                >
-                                  Assess
-                                </span>
-                              </div>
-                            </PopoverAnchor>
-                            <PopoverContent
-                              side="bottom"
-                              align="end"
-                              sideOffset={10}
-                              className="w-64 p-3"
-                              onOpenAutoFocus={(event) => event.preventDefault()}
-                            >
-                              <div className="flex items-start gap-2">
-                                <div className="flex-1 text-xs text-gray-600">
-                                  <p className="mb-1 font-medium text-gray-900">
-                                    Two ways to learn
-                                  </p>
-                                  <p>
-                                    Use this switch to move between{' '}
-                                    <span className="font-medium text-amber-600">Learn</span> mode,
-                                    where the agent teaches you, and{' '}
-                                    <span className="font-medium text-amber-600">Assess</span> mode,
-                                    where it quizzes you on what you&apos;ve covered.
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={dismissAgentModeHint}
-                                  aria-label="Dismiss"
-                                  className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                >
-                                  <X className="h-4 w-4" />
-                                </button>
-                              </div>
-                              <div className="mt-2 flex justify-end">
-                                <button
-                                  type="button"
-                                  onClick={dismissAgentModeHint}
-                                  className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                                >
-                                  Got it
-                                </button>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        )}
-                      </div>,
-                      navbarControlsSlot,
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              {/* Course controls (autoplay, media dropdown, fullscreen,
+                  Learn/Assess) render in the top navbar — left of the
+                  search bar — via the NavBar's portal slot; their state
+                  stays in this layout. */}
+              {navbarControlsSlot &&
+                createPortal(
+                  <div className="flex items-center gap-3">
+                    {newChatVisible && (
+                      <button
+                        type="button"
+                        onClick={requestCourseAgentNewChat}
+                        aria-label="New chat"
+                        title="New chat"
+                        data-testid="agent-new-chat"
+                        className="hidden rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex"
+                      >
+                        <MessageSquarePlus className="h-5 w-5" />
+                      </button>
                     )}
-                  {/* Preview for media picked from the mobile controls popover;
-                      kept out of the popover so closing it doesn't unmount the
-                      dialog. */}
-                  <CourseMediaPreviewDialog
-                    block={mobileMediaPreviewBlock}
-                    onClose={() => setMobileMediaPreviewBlock(null)}
+                    {autoplayToggleVisible && (
+                      <button
+                        type="button"
+                        onClick={() => setAgentAutoplay(!agentAutoplayOn)}
+                        role="switch"
+                        aria-checked={agentAutoplayOn}
+                        aria-label={
+                          agentAutoplayOn ? 'Disable agent autoplay' : 'Enable agent autoplay'
+                        }
+                        title={agentAutoplayOn ? 'Autoplay on' : 'Autoplay off'}
+                        data-testid="agent-autoplay-toggle"
+                        className={`hidden rounded p-1 transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex ${
+                          agentAutoplayOn
+                            ? 'text-amber-600 hover:text-amber-700'
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        {agentAutoplayOn ? (
+                          <CirclePause className="h-5 w-5" />
+                        ) : (
+                          <CirclePlay className="h-5 w-5" />
+                        )}
+                      </button>
+                    )}
+                    {unitMediaVisible && (
+                      <div className="hidden items-center md:flex">
+                        <CourseMediaDropdown
+                          blocks={courseBlockDetails?.blocks}
+                          currentTab={currentTab}
+                        />
+                      </div>
+                    )}
+                    {fullscreenToggleVisible && (
+                      <button
+                        type="button"
+                        onClick={() => setAgentFullscreen(true)}
+                        aria-label="Enter fullscreen"
+                        title="Fullscreen"
+                        data-testid="agent-fullscreen-toggle"
+                        className="hidden rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none md:inline-flex"
+                      >
+                        <Maximize className="h-5 w-5" />
+                      </button>
+                    )}
+                    {assessmentToggleVisible && (
+                      <Popover
+                        open={agentModeHintOpen}
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            dismissAgentModeHint();
+                          }
+                        }}
+                      >
+                        <PopoverAnchor asChild>
+                          <div
+                            className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
+                            role="group"
+                            aria-label="Agent display mode"
+                          >
+                            <span
+                              className={
+                                agentMode === 'learning' ? 'font-medium text-amber-600' : ''
+                              }
+                            >
+                              Learn
+                            </span>
+                            <Switch
+                              checked={agentMode === 'assessment'}
+                              onCheckedChange={(checked) =>
+                                setAgentMode(checked ? 'assessment' : 'learning')
+                              }
+                              aria-label="Toggle assessment mode"
+                              className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
+                            />
+                            <span
+                              className={
+                                agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
+                              }
+                            >
+                              Assess
+                            </span>
+                          </div>
+                        </PopoverAnchor>
+                        <PopoverContent
+                          side="bottom"
+                          align="end"
+                          sideOffset={10}
+                          className="w-64 p-3"
+                          onOpenAutoFocus={(event) => event.preventDefault()}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 text-xs text-gray-600">
+                              <p className="mb-1 font-medium text-gray-900">Two ways to learn</p>
+                              <p>
+                                Use this switch to move between{' '}
+                                <span className="font-medium text-amber-600">Learn</span> mode,
+                                where the agent teaches you, and{' '}
+                                <span className="font-medium text-amber-600">Assess</span> mode,
+                                where it quizzes you on what you&apos;ve covered.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={dismissAgentModeHint}
+                              aria-label="Dismiss"
+                              className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <div className="mt-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={dismissAgentModeHint}
+                              className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            >
+                              Got it
+                            </button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>,
+                  navbarControlsSlot,
+                )}
+              {/* Preview for media picked from the mobile controls popover;
+                  kept out of the popover so closing it doesn't unmount the
+                  dialog. */}
+              <CourseMediaPreviewDialog
+                block={mobileMediaPreviewBlock}
+                onClose={() => setMobileMediaPreviewBlock(null)}
+              />
+              <header
+                className="shrink-0 border-b border-gray-200 bg-white"
+                data-testid="course-content-header"
+              >
+                {/* Course identity + where you are in it, with the unit
+                    navigation at the far end. A container query root: what
+                    fits depends on this column's width (the outline sidebar
+                    eats a third of a tablet), not the viewport's. */}
+                <div className="@container flex items-center gap-3 px-3 pt-3 pb-2 md:px-4">
+                  {/* md+ collapses/expands the inline sidebar from the same spot */}
+                  <CourseOutlineToggle />
+                  <button
+                    type="button"
+                    onClick={() => setCourseOutlineDrawerOpen(true)}
+                    className="-ml-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none md:hidden"
+                    aria-label="Open course outline"
+                  >
+                    <ListTree className="h-5 w-5" />
+                  </button>
+                  {/* The course name already heads the navbar; this line is
+                      where you are inside it, falling back to the name only
+                      until a unit resolves (or when the course has none). */}
+                  <div className="min-w-0 flex-1">
+                    {currentCourseInfo?.id ? (
+                      <CourseUnitBreadcrumb
+                        moduleName={currentParentIds?.module?.display_name}
+                        lessonName={currentParentIds?.lesson?.display_name}
+                        unitName={currentCourseInfo?.display_name}
+                      />
+                    ) : (
+                      <h1 className="truncate text-sm font-semibold text-gray-900">
+                        {course?.display_name}
+                      </h1>
+                    )}
+                  </div>
+                  <CourseProgressSummary
+                    completionPercentage={courseCompletion?.completion_percentage}
+                    gradingPercentage={courseCompletion?.grading_percentage}
+                    gradeVisible={!!courseGradingPolicyActive}
+                    className="hidden @2xl:flex"
                   />
-                  <div className="flex shrink-0 items-center gap-3 pr-4">
+                  <div className="flex shrink-0 items-center gap-2">
                     {/* Mobile-only (trigger is md:hidden) 3-dot menu bundling
                         the course controls, sitting left of the prev/next unit
                         buttons; desktop shows them inline in the navbar via
@@ -703,6 +819,7 @@ export default function CourseContentLayout({
                     {(assessmentToggleVisible ||
                       autoplayToggleVisible ||
                       fullscreenToggleVisible ||
+                      newChatVisible ||
                       unitMediaVisible) && (
                       <Popover open={mobileControlsOpen} onOpenChange={setMobileControlsOpen}>
                         <PopoverTrigger
@@ -713,6 +830,20 @@ export default function CourseContentLayout({
                         </PopoverTrigger>
                         <PopoverContent align="end" className="w-48 p-2">
                           <div className="flex flex-col gap-3">
+                            {newChatVisible && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMobileControlsOpen(false);
+                                  requestCourseAgentNewChat();
+                                }}
+                                data-testid="agent-new-chat-popover-button"
+                                className="flex items-center gap-2 rounded p-1 text-left text-xs text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                              >
+                                <MessageSquarePlus className="h-4 w-4 text-gray-500" />
+                                <span>New chat</span>
+                              </button>
+                            )}
                             {autoplayToggleVisible && (
                               <div
                                 className="flex items-center justify-between gap-3 text-xs text-gray-600"
@@ -801,86 +932,21 @@ export default function CourseContentLayout({
                     <CourseLessonNavigator />
                   </div>
                 </div>
-                <div className="flex items-center bg-gray-50 px-4 py-2">
-                  {/* md+ collapses/expands the inline sidebar from the same spot */}
-                  <CourseOutlineToggle />
-                  <button
-                    onClick={() => setCourseOutlineDrawerOpen(true)} // Open the new course outline drawer
-                    className="mr-2 -ml-2 p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:hidden" // Mobile only; tablet/laptop use the inline collapsible sidebar
-                    aria-label="Open course outline"
-                  >
-                    <ListTree className="h-5 w-5" /> {/* Changed icon to ListTree */}
-                  </button>
-                  <div
-                    className="flex flex-1 items-center justify-between overflow-x-auto whitespace-nowrap md:whitespace-normal"
-                    style={{
-                      scrollbarWidth: 'none',
-                      msOverflowStyle: 'none',
-                      WebkitOverflowScrolling: 'touch',
-                    }}
-                  >
-                    <div className="flex min-w-0 flex-shrink-0 items-center pr-4 text-xs text-gray-500">
-                      <Link href="#" className="flex-shrink-0 hover:text-amber-600">
-                        {course?.display_name}
-                      </Link>
-                      {currentParentIds && currentParentIds.module.id && (
-                        <>
-                          <ChevronRight className="mx-1 h-3 w-3 flex-shrink-0" />
-                          <Link href="#" className="flex-shrink-0 hover:text-amber-600">
-                            {currentParentIds.module.display_name}
-                          </Link>
-                        </>
-                      )}
-                      {currentParentIds && currentParentIds.lesson.id && (
-                        <>
-                          <ChevronRight className="mx-1 h-3 w-3 flex-shrink-0" />
-                          <Link href="#" className="flex-shrink-0 hover:text-amber-600">
-                            {currentParentIds.lesson.display_name}
-                          </Link>
-                        </>
-                      )}
-                      <ChevronRight className="mx-1 h-3 w-3 flex-shrink-0" />
-                      <span className="flex-shrink-0 text-gray-700">
-                        {currentCourseInfo?.display_name}
-                      </span>
-                    </div>
-                    <div className="flex flex-shrink-0 items-center">
-                      <div className="mr-4 flex items-center text-xs text-gray-600">
-                        <span className="mr-1 font-medium">Progress:</span>
-                        <div className="mx-1 h-1.5 w-16 rounded-full bg-gray-200">
-                          <div
-                            className="h-full rounded-full bg-amber-500"
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                Math.max(0, courseCompletion?.completion_percentage || 0),
-                              )}%`,
-                            }}
-                          ></div>
-                        </div>
-                        <span className="ml-1">
-                          {courseCompletion?.completion_percentage || 0}%
-                        </span>
-                      </div>
-                      {courseGradingPolicyActive && (
-                        <div className="text-xs text-gray-600">
-                          <span className="font-medium">Grade:</span>{' '}
-                          {courseCompletion?.grading_percentage || 0}%
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                <div className="@container px-3 pb-2 md:px-4">
+                  <CourseContentTabs tabs={courseTabs} activeTab={activeTab} />
                 </div>
-              </div>
+              </header>
 
-              {/* Content area */}
+              {/* Content area: a flex column of definite height, so the
+                  iframe / agent pages can fill it (`flex-1`) rather than
+                  derive their height from the viewport. */}
               <div
                 // Mobile scrolls this container itself. On desktop the
                 // iframe tabs manage their own scroll, but the plain-page
                 // tabs (analytics / configuration / instructor(s)) render
                 // long content and need the container to scroll too.
                 className={cn(
-                  'flex-1',
+                  'flex min-h-0 flex-1 flex-col',
                   (isMobile ||
                     ['analytics', 'configuration', 'instructor', 'instructors'].includes(
                       currentTab ?? '',

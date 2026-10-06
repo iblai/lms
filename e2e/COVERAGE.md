@@ -71,9 +71,9 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 5: Course Content — Tab Navigation & Iframes (38 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/platform/[tenant]/course-content/[course_id]/gradebook/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `hooks/courses/use-edx-iframe-loaded.ts`, `hooks/courses/use-edx-iframe.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/platform/[tenant]/course-content/[course_id]/gradebook/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-content-tabs.tsx`, `components/course-content-header.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `hooks/courses/use-edx-iframe-loaded.ts`, `hooks/courses/use-edx-iframe.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
 
-- [x] Course content page loads with Course, Progress, Dates, and Discussion tab links visible
+- [x] Course content page loads with Course, Progress, Dates, and Discussions tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
 - [x] Progress tab displays an iframe with "Your progress" and "Grade summary" headings
 - [x] Dates tab displays an iframe with "Important dates" heading
@@ -92,7 +92,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Previous / Keep Learning buttons in the tabs row switch units and flip the URL's `unit_id`
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
 - [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<agent-ai>` shadow-root iframe and the agent renders an AI response
-- [x] New-chat button on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
+- [x] New-chat button (in the navbar course controls) on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
 - [x] Learning/Assessment toggle on `/agent` only renders when `getCourseBlockDetails` returns a block of `type=ibl_mentor_xblock`
 - [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
 - [x] On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch
@@ -109,7 +109,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout
 - [x] Unit media dropdown (beside the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews `student_view_url` in an overlay on the Agent tab and posts a `SCROLL_TO` message to the edX iframe on the Course tab _(skips gracefully when the unit has no media blocks)_
 - [x] Course content layout requests the signed-in user's role listing (`GET /api/ibl/users/manage/roles/`, looked up by `username` / `email` / `user_id`) so course-scoped roles can gate the staff tabs
-- [x] Staff tabs follow the course-role gates: `course-staff` / `course-instructor` (and platform admins) see every staff tab including Authoring, `course-limited-staff` sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees none of them
+- [x] Staff tabs (grouped in the "Staff tools" menu) follow the course-role gates: `course-staff` / `course-instructor` (and platform admins) see every staff tab including Authoring, `course-limited-staff` sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees neither the tabs nor the Staff tools menu
 - [x] Gradebook tab (staff only, same gate as Instructor) navigates to `/gradebook` and iframes `<mfe-url>/gradebook/<course-id>` _(skips gracefully for non-staff viewers)_
 
 ---
@@ -366,7 +366,7 @@ When adding a new page or modifying an existing user flow:
 **Source files:** `components/app-sidebar/index.tsx`, `components/nav-bar.tsx`, `app/home/page.tsx`
 
 - [x] Sidebar mobile sheet opens via the navbar hamburger and displays menu items on mobile viewport (375×812)
-- [x] Course nav tabs never overflow their container; tabs that don't fit collapse into the 3-dot overflow menu and stay reachable
+- [x] Course nav tabs never overflow their container; tabs that don't fit collapse into the "More" overflow menu and stay reachable
 - [x] EdX iframe container has course-edx-iframe-container class and correct active-tab class per tab
 - [x] Mobile viewport: non-course tabs (Progress, Dates, Discussion) have no padding on iframe container
 - [x] Mobile viewport: Course tab retains padding on iframe container

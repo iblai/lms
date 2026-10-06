@@ -217,14 +217,18 @@ export const EdxIframe = () => {
   return (
     <>
       {fetchingIframeData ? (
-        <div className="relative inset-0 z-50 flex h-full items-center justify-center bg-white">
+        <div className="relative inset-0 z-50 flex min-h-0 flex-1 items-center justify-center bg-white">
           <Loader2 className="h-10 w-10 animate-spin" />
         </div>
       ) : (
+        // Flex column filling whatever the layout hands it, so the iframe ends
+        // exactly at the footer instead of guessing the header height.
         <div
           className={cn(
-            'w-full',
-            isAssessmentMode ? 'p-0' : 'p-6',
+            'flex min-h-0 w-full flex-1 flex-col',
+            // Horizontal padding mirrors the course header so the iframe lines
+            // up with the tab track and the Manage button.
+            isAssessmentMode ? 'p-0' : 'px-3 py-4 md:px-4',
             isAssessmentFullscreen && 'h-full',
             `active-tab-${activeTab} course-edx-iframe-container`,
           )}
@@ -247,20 +251,8 @@ export const EdxIframe = () => {
               title="Forum InnerWare"
               sandbox="allow-modals allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
               frameBorder={0}
-              className={
-                isAssessmentFullscreen
-                  ? 'h-full w-full'
-                  : isAssessmentMode
-                    ? 'h-[calc(100vh-255px)] w-full md:h-[calc(100vh-257px)] lg:h-[calc(100vh-247px)]'
-                    : undefined
-              }
-              style={
-                isAssessmentFullscreen
-                  ? { width: '100%', height: '100%' }
-                  : isAssessmentMode
-                    ? { width: '100%' }
-                    : { width: '100%', height: 'calc(100vh - 100px - 62px)' }
-              }
+              className={isAssessmentFullscreen ? 'h-full w-full' : 'min-h-0 w-full flex-1'}
+              style={isAssessmentFullscreen ? { width: '100%', height: '100%' } : { width: '100%' }}
               allowFullScreen={true}
               allow="microphone *; camera *; midi *; geolocation *; encrypted-media *"
             />

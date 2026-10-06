@@ -78,7 +78,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const courseTab = page.getByRole('link', { name: 'Course' }).first();
     const progressTab = page.getByRole('link', { name: 'Progress' }).first();
     const datesTab = page.getByRole('link', { name: 'Dates' }).first();
-    const discussionTab = page.getByRole('link', { name: 'Discussion' }).first();
+    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
 
     await expect(courseTab).toBeVisible({ timeout: 30000 });
     await expect(progressTab).toBeVisible({ timeout: 30000 });
@@ -187,7 +187,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussion' }).first();
+    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
     await discussionTab.click();
 
     const iframeElement = page.locator('iframe').first();
@@ -218,7 +218,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussion' }).first();
+    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
     await discussionTab.click();
 
     const discussionIframe = page.frameLocator('iframe').first();
@@ -266,7 +266,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussion' }).first();
+    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
     await discussionTab.click();
 
     const discussionIframe = page.frameLocator('iframe').first();
@@ -305,7 +305,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussion' }).first();
+    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
     await discussionTab.click();
 
     const discussionIframe = page.frameLocator('iframe').first();
@@ -910,7 +910,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const tabs = ['Course', 'Progress', 'Dates', 'Discussion'];
+    const tabs = ['Course', 'Progress', 'Dates', 'Discussions'];
 
     for (const tabName of tabs) {
       const tab = page.getByRole('link', { name: tabName }).first();

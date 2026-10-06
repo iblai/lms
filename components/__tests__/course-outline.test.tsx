@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { CourseOutline } from '../course-outline';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import { CourseOutline, countUnits } from '../course-outline';
 import { CourseOutlineContext, CourseOutlineContextType } from '@/contexts/course-outline-context';
 import { CourseOutlineChildNode } from '@/types/courses';
 import '@testing-library/jest-dom';
@@ -20,6 +20,9 @@ const makeNode = (overrides: Partial<CourseOutlineChildNode> = {}): CourseOutlin
   display_name: 'Node 1',
   ...overrides,
 });
+
+const root = (modules: CourseOutlineChildNode[]) =>
+  makeNode({ id: 'root', display_name: 'Root', children: modules });
 
 const defaultContext: CourseOutlineContextType = {
   courseOutline: {} as CourseOutlineChildNode,
@@ -45,248 +48,184 @@ const renderWithContext = (ctx: Partial<CourseOutlineContextType> = {}) =>
     </CourseOutlineContext.Provider>,
   );
 
+/** Module › lesson › four units, two of them complete. */
+const halfDoneModule = makeNode({
+  id: 'mod-1',
+  display_name: 'Module 1',
+  children: [
+    makeNode({
+      id: 'lesson-1',
+      display_name: 'Lesson 1',
+      children: [
+        makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: true }),
+        makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: true }),
+        makeNode({ id: 'sub-3', display_name: 'Sub 3', complete: false }),
+        makeNode({ id: 'sub-4', display_name: 'Sub 4', complete: false }),
+      ],
+    }),
+  ],
+});
+
+const iconState = (scope: HTMLElement) =>
+  within(scope).getByTestId('completion-icon').getAttribute('data-state');
+
+describe('countUnits', () => {
+  it('counts a leaf as one unit, complete or not', () => {
+    expect(countUnits(makeNode({ complete: true }))).toEqual({ total: 1, done: 1 });
+    expect(countUnits(makeNode({ complete: false }))).toEqual({ total: 1, done: 0 });
+  });
+
+  it('sums leaf units through every level', () => {
+    expect(countUnits(halfDoneModule)).toEqual({ total: 4, done: 2 });
+  });
+});
+
 describe('CourseOutline', () => {
-  it('renders skeleton when loading', () => {
+  it('renders the skeleton while loading', () => {
     renderWithContext({ courseOutlineLoading: true });
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('outline-summary')).not.toBeInTheDocument();
   });
 
-  it('renders module names', () => {
+  it('renders nothing but the nav when the outline has no modules', () => {
+    renderWithContext({ courseOutline: makeNode({ id: 'root', children: [] }) });
+    expect(screen.getByRole('navigation', { name: 'Course outline' })).toBeInTheDocument();
+    expect(screen.queryByTestId('outline-summary')).not.toBeInTheDocument();
+    expect(screen.queryAllByTestId('outline-module')).toHaveLength(0);
+  });
+
+  it('summarises overall completion above the modules', () => {
+    renderWithContext({ courseOutline: root([halfDoneModule]) });
+    const summary = screen.getByTestId('outline-summary');
+    expect(summary).toHaveTextContent('50%');
+    expect(summary).toHaveTextContent('2 of 4 units completed');
+    const bar = summary.querySelector('[style]') as HTMLElement;
+    expect(bar.style.width).toBe('50%');
+    expect(bar.className).toContain('bg-amber-500');
+  });
+
+  it('fills the summary bar completely once everything is complete', () => {
+    const done = makeNode({
+      id: 'mod-1',
+      display_name: 'Module 1',
+      children: [makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: true })],
+    });
+    renderWithContext({ courseOutline: root([done]) });
+    const bar = screen.getByTestId('outline-summary').querySelector('[style]') as HTMLElement;
+    expect(bar.style.width).toBe('100%');
+    expect(screen.getByTestId('outline-summary')).toHaveTextContent('100%');
+  });
+
+  it('renders each module with its completion count', () => {
     const modules = [
-      makeNode({ id: 'mod-1', display_name: 'Module 1', children: [] }),
+      halfDoneModule,
       makeNode({ id: 'mod-2', display_name: 'Module 2', children: [] }),
     ];
-    renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-    });
-    expect(screen.getByText('Module 1')).toBeInTheDocument();
-    expect(screen.getByText('Module 2')).toBeInTheDocument();
+    renderWithContext({ courseOutline: root(modules) });
+    const [first, second] = screen.getAllByTestId('outline-module');
+    expect(first).toHaveTextContent('Module 1');
+    expect(within(first).getByTestId('outline-module-meta')).toHaveTextContent('2 of 4 completed');
+    expect(second).toHaveTextContent('Module 2');
+    expect(within(second).getByTestId('outline-module-meta')).toHaveTextContent('No content yet');
   });
 
-  it('shows lessons when module is expanded', () => {
+  it('calls toggleModule on module click and reflects the expanded state', () => {
+    const toggleModule = vi.fn();
+    const { rerender } = render(
+      <CourseOutlineContext.Provider
+        value={{ ...defaultContext, courseOutline: root([halfDoneModule]), toggleModule }}
+      >
+        <CourseOutline />
+      </CourseOutlineContext.Provider>,
+    );
+    const header = screen.getByRole('button', { name: /Module 1/ });
+    expect(header).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('Lesson 1')).not.toBeInTheDocument();
+
+    fireEvent.click(header);
+    expect(toggleModule).toHaveBeenCalledWith('mod-1');
+
+    rerender(
+      <CourseOutlineContext.Provider
+        value={{
+          ...defaultContext,
+          courseOutline: root([halfDoneModule]),
+          toggleModule,
+          expandedModule: 'mod-1',
+        }}
+      >
+        <CourseOutline />
+      </CourseOutlineContext.Provider>,
+    );
+    expect(screen.getByRole('button', { name: /Module 1/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(screen.getByText('Lesson 1')).toBeInTheDocument();
+  });
+
+  it('calls toggleLesson on lesson click and only marks expandable lessons', () => {
+    const toggleLesson = vi.fn();
     const modules = [
       makeNode({
         id: 'mod-1',
         display_name: 'Module 1',
         children: [
-          makeNode({ id: 'lesson-1', display_name: 'Lesson 1' }),
+          makeNode({
+            id: 'lesson-1',
+            display_name: 'Lesson 1',
+            children: [makeNode({ id: 'sub-1', display_name: 'Sub 1' })],
+          }),
           makeNode({ id: 'lesson-2', display_name: 'Lesson 2' }),
         ],
       }),
     ];
-    renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    expect(screen.getByText('Lesson 1')).toBeInTheDocument();
-    expect(screen.getByText('Lesson 2')).toBeInTheDocument();
+    renderWithContext({ courseOutline: root(modules), expandedModule: 'mod-1', toggleLesson });
+
+    const [withUnits, leaf] = screen.getAllByTestId('outline-lesson');
+    expect(withUnits).toHaveAttribute('aria-expanded', 'false');
+    expect(leaf).not.toHaveAttribute('aria-expanded');
+
+    fireEvent.click(withUnits);
+    expect(toggleLesson).toHaveBeenCalledWith('lesson-1');
+    expect(screen.queryByText('Sub 1')).not.toBeInTheDocument();
   });
 
-  it('calls toggleModule on module click', () => {
-    const toggleModule = vi.fn();
-    const modules = [makeNode({ id: 'mod-1', display_name: 'Module 1' })];
-    renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      toggleModule,
-    });
-    fireEvent.click(screen.getByText('Module 1'));
-    expect(toggleModule).toHaveBeenCalledWith('mod-1');
-  });
-});
-
-describe('CompletionIcon rendering', () => {
-  it('renders empty circle for incomplete leaf node', () => {
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: false })],
-      }),
-    ];
-    const { container } = renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    const svgs = container.querySelectorAll('svg');
-    // The lesson's completion icon SVG
-    // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
-    const lessonSvg = svgs[1];
-    expect(lessonSvg).toBeTruthy();
-    // Empty circle has gray stroke (#d1d5db)
-    const circle = lessonSvg.querySelector('circle');
-    expect(circle?.getAttribute('stroke')).toBe('#d1d5db');
-  });
-
-  it('renders filled amber check for fully complete leaf node', () => {
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: true })],
-      }),
-    ];
-    const { container } = renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    const svgs = container.querySelectorAll('svg');
-    // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
-    const lessonSvg = svgs[1];
-    // Filled circle has amber fill (#3b82f6)
-    const circle = lessonSvg.querySelector('circle');
-    expect(circle?.getAttribute('fill')).toBe('#3b82f6');
-    // Has a checkmark path
-    const path = lessonSvg.querySelector('path');
-    expect(path).toBeTruthy();
-  });
-
-  it('renders partial progress for parent with mixed children completion', () => {
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [
-          makeNode({
-            id: 'lesson-1',
-            display_name: 'Lesson 1',
-            children: [
-              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: true }),
-              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: true }),
-              makeNode({ id: 'sub-3', display_name: 'Sub 3', complete: false }),
-              makeNode({ id: 'sub-4', display_name: 'Sub 4', complete: false }),
-            ],
-          }),
-        ],
-      }),
-    ];
-    const { container } = renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    const svgs = container.querySelectorAll('svg');
-    // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
-    const lessonSvg = svgs[1];
-    // Partial progress has two circles (background + progress arc)
-    const circles = lessonSvg.querySelectorAll('circle');
-    expect(circles.length).toBe(2);
-    // The progress arc has amber stroke
-    const progressCircle = circles[1];
-    expect(progressCircle.getAttribute('stroke')).toBe('#3b82f6');
-  });
-
-  it('renders full completion when all children are complete', () => {
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [
-          makeNode({
-            id: 'lesson-1',
-            display_name: 'Lesson 1',
-            children: [
-              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: true }),
-              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: true }),
-            ],
-          }),
-        ],
-      }),
-    ];
-    const { container } = renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    const svgs = container.querySelectorAll('svg');
-    // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
-    const lessonSvg = svgs[1];
-    // Full completion: amber filled circle with checkmark
-    const circle = lessonSvg.querySelector('circle');
-    expect(circle?.getAttribute('fill')).toBe('#3b82f6');
-    const path = lessonSvg.querySelector('path');
-    expect(path).toBeTruthy();
-  });
-
-  it('renders empty circle when no children are complete', () => {
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [
-          makeNode({
-            id: 'lesson-1',
-            display_name: 'Lesson 1',
-            children: [
-              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
-              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: false }),
-            ],
-          }),
-        ],
-      }),
-    ];
-    const { container } = renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    const svgs = container.querySelectorAll('svg');
-    // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
-    const lessonSvg = svgs[1];
-    // Empty: single circle with gray stroke
-    const circles = lessonSvg.querySelectorAll('circle');
-    expect(circles.length).toBe(1);
-    expect(circles[0].getAttribute('stroke')).toBe('#d1d5db');
-  });
-
-  it('renders sublessons when a lesson is expanded', () => {
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [
-          makeNode({
-            id: 'lesson-1',
-            display_name: 'Lesson 1',
-            children: [
-              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
-              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: true }),
-            ],
-          }),
-        ],
-      }),
-    ];
-    renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-      expandedLessons: ['lesson-1'],
-    });
-    expect(screen.getByText('Sub 1')).toBeInTheDocument();
-    expect(screen.getByText('Sub 2')).toBeInTheDocument();
-  });
-
-  it('calls selectLesson when a sublesson is clicked', () => {
+  it('lists units under an expanded lesson and selects one on click', () => {
     const selectLesson = vi.fn();
-    const modules = [
-      makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
-        children: [
-          makeNode({
-            id: 'lesson-1',
-            display_name: 'Lesson 1',
-            children: [makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false })],
-          }),
-        ],
-      }),
-    ];
     renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
+      courseOutline: root([halfDoneModule]),
       expandedModule: 'mod-1',
       expandedLessons: ['lesson-1'],
       selectLesson,
     });
-    fireEvent.click(screen.getByText('Sub 1'));
-    expect(selectLesson).toHaveBeenCalledWith('sub-1');
+    const units = screen.getAllByTestId('outline-unit');
+    expect(units.map((unit) => unit.textContent)).toEqual(['Sub 1', 'Sub 2', 'Sub 3', 'Sub 4']);
+
+    fireEvent.click(screen.getByText('Sub 3'));
+    expect(selectLesson).toHaveBeenCalledWith('sub-3');
   });
 
-  it('highlights the current sublesson', () => {
+  it('highlights the current lesson and unit', () => {
+    renderWithContext({
+      courseOutline: root([halfDoneModule]),
+      expandedModule: 'mod-1',
+      expandedLessons: ['lesson-1'],
+      currentChapter: 'lesson-1',
+      currentLesson: 'sub-3',
+    });
+    expect(screen.getByTestId('outline-lesson').className).toContain('text-amber-700');
+
+    const current = screen.getByText('Sub 3').closest('button') as HTMLElement;
+    expect(current).toHaveAttribute('aria-current', 'location');
+    expect(current.className).toContain('bg-amber-50');
+    const other = screen.getByText('Sub 1').closest('button') as HTMLElement;
+    expect(other).not.toHaveAttribute('aria-current');
+    // Word-bounded: the accent bar's `before:bg-amber-500` must not match.
+    expect(other.className).not.toMatch(/(^|\s)bg-amber-50(\s|$)/);
+  });
+
+  it('flags graded and timed-exam lessons and units', () => {
     const modules = [
       makeNode({
         id: 'mod-1',
@@ -294,65 +233,112 @@ describe('CompletionIcon rendering', () => {
         children: [
           makeNode({
             id: 'lesson-1',
-            display_name: 'Lesson 1',
-            children: [
-              makeNode({ id: 'sub-1', display_name: 'Sub 1', complete: false }),
-              makeNode({ id: 'sub-2', display_name: 'Sub 2', complete: false }),
-            ],
+            display_name: 'Exam',
+            graded: true,
+            special_exam_info: true,
+            children: [makeNode({ id: 'sub-1', display_name: 'Attempt', graded: true })],
           }),
         ],
       }),
     ];
     renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
+      courseOutline: root(modules),
       expandedModule: 'mod-1',
       expandedLessons: ['lesson-1'],
-      currentLesson: 'sub-1',
     });
-    const sub1Button = screen.getByText('Sub 1').closest('button');
-    expect(sub1Button?.className).toContain('bg-amber-50');
+    const lesson = screen.getByTestId('outline-lesson');
+    expect(within(lesson).getByTestId('outline-badge-graded')).toBeInTheDocument();
+    expect(within(lesson).getByTestId('outline-badge-timed')).toBeInTheDocument();
+    const unit = screen.getByTestId('outline-unit');
+    expect(within(unit).getByTestId('outline-badge-graded')).toBeInTheDocument();
+    expect(within(unit).queryByTestId('outline-badge-timed')).not.toBeInTheDocument();
+  });
+});
+
+describe('CompletionIcon', () => {
+  const renderLesson = (lesson: CourseOutlineChildNode) => {
+    renderWithContext({
+      courseOutline: root([
+        makeNode({ id: 'mod-1', display_name: 'Module 1', children: [lesson] }),
+      ]),
+      expandedModule: 'mod-1',
+    });
+    return screen.getByTestId('outline-lesson');
+  };
+
+  it('renders an empty ring for an incomplete leaf', () => {
+    const lesson = renderLesson(makeNode({ id: 'lesson-1', display_name: 'L', complete: false }));
+    expect(iconState(lesson)).toBe('empty');
+    const svg = within(lesson).getByTestId('completion-icon');
+    expect(svg.querySelectorAll('circle')).toHaveLength(1);
+    expect(svg.querySelector('path')).toBeNull();
   });
 
-  it('calculates recursive completion correctly for deeply nested nodes', () => {
-    // Parent with 2 children: one fully complete, one half complete
-    // Expected ratio: (1 + 0.5) / 2 = 0.75 => level = round(0.75 * 7) = 5
-    const modules = [
+  it('renders a filled check for a complete leaf', () => {
+    const lesson = renderLesson(makeNode({ id: 'lesson-1', display_name: 'L', complete: true }));
+    expect(iconState(lesson)).toBe('complete');
+    const svg = within(lesson).getByTestId('completion-icon');
+    expect(svg.querySelector('circle')?.getAttribute('class')).toContain('fill-amber-500');
+    expect(svg.querySelector('path')).not.toBeNull();
+  });
+
+  it('renders a progress arc for a parent with mixed completion', () => {
+    const lesson = renderLesson(halfDoneModule.children![0]);
+    expect(iconState(lesson)).toBe('partial');
+    const circles = within(lesson).getByTestId('completion-icon').querySelectorAll('circle');
+    expect(circles).toHaveLength(2);
+    const arc = circles[1];
+    expect(arc.getAttribute('class')).toContain('stroke-amber-500');
+    const circumference = Number(arc.getAttribute('stroke-dasharray'));
+    expect(Number(arc.getAttribute('stroke-dashoffset'))).toBeCloseTo(circumference * 0.5);
+  });
+
+  it('is complete only when every descendant is complete', () => {
+    const lesson = renderLesson(
       makeNode({
-        id: 'mod-1',
-        display_name: 'Module 1',
+        id: 'lesson-1',
+        display_name: 'L',
         children: [
+          makeNode({ id: 'sub-1', complete: true }),
+          makeNode({ id: 'sub-2', complete: true }),
+        ],
+      }),
+    );
+    expect(iconState(lesson)).toBe('complete');
+  });
+
+  it('is empty when no descendant is complete', () => {
+    const lesson = renderLesson(
+      makeNode({
+        id: 'lesson-1',
+        display_name: 'L',
+        children: [makeNode({ id: 'sub-1', complete: false }), makeNode({ id: 'sub-2' })],
+      }),
+    );
+    expect(iconState(lesson)).toBe('empty');
+  });
+
+  it('averages completion recursively through nested levels', () => {
+    // (1 + 0.5) / 2 = 0.75 of the way round.
+    const lesson = renderLesson(
+      makeNode({
+        id: 'lesson-1',
+        display_name: 'L',
+        children: [
+          makeNode({ id: 'sub-1', complete: true }),
           makeNode({
-            id: 'lesson-1',
-            display_name: 'Lesson 1',
+            id: 'sub-2',
             children: [
-              makeNode({
-                id: 'sub-1',
-                display_name: 'Sub 1',
-                complete: true,
-              }),
-              makeNode({
-                id: 'sub-2',
-                display_name: 'Sub 2',
-                children: [
-                  makeNode({ id: 'unit-1', display_name: 'Unit 1', complete: true }),
-                  makeNode({ id: 'unit-2', display_name: 'Unit 2', complete: false }),
-                ],
-              }),
+              makeNode({ id: 'unit-1', complete: true }),
+              makeNode({ id: 'unit-2', complete: false }),
             ],
           }),
         ],
       }),
-    ];
-    const { container } = renderWithContext({
-      courseOutline: makeNode({ id: 'root', display_name: 'Root', children: modules }),
-      expandedModule: 'mod-1',
-    });
-    const svgs = container.querySelectorAll('svg');
-    // svgs[0] is the module's ChevronRight, svgs[1] is the CompletionIcon
-    const lessonSvg = svgs[1];
-    // Partial progress (level 5 of 7) -> two circles
-    const circles = lessonSvg.querySelectorAll('circle');
-    expect(circles.length).toBe(2);
-    expect(circles[1].getAttribute('stroke')).toBe('#3b82f6');
+    );
+    expect(iconState(lesson)).toBe('partial');
+    const arc = within(lesson).getByTestId('completion-icon').querySelectorAll('circle')[1];
+    const circumference = Number(arc.getAttribute('stroke-dasharray'));
+    expect(Number(arc.getAttribute('stroke-dashoffset'))).toBeCloseTo(circumference * 0.25);
   });
 });

@@ -196,6 +196,8 @@
         "app/platform/[tenant]/course-content/[course_id]/instructors/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/analytics/page.tsx",
         "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
+        "components/course-content-tabs.tsx",
+        "components/course-content-header.tsx",
         "components/course-lesson-navigator.tsx",
         "components/course-agent-chat.tsx",
         "components/course-access-guard.tsx",
@@ -385,7 +387,7 @@
         },
         {
           "id": "tabs-36",
-          "description": "Staff tabs follow the course-role gates: course-staff / course-instructor (and platform admins) see every staff tab including Authoring, course-limited-staff sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees none of them",
+          "description": "Staff tabs (grouped in the \"Staff tools\" menu) follow the course-role gates: course-staff / course-instructor (and platform admins) see every staff tab including Authoring, course-limited-staff sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees neither the tabs nor the Staff tools menu",
           "status": "covered"
         },
         {
@@ -1204,7 +1206,8 @@
       "sourceFiles": [
         "components/app-sidebar/index.tsx",
         "components/nav-bar.tsx",
-        "app/home/page.tsx"
+        "app/home/page.tsx",
+        "components/course-content-tabs.tsx"
       ],
       "checkpoints": [
         {

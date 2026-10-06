@@ -2,7 +2,7 @@
 
 import { useContext } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import { ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import useCourseNavigator from '@/hooks/courses/useCourseNavigator';
@@ -36,22 +36,24 @@ export const CourseLessonNavigator = ({ className }: { className?: string }) => 
     <div className={`flex flex-shrink-0 items-center gap-2 ${className ?? ''}`}>
       {!navigator.isPreviousHidden() && (
         <button
+          type="button"
           onClick={handlePreviousBtnClick}
-          className="flex items-center rounded-sm border border-gray-300 px-1.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 md:pr-2 md:pl-1"
+          className="inline-flex h-8 items-center rounded-md border border-gray-200 bg-white px-2 text-xs font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none @xl:pr-3"
           aria-label="Previous lesson"
         >
-          <ChevronRight className="h-3.5 w-3.5 rotate-180 transform md:mr-1" />
-          <span className="hidden md:inline">Previous Unit</span>
+          <ChevronLeft className="h-4 w-4 @xl:mr-1" />
+          <span className="hidden @xl:inline">Previous Unit</span>
         </button>
       )}
       {!navigator.isNextHidden() && (
         <button
+          type="button"
           onClick={handleNextBtnClick}
-          className="flex items-center rounded-sm bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-1.5 py-1.5 text-xs font-medium text-[var(--button-primary-text)] hover:opacity-[var(--button-primary-hover-opacity)] md:pr-1 md:pl-2"
+          className="inline-flex h-8 items-center rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-2 text-xs font-medium text-[var(--button-primary-text)] shadow-xs transition-opacity hover:opacity-[var(--button-primary-hover-opacity)] focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none @xl:pl-3"
           aria-label="Next lesson"
         >
-          <span className="hidden md:inline">Keep Learning</span>
-          <ChevronRight className="h-3.5 w-3.5 md:ml-1" />
+          <span className="hidden @xl:inline">Keep Learning</span>
+          <ChevronRight className="h-4 w-4 @xl:ml-1" />
         </button>
       )}
     </div>
