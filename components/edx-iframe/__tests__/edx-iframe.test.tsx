@@ -414,7 +414,7 @@ describe('EdxIframe - JWT PostMessage', () => {
   });
 
   describe('agent mode styling', () => {
-    it('applies p-6 padding and the legacy inline iframe height in learning mode', async () => {
+    it('applies the header-aligned padding and lets the iframe fill the wrapper in learning mode', async () => {
       const { container } = renderEdxIframe({ ...defaultContextValue, agentMode: 'learning' });
 
       await waitFor(() => {
@@ -422,19 +422,22 @@ describe('EdxIframe - JWT PostMessage', () => {
         expect(iframe).toBeInTheDocument();
       });
 
+      // The wrapper is a flex column filling the layout's content area, so
+      // the iframe's height follows the layout instead of viewport math.
       const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
-      expect(wrapper.className).toContain('p-6');
+      expect(wrapper.className).toContain('px-3');
+      expect(wrapper.className).toContain('md:px-4');
       expect(wrapper.className).not.toContain('p-0');
+      expect(wrapper.className).toContain('flex-col');
+      expect(wrapper.className).toContain('flex-1');
 
       const iframe = container.querySelector('iframe') as HTMLIFrameElement;
-      // jsdom normalizes calc() expressions, so assert the constituent parts.
-      expect(iframe.style.height).toContain('100vh');
-      expect(iframe.style.height).toContain('100px');
-      expect(iframe.style.height).toContain('62px');
-      expect(iframe.className).toBe('');
+      expect(iframe.style.height).toBe('');
+      expect(iframe.className).toContain('flex-1');
+      expect(iframe.className).not.toMatch(/calc\(100vh/);
     });
 
-    it('drops mobile padding and applies responsive iframe height in assessment mode', async () => {
+    it('drops mobile padding but keeps the iframe filling the wrapper in assessment mode', async () => {
       const { container } = renderEdxIframe({
         ...defaultContextValue,
         agentMode: 'assessment',
@@ -447,14 +450,12 @@ describe('EdxIframe - JWT PostMessage', () => {
 
       const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
       expect(wrapper.className).toContain('p-0');
-      expect(wrapper.className).not.toContain('p-6');
+      expect(wrapper.className).not.toContain('py-4');
 
       const iframe = container.querySelector('iframe') as HTMLIFrameElement;
-      // Inline height is dropped so the Tailwind responsive classes can take over.
       expect(iframe.style.height).toBe('');
-      expect(iframe.className).toContain('h-[calc(100vh-255px)]');
-      expect(iframe.className).toContain('md:h-[calc(100vh-257px)]');
-      expect(iframe.className).toContain('lg:h-[calc(100vh-247px)]');
+      expect(iframe.className).toContain('flex-1');
+      expect(iframe.className).not.toMatch(/calc\(100vh/);
     });
 
     it('stretches the wrapper and iframe to full height in assessment fullscreen mode', async () => {
@@ -478,7 +479,7 @@ describe('EdxIframe - JWT PostMessage', () => {
       // Fullscreen wins over the responsive assessment heights: h-full + 100% inline.
       expect(iframe.className).toContain('h-full');
       expect(iframe.className).toContain('w-full');
-      expect(iframe.className).not.toContain('h-[calc(100vh-255px)]');
+      expect(iframe.className).not.toContain('flex-1');
       expect(iframe.style.height).toBe('100%');
       expect(iframe.style.width).toBe('100%');
     });
@@ -498,13 +499,13 @@ describe('EdxIframe - JWT PostMessage', () => {
       });
 
       const wrapper = container.querySelector('.course-edx-iframe-container') as HTMLElement;
-      expect(wrapper.className).toContain('p-6');
+      expect(wrapper.className).toContain('py-4');
       expect(wrapper.className).not.toContain('h-full');
 
       const iframe = container.querySelector('iframe') as HTMLIFrameElement;
-      expect(iframe.className).toBe('');
-      // Legacy learning-mode inline height is preserved.
-      expect(iframe.style.height).toContain('100vh');
+      expect(iframe.className).toContain('flex-1');
+      expect(iframe.className).not.toContain('h-full');
+      expect(iframe.style.height).toBe('');
     });
   });
   describe('unit auto-completion postMessage', () => {

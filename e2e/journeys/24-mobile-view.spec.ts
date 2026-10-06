@@ -78,7 +78,7 @@ test.describe.fixme('Journey 24: Mobile View', () => {
     expect(overflows).toBe(false);
 
     // Every core tab stays reachable, inline or through the overflow menu.
-    for (const name of [/^(Course|Agent)$/, 'Progress', 'Dates', 'Discussion'] as Array<
+    for (const name of [/^(Course|Agent)$/, 'Progress', 'Dates', 'Discussions'] as Array<
       string | RegExp
     >) {
       const tab = await getCourseContentTab(page, name);
@@ -95,7 +95,7 @@ test.describe.fixme('Journey 24: Mobile View', () => {
       { linkName: /^(Course|Agent)$/, tabClass: /active-tab-(course|agent)/ },
       { linkName: 'Progress', tabClass: /active-tab-progress/ },
       { linkName: 'Dates', tabClass: /active-tab-dates/ },
-      { linkName: 'Discussion', tabClass: /active-tab-forum/ },
+      { linkName: 'Discussions', tabClass: /active-tab-forum/ },
     ];
 
     for (const { linkName, tabClass } of tabsToCheck) {
@@ -125,7 +125,7 @@ test.describe.fixme('Journey 24: Mobile View', () => {
     const nonCourseTabs: Array<{ linkName: string }> = [
       { linkName: 'Progress' },
       { linkName: 'Dates' },
-      { linkName: 'Discussion' },
+      { linkName: 'Discussions' },
     ];
 
     for (const { linkName } of nonCourseTabs) {
@@ -180,7 +180,7 @@ test.describe.fixme('Journey 24: Mobile View', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await navigateToCourseContent(page);
 
-    const tabsToCheck = ['Progress', 'Dates', 'Discussion'];
+    const tabsToCheck = ['Progress', 'Dates', 'Discussions'];
 
     for (const linkName of tabsToCheck) {
       const tabLink = page.getByRole('link', { name: linkName }).first();
