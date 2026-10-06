@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.90.2](https://github.com/iblai/lms/compare/skills-v0.90.1...skills-v0.90.2) (2026-10-06)
+
+### Bug Fixes
+
+* view gradebook btn section hidden from lms.css rather than mfe.css ([c5d2d60](https://github.com/iblai/lms/commit/c5d2d60bf7cc707a424876a0836e876cfde728dc))
+
 ## [0.90.1](https://github.com/iblai/lms/compare/skills-v0.90.0...skills-v0.90.1) (2026-10-06)
 
 ### Bug Fixes
