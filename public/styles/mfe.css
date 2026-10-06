@@ -1354,3 +1354,9 @@ body:has(.gradebook-header) .nav-link.active .pgn__icon {
 body:has(.gradebook-header) .site-header-mobile {
   display: none !important;
 }
+
+.instructor-dashboard-wrapper-2
+  section.idash-section#student_admin
+  > .action-type-container:first-of-type {
+  display: none;
+}
