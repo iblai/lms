@@ -375,7 +375,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     // Admin-gated tabs may sit behind the tab row's overflow menu.
-    const instructorTab = await getCourseContentTab(page, 'Instructor');
+    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
 
     if (!instructorTab) {
       logger.info('Authoring tab is admin-gated like Instructor — skipping for non-admin');
@@ -388,7 +388,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const parts = url.pathname.split('/').filter(Boolean);
     const courseId = decodeURIComponent(parts[3] || '');
 
-    const authoringTab = await getCourseContentTab(page, 'Authoring');
+    const authoringTab = await getCourseContentTab(page, 'Edit in Studio');
     expect(authoringTab).not.toBeNull();
     await expect(authoringTab!).toBeVisible({ timeout: 10000 });
     await expect(authoringTab!).toHaveAttribute('target', '_blank');
@@ -407,7 +407,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorTab = await getCourseContentTab(page, 'Instructor');
+    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
 
     if (!instructorTab) {
       logger.info('Instructor tab not available — expected for some courses');
@@ -443,10 +443,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const [gradebookTab, instructorTab] = await Promise.all([
-      getCourseContentTab(page, 'Gradebook'),
-      getCourseContentTab(page, 'Instructor'),
-    ]);
+    // Sequential: resolving a staff page may open the staff area first.
+    const gradebookTab = await getCourseContentTab(page, 'Gradebook');
+    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
 
     // Gradebook shares the staff-tab gate with Instructor.
     expect(Boolean(gradebookTab)).toBe(Boolean(instructorTab));
@@ -1228,7 +1227,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const ready = await navigateToCourseContent(page);
     if (!ready) return false;
 
-    const configTab = await getCourseContentTab(page, 'Configuration');
+    const configTab = await getCourseContentTab(page, 'Settings');
     if (!configTab) return false;
 
     await configTab.click();
@@ -1248,7 +1247,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const configTab = await getCourseContentTab(page, 'Configuration');
+    const configTab = await getCourseContentTab(page, 'Settings');
 
     if (!configTab) {
       logger.info('Configuration tab not visible — user is not a platform admin; skipping');
@@ -1502,11 +1501,10 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const [instructorTab, configurationTab, authoringTab] = await Promise.all([
-      getCourseContentTab(page, 'Instructor'),
-      getCourseContentTab(page, 'Configuration'),
-      getCourseContentTab(page, 'Authoring'),
-    ]);
+    // Sequential: resolving a staff page may open the staff area first.
+    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
+    const configurationTab = await getCourseContentTab(page, 'Settings');
+    const authoringTab = await getCourseContentTab(page, 'Edit in Studio');
 
     if (!instructorTab && !configurationTab && !authoringTab) {
       logger.info('Viewer holds no staff role on this course — no staff tabs, as expected');

@@ -104,8 +104,10 @@ export const CourseUnitBreadcrumb = ({
   className?: string;
 }) => {
   // Ancestors appear as the header's title column widens (container query):
-  // the nearest first, then the section. Each can truncate, but the unit
-  // name gives up space five times more slowly so it stays readable.
+  // the nearest first, then the section. Each can truncate, but the ancestors
+  // give up space four times faster than the unit name so it stays readable.
+  // (The unit keeps the default shrink of 1: a factor below 1 would leave it
+  // overflowing when it is the only visible item.)
   const ancestors = [
     { name: moduleName, className: 'hidden @3xl:flex' },
     { name: lessonName, className: 'hidden @xl:flex' },
@@ -123,7 +125,7 @@ export const CourseUnitBreadcrumb = ({
         {ancestors.map(({ name, className: ancestorClassName }, index) => (
           <span
             key={`${index}-${name}`}
-            className={cn('min-w-0 items-center', ancestorClassName)}
+            className={cn('min-w-0 shrink-[4] items-center', ancestorClassName)}
             data-testid="course-unit-breadcrumb-ancestor"
           >
             <span className="truncate">{name}</span>
@@ -131,10 +133,7 @@ export const CourseUnitBreadcrumb = ({
           </span>
         ))}
         {unitName && (
-          <span
-            className="min-w-0 shrink-[0.2] truncate font-semibold text-gray-900"
-            aria-current="location"
-          >
+          <span className="min-w-0 truncate font-semibold text-gray-900" aria-current="location">
             {unitName}
           </span>
         )}

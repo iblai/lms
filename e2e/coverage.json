@@ -198,6 +198,7 @@
         "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
         "components/course-content-tabs.tsx",
         "components/course-content-header.tsx",
+        "components/course-staff-shell.tsx",
         "components/course-lesson-navigator.tsx",
         "components/course-agent-chat.tsx",
         "components/course-access-guard.tsx",
@@ -387,7 +388,7 @@
         },
         {
           "id": "tabs-36",
-          "description": "Staff tabs (grouped in the \"Staff tools\" menu) follow the course-role gates: course-staff / course-instructor (and platform admins) see every staff tab including Authoring, course-limited-staff sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees neither the tabs nor the Staff tools menu",
+          "description": "Staff pages share one \"Admin\" tab (after the divider in the tab row) that opens the staff area with a section nav; its sections follow the course-role gates: course-staff / course-instructor (and platform admins) see every section including Edit in Studio, course-limited-staff sees Instructor Dashboard / Settings / Analytics but never Edit in Studio, and a viewer with no staff role sees neither the tab nor the area",
           "status": "covered"
         },
         {

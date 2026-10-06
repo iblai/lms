@@ -23,6 +23,7 @@ import {
   Sparkles,
   SquarePen,
   Users,
+  Wrench,
   X,
 } from 'lucide-react';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
@@ -42,6 +43,7 @@ import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
 import { LessonCompletedDialog } from '@/components/lesson-completed-dialog';
 import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
+import { CourseStaffShell } from '@/components/course-staff-shell';
 import { CourseProgressSummary, CourseUnitBreadcrumb } from '@/components/course-content-header';
 import {
   CourseMediaDropdown,
@@ -103,6 +105,8 @@ const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
   'learning-info': 'learning-info',
 };
 const DEFAULT_TAB = 'course';
+// Tab-bar key of the single tab that stands for every staff section.
+const STAFF_TAB_KEY = 'staff';
 
 export default function CourseContentLayout({
   children,
@@ -420,9 +424,8 @@ export default function CourseContentLayout({
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
   const courseBasePath = `/platform/${tenant}/course-content/${resolvedParams.course_id}`;
-  // Ordered tab list. Learner tabs (`learn` / `about`) sit inline and collapse
-  // into a "More" menu when they don't fit; staff tabs (`teach`) always live
-  // in the separate Staff tools menu, so their position here only orders that menu.
+  // Ordered tab list; whatever doesn't fit collapses into a grouped "More"
+  // menu. Staff tabs (`teach`) come last, behind a divider in the row.
   const courseTabs = useMemo<CourseContentTab[]>(() => {
     const tabs: CourseContentTab[] = [];
     if (agentTabVisible) {
@@ -490,7 +493,7 @@ export default function CourseContentLayout({
       tabs.push(
         {
           key: 'instructor',
-          label: 'Instructor',
+          label: 'Instructor Dashboard',
           href: `${courseBasePath}/instructor`,
           icon: Presentation,
           group: 'teach',
@@ -516,7 +519,7 @@ export default function CourseContentLayout({
     if (canViewStaffTabs) {
       tabs.push({
         key: 'configuration',
-        label: 'Configuration',
+        label: 'Settings',
         href: `${courseBasePath}/configuration`,
         icon: Settings2,
         group: 'teach',
@@ -525,7 +528,7 @@ export default function CourseContentLayout({
     if (canViewAuthoringTab) {
       tabs.push({
         key: 'authoring',
-        label: 'Authoring',
+        label: 'Edit in Studio',
         href: `${config.urls.studioUrl()}/course/${courseId}`,
         icon: SquarePen,
         group: 'teach',
@@ -546,6 +549,29 @@ export default function CourseContentLayout({
     course?.instructor_info?.instructors,
     canViewAnalytics,
   ]);
+
+  // Staff pages share one tab: "Admin" opens the staff area, whose
+  // section nav lists them. Learner tabs stay as they are.
+  const staffSections = useMemo(
+    () => courseTabs.filter((tab) => tab.group === 'teach'),
+    [courseTabs],
+  );
+  const tabBarTabs = useMemo<CourseContentTab[]>(() => {
+    const learnerTabs = courseTabs.filter((tab) => tab.group !== 'teach');
+    if (staffSections.length === 0) return learnerTabs;
+    return [
+      ...learnerTabs,
+      {
+        key: STAFF_TAB_KEY,
+        label: 'Admin',
+        href: staffSections[0].href,
+        icon: Wrench,
+        group: 'teach',
+      },
+    ];
+  }, [courseTabs, staffSections]);
+  const isStaffSection = staffSections.some((section) => section.key === activeTab);
+  const tabBarActiveTab = isStaffSection ? STAFF_TAB_KEY : activeTab;
 
   const edxIframeValue = useMemo(
     () => ({
@@ -933,7 +959,7 @@ export default function CourseContentLayout({
                   </div>
                 </div>
                 <div className="@container px-3 pb-2 md:px-4">
-                  <CourseContentTabs tabs={courseTabs} activeTab={activeTab} />
+                  <CourseContentTabs tabs={tabBarTabs} activeTab={tabBarActiveTab} />
                 </div>
               </header>
 
@@ -943,19 +969,26 @@ export default function CourseContentLayout({
               <div
                 // Mobile scrolls this container itself. On desktop the
                 // iframe tabs manage their own scroll, but the plain-page
-                // tabs (analytics / configuration / instructor(s)) render
-                // long content and need the container to scroll too.
+                // tabs render long content and need a scrolling container —
+                // the staff shell provides its own for the pages it frames.
                 className={cn(
                   'flex min-h-0 flex-1 flex-col',
                   (isMobile ||
-                    ['analytics', 'configuration', 'instructor', 'instructors'].includes(
-                      currentTab ?? '',
-                    )) &&
+                    (!isStaffSection &&
+                      ['analytics', 'configuration', 'instructor', 'instructors'].includes(
+                        currentTab ?? '',
+                      ))) &&
                     'overflow-y-auto',
                 )}
                 style={{ scrollbarWidth: 'none' }}
               >
-                {children}
+                {isStaffSection ? (
+                  <CourseStaffShell sections={staffSections} activeKey={activeTab}>
+                    {children}
+                  </CourseStaffShell>
+                ) : (
+                  children
+                )}
               </div>
             </div>
           </main>

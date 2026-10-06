@@ -79,13 +79,13 @@ vi.mock('lucide-react', () => {
     ArrowUpRight: icon('icon-arrow-up-right'),
     ChevronDown: icon('icon-chevron-down'),
     ShieldCheck: icon('icon-shield-check'),
+    Wrench: icon('icon-wrench'),
   };
 });
 
-// The staff tabs live inside a Radix DropdownMenu (the Manage menu), whose
-// content only mounts once opened — and opening needs pointer APIs jsdom
-// lacks. Stub it to always render its content so `tabLink('Instructor')`
-// style assertions keep working.
+// Overflowed tabs live inside a Radix DropdownMenu whose content only mounts
+// once opened — and opening needs pointer APIs jsdom lacks. Stub it to always
+// render its content so tab assertions keep working either way.
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => <div>{children}</div>,
   DropdownMenuTrigger: ({ children, ...props }: any) => <button {...props}>{children}</button>,
@@ -362,17 +362,14 @@ describe('CourseContentLayout', () => {
     within(scope)
       .getAllByRole('link')
       .map((a) => a.textContent?.trim() ?? '');
-  const manageMenuLabels = () => {
-    const trigger = screen.getByTestId('course-tabs-staff-trigger');
-    return linkLabels(within(trigger.parentElement as HTMLElement).getByTestId('dropdown-content'));
-  };
-  const learnerTrackLabels = () => {
-    const track = screen.getByTestId('course-content-tabs-track');
-    const menus = within(track).queryAllByTestId('dropdown-content');
-    return within(track)
-      .getAllByRole('link')
-      .filter((a) => !menus.some((menu) => menu.contains(a)))
-      .map((a) => a.textContent?.trim() ?? '');
+  /** Tab labels in row order (overflow never triggers in jsdom, so all are inline). */
+  const rowLabels = () => linkLabels(screen.getByTestId('course-content-tabs'));
+  /** Staff section labels, in nav order (only rendered on a staff route). */
+  const staffSectionLabels = () => linkLabels(screen.getByTestId('course-staff-nav'));
+  /** The staff pages share one tab; their links live in the staff area's nav. */
+  const useStaffRoute = async (section = 'instructor') => {
+    const { usePathname } = await import('next/navigation');
+    vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${section}`);
   };
 
   beforeEach(() => {
@@ -739,7 +736,7 @@ describe('CourseContentLayout', () => {
     expect(mockCheckRbacPermission).toHaveBeenCalledWith({}, '/watchedgroups/#list');
   });
 
-  it('hides Instructor tab when user is not platform admin', () => {
+  it('hides the Instructor Dashboard tab when user is not platform admin', () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
@@ -749,20 +746,31 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(queryTabLink('Instructor')).not.toBeInTheDocument();
+    expect(queryTabLink('Instructor Dashboard')).not.toBeInTheDocument();
   });
 
-  it('shows Instructor tab when user is platform admin', () => {
+  it('shows the Admin tab and the Instructor Dashboard section to a platform admin', async () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: true },
     } as any);
+    await useStaffRoute();
 
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(tabLink('Instructor')).toBeInTheDocument();
+    expect(tabLink('Admin')).toHaveAttribute('href', expect.stringContaining('/instructor'));
+    expect(tabLink('Instructor Dashboard')).toBeInTheDocument();
+  });
+
+  it('hides the Admin tab from a learner', () => {
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(queryTabLink('Admin')).not.toBeInTheDocument();
   });
 
   it('hides Gradebook tab when user is not platform admin', () => {
@@ -778,65 +786,73 @@ describe('CourseContentLayout', () => {
     expect(queryTabLink('Gradebook')).not.toBeInTheDocument();
   });
 
-  it('lists Gradebook in the Staff tools menu right after Instructor for platform admins', () => {
+  it('ends the row with a single Admin tab and lists Gradebook right after Instructor Dashboard in the staff nav', async () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: true },
     } as any);
+    await useStaffRoute();
 
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(tabLink('Gradebook')).toBeInTheDocument();
 
-    const manageLabels = manageMenuLabels();
-    expect(manageLabels.indexOf('Gradebook')).toBe(manageLabels.indexOf('Instructor') + 1);
-    // Staff tabs never sit in the learner track.
-    expect(learnerTrackLabels()).not.toContain('Gradebook');
+    expect(rowLabels()).toEqual(['Agent', 'Course', 'Progress', 'Dates', 'Discussions', 'Admin']);
+    const sections = staffSectionLabels();
+    expect(sections.indexOf('Gradebook')).toBe(sections.indexOf('Instructor Dashboard') + 1);
+    // One visible divider (the measurement row's copy is aria-hidden).
+    expect(
+      screen
+        .getAllByTestId('course-tabs-staff-divider')
+        .filter((divider) => !divider.closest('[aria-hidden="true"]')),
+    ).toHaveLength(1);
   });
 
-  it('keeps the learner track free of staff tabs and hides Staff tools from learners', () => {
+  it('shows only the learner tabs, with no staff divider, to a learner', () => {
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(learnerTrackLabels()).toEqual(['Agent', 'Course', 'Progress', 'Dates', 'Discussions']);
-    expect(screen.queryByTestId('course-tabs-staff-trigger')).not.toBeInTheDocument();
+    expect(rowLabels()).toEqual(['Agent', 'Course', 'Progress', 'Dates', 'Discussions']);
+    expect(screen.queryByTestId('course-tabs-staff-divider')).not.toBeInTheDocument();
   });
 
-  describe('Authoring tab (platform admin only)', () => {
-    it('renders Authoring tab for platform admin', () => {
+  describe('Edit in Studio tab (platform admin only)', () => {
+    it('renders the Edit in Studio section for platform admin', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
+      await useStaffRoute();
 
       render(
         <CourseContentLayout params={defaultParams}>
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(tabLink('Authoring')).toBeInTheDocument();
+      expect(tabLink('Edit in Studio')).toBeInTheDocument();
     });
 
-    it('hides Authoring tab for non-admin users', () => {
+    it('hides the Edit in Studio section for non-admin users', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: false },
       } as any);
+      await useStaffRoute();
 
       render(
         <CourseContentLayout params={defaultParams}>
           <div>children</div>
         </CourseContentLayout>,
       );
-      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+      expect(queryTabLink('Edit in Studio')).not.toBeInTheDocument();
     });
 
-    it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
+    it('Edit in Studio points at studioUrl/course/<courseId> in a new tab', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
+      await useStaffRoute();
 
       const { container } = render(
         <CourseContentLayout params={defaultParams}>
@@ -845,7 +861,7 @@ describe('CourseContentLayout', () => {
       );
 
       const authoringLink = Array.from(container.querySelectorAll('a')).find(
-        (a) => a.textContent?.trim() === 'Authoring',
+        (a) => a.textContent?.trim() === 'Edit in Studio',
       );
       expect(authoringLink).toBeTruthy();
       // React.use mock decodes the param, so the courseId in the href has raw colons/plus.
@@ -856,10 +872,11 @@ describe('CourseContentLayout', () => {
       expect(authoringLink?.getAttribute('rel')).toContain('noopener');
     });
 
-    it('Authoring closes the Staff tools menu, after Instructor, Gradebook and Configuration', () => {
+    it('Edit in Studio closes the staff nav, after Instructor Dashboard, Gradebook and Settings', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
+      await useStaffRoute();
 
       render(
         <CourseContentLayout params={defaultParams}>
@@ -867,8 +884,13 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
 
-      // No can_view_analytics here, so Analytics is absent from the menu.
-      expect(manageMenuLabels()).toEqual(['Instructor', 'Gradebook', 'Configuration', 'Authoring']);
+      // No can_view_analytics here, so Analytics is absent from the nav.
+      expect(staffSectionLabels()).toEqual([
+        'Instructor Dashboard',
+        'Gradebook',
+        'Settings',
+        'Edit in Studio',
+      ]);
     });
   });
 
@@ -2352,24 +2374,27 @@ describe('CourseContentLayout', () => {
       expect(queryTabLink('Instructors')).not.toBeInTheDocument();
     });
 
-    it('shows Configuration for a platform admin', () => {
+    it('shows Settings for a platform admin', async () => {
+      await useStaffRoute();
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      const link = tabLink('Configuration');
+      const link = tabLink('Settings');
       expect(link).toHaveAttribute('href', expect.stringContaining('/configuration'));
     });
 
-    it('hides Configuration for a non-admin user', () => {
+    it('hides Settings for a non-admin user', () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: false },
       } as any);
       renderLayout();
-      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Settings')).not.toBeInTheDocument();
     });
 
-    it('shows Analytics only when the user has the can_view_analytics permission', () => {
+    it('shows Analytics only when the user has the can_view_analytics permission', async () => {
+      // Analytics is this viewer's only staff section, so it is the staff route.
+      await useStaffRoute('analytics');
       mockCheckRbacPermission.mockImplementation(((_perms: any, resource: string) =>
         resource.includes('can_view_analytics')) as any);
       renderLayout();
@@ -2377,7 +2402,8 @@ describe('CourseContentLayout', () => {
       expect(link).toHaveAttribute('href', expect.stringContaining('/analytics'));
     });
 
-    it('hides Analytics when the user lacks can_view_analytics (even as admin)', () => {
+    it('hides Analytics when the user lacks can_view_analytics (even as admin)', async () => {
+      await useStaffRoute();
       // Default mockCheckRbacPermission returns false for every resource.
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
@@ -2405,10 +2431,11 @@ describe('CourseContentLayout', () => {
       };
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: false },
       } as any);
+      await useStaffRoute();
     });
 
     it('looks up roles for the decoded course ID', () => {
@@ -2417,24 +2444,24 @@ describe('CourseContentLayout', () => {
     });
 
     it.each(['course-staff', 'course-instructor'])(
-      'shows every staff tab — Authoring included — for %s',
+      'shows every staff tab — Edit in Studio included — for %s',
       (role) => {
         setCourseRole(role);
         renderLayout();
-        expect(tabLink('Instructor')).toBeInTheDocument();
-        expect(tabLink('Configuration')).toBeInTheDocument();
+        expect(tabLink('Instructor Dashboard')).toBeInTheDocument();
+        expect(tabLink('Settings')).toBeInTheDocument();
         expect(tabLink('Analytics')).toBeInTheDocument();
-        expect(tabLink('Authoring')).toBeInTheDocument();
+        expect(tabLink('Edit in Studio')).toBeInTheDocument();
       },
     );
 
-    it('shows every staff tab except Authoring for course-limited-staff', () => {
+    it('shows every staff tab except Edit in Studio for course-limited-staff', () => {
       setCourseRole('course-limited-staff');
       renderLayout();
-      expect(tabLink('Instructor')).toBeInTheDocument();
-      expect(tabLink('Configuration')).toBeInTheDocument();
+      expect(tabLink('Instructor Dashboard')).toBeInTheDocument();
+      expect(tabLink('Settings')).toBeInTheDocument();
       expect(tabLink('Analytics')).toBeInTheDocument();
-      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+      expect(queryTabLink('Edit in Studio')).not.toBeInTheDocument();
     });
 
     it('keeps the staff tabs hidden for a course role that grants no staff access', () => {
@@ -2448,18 +2475,18 @@ describe('CourseContentLayout', () => {
         isResolved: true,
       };
       renderLayout();
-      expect(queryTabLink('Instructor')).not.toBeInTheDocument();
-      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Instructor Dashboard')).not.toBeInTheDocument();
+      expect(queryTabLink('Settings')).not.toBeInTheDocument();
       expect(queryTabLink('Analytics')).not.toBeInTheDocument();
-      expect(queryTabLink('Authoring')).not.toBeInTheDocument();
+      expect(queryTabLink('Edit in Studio')).not.toBeInTheDocument();
     });
 
-    it('still shows Authoring to a platform admin with no course role', () => {
+    it('still shows Edit in Studio to a platform admin with no course role', () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      expect(tabLink('Authoring')).toBeInTheDocument();
+      expect(tabLink('Edit in Studio')).toBeInTheDocument();
     });
 
     it('does not grant Analytics to a platform admin lacking can_view_analytics', () => {

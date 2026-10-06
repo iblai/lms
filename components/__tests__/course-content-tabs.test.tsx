@@ -53,11 +53,11 @@ const aboutTab: CourseContentTab = {
   group: 'about',
 };
 const staffTabs: CourseContentTab[] = [
-  { key: 'instructor', label: 'Instructor', href: '/instructor', group: 'teach' },
+  { key: 'instructor', label: 'Instructor Dashboard', href: '/instructor', group: 'teach' },
   { key: 'gradebook', label: 'Gradebook', href: '/gradebook', group: 'teach' },
   {
     key: 'authoring',
-    label: 'Authoring',
+    label: 'Edit in Studio',
     href: 'https://studio.example.org/course/x',
     group: 'teach',
     external: true,
@@ -77,18 +77,14 @@ function mockLayout(containerWidth: number) {
   Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
     configurable: true,
     get(this: HTMLElement) {
-      return this.dataset.testid === 'course-content-tabs-track' ? containerWidth : 0;
+      return this.dataset.testid === 'course-content-tabs' ? containerWidth : 0;
     },
   });
 }
 
-const track = () => screen.getByTestId('course-content-tabs-track');
+const track = () => screen.getByTestId('course-content-tabs');
 const overflowMenu = () => {
   const trigger = screen.getByTestId('course-tabs-overflow-trigger');
-  return within(trigger.parentElement as HTMLElement).getByTestId('dropdown-content');
-};
-const manageMenu = () => {
-  const trigger = screen.getByTestId('course-tabs-staff-trigger');
   return within(trigger.parentElement as HTMLElement).getByTestId('dropdown-content');
 };
 const linkNames = (scope: HTMLElement) =>
@@ -102,6 +98,11 @@ const inlineTabs = () => {
     .filter((link) => !menus.some((menu) => menu.contains(link)))
     .map((link) => link.textContent);
 };
+/** The visible divider (the measurement row's copy is aria-hidden). */
+const visibleDividers = () =>
+  within(track())
+    .queryAllByTestId('course-tabs-staff-divider')
+    .filter((divider) => !divider.closest('[aria-hidden="true"]'));
 
 describe('CourseContentTabs', () => {
   beforeEach(() => {
@@ -113,30 +114,44 @@ describe('CourseContentTabs', () => {
     delete HTMLElement.prototype.clientWidth;
   });
 
-  it('renders every learner tab inline and no overflow menu when they all fit', () => {
+  it('renders every tab inline and no overflow menu when they all fit', () => {
     mockLayout(1000);
     render(<CourseContentTabs tabs={tabs} activeTab="course" />);
 
-    expect(inlineTabs()).toEqual(['Agent', 'Course', 'Progress', 'Dates']);
+    expect(inlineTabs()).toEqual([
+      'Agent',
+      'Course',
+      'Progress',
+      'Dates',
+      'Instructor Dashboard',
+      'Gradebook',
+      'Edit in Studio',
+    ]);
     expect(screen.queryByTestId('course-tabs-overflow-trigger')).not.toBeInTheDocument();
   });
 
-  it('keeps every learner tab inline when jsdom reports no layout at all', () => {
+  it('keeps every tab inline when jsdom reports no layout at all', () => {
     // No mockLayout: widths and clientWidth are all 0, which must not be read
     // as "nothing fits".
     render(<CourseContentTabs tabs={tabs} activeTab="course" />);
 
-    expect(inlineTabs()).toHaveLength(learnerTabs.length);
+    expect(inlineTabs()).toHaveLength(tabs.length);
     expect(screen.queryByTestId('course-tabs-overflow-trigger')).not.toBeInTheDocument();
   });
 
-  it('moves the learner tabs that do not fit into the overflow menu', () => {
-    // 258px − 8px track inset − 40px trigger leaves room for two 100px tabs.
+  it('moves the tabs that do not fit into the overflow menu', () => {
+    // 254px − 4px track inset − 40px trigger leaves room for two 100px tabs.
     mockLayout(250 + TRACK_INSET);
     render(<CourseContentTabs tabs={tabs} activeTab="agent" />);
 
     expect(inlineTabs()).toEqual(['Agent', 'Course']);
-    expect(linkNames(overflowMenu())).toEqual(['Progress', 'Dates']);
+    expect(linkNames(overflowMenu())).toEqual([
+      'Progress',
+      'Dates',
+      'Instructor Dashboard',
+      'Gradebook',
+      'Edit in Studio',
+    ]);
   });
 
   it('renders the tab icon next to its label, hidden from assistive tech', () => {
@@ -230,60 +245,54 @@ describe('CourseContentTabs', () => {
     expect(screen.getByRole('link', { name: 'Agent' })).not.toHaveAttribute('aria-current');
   });
 
-  describe('Staff tools menu (staff tabs)', () => {
-    it('keeps staff tabs out of the track and lists them in the Staff tools menu in order', () => {
+  describe('staff divider', () => {
+    it('separates the staff tabs from the learner tabs in the row', () => {
       mockLayout(1000);
       render(<CourseContentTabs tabs={tabs} activeTab="course" />);
 
-      expect(inlineTabs()).not.toContain('Instructor');
-      expect(linkNames(manageMenu())).toEqual(['Instructor', 'Gradebook', 'Authoring']);
-      // No heading: the trigger label already says what the menu holds.
-      expect(within(manageMenu()).queryByTestId('dropdown-label')).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Staff tools' })).toHaveTextContent('Staff tools');
+      const [divider] = visibleDividers();
+      expect(visibleDividers()).toHaveLength(1);
+      expect(divider).toHaveAttribute('role', 'separator');
+      // Sits right before the first staff tab.
+      expect(divider.nextElementSibling).toHaveTextContent('Instructor Dashboard');
+      expect(divider.previousElementSibling).toHaveTextContent('Dates');
     });
 
-    it('is not rendered at all for a learner with no staff tabs', () => {
+    it('is not rendered for a learner with no staff tabs', () => {
       mockLayout(1000);
       render(<CourseContentTabs tabs={learnerTabs} activeTab="course" />);
 
-      expect(screen.queryByTestId('course-tabs-staff-trigger')).not.toBeInTheDocument();
+      expect(visibleDividers()).toHaveLength(0);
     });
 
-    it('highlights the trigger and the entry while a staff page is open', () => {
-      mockLayout(1000);
-      const { rerender } = render(<CourseContentTabs tabs={tabs} activeTab="gradebook" />);
-
-      expect(screen.getByTestId('course-tabs-staff-trigger').className).toContain('text-amber-700');
-      const gradebook = within(manageMenu()).getByRole('link', { name: 'Gradebook' });
-      expect(gradebook).toHaveAttribute('aria-current', 'page');
-      expect(gradebook.className).toContain('text-amber-600');
-
-      rerender(<CourseContentTabs tabs={tabs} activeTab="course" />);
-      expect(screen.getByTestId('course-tabs-staff-trigger').className).toContain('text-gray-700');
-      expect(within(manageMenu()).getByRole('link', { name: 'Gradebook' })).not.toHaveAttribute(
-        'aria-current',
-      );
-    });
-
-    it('keeps external staff tabs opening in a new tab from the Staff tools menu', () => {
-      mockLayout(1000);
-      render(<CourseContentTabs tabs={tabs} activeTab="course" />);
-
-      const authoring = within(manageMenu()).getByRole('link', { name: 'Authoring' });
-      expect(authoring).toHaveAttribute('target', '_blank');
-      expect(authoring).toHaveAttribute('href', 'https://studio.example.org/course/x');
-      expect(within(authoring).getByTestId('icon-external')).toBeInTheDocument();
-    });
-
-    it('does not count staff tabs when deciding what overflows', () => {
-      // Four 100px learner tabs fit in 408px; the three staff tabs must not push
-      // any of them into the More menu.
-      mockLayout(400 + TRACK_INSET);
+    it('leaves the row together with the first staff tab when that overflows', () => {
+      // 454px − 4px − 40px fits four 100px tabs: every learner tab stays, every
+      // staff tab (and with it the divider) goes into the menu.
+      mockLayout(450 + TRACK_INSET);
       render(<CourseContentTabs tabs={tabs} activeTab="course" />);
 
       expect(inlineTabs()).toEqual(['Agent', 'Course', 'Progress', 'Dates']);
-      expect(screen.queryByTestId('course-tabs-overflow-trigger')).not.toBeInTheDocument();
-      expect(screen.getByTestId('course-tabs-staff-trigger')).toBeInTheDocument();
+      expect(visibleDividers()).toHaveLength(0);
+      expect(linkNames(overflowMenu())).toEqual([
+        'Instructor Dashboard',
+        'Gradebook',
+        'Edit in Studio',
+      ]);
+    });
+
+    it('keeps the external staff tab opening in a new tab inline and from the menu', () => {
+      mockLayout(1000);
+      const { unmount } = render(<CourseContentTabs tabs={tabs} activeTab="course" />);
+      const inline = screen.getByRole('link', { name: 'Edit in Studio' });
+      expect(inline).toHaveAttribute('target', '_blank');
+      expect(within(inline).getByTestId('icon-external')).toBeInTheDocument();
+      unmount();
+
+      mockLayout(250 + TRACK_INSET);
+      render(<CourseContentTabs tabs={tabs} activeTab="course" />);
+      const inMenu = within(overflowMenu()).getByRole('link', { name: 'Edit in Studio' });
+      expect(inMenu).toHaveAttribute('target', '_blank');
+      expect(inMenu).toHaveAttribute('href', 'https://studio.example.org/course/x');
     });
   });
 });

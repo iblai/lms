@@ -71,7 +71,7 @@ When adding a new page or modifying an existing user flow:
 
 ## Journey 5: Course Content — Tab Navigation & Iframes (38 checkpoints) — `journeys/05-course-content-tabs.spec.ts`
 
-**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/platform/[tenant]/course-content/[course_id]/gradebook/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-content-tabs.tsx`, `components/course-content-header.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `hooks/courses/use-edx-iframe-loaded.ts`, `hooks/courses/use-edx-iframe.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
+**Source files:** `app/course-content/[course_id]/course/page.tsx`, `app/course-content/[course_id]/agent/page.tsx`, `app/course-content/[course_id]/progress/page.tsx`, `app/platform/[tenant]/course-content/[course_id]/gradebook/page.tsx`, `app/course-content/[course_id]/dates/page.tsx`, `app/course-content/[course_id]/discussion/page.tsx`, `app/course-content/[course_id]/instructor/page.tsx`, `app/course-content/[course_id]/bookmarks/page.tsx`, `app/course-content/[course_id]/configuration/page.tsx`, `app/course-content/[course_id]/learning-info/page.tsx`, `app/course-content/[course_id]/instructors/page.tsx`, `app/course-content/[course_id]/analytics/page.tsx`, `app/course-content/[course_id]/layout.tsx`, `components/course-content-tabs.tsx`, `components/course-content-header.tsx`, `components/course-staff-shell.tsx`, `components/course-lesson-navigator.tsx`, `components/course-agent-chat.tsx`, `components/course-access-guard.tsx`, `components/edx-iframe/edx-iframe.tsx`, `hooks/courses/edx-iframe-context.ts`, `hooks/courses/use-edx-iframe-loaded.ts`, `hooks/courses/use-edx-iframe.ts`, `components/course-media-dropdown.tsx`, `services/course-metadata.ts`, `hooks/courses/use-course-user-roles.ts`
 
 - [x] Course content page loads with Course, Progress, Dates, and Discussions tab links visible
 - [x] Course tab displays an iframe with edX course content loaded
@@ -81,7 +81,7 @@ When adding a new page or modifying an existing user flow:
 - [x] Discussion tab shows thread list or "Nothing here yet" empty state
 - [x] "Add a post" button opens the post creation form with Discussion radio selected by default
 - [x] A new discussion post can be created with a title and content via the rich text editor
-- [x] Instructor tab loads iframe content when present _(skips gracefully if tab absent)_
+- [x] Instructor Dashboard tab loads iframe content when present _(skips gracefully if tab absent)_
 - [x] Bookmarks tab is accessible from the course content navigation _(if available)_
 - [x] URL updates correctly when switching between tabs
 - [x] No error messages (Bad request, 500, Server error) appear on any course tab
@@ -96,8 +96,8 @@ When adding a new page or modifying an existing user flow:
 - [x] Learning/Assessment toggle on `/agent` only renders when `getCourseBlockDetails` returns a block of `type=ibl_mentor_xblock`
 - [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
 - [x] On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch
-- [x] Authoring tab links to `<studio-url>/course/<course-id>` and opens in a new tab _(admin only)_
-- [x] Configuration tab (platform admin) navigates to `/course-content/<id>/configuration` and renders the `configuration-tab` _(admin only)_
+- [x] Edit in Studio tab links to `<studio-url>/course/<course-id>` and opens in a new tab _(admin only)_
+- [x] Settings tab (platform admin) navigates to `/course-content/<id>/configuration` and renders the `configuration-tab` _(admin only)_
 - [x] Configuration route displays the Credentials section (heading, "Add Credential" button, list toggle) _(admin only)_
 - [x] Credential creation modal opens with form fields and closes on cancel _(admin only)_
 - [x] Advanced Settings expands and collapses on the configuration route _(admin only)_
@@ -109,8 +109,8 @@ When adding a new page or modifying an existing user flow:
 - [x] Agent tab fullscreen toggle expands the chat into a fixed inset-0 overlay and the floating exit bubble restores the normal layout
 - [x] Unit media dropdown (beside the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews `student_view_url` in an overlay on the Agent tab and posts a `SCROLL_TO` message to the edX iframe on the Course tab _(skips gracefully when the unit has no media blocks)_
 - [x] Course content layout requests the signed-in user's role listing (`GET /api/ibl/users/manage/roles/`, looked up by `username` / `email` / `user_id`) so course-scoped roles can gate the staff tabs
-- [x] Staff tabs (grouped in the "Staff tools" menu) follow the course-role gates: `course-staff` / `course-instructor` (and platform admins) see every staff tab including Authoring, `course-limited-staff` sees Instructor / Configuration / Analytics but never Authoring, and a viewer with no staff role sees neither the tabs nor the Staff tools menu
-- [x] Gradebook tab (staff only, same gate as Instructor) navigates to `/gradebook` and iframes `<mfe-url>/gradebook/<course-id>` _(skips gracefully for non-staff viewers)_
+- [x] Staff pages share one "Admin" tab (after the divider in the tab row) that opens the staff area with a section nav; its sections follow the course-role gates: `course-staff` / `course-instructor` (and platform admins) see every section including Edit in Studio, `course-limited-staff` sees Instructor Dashboard / Settings / Analytics but never Edit in Studio, and a viewer with no staff role sees neither the tab nor the area
+- [x] Gradebook tab (staff only, same gate as Instructor Dashboard) navigates to `/gradebook` and iframes `<mfe-url>/gradebook/<course-id>` _(skips gracefully for non-staff viewers)_
 
 ---
 
