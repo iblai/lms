@@ -40,14 +40,15 @@ describe('CourseAccessGuard', () => {
   });
 
   describe('not-started state', () => {
-    it('shows spinner when not started', () => {
+    // No content-mode tab (about-page style) => SSR-transparent: children render
+    // while course info loads so they reach the initial HTML.
+    it('renders children when not started (no content-mode tab)', () => {
       render(
         <CourseAccessGuard course={null} courseInfoLoadingState="not-started">
           <div>content</div>
         </CourseAccessGuard>,
       );
-      expect(screen.queryByText('content')).not.toBeInTheDocument();
-      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+      expect(screen.getByText('content')).toBeInTheDocument();
     });
 
     it('does not redirect when not started', () => {
@@ -58,17 +59,30 @@ describe('CourseAccessGuard', () => {
       );
       expect(mockPush).not.toHaveBeenCalled();
     });
-  });
 
-  describe('loading state', () => {
-    it('shows spinner while loading', () => {
+    it('still shows a spinner for a content-mode tab until access resolves', () => {
       render(
-        <CourseAccessGuard course={null} courseInfoLoadingState="loading">
+        <CourseAccessGuard
+          course={null}
+          courseInfoLoadingState="not-started"
+          currentTab="agent"
+        >
           <div>content</div>
         </CourseAccessGuard>,
       );
       expect(screen.queryByText('content')).not.toBeInTheDocument();
       expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+  });
+
+  describe('loading state', () => {
+    it('renders children while loading (no content-mode tab)', () => {
+      render(
+        <CourseAccessGuard course={null} courseInfoLoadingState="loading">
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(screen.getByText('content')).toBeInTheDocument();
     });
 
     it('does not redirect while still loading', () => {

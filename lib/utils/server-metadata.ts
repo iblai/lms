@@ -238,7 +238,15 @@ interface PublicPlatformConfig {
   platform_key?: string;
   /** When true, the tenant allows anonymous self-linking, i.e. it is public. */
   allow_self_linking?: boolean;
+  /**
+   * When true, the tenant opts into SEO discoverability: its public discovery
+   * pages (discover / courses / programs / pathways) stay crawlable and a 401
+   * from an optional API must not bounce an anonymous visitor to the auth SPA.
+   */
+  allow_seo_discoverability?: boolean;
 }
+
+export type { PublicPlatformConfig };
 
 /**
  * Fetches the tenant's public platform config. This is the same
