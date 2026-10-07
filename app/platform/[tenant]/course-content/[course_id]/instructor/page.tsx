@@ -1,15 +1,15 @@
 'use client';
 
-import type React from 'react';
 import { useEffect } from 'react';
-import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
+import { useParams, useSearchParams, redirect } from 'next/navigation';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
-import { useParams, redirect } from 'next/navigation';
+import { InstructorDashboard, isDashboardSection } from './_components/instructor-dashboard';
 
 export default function InstructorTab() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const tenant = useTenantParam();
   const courseId = decodeURIComponent(params.course_id as string);
   const { data: departmentMemberCheck, isSuccess } = useGetDepartmentMemberCheckQuery({
@@ -25,5 +25,12 @@ export default function InstructorTab() {
     }
   }, [tenant, isSuccess, rolesResolved, canView]);
 
-  return <EdxIframe />;
+  const requested = searchParams.get('section');
+  return (
+    <InstructorDashboard
+      courseId={courseId}
+      courseBasePath={`/platform/${tenant}/course-content/${params.course_id as string}`}
+      section={isDashboardSection(requested) ? requested : 'overview'}
+    />
+  );
 }

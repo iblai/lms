@@ -23,6 +23,7 @@ import { CATALOG_CACHE_SECONDS } from '@/lib/constants';
 import { monetizationSlice } from '@iblai/iblai-js/web-utils';
 import { CareerSlice } from '@/services/career';
 import { NotificationsSlice } from '@/services/notifications';
+import { InstructorSlice } from '@/services/instructor';
 import { EdxSSOSlice } from '@/services/edx-sso';
 import { CoreSlice } from '@/services/core';
 import { rbacSlice } from '@/features/rbac';
@@ -73,6 +74,7 @@ export const store = configureStore({
     [UserMetaDataSlice.reducerPath]: UserMetaDataSlice.reducer,
     [PlatformSlice.reducerPath]: PlatformSlice.reducer,
     [CourseMetadataSlice.reducerPath]: CourseMetadataSlice.reducer,
+    [InstructorSlice.reducerPath]: InstructorSlice.reducer,
     [CatalogSlice.reducerPath]: CatalogSlice.reducer,
     [CareerSlice.reducerPath]: CareerSlice.reducer,
     [NotificationsSlice.reducerPath]: NotificationsSlice.reducer,
@@ -96,6 +98,7 @@ export const store = configureStore({
       UserMetaDataSlice.middleware,
       PlatformSlice.middleware,
       CourseMetadataSlice.middleware,
+      InstructorSlice.middleware,
       CatalogSlice.middleware,
       CareerSlice.middleware,
       NotificationsSlice.middleware,

@@ -3,14 +3,24 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-// The course iframe — stub it so the test stays on the access-control logic.
-vi.mock('@/components/edx-iframe/edx-iframe', () => ({
-  EdxIframe: () => <div data-testid="edx-iframe" />,
-}));
+// The native dashboard — stub it so the test stays on the access-control logic.
+const dashboardProps = vi.fn();
+vi.mock('../_components/instructor-dashboard', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../_components/instructor-dashboard')>();
+  return {
+    ...original,
+    InstructorDashboard: (props: any) => {
+      dashboardProps(props);
+      return <div data-testid="instructor-dashboard" />;
+    },
+  };
+});
 
 const mockRedirect = vi.fn();
+const searchParamsState = vi.hoisted(() => ({ current: new URLSearchParams() }));
 vi.mock('next/navigation', () => ({
   useParams: () => ({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' }),
+  useSearchParams: () => searchParamsState.current,
   redirect: (...args: any[]) => mockRedirect(...args),
 }));
 
@@ -55,6 +65,7 @@ const staffRoles = (role: string) => ({
 describe('InstructorTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    searchParamsState.current = new URLSearchParams();
     mockMemberCheck.mockReturnValue({ data: { is_platform_admin: true }, isSuccess: true });
     mockCourseUserRoles.mockReturnValue({
       courseRoles: [],
@@ -65,10 +76,29 @@ describe('InstructorTab', () => {
     });
   });
 
-  it('renders the course iframe for a platform admin', () => {
+  it('renders the native dashboard on its overview for a platform admin', () => {
     renderPage();
     expect(mockRedirect).not.toHaveBeenCalled();
-    expect(screen.getByTestId('edx-iframe')).toBeInTheDocument();
+    expect(screen.getByTestId('instructor-dashboard')).toBeInTheDocument();
+    expect(dashboardProps).toHaveBeenCalledWith({
+      courseId: 'course-v1:test+course+2024',
+      courseBasePath: '/platform/test-tenant/course-content/course-v1%3Atest%2Bcourse%2B2024',
+      section: 'overview',
+    });
+  });
+
+  it('opens the section named in the query string, ignoring unknown ones', () => {
+    searchParamsState.current = new URLSearchParams('section=reports');
+    const { unmount } = renderPage();
+    expect(dashboardProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({ section: 'reports' }),
+    );
+    unmount();
+    searchParamsState.current = new URLSearchParams('section=bogus');
+    renderPage();
+    expect(dashboardProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({ section: 'overview' }),
+    );
   });
 
   it('redirects a resolved non-staff user away from the page', () => {
@@ -95,7 +125,7 @@ describe('InstructorTab', () => {
       mockCourseUserRoles.mockReturnValue(staffRoles(role));
       renderPage();
       expect(mockRedirect).not.toHaveBeenCalled();
-      expect(screen.getByTestId('edx-iframe')).toBeInTheDocument();
+      expect(screen.getByTestId('instructor-dashboard')).toBeInTheDocument();
     },
   );
 

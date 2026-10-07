@@ -42,7 +42,7 @@ export const CourseOutlineToggle = () => {
     <button
       type="button"
       onClick={() => setCollapsed(!collapsed)}
-      className="mr-2 -ml-2 hidden p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:inline-flex"
+      className="-mr-1 ml-1 hidden p-2 text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-amber-500 focus:outline-none focus:ring-inset md:inline-flex"
       aria-label={showAsCollapsed ? 'Expand course outline' : 'Collapse course outline'}
       title={showAsCollapsed ? 'Show course outline' : 'Hide course outline'}
       data-testid="toggle-course-outline"

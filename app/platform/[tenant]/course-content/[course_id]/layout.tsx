@@ -22,7 +22,10 @@ import {
   Settings2,
   Sparkles,
   SquarePen,
+  TimerIcon,
+  UserCog,
   Users,
+  Wrench,
   X,
 } from 'lucide-react';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
@@ -42,6 +45,11 @@ import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
 import { LessonCompletedDialog } from '@/components/lesson-completed-dialog';
 import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
+import { CourseAdminShell, type CourseAdminSection } from '@/components/course-admin-shell';
+import {
+  DASHBOARD_SECTIONS,
+  isDashboardSection,
+} from '@/app/platform/[tenant]/course-content/[course_id]/instructor/_components/instructor-dashboard';
 import { CourseProgressSummary, CourseUnitBreadcrumb } from '@/components/course-content-header';
 import {
   CourseMediaDropdown,
@@ -103,6 +111,8 @@ const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
   'learning-info': 'learning-info',
 };
 const DEFAULT_TAB = 'course';
+// Tab-bar key of the single Administration tab that stands for every staff page.
+const ADMIN_TAB_KEY = 'admin';
 
 export default function CourseContentLayout({
   children,
@@ -420,9 +430,8 @@ export default function CourseContentLayout({
       canViewContentModeAudience(course.course_content_mode_audience, contentModeViewer));
 
   const courseBasePath = `/platform/${tenant}/course-content/${resolvedParams.course_id}`;
-  // Ordered tab list. Learner tabs (`learn` / `about`) sit inline and collapse
-  // into a "More" menu when they don't fit; staff tabs (`teach`) always live
-  // in the separate Staff tools menu, so their position here only orders that menu.
+  // Ordered tab list; whatever doesn't fit collapses into a grouped "More"
+  // menu. Staff tabs (`teach`) come last, behind a divider in the row.
   const courseTabs = useMemo<CourseContentTab[]>(() => {
     const tabs: CourseContentTab[] = [];
     if (agentTabVisible) {
@@ -516,7 +525,7 @@ export default function CourseContentLayout({
     if (canViewStaffTabs) {
       tabs.push({
         key: 'configuration',
-        label: 'Configuration',
+        label: 'Settings',
         href: `${courseBasePath}/configuration`,
         icon: Settings2,
         group: 'teach',
@@ -546,6 +555,116 @@ export default function CourseContentLayout({
     course?.instructor_info?.instructors,
     canViewAnalytics,
   ]);
+
+  // Staff pages share one "Administration" tab that opens the admin area; its nav lists
+  // every staff page flat — the instructor page's sections included — so the
+  // whole thing reads as one place rather than tabs inside a tab.
+  const staffTabs = useMemo(() => courseTabs.filter((tab) => tab.group === 'teach'), [courseTabs]);
+  const adminSections = useMemo<CourseAdminSection[]>(() => {
+    const has = (key: string) => staffTabs.some((tab) => tab.key === key);
+    const instructorHref = (section: string) => `${courseBasePath}/instructor?section=${section}`;
+    const sections: CourseAdminSection[] = [];
+    if (has('instructor')) {
+      sections.push({
+        key: 'instructor:overview',
+        label: 'Overview',
+        href: instructorHref('overview'),
+        icon: Presentation,
+        scrollsItself: true,
+      });
+    }
+    if (has('gradebook')) {
+      sections.push({
+        key: 'gradebook',
+        label: 'Grades',
+        href: `${courseBasePath}/gradebook`,
+        icon: ClipboardList,
+        group: 'learners',
+        scrollsItself: true,
+      });
+    }
+    if (has('instructor')) {
+      const icons = {
+        membership: Users,
+        cohorts: Users,
+        extensions: CalendarDays,
+        attempts: UserCog,
+        reports: ChartNoAxesColumn,
+      } as const;
+      DASHBOARD_SECTIONS.filter((section) => section.key !== 'overview').forEach((section) => {
+        sections.push({
+          key: `instructor:${section.key}`,
+          label: section.label,
+          href: instructorHref(section.key),
+          icon: icons[section.key as keyof typeof icons],
+          group: section.key === 'reports' ? 'insights' : 'learners',
+          scrollsItself: true,
+        });
+      });
+    }
+    if (has('analytics')) {
+      sections.push({
+        key: 'analytics',
+        label: 'Analytics',
+        href: `${courseBasePath}/analytics`,
+        icon: ChartColumn,
+        group: 'insights',
+      });
+    }
+    if (has('configuration')) {
+      sections.push({
+        key: 'configuration',
+        label: 'Settings',
+        href: `${courseBasePath}/configuration`,
+        icon: Settings2,
+        group: 'course',
+      });
+    }
+    const authoring = staffTabs.find((tab) => tab.key === 'authoring');
+    if (authoring) {
+      sections.push({
+        key: 'authoring',
+        label: 'Authoring',
+        href: authoring.href,
+        icon: SquarePen,
+        group: 'course',
+        external: true,
+      });
+    }
+    if (has('instructor')) {
+      // Proctoring stays on the legacy page: its own product surface.
+      sections.push({
+        key: 'special-exams',
+        label: 'Proctoring',
+        href: `${config.urls.lms()}/courses/${courseId}/instructor#view-special_exams`,
+        icon: TimerIcon,
+        group: 'course',
+        external: true,
+      });
+    }
+    return sections;
+  }, [staffTabs, courseBasePath, courseId]);
+  const isAdminRoute = staffTabs.some((tab) => tab.key === activeTab);
+  const requestedSection = searchParams?.get('section');
+  const adminActiveKey =
+    activeTab === 'instructor'
+      ? `instructor:${isDashboardSection(requestedSection) ? requestedSection : 'overview'}`
+      : activeTab;
+  const tabBarTabs = useMemo<CourseContentTab[]>(() => {
+    const learnerTabs = courseTabs.filter((tab) => tab.group !== 'teach');
+    if (adminSections.length === 0) return learnerTabs;
+    return [
+      ...learnerTabs,
+      {
+        key: ADMIN_TAB_KEY,
+        label: 'Administration',
+        href: adminSections[0].href,
+        icon: Wrench,
+        group: 'teach',
+      },
+    ];
+  }, [courseTabs, adminSections]);
+  const tabBarActiveTab = isAdminRoute ? ADMIN_TAB_KEY : activeTab;
 
   const edxIframeValue = useMemo(
     () => ({
@@ -605,6 +724,7 @@ export default function CourseContentLayout({
           setCourseOutlineDrawerOpen,
           currentUnitID,
           refetchCourseOutline: handleFetchCourseSyllabus,
+          completionPercentage: courseCompletion?.completion_percentage,
         }}
       >
         <CourseOutlineDrawer />
@@ -933,7 +1053,7 @@ export default function CourseContentLayout({
                   </div>
                 </div>
                 <div className="@container px-3 pb-2 md:px-4">
-                  <CourseContentTabs tabs={courseTabs} activeTab={activeTab} />
+                  <CourseContentTabs tabs={tabBarTabs} activeTab={tabBarActiveTab} />
                 </div>
               </header>
 
@@ -942,20 +1062,25 @@ export default function CourseContentLayout({
                   derive their height from the viewport. */}
               <div
                 // Mobile scrolls this container itself. On desktop the
-                // iframe tabs manage their own scroll, but the plain-page
-                // tabs (analytics / configuration / instructor(s)) render
-                // long content and need the container to scroll too.
+                // iframe tabs manage their own scroll, the admin shell scrolls
+                // the pages it frames, and the plain pages outside it need the
+                // container to scroll.
                 className={cn(
                   'flex min-h-0 flex-1 flex-col',
                   (isMobile ||
-                    ['analytics', 'configuration', 'instructor', 'instructors'].includes(
-                      currentTab ?? '',
-                    )) &&
+                    (!isAdminRoute &&
+                      ['analytics', 'configuration', 'instructors'].includes(currentTab ?? ''))) &&
                     'overflow-y-auto',
                 )}
                 style={{ scrollbarWidth: 'none' }}
               >
-                {children}
+                {isAdminRoute ? (
+                  <CourseAdminShell sections={adminSections} activeKey={adminActiveKey}>
+                    {children}
+                  </CourseAdminShell>
+                ) : (
+                  children
+                )}
               </div>
             </div>
           </main>

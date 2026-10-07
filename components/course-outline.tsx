@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { SkeletonCourseOutline } from './skeleton-course-outline';
 import { CourseOutlineChildNode } from '@/types/courses';
 import { cn } from '@/lib/utils';
+import { clampPercentage } from './course-content-header';
 
 const hasChildren = (node: CourseOutlineChildNode) =>
   Array.isArray(node.children) && node.children.length > 0;
@@ -192,7 +193,8 @@ const LessonRow = ({
         aria-expanded={expandable ? expanded : undefined}
         data-testid="outline-lesson"
         className={cn(
-          'flex w-full items-start gap-2.5 py-2 pr-3 pl-4 text-left text-sm leading-snug transition-colors',
+          // pl-7: one step in from the module header, so the hierarchy reads.
+          'flex w-full items-start gap-2.5 py-2 pr-3 pl-7 text-left text-sm leading-snug transition-colors',
           current ? 'font-medium text-amber-700' : 'text-gray-700 hover:bg-gray-50',
         )}
       >
@@ -208,8 +210,9 @@ const LessonRow = ({
           )}
         </span>
       </button>
+      {/* Guide line under the lesson icon's centre (pl-7 + half the 18px ring). */}
       {expandable && expanded && (
-        <ol className="mt-0.5 mr-2 mb-1 ml-[1.6rem] border-l border-gray-200 pl-3">
+        <ol className="mt-0.5 mr-2 mb-1 ml-[2.3rem] border-l border-gray-200 pl-3">
           {(lesson.children as CourseOutlineChildNode[]).map((unit) => (
             <UnitRow
               key={unit.id}
@@ -256,8 +259,6 @@ const ModuleSection = ({
         onClick={onToggle}
         aria-expanded={expanded}
         className={cn(
-          // Same icon size and gap as LessonRow so module and lesson titles
-          // share one left edge.
           'flex w-full items-start gap-2.5 px-4 py-3 text-left transition-colors hover:bg-gray-50',
           expanded && 'bg-gray-50/60',
         )}
@@ -307,6 +308,7 @@ export const CourseOutline = () => {
     toggleLesson,
     currentChapter,
     currentLesson,
+    completionPercentage,
   } = useContext(CourseOutlineContext);
 
   const modules = Array.isArray(courseOutline?.children) ? courseOutline.children : [];
@@ -317,7 +319,8 @@ export const CourseOutline = () => {
     },
     { total: 0, done: 0 },
   );
-  const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+  // Same figure as the header's progress ring, not a recount of the units.
+  const percent = clampPercentage(completionPercentage);
 
   return (
     <nav
@@ -333,8 +336,8 @@ export const CourseOutline = () => {
           {modules.length > 0 && (
             <div className="border-b border-gray-200 px-4 py-3" data-testid="outline-summary">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">
-                  Progression
+                <p className="text-xs font-medium text-gray-600">
+                  {done} of {total} units completed
                 </p>
                 <p className="text-xs font-medium text-gray-700">{percent}%</p>
               </div>
@@ -344,9 +347,6 @@ export const CourseOutline = () => {
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-500">
-                {done} of {total} units completed
-              </p>
             </div>
           )}
           {modules.map((module) => (
