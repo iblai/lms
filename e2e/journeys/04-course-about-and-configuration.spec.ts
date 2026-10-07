@@ -161,7 +161,7 @@ test.describe('Journey 04: Course About', () => {
     await expect(page.getByRole('button', { name: 'Configuration', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Learning Info', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Instructors', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Edit in Studio', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Authoring', exact: true })).toHaveCount(0);
 
     // Syllabus still switches within the about page (the tab renders an <h2>Syllabus</h2>).
     await syllabusTab.click();

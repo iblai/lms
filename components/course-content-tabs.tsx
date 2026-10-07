@@ -35,7 +35,7 @@ export interface CourseContentTab {
 const GROUP_LABELS: Record<CourseContentTabGroup, string> = {
   learn: 'Learn',
   about: 'About this course',
-  teach: 'Admin',
+  teach: 'Administration',
 };
 const GROUP_ORDER: CourseContentTabGroup[] = ['learn', 'about', 'teach'];
 

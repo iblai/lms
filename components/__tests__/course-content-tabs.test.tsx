@@ -53,11 +53,11 @@ const aboutTab: CourseContentTab = {
   group: 'about',
 };
 const staffTabs: CourseContentTab[] = [
-  { key: 'instructor', label: 'Instructor Dashboard', href: '/instructor', group: 'teach' },
+  { key: 'instructor', label: 'Instructor', href: '/instructor', group: 'teach' },
   { key: 'gradebook', label: 'Gradebook', href: '/gradebook', group: 'teach' },
   {
     key: 'authoring',
-    label: 'Edit in Studio',
+    label: 'Authoring',
     href: 'https://studio.example.org/course/x',
     group: 'teach',
     external: true,
@@ -123,9 +123,9 @@ describe('CourseContentTabs', () => {
       'Course',
       'Progress',
       'Dates',
-      'Instructor Dashboard',
+      'Instructor',
       'Gradebook',
-      'Edit in Studio',
+      'Authoring',
     ]);
     expect(screen.queryByTestId('course-tabs-overflow-trigger')).not.toBeInTheDocument();
   });
@@ -148,9 +148,9 @@ describe('CourseContentTabs', () => {
     expect(linkNames(overflowMenu())).toEqual([
       'Progress',
       'Dates',
-      'Instructor Dashboard',
+      'Instructor',
       'Gradebook',
-      'Edit in Studio',
+      'Authoring',
     ]);
   });
 
@@ -254,7 +254,7 @@ describe('CourseContentTabs', () => {
       expect(visibleDividers()).toHaveLength(1);
       expect(divider).toHaveAttribute('role', 'separator');
       // Sits right before the first staff tab.
-      expect(divider.nextElementSibling).toHaveTextContent('Instructor Dashboard');
+      expect(divider.nextElementSibling).toHaveTextContent('Instructor');
       expect(divider.previousElementSibling).toHaveTextContent('Dates');
     });
 
@@ -273,24 +273,20 @@ describe('CourseContentTabs', () => {
 
       expect(inlineTabs()).toEqual(['Agent', 'Course', 'Progress', 'Dates']);
       expect(visibleDividers()).toHaveLength(0);
-      expect(linkNames(overflowMenu())).toEqual([
-        'Instructor Dashboard',
-        'Gradebook',
-        'Edit in Studio',
-      ]);
+      expect(linkNames(overflowMenu())).toEqual(['Instructor', 'Gradebook', 'Authoring']);
     });
 
     it('keeps the external staff tab opening in a new tab inline and from the menu', () => {
       mockLayout(1000);
       const { unmount } = render(<CourseContentTabs tabs={tabs} activeTab="course" />);
-      const inline = screen.getByRole('link', { name: 'Edit in Studio' });
+      const inline = screen.getByRole('link', { name: 'Authoring' });
       expect(inline).toHaveAttribute('target', '_blank');
       expect(within(inline).getByTestId('icon-external')).toBeInTheDocument();
       unmount();
 
       mockLayout(250 + TRACK_INSET);
       render(<CourseContentTabs tabs={tabs} activeTab="course" />);
-      const inMenu = within(overflowMenu()).getByRole('link', { name: 'Edit in Studio' });
+      const inMenu = within(overflowMenu()).getByRole('link', { name: 'Authoring' });
       expect(inMenu).toHaveAttribute('target', '_blank');
       expect(inMenu).toHaveAttribute('href', 'https://studio.example.org/course/x');
     });

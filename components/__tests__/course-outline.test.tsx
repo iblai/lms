@@ -94,8 +94,8 @@ describe('CourseOutline', () => {
     expect(screen.queryAllByTestId('outline-module')).toHaveLength(0);
   });
 
-  it('summarises overall completion above the modules', () => {
-    renderWithContext({ courseOutline: root([halfDoneModule]) });
+  it('summarises overall completion above the modules, using the API completion figure', () => {
+    renderWithContext({ courseOutline: root([halfDoneModule]), completionPercentage: 49.6 });
     const summary = screen.getByTestId('outline-summary');
     expect(summary).toHaveTextContent('50%');
     expect(summary).toHaveTextContent('2 of 4 units completed');
@@ -110,10 +110,16 @@ describe('CourseOutline', () => {
       display_name: 'Module 1',
       children: [makeNode({ id: 'lesson-1', display_name: 'Lesson 1', complete: true })],
     });
-    renderWithContext({ courseOutline: root([done]) });
+    renderWithContext({ courseOutline: root([done]), completionPercentage: 100 });
     const bar = screen.getByTestId('outline-summary').querySelector('[style]') as HTMLElement;
     expect(bar.style.width).toBe('100%');
     expect(screen.getByTestId('outline-summary')).toHaveTextContent('100%');
+  });
+
+  it('shows 0% until the completion API has answered', () => {
+    renderWithContext({ courseOutline: root([halfDoneModule]) });
+    expect(screen.getByTestId('outline-summary')).toHaveTextContent('0%');
+    expect(screen.getByTestId('outline-summary')).toHaveTextContent('2 of 4 units completed');
   });
 
   it('renders each module with its completion count', () => {

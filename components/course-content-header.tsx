@@ -3,7 +3,8 @@
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const clampPercentage = (value: number | null | undefined) =>
+/** Course completion as the API reports it, rounded for display; shared with the outline summary. */
+export const clampPercentage = (value: number | null | undefined) =>
   Math.min(100, Math.max(0, Math.round(value ?? 0)));
 
 const RING_SIZE = 28;

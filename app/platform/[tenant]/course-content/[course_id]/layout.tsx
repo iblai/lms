@@ -22,6 +22,8 @@ import {
   Settings2,
   Sparkles,
   SquarePen,
+  TimerIcon,
+  UserCog,
   Users,
   Wrench,
   X,
@@ -43,7 +45,11 @@ import { CourseAccessGuard } from '@/components/course-access-guard';
 import { CourseLessonNavigator } from '@/components/course-lesson-navigator';
 import { LessonCompletedDialog } from '@/components/lesson-completed-dialog';
 import { CourseContentTabs, type CourseContentTab } from '@/components/course-content-tabs';
-import { CourseStaffShell } from '@/components/course-staff-shell';
+import { CourseAdminShell, type CourseAdminSection } from '@/components/course-admin-shell';
+import {
+  DASHBOARD_SECTIONS,
+  isDashboardSection,
+} from '@/app/platform/[tenant]/course-content/[course_id]/instructor/_components/instructor-dashboard';
 import { CourseProgressSummary, CourseUnitBreadcrumb } from '@/components/course-content-header';
 import {
   CourseMediaDropdown,
@@ -105,8 +111,8 @@ const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
   'learning-info': 'learning-info',
 };
 const DEFAULT_TAB = 'course';
-// Tab-bar key of the single tab that stands for every staff section.
-const STAFF_TAB_KEY = 'staff';
+// Tab-bar key of the single Administration tab that stands for every staff page.
+const ADMIN_TAB_KEY = 'admin';
 
 export default function CourseContentLayout({
   children,
@@ -493,7 +499,7 @@ export default function CourseContentLayout({
       tabs.push(
         {
           key: 'instructor',
-          label: 'Instructor Dashboard',
+          label: 'Instructor',
           href: `${courseBasePath}/instructor`,
           icon: Presentation,
           group: 'teach',
@@ -528,7 +534,7 @@ export default function CourseContentLayout({
     if (canViewAuthoringTab) {
       tabs.push({
         key: 'authoring',
-        label: 'Edit in Studio',
+        label: 'Authoring',
         href: `${config.urls.studioUrl()}/course/${courseId}`,
         icon: SquarePen,
         group: 'teach',
@@ -550,28 +556,115 @@ export default function CourseContentLayout({
     canViewAnalytics,
   ]);
 
-  // Staff pages share one tab: "Admin" opens the staff area, whose
-  // section nav lists them. Learner tabs stay as they are.
-  const staffSections = useMemo(
-    () => courseTabs.filter((tab) => tab.group === 'teach'),
-    [courseTabs],
-  );
+  // Staff pages share one "Administration" tab that opens the admin area; its nav lists
+  // every staff page flat — the instructor page's sections included — so the
+  // whole thing reads as one place rather than tabs inside a tab.
+  const staffTabs = useMemo(() => courseTabs.filter((tab) => tab.group === 'teach'), [courseTabs]);
+  const adminSections = useMemo<CourseAdminSection[]>(() => {
+    const has = (key: string) => staffTabs.some((tab) => tab.key === key);
+    const instructorHref = (section: string) => `${courseBasePath}/instructor?section=${section}`;
+    const sections: CourseAdminSection[] = [];
+    if (has('instructor')) {
+      sections.push({
+        key: 'instructor:overview',
+        label: 'Overview',
+        href: instructorHref('overview'),
+        icon: Presentation,
+        scrollsItself: true,
+      });
+    }
+    if (has('gradebook')) {
+      sections.push({
+        key: 'gradebook',
+        label: 'Grades',
+        href: `${courseBasePath}/gradebook`,
+        icon: ClipboardList,
+        group: 'learners',
+        scrollsItself: true,
+      });
+    }
+    if (has('instructor')) {
+      const icons = {
+        membership: Users,
+        cohorts: Users,
+        extensions: CalendarDays,
+        attempts: UserCog,
+        reports: ChartNoAxesColumn,
+      } as const;
+      DASHBOARD_SECTIONS.filter((section) => section.key !== 'overview').forEach((section) => {
+        sections.push({
+          key: `instructor:${section.key}`,
+          label: section.label,
+          href: instructorHref(section.key),
+          icon: icons[section.key as keyof typeof icons],
+          group: section.key === 'reports' ? 'insights' : 'learners',
+          scrollsItself: true,
+        });
+      });
+    }
+    if (has('analytics')) {
+      sections.push({
+        key: 'analytics',
+        label: 'Analytics',
+        href: `${courseBasePath}/analytics`,
+        icon: ChartColumn,
+        group: 'insights',
+      });
+    }
+    if (has('configuration')) {
+      sections.push({
+        key: 'configuration',
+        label: 'Settings',
+        href: `${courseBasePath}/configuration`,
+        icon: Settings2,
+        group: 'course',
+      });
+    }
+    const authoring = staffTabs.find((tab) => tab.key === 'authoring');
+    if (authoring) {
+      sections.push({
+        key: 'authoring',
+        label: 'Authoring',
+        href: authoring.href,
+        icon: SquarePen,
+        group: 'course',
+        external: true,
+      });
+    }
+    if (has('instructor')) {
+      // Proctoring stays on the legacy page: its own product surface.
+      sections.push({
+        key: 'special-exams',
+        label: 'Proctoring',
+        href: `${config.urls.lms()}/courses/${courseId}/instructor#view-special_exams`,
+        icon: TimerIcon,
+        group: 'course',
+        external: true,
+      });
+    }
+    return sections;
+  }, [staffTabs, courseBasePath, courseId]);
+  const isAdminRoute = staffTabs.some((tab) => tab.key === activeTab);
+  const requestedSection = searchParams?.get('section');
+  const adminActiveKey =
+    activeTab === 'instructor'
+      ? `instructor:${isDashboardSection(requestedSection) ? requestedSection : 'overview'}`
+      : activeTab;
   const tabBarTabs = useMemo<CourseContentTab[]>(() => {
     const learnerTabs = courseTabs.filter((tab) => tab.group !== 'teach');
-    if (staffSections.length === 0) return learnerTabs;
+    if (adminSections.length === 0) return learnerTabs;
     return [
       ...learnerTabs,
       {
-        key: STAFF_TAB_KEY,
-        label: 'Admin',
-        href: staffSections[0].href,
+        key: ADMIN_TAB_KEY,
+        label: 'Administration',
+        href: adminSections[0].href,
         icon: Wrench,
         group: 'teach',
       },
     ];
-  }, [courseTabs, staffSections]);
-  const isStaffSection = staffSections.some((section) => section.key === activeTab);
-  const tabBarActiveTab = isStaffSection ? STAFF_TAB_KEY : activeTab;
+  }, [courseTabs, adminSections]);
+  const tabBarActiveTab = isAdminRoute ? ADMIN_TAB_KEY : activeTab;
 
   const edxIframeValue = useMemo(
     () => ({
@@ -631,6 +724,7 @@ export default function CourseContentLayout({
           setCourseOutlineDrawerOpen,
           currentUnitID,
           refetchCourseOutline: handleFetchCourseSyllabus,
+          completionPercentage: courseCompletion?.completion_percentage,
         }}
       >
         <CourseOutlineDrawer />
@@ -968,24 +1062,22 @@ export default function CourseContentLayout({
                   derive their height from the viewport. */}
               <div
                 // Mobile scrolls this container itself. On desktop the
-                // iframe tabs manage their own scroll, but the plain-page
-                // tabs render long content and need a scrolling container —
-                // the staff shell provides its own for the pages it frames.
+                // iframe tabs manage their own scroll, the admin shell scrolls
+                // the pages it frames, and the plain pages outside it need the
+                // container to scroll.
                 className={cn(
                   'flex min-h-0 flex-1 flex-col',
                   (isMobile ||
-                    (!isStaffSection &&
-                      ['analytics', 'configuration', 'instructor', 'instructors'].includes(
-                        currentTab ?? '',
-                      ))) &&
+                    (!isAdminRoute &&
+                      ['analytics', 'configuration', 'instructors'].includes(currentTab ?? ''))) &&
                     'overflow-y-auto',
                 )}
                 style={{ scrollbarWidth: 'none' }}
               >
-                {isStaffSection ? (
-                  <CourseStaffShell sections={staffSections} activeKey={activeTab}>
+                {isAdminRoute ? (
+                  <CourseAdminShell sections={adminSections} activeKey={adminActiveKey}>
                     {children}
-                  </CourseStaffShell>
+                  </CourseAdminShell>
                 ) : (
                   children
                 )}

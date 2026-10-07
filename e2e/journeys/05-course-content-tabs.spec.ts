@@ -375,7 +375,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     // Admin-gated tabs may sit behind the tab row's overflow menu.
-    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
+    const instructorTab = await getCourseContentTab(page, 'Overview');
 
     if (!instructorTab) {
       logger.info('Authoring tab is admin-gated like Instructor — skipping for non-admin');
@@ -388,7 +388,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const parts = url.pathname.split('/').filter(Boolean);
     const courseId = decodeURIComponent(parts[3] || '');
 
-    const authoringTab = await getCourseContentTab(page, 'Edit in Studio');
+    const authoringTab = await getCourseContentTab(page, 'Authoring');
     expect(authoringTab).not.toBeNull();
     await expect(authoringTab!).toBeVisible({ timeout: 10000 });
     await expect(authoringTab!).toHaveAttribute('target', '_blank');
@@ -399,7 +399,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info(`Authoring tab points at studio: ${href}`);
   });
 
-  test('Checkpoint 9: Instructor tab (optional)', async ({ page }) => {
+  test('Checkpoint 9: Administration area (optional) renders the native overview with its section nav', async ({
+    page,
+  }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -407,35 +409,45 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
+    const overview = await getCourseContentTab(page, 'Overview');
 
-    if (!instructorTab) {
-      logger.info('Instructor tab not available — expected for some courses');
+    if (!overview) {
+      logger.info('Administration area not available — expected for non-staff viewers');
       test.skip();
       return;
     }
 
-    await instructorTab.click();
+    await overview.click();
+    await expect(page).toHaveURL(/\/instructor(\?|$)/, { timeout: 30000 });
 
-    const iframeElement = page.locator('iframe').first();
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
+    // Native: no iframe, one admin nav listing every staff page, overview stat cards.
+    await expect(page.getByTestId('instructor-dashboard')).toBeVisible({ timeout: 60000 });
+    expect(await page.locator('#edx-iframe').count()).toBe(0);
+    const nav = page.getByTestId('course-admin-nav');
+    for (const name of [
+      'Overview',
+      'Grades',
+      'Membership',
+      'Cohorts',
+      'Extensions',
+      'Attempts',
+      'Reports',
+      'Settings',
+    ]) {
+      await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
+    }
+    await expect(page.getByTestId('overview-section')).toBeVisible({ timeout: 60000 });
+    await expect(page.getByText('Enrolled learners')).toBeVisible();
 
-    const instructorIframe = page.frameLocator('iframe').first();
-    const bodyLocator = instructorIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    const hasContent = await bodyLocator
-      .evaluate((el) => {
-        const text = el.textContent?.trim() || '';
-        return text.length > 0 || el.children.length > 0;
-      })
-      .catch(() => false);
-
-    expect(hasContent).toBeTruthy();
-    logger.info('Instructor tab content loaded');
+    // Sections are deep-linkable through ?section=…
+    await nav.getByRole('link', { name: 'Membership', exact: true }).click();
+    await expect(page).toHaveURL(/section=membership/, { timeout: 30000 });
+    await expect(page.getByTestId('membership-section')).toBeVisible({ timeout: 60000 });
+    await expect(page.getByRole('region', { name: 'Course team' })).toBeVisible();
+    logger.info('Administration area rendered natively');
   });
 
-  test('Checkpoint 38: Gradebook tab (staff) iframes the gradebook MFE', async ({ page }) => {
+  test('Checkpoint 38: Grades (staff) renders the native grade table', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -444,27 +456,29 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     // Sequential: resolving a staff page may open the staff area first.
-    const gradebookTab = await getCourseContentTab(page, 'Gradebook');
-    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
+    const gradebookTab = await getCourseContentTab(page, 'Grades');
+    const instructorTab = await getCourseContentTab(page, 'Overview');
 
-    // Gradebook shares the staff-tab gate with Instructor.
+    // Gradebook shares the staff gate with the Instructor.
     expect(Boolean(gradebookTab)).toBe(Boolean(instructorTab));
 
     if (!gradebookTab) {
-      logger.info('Viewer holds no staff role on this course — no Gradebook tab, as expected');
+      logger.info('Viewer holds no staff role on this course — no Grades section, as expected');
       return;
     }
 
     await gradebookTab.click();
     await expect(page).toHaveURL(/\/gradebook(\?|$)/, { timeout: 30000 });
 
-    const iframeElement = page.locator('#edx-iframe');
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
-    await expect(iframeElement).toHaveAttribute('src', /\/gradebook\/course-v1:/);
-
-    const bodyLocator = page.frameLocator('#edx-iframe').locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-    logger.info('Gradebook tab content loaded');
+    // Native gradebook: the learner count comes straight from the grades API.
+    await expect(page.getByTestId('course-gradebook')).toBeVisible({ timeout: 60000 });
+    expect(await page.locator('#edx-iframe').count()).toBe(0);
+    await expect(page.getByTestId('gradebook-count')).toHaveText(/Showing \d+ of \d+ learners/, {
+      timeout: 120000,
+    });
+    await expect(page.getByTestId('gradebook-table')).toBeVisible();
+    await expect(page.getByLabel('Search learners')).toBeVisible();
+    logger.info('Gradebook rendered natively');
   });
 
   test('Checkpoint 10: Bookmarks tab (optional)', async ({ page }) => {
@@ -1502,9 +1516,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     }
 
     // Sequential: resolving a staff page may open the staff area first.
-    const instructorTab = await getCourseContentTab(page, 'Instructor Dashboard');
+    const instructorTab = await getCourseContentTab(page, 'Overview');
     const configurationTab = await getCourseContentTab(page, 'Settings');
-    const authoringTab = await getCourseContentTab(page, 'Edit in Studio');
+    const authoringTab = await getCourseContentTab(page, 'Authoring');
 
     if (!instructorTab && !configurationTab && !authoringTab) {
       logger.info('Viewer holds no staff role on this course — no staff tabs, as expected');

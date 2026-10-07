@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { SkeletonCourseOutline } from './skeleton-course-outline';
 import { CourseOutlineChildNode } from '@/types/courses';
 import { cn } from '@/lib/utils';
+import { clampPercentage } from './course-content-header';
 
 const hasChildren = (node: CourseOutlineChildNode) =>
   Array.isArray(node.children) && node.children.length > 0;
@@ -307,6 +308,7 @@ export const CourseOutline = () => {
     toggleLesson,
     currentChapter,
     currentLesson,
+    completionPercentage,
   } = useContext(CourseOutlineContext);
 
   const modules = Array.isArray(courseOutline?.children) ? courseOutline.children : [];
@@ -317,7 +319,8 @@ export const CourseOutline = () => {
     },
     { total: 0, done: 0 },
   );
-  const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+  // Same figure as the header's progress ring, not a recount of the units.
+  const percent = clampPercentage(completionPercentage);
 
   return (
     <nav
@@ -333,8 +336,8 @@ export const CourseOutline = () => {
           {modules.length > 0 && (
             <div className="border-b border-gray-200 px-4 py-3" data-testid="outline-summary">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">
-                  Progression
+                <p className="text-xs font-medium text-gray-600">
+                  {done} of {total} units completed
                 </p>
                 <p className="text-xs font-medium text-gray-700">{percent}%</p>
               </div>
@@ -344,9 +347,6 @@ export const CourseOutline = () => {
                   style={{ width: `${percent}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-500">
-                {done} of {total} units completed
-              </p>
             </div>
           )}
           {modules.map((module) => (
