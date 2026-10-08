@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.91.0](https://github.com/iblai/lms/compare/skills-v0.90.2...skills-v0.91.0) (2026-10-08)
+
+### Features
+
+* course content outline & tabs revamp > package version patch update ([2694e3b](https://github.com/iblai/lms/commit/2694e3bc263cd714a0e4eb61e8d0ac9ccf3876e2))
+
+## [0.90.2-patch.2](https://github.com/iblai/lms/compare/skills-v0.90.2...skills-v0.91.0) (2026-10-07)
+
+### Features
+
+* course content outline & tabs revamp ([6da0bec](https://github.com/iblai/lms/commit/6da0bec1d25eebe2d4cc11d34a6f71c4a2ad3a32))
+* course content outline & tabs revamp > package version patch update ([ea4a7a9](https://github.com/iblai/lms/commit/ea4a7a98dad62f18648aec787231c63d9a76f6bf))
+* gradebook & instructor dashboard native rebuild ([7992643](https://github.com/iblai/lms/commit/79926439c1cbb1e71fd070d0af8e0e867003cdcf))
+
+## [0.90.2-patch.1](https://github.com/iblai/lms/compare/skills-v0.90.2...skills-v0.91.0) (2026-10-06)
+
+### Features
+
+* course content outline & tabs revamp ([ffab83f](https://github.com/iblai/lms/commit/ffab83f1ab71ee9d346df356bdbfc24a09ab2604))
+* course content outline & tabs revamp > package version patch update ([655abf8](https://github.com/iblai/lms/commit/655abf8ecb32baeb8c3569d540933152d64baeb3))
+
 ## [0.90.2](https://github.com/iblai/lms/compare/skills-v0.90.1...skills-v0.90.2) (2026-10-06)
 
 ### Bug Fixes
