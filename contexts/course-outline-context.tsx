@@ -18,6 +18,8 @@ export interface CourseOutlineContextType {
   setCourseOutlineDrawerOpen: (open: boolean) => void;
   currentUnitID: string | null;
   refetchCourseOutline: (setLoadingState: boolean) => void;
+  /** Course completion % from the completion API — the figure the header ring shows. */
+  completionPercentage?: number | null;
 }
 
 export const CourseOutlineContext = createContext<CourseOutlineContextType>({

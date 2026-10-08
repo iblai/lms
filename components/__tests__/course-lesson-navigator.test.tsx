@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import React from 'react';
 
 vi.mock('lucide-react', () => ({
+  ChevronLeft: (props: any) => <span data-testid="chevron" {...props} />,
   ChevronRight: (props: any) => <span data-testid="chevron" {...props} />,
 }));
 

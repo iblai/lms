@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -35,23 +35,79 @@ vi.mock('lodash/isEmpty', () => ({
   ),
 }));
 
+// The layout imports the instructor page's section list to build the admin
+// nav; the sections themselves are heavy and covered by their own tests.
+vi.mock(
+  '@/app/platform/[tenant]/course-content/[course_id]/instructor/_components/instructor-dashboard',
+  async (importOriginal) => {
+    const original =
+      await importOriginal<
+        typeof import('@/app/platform/[tenant]/course-content/[course_id]/instructor/_components/instructor-dashboard')
+      >();
+    return { ...original, InstructorDashboard: () => null };
+  },
+);
+
 // Mock lucide-react icons
-vi.mock('lucide-react', () => ({
-  ChevronRight: () => <span data-testid="chevron-right">&gt;</span>,
-  ListTree: () => <span data-testid="list-tree">ListTree</span>,
-  MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
-  CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
-  CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
-  Maximize: () => <span data-testid="maximize">Maximize</span>,
-  X: () => <span data-testid="dismiss-x">×</span>,
-  // Used by the unit media dropdown rendered in the tabs row.
-  Projector: () => <span data-testid="projector">Projector</span>,
-  FileText: () => <span data-testid="file-text">FileText</span>,
-  Library: () => <span data-testid="library">Library</span>,
-  PlaySquare: () => <span data-testid="play-square">PlaySquare</span>,
-  // Used by LessonCompletedDialog, rendered inside the layout.
-  CheckCircle2: () => <span data-testid="check-circle-2">CheckCircle2</span>,
-  ChevronLeft: () => <span data-testid="chevron-left">&lt;</span>,
+vi.mock('lucide-react', () => {
+  // Empty so a tab's textContent stays its bare label.
+  const icon = (testId: string) => {
+    const Icon = (props: any) => <span data-testid={testId} aria-hidden={props['aria-hidden']} />;
+    Icon.displayName = `Icon(${testId})`;
+    return Icon;
+  };
+  return {
+    ChevronRight: () => <span data-testid="chevron-right">&gt;</span>,
+    ListTree: () => <span data-testid="list-tree">ListTree</span>,
+    MoreVertical: () => <span data-testid="more-vertical">⋮</span>,
+    CirclePlay: () => <span data-testid="circle-play">CirclePlay</span>,
+    CirclePause: () => <span data-testid="circle-pause">CirclePause</span>,
+    Maximize: () => <span data-testid="maximize">Maximize</span>,
+    X: () => <span data-testid="dismiss-x">×</span>,
+    // Used by the unit media dropdown rendered in the tabs row.
+    Projector: () => <span data-testid="projector">Projector</span>,
+    FileText: () => <span data-testid="file-text">FileText</span>,
+    Library: () => <span data-testid="library">Library</span>,
+    PlaySquare: () => <span data-testid="play-square">PlaySquare</span>,
+    // Used by LessonCompletedDialog, rendered inside the layout.
+    CheckCircle2: () => <span data-testid="check-circle-2">CheckCircle2</span>,
+    ChevronLeft: () => <span data-testid="chevron-left">&lt;</span>,
+    // Tab icons (layout) and the overflow / external markers (CourseContentTabs).
+    // Hidden from the accessible name so `getByRole('link', { name })` still
+    // matches the bare label.
+    Sparkles: icon('icon-sparkles'),
+    BookOpen: icon('icon-book-open'),
+    ChartNoAxesColumn: icon('icon-chart-no-axes-column'),
+    ClipboardList: icon('icon-clipboard-list'),
+    CalendarDays: icon('icon-calendar-days'),
+    MessagesSquare: icon('icon-messages-square'),
+    MessageSquarePlus: icon('icon-message-square-plus'),
+    Presentation: icon('icon-presentation'),
+    Lightbulb: icon('icon-lightbulb'),
+    Users: icon('icon-users'),
+    Settings2: icon('icon-settings-2'),
+    ChartColumn: icon('icon-chart-column'),
+    SquarePen: icon('icon-square-pen'),
+    Ellipsis: icon('icon-ellipsis'),
+    ArrowUpRight: icon('icon-arrow-up-right'),
+    TimerIcon: icon('icon-timer'),
+    UserCog: icon('icon-user-cog'),
+    Wrench: icon('icon-wrench'),
+    ChevronDown: icon('icon-chevron-down'),
+  };
+});
+
+// Overflowed tabs live inside a Radix DropdownMenu whose content only mounts
+// once opened — and opening needs pointer APIs jsdom lacks. Stub it to always
+// render its content so tab assertions keep working either way.
+vi.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  DropdownMenuContent: ({ children }: any) => <div data-testid="dropdown-content">{children}</div>,
+  DropdownMenuItem: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuGroup: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuLabel: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuSeparator: () => <hr />,
 }));
 
 // Mock helpers
@@ -283,6 +339,7 @@ vi.mock('@/lib/config', () => ({
     urls: {
       studioUrl: vi.fn(() => 'https://studio.example.com'),
       mentor: vi.fn(() => 'https://mentor.example.com'),
+      lms: vi.fn(() => 'https://lms.example.com'),
     },
   },
 }));
@@ -316,6 +373,19 @@ describe('CourseContentLayout', () => {
   // anchors, and role queries skip the aria-hidden measurement row.
   const tabLink = (name: string) => screen.getByRole('link', { name });
   const queryTabLink = (name: string) => screen.queryByRole('link', { name });
+  const linkLabels = (scope: HTMLElement) =>
+    within(scope)
+      .getAllByRole('link')
+      .map((a) => a.textContent?.trim() ?? '');
+  /** Tab labels in row order (overflow never triggers in jsdom, so all are inline). */
+  const rowLabels = () => linkLabels(screen.getByTestId('course-content-tabs'));
+  /** Admin nav entries, in order (only rendered on an admin route). */
+  const adminNavLabels = () => linkLabels(screen.getByTestId('course-admin-nav'));
+  /** Staff pages live in the admin area; render one of its routes to see its nav. */
+  const useAdminRoute = async (section = 'instructor') => {
+    const { usePathname } = await import('next/navigation');
+    vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${section}`);
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -393,7 +463,7 @@ describe('CourseContentLayout', () => {
     expect(tabLink('Course')).toBeInTheDocument();
     expect(tabLink('Progress')).toBeInTheDocument();
     expect(tabLink('Dates')).toBeInTheDocument();
-    expect(tabLink('Discussion')).toBeInTheDocument();
+    expect(tabLink('Discussions')).toBeInTheDocument();
   });
 
   it('hides Agent tab when course.agent_content_mode is not true', () => {
@@ -681,7 +751,7 @@ describe('CourseContentLayout', () => {
     expect(mockCheckRbacPermission).toHaveBeenCalledWith({}, '/watchedgroups/#list');
   });
 
-  it('hides Instructor tab when user is not platform admin', () => {
+  it('hides the Administration tab from a learner', () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
@@ -691,10 +761,11 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(queryTabLink('Instructor')).not.toBeInTheDocument();
+    expect(queryTabLink('Administration')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('course-admin-nav')).not.toBeInTheDocument();
   });
 
-  it('shows Instructor tab when user is platform admin', () => {
+  it('shows the Administration tab to a platform admin, opening on the Overview', () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: true },
     } as any);
@@ -704,45 +775,89 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(tabLink('Instructor')).toBeInTheDocument();
+    expect(tabLink('Administration')).toHaveAttribute(
+      'href',
+      expect.stringContaining('/instructor?section=overview'),
+    );
   });
 
-  it('hides Gradebook tab when user is not platform admin', () => {
+  it('hides the Grades section from a learner even on its route', async () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
+    await useAdminRoute('gradebook');
 
     render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(queryTabLink('Gradebook')).not.toBeInTheDocument();
+    expect(queryTabLink('Grades')).not.toBeInTheDocument();
   });
 
-  it('shows Gradebook tab right after Progress for platform admins', () => {
+  it('ends the row with one Administration tab and lists every staff page flat in the admin nav', async () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: true },
     } as any);
+    await useAdminRoute('gradebook');
 
-    const { container } = render(
+    render(
       <CourseContentLayout params={defaultParams}>
         <div>children</div>
       </CourseContentLayout>,
     );
-    expect(tabLink('Gradebook')).toBeInTheDocument();
 
-    const tabLabels = Array.from(container.querySelectorAll('a')).map(
-      (a) => a.textContent?.trim() ?? '',
+    expect(rowLabels()).toEqual([
+      'Agent',
+      'Course',
+      'Progress',
+      'Dates',
+      'Discussions',
+      'Administration',
+    ]);
+    expect(tabLink('Administration').className).toContain('text-amber-600');
+    // No can_view_analytics here, so Analytics is absent.
+    expect(adminNavLabels()).toEqual([
+      'Overview',
+      'Grades',
+      'Membership',
+      'Cohorts',
+      'Extensions',
+      'Attempts',
+      'Reports',
+      'Settings',
+      'Authoring',
+      'Proctoring',
+    ]);
+    // The next/link mock drops aria-current; the active style is the tell.
+    expect(screen.getByRole('link', { name: 'Grades' }).className).toContain('text-amber-700');
+    expect(screen.getByRole('link', { name: 'Overview' }).className).not.toContain(
+      'text-amber-700',
     );
-    expect(tabLabels.indexOf('Gradebook')).toBe(tabLabels.indexOf('Progress') + 1);
+    // One visible divider (the measurement row's copy is aria-hidden).
+    expect(
+      screen
+        .getAllByTestId('course-tabs-staff-divider')
+        .filter((divider) => !divider.closest('[aria-hidden="true"]')),
+    ).toHaveLength(1);
   });
 
-  describe('Authoring tab (platform admin only)', () => {
-    it('renders Authoring tab for platform admin', () => {
+  it('shows only the learner tabs, with no staff divider, to a learner', () => {
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(rowLabels()).toEqual(['Agent', 'Course', 'Progress', 'Dates', 'Discussions']);
+    expect(screen.queryByTestId('course-tabs-staff-divider')).not.toBeInTheDocument();
+  });
+
+  describe('Authoring section (platform admin only)', () => {
+    it('renders the Authoring section for platform admin', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
+      await useAdminRoute();
 
       render(
         <CourseContentLayout params={defaultParams}>
@@ -752,10 +867,11 @@ describe('CourseContentLayout', () => {
       expect(tabLink('Authoring')).toBeInTheDocument();
     });
 
-    it('hides Authoring tab for non-admin users', () => {
+    it('hides the Authoring section for non-admin users', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: false },
       } as any);
+      await useAdminRoute();
 
       render(
         <CourseContentLayout params={defaultParams}>
@@ -765,10 +881,11 @@ describe('CourseContentLayout', () => {
       expect(queryTabLink('Authoring')).not.toBeInTheDocument();
     });
 
-    it('Authoring tab points at studioUrl/course/<courseId> in a new tab', () => {
+    it('Authoring points at studioUrl/course/<courseId> in a new tab', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
+      await useAdminRoute();
 
       const { container } = render(
         <CourseContentLayout params={defaultParams}>
@@ -788,34 +905,21 @@ describe('CourseContentLayout', () => {
       expect(authoringLink?.getAttribute('rel')).toContain('noopener');
     });
 
-    it('Authoring tab is rendered immediately after Instructor tab', () => {
+    it('Authoring follows Settings in the admin nav', async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
+      await useAdminRoute();
 
-      const { container } = render(
+      render(
         <CourseContentLayout params={defaultParams}>
           <div>children</div>
         </CourseContentLayout>,
       );
 
-      const tabLabels = Array.from(container.querySelectorAll('a'))
-        .map((a) => a.textContent?.trim() ?? '')
-        .filter((t) =>
-          [
-            'Agent',
-            'Course',
-            'Progress',
-            'Dates',
-            'Discussion',
-            'Instructor',
-            'Authoring',
-          ].includes(t),
-        );
-      const instructorIdx = tabLabels.indexOf('Instructor');
-      const authoringIdx = tabLabels.indexOf('Authoring');
-      expect(instructorIdx).toBeGreaterThanOrEqual(0);
-      expect(authoringIdx).toBe(instructorIdx + 1);
+      // Authoring sits in the Course group, right after Settings.
+      const labels = adminNavLabels();
+      expect(labels.indexOf('Authoring')).toBe(labels.indexOf('Settings') + 1);
     });
   });
 
@@ -897,7 +1001,7 @@ describe('CourseContentLayout', () => {
       </CourseContentLayout>,
     );
 
-    expect(screen.getByText('Grade:')).toBeInTheDocument();
+    expect(screen.getByText('Grade')).toBeInTheDocument();
     expect(screen.getByText('90%')).toBeInTheDocument();
   });
 
@@ -922,7 +1026,7 @@ describe('CourseContentLayout', () => {
       </CourseContentLayout>,
     );
 
-    expect(screen.queryByText('Grade:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Grade')).not.toBeInTheDocument();
   });
 
   it('renders open course outline button', () => {
@@ -1059,7 +1163,7 @@ describe('CourseContentLayout', () => {
       await renderAt('/course-content/course-v1:test+course+2024/discussion');
       // The mocked next/link drops aria-current, so assert the active styling —
       // it proves the derived value lines up with the tab bar's `key`s.
-      expect(tabLink('Discussion').className).toContain('text-amber-600');
+      expect(tabLink('Discussions').className).toContain('text-amber-600');
       expect(tabLink('Agent').className).not.toContain('text-amber-600');
     });
   });
@@ -2067,6 +2171,90 @@ describe('CourseContentLayout', () => {
 
   // Mobile 3-dot controls popover: the media and fullscreen rows (autoplay
   // and the Learn/Assess switch rows are covered in their describes above).
+  describe('New chat control (course controls cluster)', () => {
+    const setTab = async (tab: 'agent' | 'course') => {
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue(`/course-content/course-v1:test+course+2024/${tab}`);
+    };
+
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+    /** Stand-in for the `<agent-ai>` web component with its shadow-hosted iframe. */
+    const mountAgent = () => {
+      const postMessage = vi.fn();
+      const agent = document.createElement('agent-ai');
+      Object.defineProperty(agent, 'shadowRoot', {
+        value: {
+          querySelector: (selector: string) =>
+            selector === 'iframe' ? { contentWindow: { postMessage } } : null,
+        },
+        configurable: true,
+      });
+      document.body.appendChild(agent);
+      return { agent, postMessage };
+    };
+
+    afterEach(() => {
+      document.querySelector('agent-ai')?.remove();
+      mentorState.spinnerHidden = false;
+    });
+
+    it('is hidden until the mentor spinner has gone', async () => {
+      await setTab('agent');
+      mentorState.spinnerHidden = false;
+      renderLayout();
+      expect(screen.queryByTestId('agent-new-chat')).not.toBeInTheDocument();
+      // The popover still exists for fullscreen, but has no New chat row yet.
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+      expect(screen.queryByTestId('agent-new-chat-popover-button')).not.toBeInTheDocument();
+    });
+
+    it('renders in the navbar cluster on the agent tab once the mentor is ready', async () => {
+      await setTab('agent');
+      mentorState.spinnerHidden = true;
+      renderLayout();
+
+      const button = screen.getByTestId('agent-new-chat');
+      expect(button).toHaveAccessibleName('New chat');
+      expect(document.getElementById(NAVBAR_COURSE_CONTROLS_ID)!.contains(button)).toBe(true);
+    });
+
+    it('stays hidden on other tabs even when the mentor flag is set', async () => {
+      await setTab('course');
+      mentorState.spinnerHidden = true;
+      renderLayout();
+      expect(screen.queryByTestId('agent-new-chat')).not.toBeInTheDocument();
+    });
+
+    it('asks the embedded agent for a new chat when clicked', async () => {
+      await setTab('agent');
+      mentorState.spinnerHidden = true;
+      const { postMessage } = mountAgent();
+      renderLayout();
+
+      fireEvent.click(screen.getByTestId('agent-new-chat'));
+      expect(postMessage).toHaveBeenCalledWith({ type: 'MENTOR:NEW_CHAT' }, '*');
+    });
+
+    it('is offered in the mobile popover too, closing it on use', async () => {
+      await setTab('agent');
+      mentorState.spinnerHidden = true;
+      const { postMessage } = mountAgent();
+      renderLayout();
+
+      fireEvent.click(screen.getByLabelText('Agent display options'));
+      fireEvent.click(screen.getByTestId('agent-new-chat-popover-button'));
+
+      expect(postMessage).toHaveBeenCalledWith({ type: 'MENTOR:NEW_CHAT' }, '*');
+      expect(screen.queryByTestId('agent-new-chat-popover-button')).not.toBeInTheDocument();
+    });
+  });
+
   describe('mobile controls popover (media + fullscreen)', () => {
     const blockDetailsWithMedia = {
       root: 'unit-vertical-1',
@@ -2215,24 +2403,27 @@ describe('CourseContentLayout', () => {
       expect(queryTabLink('Instructors')).not.toBeInTheDocument();
     });
 
-    it('shows Configuration for a platform admin', () => {
+    it('shows Settings for a platform admin', async () => {
+      await useAdminRoute('configuration');
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
       } as any);
       renderLayout();
-      const link = tabLink('Configuration');
+      const link = tabLink('Settings');
       expect(link).toHaveAttribute('href', expect.stringContaining('/configuration'));
     });
 
-    it('hides Configuration for a non-admin user', () => {
+    it('hides Settings for a non-admin user', async () => {
+      await useAdminRoute('configuration');
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: false },
       } as any);
       renderLayout();
-      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Settings')).not.toBeInTheDocument();
     });
 
-    it('shows Analytics only when the user has the can_view_analytics permission', () => {
+    it('shows Analytics only when the user has the can_view_analytics permission', async () => {
+      await useAdminRoute('analytics');
       mockCheckRbacPermission.mockImplementation(((_perms: any, resource: string) =>
         resource.includes('can_view_analytics')) as any);
       renderLayout();
@@ -2240,7 +2431,8 @@ describe('CourseContentLayout', () => {
       expect(link).toHaveAttribute('href', expect.stringContaining('/analytics'));
     });
 
-    it('hides Analytics when the user lacks can_view_analytics (even as admin)', () => {
+    it('hides Analytics when the user lacks can_view_analytics (even as admin)', async () => {
+      await useAdminRoute('configuration');
       // Default mockCheckRbacPermission returns false for every resource.
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true },
@@ -2268,10 +2460,11 @@ describe('CourseContentLayout', () => {
       };
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: false },
       } as any);
+      await useAdminRoute();
     });
 
     it('looks up roles for the decoded course ID', () => {
@@ -2280,27 +2473,27 @@ describe('CourseContentLayout', () => {
     });
 
     it.each(['course-staff', 'course-instructor'])(
-      'shows every staff tab — Authoring included — for %s',
+      'shows every admin section — Authoring included — for %s',
       (role) => {
         setCourseRole(role);
         renderLayout();
-        expect(tabLink('Instructor')).toBeInTheDocument();
-        expect(tabLink('Configuration')).toBeInTheDocument();
+        expect(tabLink('Overview')).toBeInTheDocument();
+        expect(tabLink('Settings')).toBeInTheDocument();
         expect(tabLink('Analytics')).toBeInTheDocument();
         expect(tabLink('Authoring')).toBeInTheDocument();
       },
     );
 
-    it('shows every staff tab except Authoring for course-limited-staff', () => {
+    it('shows every admin section except Authoring for course-limited-staff', () => {
       setCourseRole('course-limited-staff');
       renderLayout();
-      expect(tabLink('Instructor')).toBeInTheDocument();
-      expect(tabLink('Configuration')).toBeInTheDocument();
+      expect(tabLink('Overview')).toBeInTheDocument();
+      expect(tabLink('Settings')).toBeInTheDocument();
       expect(tabLink('Analytics')).toBeInTheDocument();
       expect(queryTabLink('Authoring')).not.toBeInTheDocument();
     });
 
-    it('keeps the staff tabs hidden for a course role that grants no staff access', () => {
+    it('keeps the admin area hidden for a course role that grants no staff access', () => {
       courseUserRolesState.current = {
         courseRoles: [
           { role: 'course-beta-tester', org: 'test-tenant', course: 'course-v1:test+course+2024' },
@@ -2311,8 +2504,8 @@ describe('CourseContentLayout', () => {
         isResolved: true,
       };
       renderLayout();
-      expect(queryTabLink('Instructor')).not.toBeInTheDocument();
-      expect(queryTabLink('Configuration')).not.toBeInTheDocument();
+      expect(queryTabLink('Overview')).not.toBeInTheDocument();
+      expect(queryTabLink('Settings')).not.toBeInTheDocument();
       expect(queryTabLink('Analytics')).not.toBeInTheDocument();
       expect(queryTabLink('Authoring')).not.toBeInTheDocument();
     });
@@ -2348,7 +2541,7 @@ describe('CourseContentLayout', () => {
       return screen.getByText('children').parentElement as HTMLElement;
     };
 
-    it.each(['analytics', 'configuration', 'instructor', 'instructors'])(
+    it.each(['analytics', 'configuration', 'instructors'])(
       'scrolls the container on the %s tab (desktop)',
       async (tab) => {
         const contentArea = await renderOnTab(tab);
@@ -2356,8 +2549,10 @@ describe('CourseContentLayout', () => {
       },
     );
 
-    it.each(['course', 'progress', 'dates', 'discussion'])(
-      'leaves scrolling to the iframe on the %s tab (desktop)',
+    // The gradebook and instructor pages scroll their own content (pinned
+    // headers), like the iframe tabs.
+    it.each(['course', 'progress', 'dates', 'discussion', 'gradebook', 'instructor'])(
+      'leaves scrolling to the page on the %s tab (desktop)',
       async (tab) => {
         const contentArea = await renderOnTab(tab);
         expect(contentArea.className).not.toContain('overflow-y-auto');

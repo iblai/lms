@@ -33,16 +33,17 @@ export default function AgentTab() {
 
   const assessmentMode = agentMode === 'assessment';
 
-  // with this height, the agent chat will be full height of the screen minus the navbar and the course outline and no weird overflow happening
+  // Fills the layout's content area (a definite-height flex item), so the chat
+  // always ends exactly at the footer however tall the course header is.
   return (
     <div
       className={cn(
-        'relative flex w-full flex-col',
+        '@container relative flex w-full flex-col',
         agentFullscreen
           ? 'fixed inset-0 z-50 h-screen bg-white p-4'
-          : // The layout derives the active tab from the route, so this page only ever
-            // renders on /agent — one fixed height, no transitional value to flash through.
-            'h-[calc(100vh-223px)] px-6 pt-6 pb-0',
+          : // Same horizontal padding as the course header so the chat's edges
+            // line up with the tab track and the Manage button.
+            'h-full px-3 pt-4 pb-0 md:px-4',
       )}
     >
       {agentFullscreen && (
@@ -63,7 +64,7 @@ export default function AgentTab() {
           from the chat below. */}
       <div
         className={cn(
-          'min-h-0',
+          'flex min-h-0 flex-col',
           assessmentMode
             ? 'flex-1'
             : 'pointer-events-none invisible absolute inset-0 overflow-hidden',
@@ -72,7 +73,11 @@ export default function AgentTab() {
       >
         <EdxIframe />
       </div>
-      <div className={cn(assessmentMode ? 'hidden' : 'min-h-0 flex-1')}>
+      {/* The mentor page pads its own chat card (`px-1 md:px-4`, judged on the
+          iframe's width, which is this container's). Pull the iframe out by
+          the same amount so the card's edges land on ours — flush with the tab
+          track and the Manage button. */}
+      <div className={cn(assessmentMode ? 'hidden' : '-mx-1 min-h-0 flex-1 @3xl:-mx-4')}>
         <CourseAgentChat />
       </div>
     </div>

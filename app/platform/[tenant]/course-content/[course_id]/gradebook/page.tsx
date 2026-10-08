@@ -1,7 +1,10 @@
 'use client';
 
-import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
+import { useParams } from 'next/navigation';
+import { CourseGradebook } from './_components/course-gradebook';
 
 export default function GradebookTab() {
-  return <EdxIframe />;
+  const params = useParams();
+  const courseId = decodeURIComponent(params.course_id as string);
+  return <CourseGradebook courseId={courseId} />;
 }

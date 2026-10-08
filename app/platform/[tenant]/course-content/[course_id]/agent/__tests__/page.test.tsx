@@ -135,12 +135,13 @@ describe('AgentTab page', () => {
     expect(mockSetMentorSidebarHidden).toHaveBeenLastCalledWith(false);
   });
 
-  it('uses a single viewport height for the agent tab', () => {
+  it('fills the layout content area instead of hardcoding a viewport height', () => {
     const { container } = renderAgentTab();
     const wrapper = container.firstChild as HTMLElement;
-    // The height no longer depends on a context value that lands a commit late,
-    // so there is no shorter transitional height to flash through on mount.
-    expect(wrapper.className).toContain('h-[calc(100vh-223px)]');
+    // The layout hands the page a definite-height flex item; filling it keeps
+    // the chat aligned with the footer whatever the course header measures.
+    expect(wrapper.className).toContain('h-full');
+    expect(wrapper.className).not.toMatch(/calc\(100vh/);
   });
 
   it('does not render the fullscreen exit button when not in fullscreen', () => {
@@ -151,10 +152,10 @@ describe('AgentTab page', () => {
   it('expands to cover the viewport and shows an exit button in fullscreen', () => {
     const { container, getByTestId } = renderAgentTab('learning', true);
     const wrapper = container.firstChild as HTMLElement;
-    // Fullscreen pins the container over the whole viewport instead of the calc heights.
+    // Fullscreen pins the container over the whole viewport instead of filling the content area.
     expect(wrapper.className).toContain('fixed');
     expect(wrapper.className).toContain('inset-0');
-    expect(wrapper.className).not.toContain('h-[calc(100vh-223px)]');
+    expect(wrapper.className).not.toContain('h-full');
     expect(getByTestId('agent-fullscreen-exit')).toBeInTheDocument();
   });
 

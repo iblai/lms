@@ -239,10 +239,12 @@ export async function navigateToAdvancedSettings(page: Page): Promise<Locator> {
 }
 
 /**
- * Course content tabs collapse into a 3-dot overflow menu when they don't all
- * fit the tab row. Resolves a tab by name whether it is inline or hidden
- * behind that menu (opening the menu when needed), or null when the tab
- * doesn't exist for this course/user.
+ * Course content tabs collapse into a "More" overflow menu when they don't
+ * all fit the tab row, and the staff pages (Overview, Grades, Membership,
+ * Cohorts, Extensions, Attempts, Reports, Analytics, Settings, Authoring)
+ * share one "Administration" tab that opens the admin area with a section nav.
+ * Resolves a tab by name wherever it is (opening the menu or the admin area
+ * when needed), or null when it doesn't exist for this course/user.
  */
 export async function getCourseContentTab(
   page: Page,
@@ -265,17 +267,35 @@ export async function getCourseContentTab(
   }
 
   const overflowTrigger = page.getByTestId('course-tabs-overflow-trigger');
-  if (!(await overflowTrigger.isVisible({ timeout: 5_000 }).catch(() => false))) {
-    return null;
+  if (await overflowTrigger.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await overflowTrigger.click();
+    // Radix renders the overflowed tab links with role="menuitem".
+    const menuItem = page.getByRole('menuitem', { name, exact }).first();
+    if (await menuItem.isVisible({ timeout: 10_000 }).catch(() => false)) {
+      return menuItem;
+    }
+    await page.keyboard.press('Escape');
+    await openMenu.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => null);
   }
 
-  await overflowTrigger.click();
-  // Radix renders the overflowed tab links with role="menuitem".
-  const menuItem = page.getByRole('menuitem', { name, exact }).first();
-  if (await menuItem.isVisible({ timeout: 10_000 }).catch(() => false)) {
-    return menuItem;
+  // Staff pages: enter the admin area (its tab may itself sit in the overflow
+  // menu) and look the section up in the admin nav.
+  const adminNav = page.getByTestId('course-admin-nav');
+  if (!(await adminNav.isVisible({ timeout: 1_000 }).catch(() => false))) {
+    const adminTab =
+      name === 'Administration'
+        ? null
+        : await getCourseContentTab(page, 'Administration', { timeout });
+    if (!adminTab) {
+      return null;
+    }
+    await adminTab.click();
+    await adminNav.waitFor({ state: 'visible', timeout: 30_000 }).catch(() => null);
+  }
+  const section = adminNav.getByRole('link', { name, exact }).first();
+  if (await section.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    return section;
   }
 
-  await page.keyboard.press('Escape');
   return null;
 }

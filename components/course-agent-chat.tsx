@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { SquarePen } from 'lucide-react';
 import { toast } from 'sonner';
 import '@iblai/agent-ai';
 import { useDispatch } from 'react-redux';
@@ -146,13 +145,6 @@ export function CourseAgentChat() {
     };
   }, [mentorInUse]);
 
-  const handleNewChat = () => {
-    const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
-      'iframe',
-    ) as HTMLIFrameElement | null;
-    iframe?.contentWindow?.postMessage({ type: 'MENTOR:NEW_CHAT' }, '*');
-  };
-
   if (isLoading || !edxIframeLoaded) {
     return <CourseAgentChatLoading />;
   }
@@ -163,16 +155,6 @@ export function CourseAgentChat() {
 
   return (
     <div className="relative h-full w-full">
-      {spinnerHidden && (
-        <button
-          type="button"
-          onClick={handleNewChat}
-          aria-label="New chat"
-          className="absolute inset-[0px_0px_0px_-25px] z-10 flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 lg:inset-[0px_0px_0px_-19px]"
-        >
-          <SquarePen className="h-4 w-4" />
-        </button>
-      )}
       {React.createElement('agent-ai', {
         ref: mentorElementRef,
         mentorUrl: config.urls.mentor(),
