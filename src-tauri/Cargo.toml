@@ -37,12 +37,17 @@ mime_guess = "2.0"
 # scrubbing in telemetry.rs. It exists so Sentry can symbolicate native frames
 # against uploaded debug files, and nothing in CI uploads any — so it is pure
 # leak here. Rust panic frames arrive symbolicated by `backtrace` regardless.
+# `rustls-no-provider`, NOT `rustls`: sentry's plain `rustls` resolves to
+# reqwest 0.13's `__rustls-aws-lc-rs`, dragging in aws-lc-rs/aws-lc-sys (C and
+# assembly, needing NASM on x86_64-windows). The reqwest above already requests
+# that path on its own here, so this is not what puts aws-lc in the graph — but
+# sentry must not be a second, independent reason for it.
 sentry = { version = "0.49", default-features = false, features = [
     "backtrace",
     "contexts",
     "panic",
     "reqwest",
-    "rustls",
+    "rustls-no-provider",
 ] }
 
 [target.'cfg(target_os = "windows")'.dependencies]

@@ -2774,6 +2774,19 @@ pub fn run() {
             ollama_chat_stream,
         ]);
 
-        builder.run(tauri::generate_context!())
-            .expect("error while running tauri app");
+        // `build` + `run`-with-handler rather than `builder.run(..)`, for the
+        // sake of the exit arm below: `run` ends in tao's `EventLoop::run`,
+        // whose return type is `!` — it exits the process, so the
+        // ClientInitGuard held in `run()` is never dropped and its queued
+        // events die with it. Quit-time reports were being discarded.
+        builder
+            .build(tauri::generate_context!())
+            .expect("error while building tauri app")
+            .run(|_app, event| {
+                if let tauri::RunEvent::Exit = event {
+                    if let Some(client) = sentry::Hub::current().client() {
+                        client.close(Some(std::time::Duration::from_secs(2)));
+                    }
+                }
+            });
 }
