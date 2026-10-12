@@ -68,7 +68,10 @@ pub async fn start_offline_server(cache: Arc<RwLock<Option<WebCache>>>) {
             l
         }
         Err(e) => {
-            println!("[OfflineServer] Failed to bind to port {}: {}", OFFLINE_SERVER_PORT, e);
+            crate::telemetry::report(
+                "[OfflineServer] could not bind the offline server port",
+                format!("port {OFFLINE_SERVER_PORT}: {e}"),
+            );
             return;
         }
     };
@@ -76,7 +79,7 @@ pub async fn start_offline_server(cache: Arc<RwLock<Option<WebCache>>>) {
     println!("[OfflineServer] Server is now listening on http://{}", addr);
 
     if let Err(e) = axum::serve(listener, app).await {
-        println!("[OfflineServer] Server error: {}", e);
+        crate::telemetry::report("[OfflineServer] server stopped", e);
     }
 
     println!("[OfflineServer] Server stopped");

@@ -5,6 +5,7 @@ mod model_manager;
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 mod offline_server;
 mod ollama_installer;
+mod telemetry;
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 mod web_cache;
 
@@ -478,7 +479,7 @@ fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
     let parsed = match tauri::Url::parse(raw_url) {
         Ok(url) => url,
         Err(e) => {
-            println!("[ibl.ai] Failed to parse callback URL: {}", e);
+            telemetry::report("[ibl.ai] could not parse the auth callback URL", e);
             return;
         }
     };
@@ -563,7 +564,7 @@ fn handle_auth_session_callback_macos(app_handle: &AppHandle, raw_url: &str) {
 
         match window.eval(&js) {
             Ok(_) => println!("[ibl.ai] Successfully navigated via URLSearchParams"),
-            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+            Err(e) => telemetry::report("[ibl.ai] could not navigate after the auth callback", e),
         }
     } else {
         println!("[ibl.ai] Main window not found for callback navigation");
@@ -584,7 +585,7 @@ fn handle_auth_session_callback_sso(app_handle: &AppHandle, raw_url: &str) {
     let parsed = match tauri::Url::parse(raw_url) {
         Ok(url) => url,
         Err(e) => {
-            println!("[ibl.ai] Failed to parse SSO URL: {}", e);
+            telemetry::report("[ibl.ai] could not parse the SSO callback URL", e);
             return;
         }
     };
@@ -631,7 +632,7 @@ fn handle_auth_session_callback_sso(app_handle: &AppHandle, raw_url: &str) {
 
         match window.eval(&js) {
             Ok(_) => println!("[ibl.ai] Successfully navigated via URLSearchParams"),
-            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+            Err(e) => telemetry::report("[ibl.ai] could not navigate after SSO", e),
         }
     }
 }
@@ -651,7 +652,7 @@ fn handle_desktop_deep_link(app_handle: &AppHandle, raw_url: &str) {
     let parsed = match tauri::Url::parse(raw_url) {
         Ok(url) => url,
         Err(e) => {
-            println!("[ibl.ai] Failed to parse deep link URL: {}", e);
+            telemetry::report("[ibl.ai] could not parse a desktop deep link URL", e);
             return;
         }
     };
@@ -742,7 +743,7 @@ fn handle_desktop_deep_link(app_handle: &AppHandle, raw_url: &str) {
 
         match window.eval(&js) {
             Ok(_) => println!("[ibl.ai] Successfully navigated main window via deep link"),
-            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+            Err(e) => telemetry::report("[ibl.ai] could not navigate for a desktop deep link", e),
         }
         let _ = window.set_focus();
     } else {
@@ -758,7 +759,7 @@ fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
 
         app.run_on_main_thread(move || {
             if let Err(err) = open_with_auth_session(&url_for_main, &app_handle) {
-                println!("[ibl.ai] Failed to open auth session: {}", err);
+                telemetry::report("[ibl.ai] could not open the auth session", err);
             }
         })
         .map_err(|e| format!("Failed to schedule auth session: {}", e))
@@ -771,7 +772,7 @@ fn open_oauth_url(app: &AppHandle, url: &str) -> Result<(), String> {
 
         app.run_on_main_thread(move || {
             if let Err(err) = open_with_auth_session_macos(&url_for_main, &app_handle) {
-                println!("[ibl.ai] Failed to open auth session on macOS: {}", err);
+                telemetry::report("[ibl.ai] could not open the macOS auth session", err);
             }
         })
         .map_err(|e| format!("Failed to schedule auth session: {}", e))
@@ -873,7 +874,7 @@ fn handle_deep_link_url(app_handle: &AppHandle, raw_url: &str) {
     let parsed = match Url::parse(raw_url) {
         Ok(url) => url,
         Err(e) => {
-            println!("[ibl.ai] Failed to parse URL: {}", e);
+            telemetry::report("[ibl.ai] could not parse a deep link URL", e);
             return;
         }
     };
@@ -964,7 +965,7 @@ fn handle_deep_link_url(app_handle: &AppHandle, raw_url: &str) {
         let eval_result = window.eval(&js);
         match eval_result {
             Ok(_) => println!("[ibl.ai] Successfully navigated via URLSearchParams"),
-            Err(e) => println!("[ibl.ai] Failed to navigate: {}", e),
+            Err(e) => telemetry::report("[ibl.ai] could not navigate for a deep link", e),
         }
     } else {
         println!("[ibl.ai] Main window not found, storing as pending deep link");
@@ -974,7 +975,10 @@ fn handle_deep_link_url(app_handle: &AppHandle, raw_url: &str) {
             *pending = Some(raw_url.to_string());
             println!("[ibl.ai] Stored pending deep link: {}", raw_url);
         } else {
-            println!("[ibl.ai] Failed to store pending deep link");
+            telemetry::report(
+                "[ibl.ai] could not store a pending deep link",
+                "the pending-link lock was poisoned",
+            );
         }
     }
 }
@@ -1291,7 +1295,7 @@ async fn precache_app(app: AppHandle, url: String) -> Result<web_cache::Precache
         if let Ok(app_data_dir) = app.path().app_data_dir() {
             let route_file = app_data_dir.join(LAST_ROUTE_FILE);
             if let Err(e) = std::fs::write(&route_file, route) {
-                println!("[SkillsAI] Failed to save route to file: {}", e);
+                telemetry::report("[SkillsAI] could not save the last route", e);
             } else {
                 println!("[SkillsAI] Saved route from precache: {:?}", route_file);
             }
@@ -2180,6 +2184,13 @@ pub fn run() {
         }
     }
 
+    // Rust-side error reporting. After the dotenv loads (so a dev build can be
+    // aimed at a scratch project) and before the builder, so `setup()` and
+    // every task spawned there is already covered — that is where the failures
+    // worth knowing about happen. The guard MUST stay bound for the life of
+    // the process: dropping it discards every queued event.
+    let _sentry = telemetry::init();
+
     let builder = tauri::Builder::default();
 
     // Windows: route the OS-launched deep link (custom URI scheme callback) into
@@ -2196,6 +2207,14 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
+            // Before the platform branches below, so every platform gets it:
+            // an anonymous install id makes an issue countable in machines
+            // rather than events. `init()` could not do this — it runs before
+            // there is an AppHandle to resolve the data dir from.
+            if let Ok(dir) = app.path().app_data_dir() {
+                telemetry::set_install_id(&dir);
+            }
+
             let app_url = get_app_url();
 
             // =====================
@@ -2211,7 +2230,7 @@ pub fn run() {
                 // this for packaged builds; this call covers `tauri dev` and
                 // re-points the handler at the current executable.
                 if let Err(e) = app.deep_link().register_all() {
-                    println!("[ibl.ai] Failed to register deep link schemes: {}", e);
+                    telemetry::report("[ibl.ai] could not register the deep link schemes", e);
                 }
 
                 // Handles both cold start (app launched by the URL) and warm start
@@ -2256,7 +2275,7 @@ pub fn run() {
 
                 // Ensure app data directory exists
                 if let Err(e) = std::fs::create_dir_all(&app_data_dir) {
-                    println!("[SkillsAI] Failed to create app data dir: {}", e);
+                    telemetry::report("[SkillsAI] could not create the app data dir", e);
                 }
 
                 let cache = WebCache::new(app_data_dir.clone());
@@ -2282,7 +2301,7 @@ pub fn run() {
                             println!("[SkillsAI] Server exited");
                         }
                         Err(e) => {
-                            println!("[SkillsAI] Failed to create tokio runtime: {}", e);
+                            telemetry::report("[SkillsAI] could not create the offline server runtime", e);
                         }
                     }
                 });
@@ -2362,7 +2381,7 @@ pub fn run() {
                     if is_oauth_url(url_str) {
                         println!("[IBL Skills] [DESKTOP] OAuth URL detected, opening in popup: {}", url_str);
                         if let Err(e) = open_oauth_in_popup(url_str, &app_handle) {
-                            println!("[IBL Skills] [DESKTOP] Failed to open OAuth popup: {}", e);
+                            telemetry::report("[SkillsAI] could not open the OAuth popup", e);
                             return true;
                         }
                         return false;
@@ -2602,7 +2621,10 @@ pub fn run() {
                     if is_oauth {
                         println!("[IBL Skills] [MOBILE] OAuth navigation intercepted, opening ASWebAuthenticationSession: {}", url_str);
                         if let Err(e) = open_oauth_url(&app_handle, url_str) {
-                            println!("[IBL Skills] [MOBILE] Failed to open auth session: {} — blocking navigation anyway", e);
+                            telemetry::report(
+                                "[SkillsAI] could not open the mobile auth session — navigation blocked anyway",
+                                e,
+                            );
                         }
                         return false;
                     }
