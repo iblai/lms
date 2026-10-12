@@ -292,7 +292,7 @@ impl WebCache {
                     cached_urls.push(origin.to_string());
                 }
                 Err(e) => {
-                    println!("[WebCache] Failed to cache root: {}", e);
+                    crate::telemetry::report("[WebCache] could not cache the root document", e);
                 }
             }
         }
@@ -319,7 +319,9 @@ impl WebCache {
                     cached_urls.push(url);
                 }
                 Err(e) => {
-                    println!("[WebCache] Failed to cache {}: {}", url, e);
+                    // Once per process: this runs per URL over a long precache list, so
+                    // one broken disk would otherwise send an event per entry.
+                    crate::telemetry::report_once("[WebCache] could not cache a URL", e);
                     failed_urls.push(url);
                 }
             }
