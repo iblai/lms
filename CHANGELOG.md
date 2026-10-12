@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.92.0](https://github.com/iblai/lms/compare/skills-v0.91.0...skills-v0.92.0) (2026-10-12)
+
+### Features
+
+* **desktop:** report Rust-side errors to Sentry ([f9de035](https://github.com/iblai/lms/commit/f9de035b3db4a2d0921b374719a90843655d0193))
+
+### Bug Fixes
+
+* **desktop:** never let telemetry setup crash the app ([398813f](https://github.com/iblai/lms/commit/398813f6e8377e00a1ab9d867e0cef5d074c3b8a))
+
+### Chores
+
+* **tauri:** release app-v1.0.18 ([638cd1f](https://github.com/iblai/lms/commit/638cd1fdfcb9e6a0f7d4d2c66caf5908fd0dd580))
+
 ## [0.91.0](https://github.com/iblai/lms/compare/skills-v0.90.2...skills-v0.91.0) (2026-10-08)
 
 ### Features
