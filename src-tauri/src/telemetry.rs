@@ -50,6 +50,7 @@ use std::borrow::Cow;
 use std::fmt::Display;
 
 use sentry::protocol::{Event, Value};
+use sentry::types::Dsn;
 use sentry::{ClientInitGuard, ClientOptions, Level, TracesSamplingStrategy};
 
 /// Env name for the DSN override, read at runtime first (so a dev build can
@@ -72,7 +73,7 @@ const DEFAULT_DSN: &str = "https://1d7cfbc7d3fe235ee478cee03e77b0de@sentry.ibl.n
 /// `let _ = …` drops it immediately and every queued event dies with it.
 ///
 /// Returns `None` — and reports nothing, at zero cost — when the machine has
-/// opted out, when no DSN is configured anywhere, or in a debug build that
+/// opted out, when the configured DSN is unusable, or in a debug build that
 /// hasn't opted in. Call it AFTER the dotenv loads (so a DSN override in
 /// `.env.local` is visible) and BEFORE `tauri::Builder`, so `setup()` and
 /// every task spawned there is already covered.
@@ -178,7 +179,11 @@ fn mint_id() -> String {
     hex::encode(hasher.finalize())[..16].to_string()
 }
 
-/// Report a failure, and print it exactly as the `eprintln!` it replaced did.
+/// Report a failure, and print it.
+///
+/// The printing moved to stderr: every site converted here was a `println!`,
+/// and a failure belongs on the error stream even though the success logs
+/// beside it still go to stdout.
 ///
 /// `context` is the grouping key, so it must be a STABLE string — one issue
 /// per failure site, with the varying error text as a detail inside it.
@@ -191,11 +196,15 @@ pub fn report(context: &str, err: impl Display) {
 /// As [`report`], but captured at most once per process — for a site inside a
 /// hot loop, where one underlying fault produces an event per iteration.
 ///
-/// `emit_on_main` is the case this exists for: it runs per streamed token, and
-/// once the main thread's event loop is gone (the app is quitting) EVERY
-/// remaining emit fails. Unbounded, a single quit mid-stream would spend the
+/// The precache loop in `web_cache` is the case this exists for: it caches a
+/// long list of URLs one by one, so a full disk or a vanished cache directory
+/// fails identically on every entry. Unbounded, one such fault would spend the
 /// project's quota on hundreds of copies of one fact. Still prints every time,
 /// so a terminal shows the real rate.
+///
+/// The suppression lasts the whole process, by choice: a second genuine fault
+/// under the same `context` is lost, which is the price of the first one not
+/// arriving hundreds of times.
 pub fn report_once(context: &str, err: impl Display) {
     if first_time(context) {
         emit(context, err, Level::Error);
@@ -229,8 +238,16 @@ fn emit(context: &str, err: impl Display, level: Level) {
     sentry::capture_event(event);
 }
 
-fn dsn() -> Option<String> {
-    [
+/// The configured DSN, PARSED — never handed to `sentry::init` as a string.
+///
+/// `ClientOptions::from` does `into_dsn().expect("invalid value for DSN")`, so
+/// a malformed value panics the process. That value can come from CI: a typo'd
+/// or shell-quoted `IBL_SENTRY_DSN_DESKTOP` would be baked by `build.rs` into a
+/// binary that dies on launch for every user, before a window ever opens.
+/// Reporting is the thing allowed to fail here, so a bad DSN disables it and
+/// says why.
+fn dsn() -> Option<Dsn> {
+    let raw = [
         std::env::var(DSN_VAR).ok(),
         option_env!("IBL_SENTRY_DSN_DESKTOP").map(str::to_string),
         Some(DEFAULT_DSN.to_string()),
@@ -238,7 +255,14 @@ fn dsn() -> Option<String> {
     .into_iter()
     .flatten()
     .map(|s| s.trim().to_string())
-    .find(|s| !s.is_empty())
+    .find(|s| !s.is_empty())?;
+    match raw.parse::<Dsn>() {
+        Ok(dsn) => Some(dsn),
+        Err(e) => {
+            eprintln!("[telemetry] ignoring an unusable Sentry DSN: {e}");
+            None
+        }
+    }
 }
 
 /// This app persists no settings file of its own, so the env var is the whole
@@ -511,14 +535,44 @@ mod tests {
         // the runtime override reading a name the build never bakes.
         assert_eq!(DSN_VAR, "IBL_SENTRY_DSN_DESKTOP");
 
+        // Compared as parsed values: `Dsn`'s own `to_string` re-serializes an
+        // absent secret key as a bare `:`, so round-tripped strings never
+        // match what was configured.
+        let parse = |s: &str| s.parse::<Dsn>().unwrap();
         std::env::set_var(DSN_VAR, "https://abc@sentry.example/9");
-        assert_eq!(dsn().as_deref(), Some("https://abc@sentry.example/9"));
+        assert_eq!(dsn(), Some(parse("https://abc@sentry.example/9")));
         for blank in ["", "   "] {
             std::env::set_var(DSN_VAR, blank);
             assert_eq!(
-                dsn().as_deref(),
-                Some(DEFAULT_DSN),
+                dsn(),
+                Some(parse(DEFAULT_DSN)),
                 "a blank override is not a DSN; it falls through to the default"
+            );
+        }
+        drop(restore);
+    }
+
+    /// `ClientOptions::from` does `into_dsn().expect(...)`, so handing it an
+    /// unparseable string panics the process. The value can come from CI, where
+    /// a typo or a shell-quoted DSN would be baked into a release that then
+    /// dies on launch for every user, before a window opens. Reporting is what
+    /// is allowed to fail here — never the app.
+    #[test]
+    fn an_unusable_dsn_disables_reporting_instead_of_panicking() {
+        let _g = env_lock();
+        let restore = Restore::of(&[DSN_VAR, "IBL_SENTRY_DEBUG"]);
+        std::env::set_var("IBL_SENTRY_DEBUG", "1");
+        for bad in [
+            "not-a-url",
+            "https://sentry.ibl.network/61",   // no public key
+            "\"https://abc@sentry.example/1\"", // shell quotes kept
+            "https://abc@/1",
+        ] {
+            std::env::set_var(DSN_VAR, bad);
+            assert!(dsn().is_none(), "{bad:?} must not parse as a DSN");
+            assert!(
+                init().is_none(),
+                "{bad:?} must disable reporting, not panic the app"
             );
         }
         drop(restore);
