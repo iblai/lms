@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.92.1](https://github.com/iblai/lms/compare/skills-v0.92.0...skills-v0.92.1) (2026-10-13)
+
 ## [0.92.0](https://github.com/iblai/lms/compare/skills-v0.91.0...skills-v0.92.0) (2026-10-12)
 
 ### Features
