@@ -2,7 +2,7 @@
 
 <img src="https://ibl.ai/images/iblai-logo.png" alt="ibl.ai" width="300" />
 
-# LMS
+# ibl.ai/lms
 
 **Open-source skills intelligence platform — discover courses, track competencies, earn credentials, and accelerate workforce development.**
 
