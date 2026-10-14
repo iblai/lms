@@ -57,6 +57,10 @@ vi.mock('@/features/mentor', () => ({
     type: 'mentor/setMentorSpinnerHidden',
     payload: value,
   })),
+  setMentorAgentReady: vi.fn((value: boolean) => ({
+    type: 'mentor/setMentorAgentReady',
+    payload: value,
+  })),
 }));
 
 vi.mock('lodash/isEmpty', () => {
@@ -258,6 +262,72 @@ describe('CourseAgentChat', () => {
       expect(toast.error).toHaveBeenCalledWith('No mentors found');
     });
     expect(container.querySelector('agent-ai')).not.toBeInTheDocument();
+  });
+
+  describe('agent ready signal', () => {
+    const mountWithIframe = async () => {
+      const utils = renderWithContext();
+      const mentorEl = await waitFor(() => {
+        const el = utils.container.querySelector('agent-ai') as HTMLElement | null;
+        expect(el).toBeInTheDocument();
+        return el!;
+      });
+      const contentWindow = {} as Window;
+      Object.defineProperty(mentorEl, 'shadowRoot', {
+        value: {
+          querySelector: (selector: string) => (selector === 'iframe' ? { contentWindow } : null),
+        },
+        configurable: true,
+      });
+      return { ...utils, contentWindow };
+    };
+
+    const postFrom = (source: unknown, data: unknown) => {
+      const event = new MessageEvent('message', { data });
+      Object.defineProperty(event, 'source', { value: source });
+      act(() => {
+        window.dispatchEvent(event);
+      });
+    };
+
+    it('marks the agent ready when its iframe posts { ready: true }', async () => {
+      const { setMentorAgentReady } = await import('@/features/mentor');
+      const { contentWindow } = await mountWithIframe();
+
+      postFrom(contentWindow, { ready: true });
+
+      expect(setMentorAgentReady).toHaveBeenCalledWith(true);
+    });
+
+    it('ignores ready messages from other windows', async () => {
+      const { setMentorAgentReady } = await import('@/features/mentor');
+      await mountWithIframe();
+
+      postFrom({} as Window, { ready: true });
+
+      expect(setMentorAgentReady).not.toHaveBeenCalledWith(true);
+    });
+
+    it('ignores messages from the agent iframe that are not the ready signal', async () => {
+      const { setMentorAgentReady } = await import('@/features/mentor');
+      const { contentWindow } = await mountWithIframe();
+
+      postFrom(contentWindow, { ready: 'true' });
+      postFrom(contentWindow, { type: 'MENTOR:RESPONDED' });
+
+      expect(setMentorAgentReady).not.toHaveBeenCalledWith(true);
+    });
+
+    it('resets the ready flag on unmount', async () => {
+      const { setMentorAgentReady } = await import('@/features/mentor');
+      const { contentWindow, unmount } = await mountWithIframe();
+      postFrom(contentWindow, { ready: true });
+      vi.mocked(setMentorAgentReady).mockClear();
+
+      unmount();
+
+      expect(setMentorAgentReady).toHaveBeenCalledWith(false);
+    });
   });
 
   it('forwards mentor:unit-switched messages to the mentor iframe via postMessage', async () => {

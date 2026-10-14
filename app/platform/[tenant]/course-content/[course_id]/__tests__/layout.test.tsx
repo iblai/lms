@@ -311,7 +311,7 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
 
 // Mock react-redux — layout calls useDispatch + useSelector(selectMentorSpinnerHidden | selectRbacPermissions)
 const mockDispatch = vi.fn();
-const mentorState = vi.hoisted(() => ({ spinnerHidden: false }));
+const mentorState = vi.hoisted(() => ({ spinnerHidden: false, agentReady: true }));
 const rbacState = vi.hoisted(() => ({ rbacPermissions: {} as Record<string, unknown> }));
 vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -321,6 +321,7 @@ vi.mock('react-redux', () => ({
 
 vi.mock('@/features/mentor', () => ({
   selectMentorSpinnerHidden: (state: any) => state.mentor.spinnerHidden,
+  selectMentorAgentReady: (state: any) => state.mentor.agentReady,
 }));
 
 vi.mock('@/features/rbac', () => ({
@@ -397,6 +398,7 @@ describe('CourseContentLayout', () => {
     navbarControlsSlot.id = NAVBAR_COURSE_CONTROLS_ID;
     document.body.appendChild(navbarControlsSlot);
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
+    mentorState.agentReady = true;
     mockCheckRbacPermission.mockReturnValue(false);
     courseUserRolesState.current = {
       courseRoles: [],
@@ -1931,6 +1933,13 @@ describe('CourseContentLayout', () => {
 
     it('hides the autoplay toggle for tenant truthy-but-not-true values (e.g. "true")', () => {
       mockTenantMetadata.current = { enable_course_voice_autoplay: 'true' };
+      renderWithCourse({ agent_autoplay: true });
+      expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
+    });
+
+    it('hides the autoplay toggle until the agent iframe reports ready', () => {
+      mentorState.agentReady = false;
       renderWithCourse({ agent_autoplay: true });
       expect(screen.queryByTestId('agent-autoplay-toggle')).not.toBeInTheDocument();
       expect(screen.queryByTestId('agent-autoplay-popover-switch')).not.toBeInTheDocument();
