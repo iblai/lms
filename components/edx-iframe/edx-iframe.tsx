@@ -11,7 +11,15 @@ import { CourseOutlineContext } from '@/contexts/course-outline-context';
 // @ts-ignore
 import { useLazyGetExamInfoQuery } from '@iblai/iblai-js/data-layer';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
-import { markEdxIframeLoaded, markEdxIframeUnloaded } from '@/hooks/courses/use-edx-iframe-loaded';
+import {
+  EDX_IFRAME_ID,
+  EDX_UNIT_LOADED_GRACE_MS,
+  getLoadedEdxUnitId,
+  isEdxUnitLoadedMessage,
+  markEdxIframeLoaded,
+  markEdxIframeUnloaded,
+  markEdxUnitLoaded,
+} from '@/hooks/courses/use-edx-iframe-loaded';
 import { cn } from '@/lib/utils';
 
 // Only mounted inside a timed/special-exam subsection (examInfo set); defer its chunk.
@@ -38,8 +46,16 @@ export const EdxIframe = () => {
 
   const searchParams = useSearchParams();
   const [fetchingIframeData, setFetchingIframeData] = useState(true);
-  const { getIframeURL, findSequentialParent } = useEdxIframe();
+  const { getIframeURL, getUnitToIframe, findSequentialParent } = useEdxIframe();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // The unit this iframe was mounted for, so the element's load event can stand
+  // in for a `unit.loaded` frame the edX page never sends.
+  const loadingUnitIdRef = useRef<string | null>(null);
+  const unitLoadedGraceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelUnitLoadedGrace = useCallback(() => {
+    if (unitLoadedGraceRef.current) clearTimeout(unitLoadedGraceRef.current);
+    unitLoadedGraceRef.current = null;
+  }, []);
   const { navigator } = useCourseNavigator(courseOutline, currentUnitID || courseID);
 
   const [getExamInfo] = useLazyGetExamInfoQuery();
@@ -49,7 +65,12 @@ export const EdxIframe = () => {
       setExamInfo(null);
       setCurrentlyInExamSubsection(false);
       setFetchingIframeData(true);
+      // The iframe is torn down here, not when the URL lands after the SSO
+      // round-trip, so nothing reads a stale loaded state in between.
+      cancelUnitLoadedGrace();
+      markEdxIframeUnloaded();
       if (activeTab === 'course' || activeTab === 'agent') {
+        loadingUnitIdRef.current = getUnitToIframe(courseOutline)?.id ?? null;
         getIframeURL(courseID, courseOutline, async (url) => {
           try {
             const courseOutlineData = Array.isArray(courseOutline?.children)
@@ -85,6 +106,7 @@ export const EdxIframe = () => {
           setFetchingIframeData(false);
         });
       } else {
+        loadingUnitIdRef.current = null;
         getIframeURL(courseID, activeTab, (url) => {
           setIframeUrl(url);
           setFetchingIframeData(false);
@@ -99,8 +121,15 @@ export const EdxIframe = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   useEffect(() => {
     setIframeLoaded(false);
-    markEdxIframeUnloaded();
   }, [iframeUrl]);
+
+  useEffect(
+    () => () => {
+      cancelUnitLoadedGrace();
+      markEdxIframeUnloaded();
+    },
+    [cancelUnitLoadedGrace],
+  );
 
   // The agent decides when a unit is complete (see `useUnitAutoCompletion`,
   // which resolves this flag), so tell the edX MFE to stop auto-completing
@@ -153,6 +182,14 @@ export const EdxIframe = () => {
     const handleMessage = (event: MessageEvent) => {
       // Type guard for message data
       if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
+
+      if (isEdxUnitLoadedMessage(event.data)) {
+        // Only the course iframe's own window may announce its unit.
+        if (event.source !== iframeRef.current?.contentWindow) return;
+        cancelUnitLoadedGrace();
+        markEdxUnitLoaded(event.data.usageId);
         return;
       }
 
@@ -209,11 +246,25 @@ export const EdxIframe = () => {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []); // Empty deps - listener never recreated, reads from refs
+  }, [cancelUnitLoadedGrace]); // Stable deps - listener never recreated, reads from refs
 
   useEffect(() => {
     handleLoadCourse();
   }, [courseOutline?.id, searchParams, courseID, activeTab, refresher]);
+
+  // The mentor's unit notifications wait on the edX page's own `unit.loaded`
+  // frame, posted right after its load event. Deployments without that script
+  // never send one, so the element's load event stands in after a short grace,
+  // tagged with the unit this iframe was mounted for.
+  const scheduleUnitLoadedFallback = () => {
+    const unitId = loadingUnitIdRef.current;
+    if (!unitId || getLoadedEdxUnitId() === unitId) return;
+    cancelUnitLoadedGrace();
+    unitLoadedGraceRef.current = setTimeout(() => {
+      unitLoadedGraceRef.current = null;
+      if (getLoadedEdxUnitId() !== unitId) markEdxUnitLoaded(unitId);
+    }, EDX_UNIT_LOADED_GRACE_MS);
+  };
   return (
     <>
       {fetchingIframeData ? (
@@ -242,12 +293,12 @@ export const EdxIframe = () => {
                 setFetchingIframeData(false);
                 setIframeLoaded(true);
                 refetchCourseOutline(false);
-                // The agent tab keeps this iframe hidden, and defers both the
-                // mentor's mount and its unit notifications until the iframe
-                // has actually loaded.
+                // The agent tab keeps this iframe hidden and defers the mentor's
+                // mount until the iframe has actually loaded.
                 markEdxIframeLoaded();
+                scheduleUnitLoadedFallback();
               }}
-              id="edx-iframe"
+              id={EDX_IFRAME_ID}
               title="Forum InnerWare"
               sandbox="allow-modals allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
               frameBorder={0}

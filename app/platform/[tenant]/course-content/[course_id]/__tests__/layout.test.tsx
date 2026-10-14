@@ -362,6 +362,7 @@ vi.mock('react', async () => {
 import CourseContentLayout from '../layout';
 import { LESSON_COMPLETED_DIALOG_DELAY_MS } from '@/components/lesson-completed-dialog';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import { markEdxIframeUnloaded, markEdxUnitLoaded } from '@/hooks/courses/use-edx-iframe-loaded';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
@@ -390,6 +391,7 @@ describe('CourseContentLayout', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    markEdxIframeUnloaded();
     // The course controls (autoplay, media, fullscreen, Learn/Assess) portal
     // into the navbar slot, which the (unrendered-here) NavBar provides in the
     // real app — recreate it so the portal has a mount point.
@@ -1262,9 +1264,89 @@ describe('CourseContentLayout', () => {
       // it has loaded the new unit.
       expect(toast.success).not.toHaveBeenCalled();
       act(() => {
-        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+        markEdxUnitLoaded('unit-B');
       });
       expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+    });
+
+    it('ignores a load of the unit being left and waits for the new one', async () => {
+      const { toast } = await import('sonner');
+      const { setUnit } = await mockUnitLayout({
+        pathname: '/course-content/course-v1:test+course+2024/agent',
+        initialUnit: unitA,
+      });
+
+      const { rerender } = render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+      act(() => {
+        markEdxUnitLoaded('unit-A');
+      });
+
+      setUnit(unitB);
+      mockState.searchParams = new URLSearchParams('unit_id=unit-B');
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+
+      // The outgoing iframe finishing its load is not the new unit loading.
+      act(() => {
+        markEdxUnitLoaded('unit-A');
+      });
+      expect(toast.success).not.toHaveBeenCalled();
+
+      act(() => {
+        markEdxUnitLoaded('unit-B');
+      });
+      expect(toast.success).toHaveBeenCalledWith('Switched to "Unit B"');
+    });
+
+    it('does not let the outgoing unit\'s load satisfy "Loaded" for the unit switched to', async () => {
+      const { toast } = await import('sonner');
+      mentorState.spinnerHidden = false;
+      try {
+        const { setUnit } = await mockUnitLayout({
+          pathname: '/course-content/course-v1:test+course+2024/agent',
+          initialUnit: unitA,
+        });
+
+        const { rerender } = render(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+        act(() => {
+          markEdxUnitLoaded('unit-A');
+        });
+
+        setUnit(unitB);
+        mockState.searchParams = new URLSearchParams('unit_id=unit-B');
+        rerender(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+
+        // The mentor becomes ready while unit B's iframe is still loading.
+        mentorState.spinnerHidden = true;
+        rerender(
+          <CourseContentLayout params={defaultParams}>
+            <div>children</div>
+          </CourseContentLayout>,
+        );
+        expect(toast.success).not.toHaveBeenCalled();
+
+        act(() => {
+          markEdxUnitLoaded('unit-B');
+        });
+        expect(toast.success).toHaveBeenCalledWith('Loaded "Unit B"');
+      } finally {
+        mentorState.spinnerHidden = false;
+      }
     });
 
     it('falls back to firing the switch toast after 15s when the iframe never loads', async () => {
@@ -1320,7 +1402,7 @@ describe('CourseContentLayout', () => {
       );
 
       act(() => {
-        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+        markEdxUnitLoaded('unit-B');
       });
       expect(toast.success).not.toHaveBeenCalled();
     });
@@ -1393,7 +1475,7 @@ describe('CourseContentLayout', () => {
       );
 
       act(() => {
-        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+        markEdxUnitLoaded('unit-1');
       });
       expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
 
@@ -1418,7 +1500,7 @@ describe('CourseContentLayout', () => {
 
       // Iframe loads while the mentor spinner is still visible.
       act(() => {
-        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+        markEdxUnitLoaded('unit-1');
       });
       expect(toast.success).not.toHaveBeenCalled();
 
@@ -1517,7 +1599,7 @@ describe('CourseContentLayout', () => {
       }
 
       act(() => {
-        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+        markEdxUnitLoaded('unit-1');
       });
       expect(toast.success).toHaveBeenCalledTimes(1);
       expect(toast.success).toHaveBeenCalledWith('Loaded "Intro Unit"');
@@ -1529,7 +1611,7 @@ describe('CourseContentLayout', () => {
         </CourseContentLayout>,
       );
       act(() => {
-        window.dispatchEvent(new CustomEvent('edx-iframe:loaded'));
+        markEdxUnitLoaded('unit-1');
       });
       expect(toast.success).toHaveBeenCalledTimes(1);
     });

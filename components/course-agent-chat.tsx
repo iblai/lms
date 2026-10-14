@@ -12,10 +12,17 @@ import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useDefaultMentor } from '@/hooks/use-default-mentor';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { useEdxIframeLoaded } from '@/hooks/courses/use-edx-iframe-loaded';
+import {
+  EDX_UNIT_LOADED_EVENT,
+  requestEdxUnitContext,
+  useEdxIframeLoaded,
+} from '@/hooks/courses/use-edx-iframe-loaded';
 import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
 import { Spinner } from '@/components/spinner';
 import type { CourseOutlineChildNode } from '@/types/courses';
+
+// The `<agent-ai>` element's host-facing surface this component relies on.
+type CourseAgentElement = HTMLElement & { sendHostInfoToIframe?: () => void };
 
 export function CourseAgentChat() {
   const tenant = useTenantParam();
@@ -29,7 +36,7 @@ export function CourseAgentChat() {
     onError: () => toast.error('No mentors found'),
   });
   const [spinnerHidden, setSpinnerHidden] = useState(false);
-  const mentorElementRef = useRef<HTMLElement | null>(null);
+  const mentorElementRef = useRef<CourseAgentElement | null>(null);
   const dispatch = useDispatch();
   const { course, currentUnitID } = useContext(CourseOutlineContext);
   const { courseID, courseOutline } = useContext(EdxIframeContext);
@@ -98,6 +105,28 @@ export function CourseAgentChat() {
       dispatch(setMentorAgentReady(false));
     };
   }, [mentorInUse, dispatch]);
+
+  // The embed stores the course iframe's `context` frame but only forwards it
+  // to the mentor when the host URL changes — which, on a unit switch, happens
+  // before the new unit's iframe exists, so the mentor sat one unit behind.
+  // The iframe posts `context` before `unit.loaded`, so by the time the unit
+  // reports loaded the fresh context is in the embed: push it across.
+  useEffect(() => {
+    const handleUnitLoaded = () => {
+      mentorElementRef.current?.sendHostInfoToIframe?.();
+    };
+    window.addEventListener(EDX_UNIT_LOADED_EVENT, handleUnitLoaded);
+    return () => window.removeEventListener(EDX_UNIT_LOADED_EVENT, handleUnitLoaded);
+  }, []);
+
+  // This chat mounts only once the course iframe has loaded, so the embed
+  // missed that page's `context` frame. Ask the page to announce itself again
+  // now that the embed is listening; its `unit.loaded` answer drives the push
+  // above, and the embed also sends what it holds when the mentor loads.
+  useEffect(() => {
+    if (!mentorElementRef.current) return;
+    requestEdxUnitContext();
+  }, [mentorInUse, isLoading, edxIframeLoaded]);
 
   useEffect(() => {
     const handleUnitSwitched = (event: Event) => {

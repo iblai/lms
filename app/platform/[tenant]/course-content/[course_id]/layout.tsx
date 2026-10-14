@@ -85,11 +85,7 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useMediaQuery } from 'react-responsive';
 import { cn } from '@/lib/utils';
-// Shared with the agent chat, which gates its own mount on the same signal.
-import {
-  EDX_IFRAME_LOAD_FALLBACK_MS,
-  EDX_IFRAME_LOADED_EVENT,
-} from '@/hooks/courses/use-edx-iframe-loaded';
+import { waitForEdxUnitLoaded } from '@/hooks/courses/use-edx-iframe-loaded';
 
 // Tab identity is derived from the route rather than pushed up from each page's
 // mount effect: an effect lands one commit *after* the new page renders, so the
@@ -338,42 +334,16 @@ export default function CourseContentLayout({
     }
   }, [searchParams, courseOutline]);
 
-  // Tracks whether the (hidden) course iframe has already fired a load event,
-  // so a notification whose other conditions resolve late can go out right away.
-  const edxIframeLoadedRef = useRef(false);
-  useEffect(() => {
-    const handleIframeLoaded = () => {
-      edxIframeLoadedRef.current = true;
-    };
-    window.addEventListener(EDX_IFRAME_LOADED_EVENT, handleIframeLoaded);
-    return () => window.removeEventListener(EDX_IFRAME_LOADED_EVENT, handleIframeLoaded);
-  }, []);
-
   // Defers the toast + mentor:unit-switched dispatch until the hidden course
-  // iframe has loaded, so the mentor never reacts to a unit that isn't
-  // rendered yet. The fallback timer covers subsections that never mount the
-  // iframe (e.g. exam gates). Returns a cleanup that cancels the notification.
-  const notifyMentorOnceIframeLoaded = (message: string, alreadyLoaded = false) => {
-    const dispatch = () => {
+  // iframe reports *this* unit loaded, so the mentor never reacts to a unit
+  // that isn't rendered yet and a load of the unit being left can't stand in
+  // for it. The fallback timer covers subsections that never mount the iframe
+  // (e.g. exam gates). Returns a cleanup that cancels the notification.
+  const notifyMentorOnceUnitLoaded = (message: string, unitId: string) =>
+    waitForEdxUnitLoaded(unitId, () => {
       toast.success(message);
       window.dispatchEvent(new CustomEvent('mentor:unit-switched', { detail: { message } }));
-    };
-    if (alreadyLoaded) {
-      dispatch();
-      return undefined;
-    }
-    const cancel = () => {
-      clearTimeout(fallbackTimer);
-      window.removeEventListener(EDX_IFRAME_LOADED_EVENT, send);
-    };
-    const send = () => {
-      cancel();
-      dispatch();
-    };
-    const fallbackTimer = setTimeout(send, EDX_IFRAME_LOAD_FALLBACK_MS);
-    window.addEventListener(EDX_IFRAME_LOADED_EVENT, send, { once: true });
-    return cancel;
-  };
+    });
 
   const previousUnitIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -385,9 +355,9 @@ export default function CourseContentLayout({
     const previousUnitId = previousUnitIdRef.current;
     previousUnitIdRef.current = unitId;
     if (previousUnitId && previousUnitId !== unitId) {
-      // Always wait for the *next* load: switching units remounts the iframe.
-      return notifyMentorOnceIframeLoaded(
+      return notifyMentorOnceUnitLoaded(
         `Switched to "${currentCourseInfo?.display_name ?? 'new unit'}"`,
+        unitId,
       );
     }
   }, [currentCourseInfo?.id, currentTab]);
@@ -406,7 +376,7 @@ export default function CourseContentLayout({
       return;
     }
     unitLoadedScheduledRef.current = true;
-    return notifyMentorOnceIframeLoaded(`Loaded "${unitName}"`, edxIframeLoadedRef.current);
+    return notifyMentorOnceUnitLoaded(`Loaded "${unitName}"`, unitId);
   }, [currentCourseInfo?.id, currentCourseInfo?.display_name, currentTab, mentorSpinnerHidden]);
 
   const toggleModule = (moduleId: string) => {
