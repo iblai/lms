@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.93.0](https://github.com/iblai/lms/compare/skills-v0.92.1...skills-v0.93.0) (2026-10-14)
+
+### Features
+
+* autoplay button also appearing on iframe ready event ([4f02a05](https://github.com/iblai/lms/commit/4f02a0525fd3f0a4db0cc9d5f97b140f9a3068be))
+
 ## [0.92.1](https://github.com/iblai/lms/compare/skills-v0.92.0...skills-v0.92.1) (2026-10-13)
 
 ## [0.92.0](https://github.com/iblai/lms/compare/skills-v0.91.0...skills-v0.92.0) (2026-10-12)
