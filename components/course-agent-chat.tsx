@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
 import { getUserId } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
-import { setMentorSpinnerHidden } from '@/features/mentor';
+import { setMentorAgentReady, setMentorSpinnerHidden } from '@/features/mentor';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useDefaultMentor } from '@/hooks/use-default-mentor';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
@@ -78,6 +78,26 @@ export function CourseAgentChat() {
       dispatch(setMentorSpinnerHidden(false));
     };
   }, [spinnerHidden, dispatch]);
+
+  // The agent SPA posts `{ ready: true }` to its parent once it can take
+  // host messages; controls that drive it (e.g. autoplay) wait for that.
+  useEffect(() => {
+    if (!mentorInUse) return;
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.ready !== true) return;
+      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
+        'iframe',
+      ) as HTMLIFrameElement | null;
+      if (!iframe || event.source !== iframe.contentWindow) return;
+      console.log('[Agent Iframe loaded]: ', event?.data);
+      dispatch(setMentorAgentReady(true));
+    };
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      dispatch(setMentorAgentReady(false));
+    };
+  }, [mentorInUse, dispatch]);
 
   useEffect(() => {
     const handleUnitSwitched = (event: Event) => {
