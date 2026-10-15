@@ -85,7 +85,13 @@ import { CourseAgentChat } from '../course-agent-chat';
 import { ChatContext } from '../chat-button';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
-import { markEdxIframeLoaded, markEdxIframeUnloaded } from '@/hooks/courses/use-edx-iframe-loaded';
+import {
+  EDX_CONTEXT_REQUEST_MESSAGE_TYPE,
+  EDX_IFRAME_ID,
+  markEdxIframeLoaded,
+  markEdxIframeUnloaded,
+  markEdxUnitLoaded,
+} from '@/hooks/courses/use-edx-iframe-loaded';
 
 const renderWithContext = (contextValue: typeof defaultContextValue = defaultContextValue) =>
   render(
@@ -845,6 +851,78 @@ describe('CourseAgentChat', () => {
       });
 
       expect(container.querySelector('agent-ai')).toBe(mounted);
+    });
+  });
+
+  describe('pushing the course context to the mentor', () => {
+    const unitId = 'block-v1:test+101+2024+type@vertical+block@1';
+
+    it('asks the embed to resend host info once the unit reports loaded', async () => {
+      const { container } = renderWithContext();
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+      const el = container.querySelector('agent-ai') as HTMLElement & {
+        sendHostInfoToIframe?: () => void;
+      };
+      el.sendHostInfoToIframe = vi.fn();
+
+      act(() => {
+        markEdxUnitLoaded(unitId);
+      });
+
+      expect(el.sendHostInfoToIframe).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks the course page to announce itself again once the embed is mounted', async () => {
+      const iframe = document.createElement('iframe');
+      iframe.id = EDX_IFRAME_ID;
+      document.body.appendChild(iframe);
+      const postMessage = vi.spyOn(iframe.contentWindow!, 'postMessage');
+      try {
+        const { container } = renderWithContext();
+        await waitFor(() => {
+          expect(container.querySelector('agent-ai')).toBeInTheDocument();
+        });
+
+        expect(postMessage).toHaveBeenCalledWith(
+          { type: EDX_CONTEXT_REQUEST_MESSAGE_TYPE },
+          expect.any(String),
+        );
+      } finally {
+        iframe.remove();
+      }
+    });
+
+    it('does not ask while the course-loading spinner stands in for the embed', async () => {
+      markEdxIframeUnloaded();
+      const iframe = document.createElement('iframe');
+      iframe.id = EDX_IFRAME_ID;
+      document.body.appendChild(iframe);
+      const postMessage = vi.spyOn(iframe.contentWindow!, 'postMessage');
+      try {
+        const { getByTestId } = renderWithContext();
+        await waitFor(() => {
+          expect(getByTestId('course-agent-chat-loading')).toBeInTheDocument();
+        });
+
+        expect(postMessage).not.toHaveBeenCalled();
+      } finally {
+        iframe.remove();
+      }
+    });
+
+    it('tolerates an embed without that method', async () => {
+      const { container } = renderWithContext();
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      expect(() => {
+        act(() => {
+          markEdxUnitLoaded(unitId);
+        });
+      }).not.toThrow();
     });
   });
 });

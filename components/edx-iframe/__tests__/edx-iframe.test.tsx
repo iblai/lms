@@ -4,26 +4,39 @@ import { EdxIframe } from '../edx-iframe';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { LOCALSTORAGE_KEYS } from '@/constants/storage';
+import {
+  EDX_UNIT_LOADED_EVENT,
+  EDX_UNIT_LOADED_GRACE_MS,
+  getLoadedEdxUnitId,
+  markEdxIframeUnloaded,
+  markEdxUnitLoaded,
+} from '@/hooks/courses/use-edx-iframe-loaded';
 import '@testing-library/jest-dom';
 
 // Mock dependencies
+// Stable across renders, as Next's hook is between navigations: a fresh
+// instance per render would re-run the course loader on every state update.
+const { mockSearchParams } = vi.hoisted(() => ({ mockSearchParams: new URLSearchParams() }));
+
 vi.mock('next/navigation', () => ({
   useParams: () => ({ tenant: 'test-tenant' }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
-const { mockGetIframeURL, mockFindSequentialParent } = vi.hoisted(() => ({
+const { mockGetIframeURL, mockGetUnitToIframe, mockFindSequentialParent } = vi.hoisted(() => ({
   mockGetIframeURL: vi.fn(
     (_courseId: string, _courseInfo: unknown, callback: (url: string) => void) => {
       callback('https://apps.learn.example.com/discussions/course-v1:test+course/posts');
     },
   ),
+  mockGetUnitToIframe: vi.fn(() => ({ id: 'unit-1', display_name: 'Unit 1' })),
   mockFindSequentialParent: vi.fn(() => null),
 }));
 
 vi.mock('@/hooks/courses/use-edx-iframe', () => ({
   useEdxIframe: () => ({
     getIframeURL: mockGetIframeURL,
+    getUnitToIframe: mockGetUnitToIframe,
     findSequentialParent: mockFindSequentialParent,
   }),
 }));
@@ -639,6 +652,136 @@ describe('EdxIframe - JWT PostMessage', () => {
       });
       // The iframe still loads; only the exam banner is dropped.
       expect(mockSetCurrentlyInExamSubsection).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('unit.loaded from the edX page', () => {
+    const unitLoadedFrame = (source: MessageEventSource | null) =>
+      new MessageEvent('message', {
+        data: { type: 'unit.loaded', usageId: 'unit-1', courseId: 'course-v1:test+course' },
+        origin: 'https://learn.example.com',
+        source,
+      });
+
+    const renderMountedIframe = async (activeTab = 'agent') => {
+      const { container } = renderEdxIframe({ ...defaultContextValue, activeTab });
+      await waitFor(() => {
+        expect(container.querySelector('iframe')).toBeInTheDocument();
+      });
+      return container.querySelector('iframe')!;
+    };
+
+    const listenForUnitLoaded = () => {
+      const listener = vi.fn();
+      window.addEventListener(EDX_UNIT_LOADED_EVENT, listener);
+      return {
+        listener,
+        usageIds: () => listener.mock.calls.map(([e]) => (e as CustomEvent).detail.usageId),
+        stop: () => window.removeEventListener(EDX_UNIT_LOADED_EVENT, listener),
+      };
+    };
+
+    afterEach(() => {
+      markEdxIframeUnloaded();
+      vi.useRealTimers();
+    });
+
+    it('forgets any previously loaded unit as soon as it starts loading the course', async () => {
+      markEdxUnitLoaded('stale-unit');
+
+      await renderMountedIframe();
+
+      expect(getLoadedEdxUnitId()).toBeNull();
+    });
+
+    it("marks the unit loaded from the page's own frame", async () => {
+      const iframe = await renderMountedIframe();
+      const unitLoaded = listenForUnitLoaded();
+      try {
+        await act(async () => {
+          window.dispatchEvent(unitLoadedFrame(iframe.contentWindow));
+        });
+
+        expect(unitLoaded.usageIds()).toEqual(['unit-1']);
+        expect(getLoadedEdxUnitId()).toBe('unit-1');
+      } finally {
+        unitLoaded.stop();
+      }
+    });
+
+    it('ignores a frame that did not come from the course iframe', async () => {
+      await renderMountedIframe();
+      const unitLoaded = listenForUnitLoaded();
+      try {
+        await act(async () => {
+          window.dispatchEvent(unitLoadedFrame(window));
+        });
+
+        expect(unitLoaded.listener).not.toHaveBeenCalled();
+        expect(getLoadedEdxUnitId()).toBeNull();
+      } finally {
+        unitLoaded.stop();
+      }
+    });
+
+    it('lets the element load stand in for the frame once the grace period passes', async () => {
+      const iframe = await renderMountedIframe();
+      vi.useFakeTimers();
+      const unitLoaded = listenForUnitLoaded();
+      try {
+        await act(async () => {
+          fireEvent.load(iframe);
+        });
+        expect(unitLoaded.listener).not.toHaveBeenCalled();
+
+        await act(async () => {
+          vi.advanceTimersByTime(EDX_UNIT_LOADED_GRACE_MS);
+        });
+
+        // Tagged with the unit the iframe was mounted for.
+        expect(unitLoaded.usageIds()).toEqual(['unit-1']);
+      } finally {
+        unitLoaded.stop();
+      }
+    });
+
+    it('does not double up when the frame lands inside the grace period', async () => {
+      const iframe = await renderMountedIframe();
+      vi.useFakeTimers();
+      const unitLoaded = listenForUnitLoaded();
+      try {
+        await act(async () => {
+          fireEvent.load(iframe);
+        });
+        await act(async () => {
+          window.dispatchEvent(unitLoadedFrame(iframe.contentWindow));
+        });
+        await act(async () => {
+          vi.advanceTimersByTime(EDX_UNIT_LOADED_GRACE_MS);
+        });
+
+        expect(unitLoaded.usageIds()).toEqual(['unit-1']);
+      } finally {
+        unitLoaded.stop();
+      }
+    });
+
+    it('never stands in for a unit on tabs that do not render one', async () => {
+      const iframe = await renderMountedIframe('progress');
+      vi.useFakeTimers();
+      const unitLoaded = listenForUnitLoaded();
+      try {
+        await act(async () => {
+          fireEvent.load(iframe);
+        });
+        await act(async () => {
+          vi.advanceTimersByTime(EDX_UNIT_LOADED_GRACE_MS);
+        });
+
+        expect(unitLoaded.listener).not.toHaveBeenCalled();
+      } finally {
+        unitLoaded.stop();
+      }
     });
   });
 });
