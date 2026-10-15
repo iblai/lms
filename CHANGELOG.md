@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.94.0](https://github.com/iblai/lms/compare/skills-v0.93.0...skills-v0.94.0) (2026-10-15)
+
+### Features
+
+* edx course unit iframe load improvement ([56cf324](https://github.com/iblai/lms/commit/56cf324adc68404dfd67d93369bb4bcf964c8d40))
+
 ## [0.93.0](https://github.com/iblai/lms/compare/skills-v0.92.1...skills-v0.93.0) (2026-10-14)
 
 ### Features
