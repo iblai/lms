@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "lastUpdated": "2026-10-01",
+  "lastUpdated": "2026-10-16",
   "summary": {
-    "totalCheckpoints": 263,
-    "coveredCheckpoints": 263,
+    "totalCheckpoints": 272,
+    "coveredCheckpoints": 272,
     "percent": 100,
-    "totalJourneys": 37
+    "totalJourneys": 38
   },
   "journeys": [
     {
@@ -1770,6 +1770,69 @@
         {
           "id": "tour-06",
           "description": "The close (X) button dismisses the tour and saves it to the user metadata as skipped",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "agent-lesson-completion",
+      "name": "Agent Lesson Completion",
+      "spec": "39-agent-lesson-completion.spec.ts",
+      "sourceFiles": [
+        "app/platform/[tenant]/course-content/[course_id]/agent/page.tsx",
+        "app/platform/[tenant]/course-content/[course_id]/layout.tsx",
+        "components/course-agent-chat.tsx",
+        "components/course-outline.tsx",
+        "components/course-outline-sidebar.tsx",
+        "components/course-content-header.tsx",
+        "components/course-admin-shell.tsx",
+        "components/lesson-completed-dialog.tsx",
+        "hooks/courses/use-unit-auto-completion.ts"
+      ],
+      "checkpoints": [
+        {
+          "id": "lesson-01",
+          "description": "The sample course opens on its Agent tab with the course outline (unit counts) and the Administration tab",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-02",
+          "description": "Administration → Authoring links to <STUDIO_DOMAIN_URL>/course/<course-id> and opens Studio's course outline in a new tab (the test starts the edX session through the SSO login endpoint first)",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-03",
+          "description": "Expanding the subsection in Studio lists its units; Actions → Duplicate on the last unit appends a \"Duplicate of …\" unit flagged \"Unpublished units will not be released\"",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-04",
+          "description": "The copy is renamed with a timestamped name through the inline display-name editor and the name is saved",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-05",
+          "description": "The unit's Publish control opens the \"Publish <name>\" dialog and confirming publishes it (is-live, no Publish control, no unpublished notice)",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-06",
+          "description": "Back on the Agent tab, a reload shows the new unit in the outline with an empty completion ring once the chat is ready (host and embed spinners gone, prompt box enabled); the unit total grows by one",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-07",
+          "description": "Clicking the new unit puts its usage id in ?unit_id, fires the Switched to \"<unit>\" toast, updates the unit breadcrumb and aria-current, and the agent answers the switch",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-08",
+          "description": "Sending \"mark this lesson as completed\" makes the agent think, use a tool and confirm the completion; the mentor relays a lesson.completed message with the unit's usage id, completion 1 and display name",
+          "status": "covered"
+        },
+        {
+          "id": "lesson-09",
+          "description": "The outline refreshes: the new unit's completion icon becomes the filled check and the completed-unit count grows by one; the unit is deleted from Studio afterwards",
           "status": "covered"
         }
       ]

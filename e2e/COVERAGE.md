@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-10-01 | 263 checkpoints | 37 journeys | 100% covered
+> Last updated: 2026-10-16 | 272 checkpoints | 38 journeys | 100% covered
 
 ## How This Works
 
@@ -548,6 +548,31 @@ through the same endpoint so it never blocks other journeys; `?tour=1` replays i
 - [x] Admin/watcher reaches the account tools (sidebar footer) step last — skips for a learner
 - [x] Done finishes the tour, saves it to the user metadata (public_metadata.skills-product-tour), and it does not start again on the next visit
 - [x] The close (X) button dismisses the tour and saves it to the user metadata as skipped
+
+---
+
+## Journey 39: Agent Lesson Completion (9 checkpoints) — `journeys/39-agent-lesson-completion.spec.ts`
+
+**Source files:** `app/platform/[tenant]/course-content/[course_id]/agent/page.tsx`, `app/platform/[tenant]/course-content/[course_id]/layout.tsx`, `components/course-agent-chat.tsx`, `components/course-outline.tsx`, `components/course-outline-sidebar.tsx`, `components/course-content-header.tsx`, `components/course-admin-shell.tsx`, `components/lesson-completed-dialog.tsx`, `hooks/courses/use-unit-auto-completion.ts`
+
+On a course running agent-based completion (`agent_content_mode` + `enable_agent_based_completion` on the
+course, `enable_agent_based_unit_completion` on the tenant) the edX unit no longer completes itself on view:
+the learner asks the agent, the agent calls its completion tool, the mentor relays `lesson.completed` to the
+page and the outline refreshes to show the tick. The journey authors the unit it completes (Studio, via the
+Administration → Authoring link) so the completion is new every run, and deletes it again at the end.
+Configured by `SAMPLE_LESSON_COMPLETION_COURSE_ID` and `STUDIO_DOMAIN_URL`; skips when either is unset.
+Studio signs in through the edX LMS, which the suite's storage state does not cover, so the test first
+starts an LMS session with a token minted from the app's own SSO token request (`e2e/utils/edx-studio.ts`).
+
+- [x] The sample course opens on its Agent tab with the course outline (unit counts) and the Administration tab
+- [x] Administration → Authoring links to `<STUDIO_DOMAIN_URL>/course/<course-id>` and opens Studio's course outline in a new tab
+- [x] Expanding the subsection in Studio lists its units; Actions → Duplicate on the last unit appends a "Duplicate of …" unit flagged "Unpublished units will not be released"
+- [x] The copy is renamed with a timestamped name through the inline display-name editor and the name is saved
+- [x] The unit's Publish control opens the "Publish <name>" dialog and confirming publishes it (`is-live`, no Publish control, no unpublished notice)
+- [x] Back on the Agent tab, a reload shows the new unit in the outline with an empty completion ring once the chat is ready (host and embed spinners gone, prompt box enabled); the unit total grows by one
+- [x] Clicking the new unit puts its usage id in `?unit_id`, fires the `Switched to "<unit>"` toast, updates the unit breadcrumb and `aria-current`, and the agent answers the switch
+- [x] Sending "mark this lesson as completed" makes the agent think, use a tool and confirm the completion; the mentor relays a `lesson.completed` message with the unit's usage id, `completion: 1` and display name
+- [x] The outline refreshes: the new unit's completion icon becomes the filled check and the completed-unit count grows by one; the unit is deleted from Studio afterwards
 
 ---
 
