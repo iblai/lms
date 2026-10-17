@@ -9,6 +9,7 @@ import {
 } from '@iblai/iblai-js/data-layer';
 import { useEffect, useState, useMemo } from 'react';
 import { config } from '@/lib/config';
+import { fetchPublicPlatformConfig } from '@/lib/utils/server-metadata';
 import {
   handleTenantSwitch,
   LocalStorageService,
@@ -63,8 +64,27 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       config.urls.legacyLmsUrl(),
       LocalStorageService.getInstance(),
       {
-        401: () => {
+        401: async () => {
           console.log('[auth-redirect] API returned 401 Unauthorized');
+          // Keep public discovery pages crawlable: on a SEO-discoverable tenant,
+          // a 401 from an optional API (e.g. recommendations) must not bounce an
+          // anonymous visitor (or crawler) to the auth SPA. The tenant is read
+          // from the URL since an anonymous crawler has no stored tenant.
+          const path = typeof window !== 'undefined' ? window.location.pathname : '';
+          const match = path.match(/^\/platform\/([^/]+)\/(discover|courses|programs|pathways)(\/|$)/);
+          if (match) {
+            try {
+              const publicConfig = await fetchPublicPlatformConfig(match[1]);
+              if (publicConfig?.allow_seo_discoverability) {
+                console.log(
+                  '[auth-redirect] 401 on a public discovery page; staying for SEO (allow_seo_discoverability)',
+                );
+                return;
+              }
+            } catch {
+              // Fall through to the redirect if the config can't be resolved.
+            }
+          }
           redirectToAuthSpa(undefined, undefined, true);
         },
         402: (error402Response) => {

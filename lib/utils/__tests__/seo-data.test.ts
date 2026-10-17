@@ -5,6 +5,7 @@ vi.mock('@/lib/config', () => ({
     urls: {
       studio: () => 'https://studio.example.com',
       lms: () => 'https://lms.example.com',
+      dm: () => 'https://dm.example.com',
     },
   },
 }));
@@ -16,7 +17,12 @@ vi.mock('react', async () => {
   return { ...actual, cache: (fn: unknown) => fn };
 });
 
-import { getProgramSeoData, getCourseSeoData } from '../seo-data';
+import {
+  getProgramSeoData,
+  getCourseSeoData,
+  getCourseServerData,
+  getTenantCourseEntries,
+} from '../seo-data';
 
 const okJson = (body: unknown) =>
   vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(body) });
@@ -180,6 +186,84 @@ describe('seo-data', () => {
         'Failed to fetch course SEO data:',
         expect.any(Error),
       );
+    });
+  });
+
+  describe('getCourseServerData', () => {
+    it('keeps the raw overview HTML and display facts', async () => {
+      global.fetch = okJson({
+        edx_data: {
+          title: 'Advising 101',
+          description: 'Caseload management',
+          overview: '<h2>Overview</h2><p>296 advisees per advisor.</p>',
+          course_image_asset_path: '/asset/a.png',
+          course_price: '0.00',
+          language: 'en',
+          duration: '6 weeks',
+          start_date: '2027-01-01',
+          org: 'highered',
+        },
+      }) as unknown as typeof fetch;
+
+      await expect(getCourseServerData('course-server-1')).resolves.toEqual({
+        title: 'Advising 101',
+        description: 'Caseload management',
+        overview: '<h2>Overview</h2><p>296 advisees per advisor.</p>',
+        image: 'https://lms.example.com/asset/a.png',
+        price: '0.00',
+        language: 'en',
+        duration: '6 weeks',
+        startDate: '2027-01-01',
+        org: 'highered',
+      });
+    });
+
+    it('returns null when the payload has no title', async () => {
+      global.fetch = okJson({ overview: '<p>orphan</p>' }) as unknown as typeof fetch;
+      await expect(getCourseServerData('course-server-2')).resolves.toBeNull();
+    });
+
+    it('returns null on a non-ok response', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+      await expect(getCourseServerData('course-server-3')).resolves.toBeNull();
+    });
+  });
+
+  describe('getTenantCourseEntries', () => {
+    it('pages through results and returns literal course ids + lastModified', async () => {
+      const page1 = {
+        count: 2,
+        next: 'https://api/next',
+        results: [
+          {
+            data: {
+              course_id: 'course-v1:acme+A+2024',
+              edx_data: { start_date: '2026-01-01T00:00:00Z' },
+            },
+          },
+        ],
+      };
+      const page2 = {
+        count: 2,
+        next: null,
+        results: [{ data: { course_id: 'course-v1:acme+B+2024' } }],
+      };
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(page1) })
+        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(page2) });
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      await expect(getTenantCourseEntries('sitemap-tenant-1')).resolves.toEqual([
+        { courseId: 'course-v1:acme+A+2024', lastModified: '2026-01-01T00:00:00Z' },
+        { courseId: 'course-v1:acme+B+2024', lastModified: undefined },
+      ]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns [] on a non-ok response', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+      await expect(getTenantCourseEntries('sitemap-tenant-2')).resolves.toEqual([]);
     });
   });
 });

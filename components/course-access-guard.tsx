@@ -87,12 +87,24 @@ export function CourseAccessGuard({
     }
   }, [isNotFound, isTabDisabled, shouldRedirectToSibling, shouldRedirectAgentToCourse]);
 
-  if (!isReady || isNotFound || isTabDisabled || shouldRedirectToSibling) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
-      </div>
-    );
+  const spinner = (
+    <div className="flex flex-1 items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+    </div>
+  );
+
+  // Content-mode tabs (agent/course) must resolve their audience check before
+  // rendering. Routes without a content-mode tab — e.g. the course "about" page —
+  // render children optimistically while the course info loads so the
+  // server-rendered content reaches the initial HTML for crawlers; access is
+  // still enforced on the client via the redirects above once info resolves.
+  const hasTabGating = onAgentTab || onCourseTab;
+  if (!isReady) {
+    return hasTabGating ? spinner : <>{children}</>;
+  }
+
+  if (isNotFound || isTabDisabled || shouldRedirectToSibling) {
+    return spinner;
   }
 
   return <>{children}</>;

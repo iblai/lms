@@ -6,6 +6,7 @@ import {
   buildOpenGraph,
   buildTwitter,
   buildEntityMetadata,
+  truncateTitle,
   organizationLd,
   webSiteLd,
   courseLd,
@@ -14,6 +15,32 @@ import {
 } from '../seo';
 
 describe('seo helpers', () => {
+  describe('truncateTitle', () => {
+    it('leaves a short title unchanged', () => {
+      expect(truncateTitle('Intro to AI')).toBe('Intro to AI');
+    });
+
+    it('truncates a long title at a word boundary with an ellipsis (<= 60)', () => {
+      const long =
+        'AI Academic Advising and Caseload Management for Higher Education Professionals';
+      const result = truncateTitle(long);
+      expect(result.length).toBeLessThanOrEqual(60);
+      expect(result.endsWith('…')).toBe(true);
+      // The kept stem is a prefix of the original title (nothing invented).
+      expect(long.startsWith(result.slice(0, -1))).toBe(true);
+    });
+  });
+
+  describe('buildEntityMetadata title length', () => {
+    it('trims the meta title but keeps the full Open Graph title', () => {
+      const long =
+        'AI Academic Advising and Caseload Management for Higher Education Professionals';
+      const meta = buildEntityMetadata({ title: long, isPublic: true });
+      expect(String(meta.title).length).toBeLessThanOrEqual(60);
+      expect((meta.openGraph as any).title).toBe(long);
+    });
+  });
+
   describe('getSiteUrl', () => {
     it('builds an origin from host + protocol', () => {
       expect(getSiteUrl('skills.example.com', 'https')).toBe('https://skills.example.com');

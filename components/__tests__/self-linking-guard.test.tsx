@@ -70,7 +70,7 @@ describe('SelfLinkingGuard', () => {
     expect(mockRedirectToAuthSpa).not.toHaveBeenCalled();
   });
 
-  it('does not render children while the membership check is loading', () => {
+  it('renders children while the membership check is loading (SSR-transparent) without redirecting', () => {
     mockIsLoggedIn.mockReturnValue(false);
     mockUseGetPublicPlatformMembershipQuery.mockReturnValue({
       data: undefined,
@@ -84,11 +84,13 @@ describe('SelfLinkingGuard', () => {
       </SelfLinkingGuard>,
     );
 
-    expect(screen.queryByTestId('child')).not.toBeInTheDocument();
+    // Content is rendered immediately so it reaches the server HTML; the
+    // anonymous decision is deferred until the query resolves.
+    expect(screen.getByTestId('child')).toBeInTheDocument();
     expect(mockRedirectToAuthSpa).not.toHaveBeenCalled();
   });
 
-  it('redirects an anonymous user to the auth SPA when self-linking is disabled', async () => {
+  it('renders children but redirects an anonymous user when self-linking is disabled', async () => {
     mockIsLoggedIn.mockReturnValue(false);
     mockUseGetPublicPlatformMembershipQuery.mockReturnValue({
       data: { platform_key: 'test-tenant', allow_self_linking: false },
@@ -105,6 +107,8 @@ describe('SelfLinkingGuard', () => {
     await waitFor(() => {
       expect(mockRedirectToAuthSpa).toHaveBeenCalled();
     });
-    expect(screen.queryByTestId('child')).not.toBeInTheDocument();
+    // Content is in the HTML (crawler-visible); the client redirect handles the
+    // disallowed anonymous case.
+    expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 });

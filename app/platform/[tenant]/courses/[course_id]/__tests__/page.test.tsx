@@ -96,7 +96,11 @@ vi.mock('../_components/syllabus-tab', () => ({
   SyllabusTab: () => <div data-testid="syllabus-tab">Syllabus Tab</div>,
 }));
 
-import CourseDetailsPage from '../page';
+// The interactive client behaviour that page.tsx used to render directly now
+// lives (verbatim) in CourseDetailClientFallback, used when the server course
+// fetch fails. page.tsx is a Server Component; this suite covers the client
+// behaviour, so it targets the fallback component.
+import { CourseDetailClientFallback as CourseDetailsPage } from '../_components/course-detail-client-fallback';
 import { useCourseDetailContext } from '@/hooks/courses/course-detail-context';
 import { useChatState } from '@/components/chat-button';
 

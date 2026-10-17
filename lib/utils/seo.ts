@@ -86,10 +86,23 @@ export function buildTwitter(input: OgTwitterInput): Metadata['twitter'] {
 }
 
 /**
+ * Trims a title to ~60 chars at a word boundary (Google truncates the SERP title
+ * around there). The full title is kept for Open Graph/Twitter, where more shows.
+ */
+export function truncateTitle(title: string, maxLength = 60): string {
+  if (title.length <= maxLength) return title;
+  const slice = title.slice(0, maxLength - 1);
+  const lastSpace = slice.lastIndexOf(' ');
+  const base = lastSpace > maxLength * 0.6 ? slice.slice(0, lastSpace) : slice;
+  return `${base.trimEnd()}…`;
+}
+
+/**
  * Full Metadata for a public entity "about" page (course / program / pathway):
  * the entity title/description/image become the meta title/description/image,
  * with a canonical URL, article-type Open Graph, Twitter card, and robots gated
- * on whether the tenant is public.
+ * on whether the tenant is public. The <title> is trimmed to ~60 chars (the
+ * distinguishing entity name leads); Open Graph/Twitter keep the full title.
  */
 export function buildEntityMetadata(params: {
   title: string;
@@ -102,7 +115,7 @@ export function buildEntityMetadata(params: {
   const images = params.image ? [params.image] : [];
   const description = params.description || SEO_DEFAULTS.description;
   return {
-    title: params.title,
+    title: truncateTitle(params.title),
     description,
     ...(params.canonicalUrl && { alternates: { canonical: params.canonicalUrl } }),
     robots: buildRobots(params.isPublic),
