@@ -8,6 +8,13 @@ export const AUTH_HOST = process.env.AUTH_HOST || '';
 export const MENTOR_NEXTJS_HOST = process.env.MENTOR_NEXTJS_HOST || '';
 export const EMBED_URL = process.env.EMBED_URL || '';
 
+// ── Agent lesson completion (Journey 39) ────────────────────────────────────
+/** Course whose Agent tab marks units complete; the journey authors a unit on it in Studio. */
+export const SAMPLE_LESSON_COMPLETION_COURSE_ID =
+  process.env.SAMPLE_LESSON_COMPLETION_COURSE_ID || '';
+/** Open edX Studio origin the course's Authoring link opens (e.g. https://studio.learn.iblai.org). */
+export const STUDIO_DOMAIN_URL = (process.env.STUDIO_DOMAIN_URL || '').replace(/\/$/, '');
+
 // ── Auth credentials ────────────────────────────────────────────────────────
 export const PLAYWRIGHT_USERNAME = process.env.PLAYWRIGHT_USERNAME || '';
 export const PLAYWRIGHT_PASSWORD = process.env.PLAYWRIGHT_PASSWORD || '';
