@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.96.1](https://github.com/iblai/lms/compare/skills-v0.96.0...skills-v0.96.1) (2026-10-20)
+
+### Bug Fixes
+
+* sidebar logo should land on home page ([d889932](https://github.com/iblai/lms/commit/d8899329e7cb588f1d92195b2e1176d73a9edbed))
+* sidebar logo should land on home page > test coverage ([882fce4](https://github.com/iblai/lms/commit/882fce494476d35a04bc61e6869ec26be18f3101))
+
 ## [0.96.0](https://github.com/iblai/lms/compare/skills-v0.95.0...skills-v0.96.0) (2026-10-20)
 
 ### Features
