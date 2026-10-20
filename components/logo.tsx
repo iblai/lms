@@ -40,7 +40,7 @@ export function Logo({
   } */
 
   return (
-    <Link href="/" className="flex items-center">
+    <Link href={`/platform/${tenant}/home`} className="flex items-center">
       <Image
         src={logoUrl || '/images/iblai-logo.png'}
         loading="lazy"
