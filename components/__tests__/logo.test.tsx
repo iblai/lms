@@ -15,8 +15,16 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+const mockUseParams = vi.fn((): Record<string, string | string[]> | null => null);
+
+vi.mock('next/navigation', () => ({
+  useParams: () => mockUseParams(),
+}));
+
+const mockGetTenant = vi.fn(() => 'test-tenant');
+
 vi.mock('@/utils/helpers', () => ({
-  getTenant: vi.fn(() => 'test-tenant'),
+  getTenant: () => mockGetTenant(),
 }));
 
 const mockUseTenantMetadata = vi.fn(() => ({ metadata: null as unknown }));
@@ -41,6 +49,8 @@ import { Logo } from '../logo';
 describe('Logo', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseParams.mockReturnValue(null);
+    mockGetTenant.mockReturnValue('test-tenant');
   });
 
   it('renders without crashing', () => {
@@ -55,10 +65,15 @@ describe('Logo', () => {
     expect(img.src).toMatch(/iblai-logo\.png|\/api\/core\/orgs\/test-tenant\/logo\/?/);
   });
 
-  it('links to home page', () => {
+  it('links to the tenant home page using the URL tenant', () => {
+    mockUseParams.mockReturnValue({ tenant: 'acme' });
     render(<Logo />);
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/platform/acme/home');
+  });
+
+  it('links to the stored tenant home page outside a tenant route', () => {
+    render(<Logo />);
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/platform/test-tenant/home');
   });
 
   it('accepts custom width and height', () => {
