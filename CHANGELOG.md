@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.96.0](https://github.com/iblai/lms/compare/skills-v0.95.0...skills-v0.96.0) (2026-10-20)
+
+### Features
+
+* playwright for lesson completion test coverage ([256c398](https://github.com/iblai/lms/commit/256c3985c27345990c0b07ea61a14a79f81b9f89))
+
 ## [0.95.0](https://github.com/iblai/lms/compare/skills-v0.94.0...skills-v0.95.0) (2026-10-16)
 
 ### Features
