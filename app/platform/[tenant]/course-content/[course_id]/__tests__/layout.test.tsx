@@ -831,7 +831,6 @@ describe('CourseContentLayout', () => {
       'Reports',
       'Settings',
       'Authoring',
-      'Proctoring',
     ]);
     // The next/link mock drops aria-current; the active style is the tell.
     expect(screen.getByRole('link', { name: 'Grades' }).className).toContain('text-amber-700');

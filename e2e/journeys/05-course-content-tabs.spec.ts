@@ -52,12 +52,12 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
  * Validates all course content tabs:
  *  1. All tabs visible (Course, Progress, Dates, Discussion)
  *  2. Course tab iframe content
- *  3. Progress tab with headings
- *  4. Dates tab with Important dates
- *  5. Discussion tab with navigation links
- *  6. Thread list or empty state
+ *  3. Progress tab (native): completion ring, grade bar, grade summary
+ *  4. Dates tab (native): timeline with the Today marker
+ *  5. Discussions tab (native): All posts / My posts / Topics / Learners views
+ *  6. Thread list or empty state, opening a post
  *  7. Add a post form
- *  8. Create new post
+ *  8. Create a post, respond to it, delete it
  *  9. Instructor tab (optional)
  * 10. Bookmarks (optional)
  * 11. URL updates on tab switch
@@ -122,7 +122,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('Course tab iframe has content');
   });
 
-  test('Checkpoint 3: Progress tab with headings', async ({ page }) => {
+  test('Checkpoint 3: Progress tab renders natively with completion and grades', async ({
+    page,
+  }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -130,31 +132,33 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const progressTab = page.getByRole('link', { name: 'Progress' }).first();
-    await progressTab.click();
+    const progressTab = await getCourseContentTab(page, 'Progress');
+    expect(progressTab).not.toBeNull();
+    await progressTab!.click();
+    await expect(page).toHaveURL(/\/progress(\?|$)/, { timeout: 30000 });
 
-    const iframeElement = page.locator('iframe').first();
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
-
-    const progressIframe = page.frameLocator('iframe').first();
-    const bodyLocator = progressIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    // Look for progress-related headings
-    const yourProgressHeading = progressIframe.getByRole('heading', {
-      name: 'Your progress',
-    });
-    const gradeSummaryHeading = progressIframe.getByRole('heading', {
-      name: 'Grade summary',
-    });
-
-    // Pass when either heading shows up — locator.or() resolves to whichever appears first.
-    const progressHeading = yourProgressHeading.or(gradeSummaryHeading);
-    await expect(progressHeading.first()).toBeVisible({ timeout: 120000 });
-    logger.info('"Your progress" or "Grade summary" heading visible');
+    // Native: no edX iframe, the completion ring and the grade bar come off the
+    // course-home progress API.
+    await expect(page.getByTestId('course-progress')).toBeVisible({ timeout: 120000 });
+    expect(await page.locator('#edx-iframe').count()).toBe(0);
+    await expect(page.getByRole('heading', { name: 'Your progress' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Course completion' })).toBeVisible();
+    await expect(page.getByTestId('completion-donut')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Grades' })).toBeVisible();
+    await expect(page.getByTestId('current-grade')).toHaveText(/\d+%/);
+    await expect(page.getByTestId('passing-grade')).toHaveText(/\d+%/);
+    // A grading policy shows as the summary table; a course without one says so.
+    const summary = page.getByTestId('grade-summary');
+    const noPolicy = page.getByText('This course has no graded assignments.');
+    await expect(summary.or(noPolicy).first()).toBeVisible();
+    await expect(page.getByTestId('detailed-grades')).toBeVisible();
+    await expect(
+      page.getByTestId('related-links').getByRole('link', { name: /Dates/ }),
+    ).toHaveAttribute('href', /\/dates$/);
+    logger.info('Native progress page rendered with completion and grades');
   });
 
-  test('Checkpoint 4: Dates tab with Important dates', async ({ page }) => {
+  test('Checkpoint 4: Dates tab renders the native timeline', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -162,24 +166,40 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const datesTab = page.getByRole('link', { name: 'Dates' }).first();
-    await datesTab.click();
+    const datesTab = await getCourseContentTab(page, 'Dates');
+    expect(datesTab).not.toBeNull();
+    await datesTab!.click();
+    await expect(page).toHaveURL(/\/dates(\?|$)/, { timeout: 30000 });
 
-    const iframeElement = page.locator('iframe').first();
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
+    await expect(page.getByTestId('course-dates')).toBeVisible({ timeout: 120000 });
+    expect(await page.locator('#edx-iframe').count()).toBe(0);
+    await expect(page.getByRole('heading', { name: 'Important dates' })).toBeVisible();
 
-    const datesIframe = page.frameLocator('iframe').first();
-    const bodyLocator = datesIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    const importantDatesHeading = datesIframe.getByRole('heading', {
-      name: 'Important dates',
-    });
-    await expect(importantDatesHeading).toBeVisible({ timeout: 120000 });
-    logger.info('"Important dates" heading visible on Dates tab');
+    // A timeline (grouped by day, with the Today marker) or the empty state.
+    const timeline = page.getByTestId('dates-timeline');
+    const empty = page.getByTestId('dates-empty');
+    await expect(timeline.or(empty).first()).toBeVisible({ timeout: 60000 });
+    if (await timeline.isVisible().catch(() => false)) {
+      expect(await page.getByTestId('dates-day').count()).toBeGreaterThan(0);
+      await expect(page.getByTestId('dates-badge').filter({ hasText: 'Today' })).toBeVisible();
+      logger.info('Dates timeline rendered with the Today marker');
+    } else {
+      logger.info('Dates tab rendered its empty state');
+    }
   });
 
-  test('Checkpoint 5: Discussion tab with navigation links', async ({ page }) => {
+  /** Opens the native Discussions tab and waits for its view nav. */
+  async function openDiscussions(page: Page) {
+    const discussionTab = await getCourseContentTab(page, 'Discussions');
+    expect(discussionTab).not.toBeNull();
+    await discussionTab!.click();
+    await expect(page).toHaveURL(/\/discussion(\?|$)/, { timeout: 30000 });
+    await expect(page.getByTestId('course-discussions')).toBeVisible({ timeout: 120000 });
+    expect(await page.locator('#edx-iframe').count()).toBe(0);
+    return page.getByTestId('discussion-nav');
+  }
+
+  test('Checkpoint 5: Discussions tab renders its views natively', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -187,27 +207,26 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
-    await discussionTab.click();
+    const nav = await openDiscussions(page);
+    for (const name of ['All posts', 'My posts', 'Topics', 'Learners']) {
+      await expect(nav.getByRole('link', { name, exact: true })).toBeVisible({ timeout: 60000 });
+    }
+    await expect(nav.getByRole('link', { name: 'All posts', exact: true })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
-    const iframeElement = page.locator('iframe').first();
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
+    // Topics come off the course_topics API; Learners off activity_stats.
+    await nav.getByRole('link', { name: 'Topics', exact: true }).click();
+    await expect(page).toHaveURL(/view=topics/, { timeout: 30000 });
+    await expect(page.getByTestId('topics-view')).toBeVisible({ timeout: 60000 });
+    await expect(page.getByTestId('topic-row').first()).toBeVisible({ timeout: 60000 });
 
-    const discussionIframe = page.frameLocator('iframe').first();
-    const bodyLocator = discussionIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    // Verify navigation links
-    const myPostsTab = discussionIframe.getByRole('link', { name: 'My posts' });
-    const allPostsTab = discussionIframe.getByRole('link', { name: 'All posts' });
-    const topicsTab = discussionIframe.getByRole('link', { name: 'Topics' });
-    const learnersTab = discussionIframe.getByRole('link', { name: 'Learners' });
-
-    await expect(myPostsTab).toBeVisible({ timeout: 120000 });
-    await expect(allPostsTab).toBeVisible({ timeout: 120000 });
-    await expect(topicsTab).toBeVisible({ timeout: 120000 });
-    await expect(learnersTab).toBeVisible({ timeout: 120000 });
-    logger.info('Discussion tab navigation links visible');
+    await nav.getByRole('link', { name: 'Learners', exact: true }).click();
+    await expect(page).toHaveURL(/view=learners/, { timeout: 30000 });
+    await expect(page.getByTestId('learners-view')).toBeVisible({ timeout: 60000 });
+    await expect(page.getByTestId('learners-table')).toBeVisible({ timeout: 60000 });
+    logger.info('Discussion views (All posts, My posts, Topics, Learners) rendered natively');
   });
 
   test('Checkpoint 6: Discussion thread list or empty state', async ({ page }) => {
@@ -218,43 +237,25 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
-    await discussionTab.click();
+    await openDiscussions(page);
+    await expect(page.getByTestId('posts-list')).toBeVisible({ timeout: 120000 });
+    const rows = page.getByTestId('thread-row');
+    const empty = page.getByTestId('posts-empty');
+    await expect(rows.first().or(empty)).toBeVisible({ timeout: 60000 });
 
-    const discussionIframe = page.frameLocator('iframe').first();
-    const bodyLocator = discussionIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    // Wait for either threads or empty state
-    await Promise.race([
-      discussionIframe
-        .locator('[role="option"]')
-        .first()
-        .waitFor({ state: 'visible', timeout: 60000 })
-        .catch(() => null),
-      discussionIframe
-        .getByText(/Nothing here yet/i)
-        .waitFor({ state: 'visible', timeout: 60000 })
-        .catch(() => null),
-      discussionIframe
-        .getByText(/All discussion activity/i)
-        .waitFor({ state: 'visible', timeout: 60000 })
-        .catch(() => null),
-    ]).catch(() => null);
-
-    // Check what we got
-    const threadCount = await discussionIframe.locator('[role="option"]').count();
-    const noPostsVisible = await discussionIframe
-      .getByText(/Nothing here yet/i)
-      .isVisible()
-      .catch(() => false);
-
+    const threadCount = await rows.count();
     if (threadCount > 0) {
       logger.info(`Found ${threadCount} discussion thread(s)`);
-    } else if (noPostsVisible) {
-      logger.info('Empty state: "Nothing here yet" displayed');
+      // Opening a post puts it in the URL and renders it beside the list.
+      await rows.first().click();
+      await expect(page).toHaveURL(/thread=/, { timeout: 30000 });
+      const thread = page.getByTestId('thread-view');
+      await expect(thread).toBeVisible({ timeout: 60000 });
+      await expect(thread.getByTestId('thread-actions')).toBeVisible({ timeout: 60000 });
+      await expect(thread.getByTestId('responses')).toBeVisible();
     } else {
-      logger.info('Discussion state could not be determined — continuing');
+      await expect(empty).toContainText('Nothing here yet');
+      logger.info('Empty state: "Nothing here yet" displayed');
     }
   });
 
@@ -266,38 +267,30 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
-    await discussionTab.click();
-
-    const discussionIframe = page.frameLocator('iframe').first();
-    const bodyLocator = discussionIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    const addPostButton = discussionIframe.getByRole('button', { name: 'Add a post' });
-    const hasAddPost = await addPostButton.isVisible({ timeout: 120_000 }).catch(() => false);
+    await openDiscussions(page);
+    const addPostButton = page.getByRole('button', { name: 'Add a post' });
+    const hasAddPost = await addPostButton.isVisible({ timeout: 60_000 }).catch(() => false);
 
     if (!hasAddPost) {
-      logger.info('"Add a post" button not found — skipping');
+      logger.info('"Add a post" button not found — posting is off for this course');
       test.skip();
       return;
     }
 
     await addPostButton.click();
+    await expect(page.getByRole('heading', { name: 'Add a post' })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('radio', { name: /Discussion/ })).toBeChecked();
+    await expect(page.getByRole('textbox', { name: 'Post title' })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Topic area' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Post content' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Submit' })).toBeDisabled();
 
-    const addPostHeading = discussionIframe.getByRole('heading', { name: 'Add a post' });
-    await expect(addPostHeading).toBeVisible({ timeout: 30000 });
-
-    // Verify form elements
-    const postTitleInput = discussionIframe.getByRole('textbox', { name: 'Post title' });
-    await expect(postTitleInput).toBeVisible({ timeout: 15000 });
-
-    const topicAreaCombobox = discussionIframe.getByRole('combobox', { name: 'Topic area' });
-    await expect(topicAreaCombobox).toBeVisible({ timeout: 15000 });
-
-    logger.info('Add a post form is accessible with title and topic inputs');
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByTestId('posts-list')).toBeVisible({ timeout: 30000 });
+    logger.info('Add a post form is accessible with type, topic, title and content inputs');
   });
 
-  test('Checkpoint 8: Create a new discussion post', async ({ page }) => {
+  test('Checkpoint 8: Create a discussion post, respond to it and delete it', async ({ page }) => {
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -305,65 +298,47 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
-    await discussionTab.click();
-
-    const discussionIframe = page.frameLocator('iframe').first();
-    const bodyLocator = discussionIframe.locator('body');
-    await expect(bodyLocator).toBeVisible({ timeout: 120000 });
-
-    const addPostButton = discussionIframe.getByRole('button', { name: 'Add a post' });
-    const hasAddPost = await addPostButton.isVisible({ timeout: 120_000 }).catch(() => false);
+    await openDiscussions(page);
+    const addPostButton = page.getByRole('button', { name: 'Add a post' });
+    const hasAddPost = await addPostButton.isVisible({ timeout: 60_000 }).catch(() => false);
 
     if (!hasAddPost) {
       test.skip();
       return;
     }
 
-    await addPostButton.first().click();
+    await addPostButton.click();
+    await expect(page.getByRole('heading', { name: 'Add a post' })).toBeVisible({ timeout: 30000 });
 
-    const addPostHeading = discussionIframe.getByRole('heading', { name: 'Add a post' });
-    await expect(addPostHeading).toBeVisible({ timeout: 30000 });
-
-    // Fill title
-    const postTitleInput = discussionIframe.getByRole('textbox', { name: 'Post title' });
-    await expect(postTitleInput).toBeVisible({ timeout: 15000 });
     const testTitle = `E2E Test Post - ${Date.now()}`;
-    await postTitleInput.fill(testTitle);
-
-    // Fill content in nested iframe
-    const richTextIframe = discussionIframe.frameLocator('iframe[title="Rich Text Area"]');
-    let contentEditor = richTextIframe.getByLabel(/Rich Text Area/i);
-    const hasLabel = await contentEditor.isVisible({ timeout: 120_000 }).catch(() => false);
-
-    if (!hasLabel) {
-      contentEditor = richTextIframe.locator('body');
-    }
-
-    await expect(contentEditor).toBeVisible({ timeout: 30000 });
-    await contentEditor.click();
-    await contentEditor.fill(`Automated test content - ${new Date().toISOString()}`);
-
-    // Submit
-    const submitButton = discussionIframe.getByRole('button', { name: 'Submit' });
-    await expect(submitButton).toBeVisible({ timeout: 15000 });
+    await page.getByRole('textbox', { name: 'Post title' }).fill(testTitle);
+    await page
+      .getByRole('textbox', { name: 'Post content' })
+      .fill(`Automated test content - ${new Date().toISOString()}`);
+    const submitButton = page.getByRole('button', { name: 'Submit' });
     await expect(submitButton).toBeEnabled({ timeout: 15000 });
-    await submitButton.first().click();
+    await submitButton.click();
 
-    // Wait for submission to complete
-    await Promise.race([
-      discussionIframe
-        .getByRole('button', { name: 'Submitting' })
-        .waitFor({ state: 'hidden', timeout: 60000 })
-        .catch(() => null),
-      discussionIframe
-        .getByRole('heading', { name: 'Add a post' })
-        .waitFor({ state: 'hidden', timeout: 60000 })
-        .catch(() => null),
-    ]).catch(() => null);
+    // The new post opens straight away.
+    await expect(page).toHaveURL(/thread=/, { timeout: 60000 });
+    const thread = page.getByTestId('thread-view');
+    await expect(thread.getByRole('heading', { name: testTitle })).toBeVisible({ timeout: 60000 });
+    logger.info('Discussion post submitted and opened');
 
-    await page.waitForTimeout(2000);
-    logger.info('Discussion post submitted');
+    // Respond to it.
+    const responseForm = page.getByTestId('response-form');
+    await responseForm.getByRole('textbox').fill('Automated response');
+    await responseForm.getByRole('button', { name: 'Post response' }).click();
+    await expect(thread.getByTestId('comment-item').first()).toContainText('Automated response', {
+      timeout: 60000,
+    });
+    logger.info('Response posted');
+
+    // Clean up: delete the post (confirmed through the browser prompt).
+    page.once('dialog', (dialog) => dialog.accept());
+    await thread.getByTestId('thread-delete').click();
+    await expect(page).not.toHaveURL(/thread=/, { timeout: 60000 });
+    logger.info('Test post deleted');
   });
 
   test('Checkpoint 23: Authoring tab links to studio for admin users', async ({ page }) => {
@@ -523,14 +498,11 @@ test.describe('Journey 05: Course Content Tabs', () => {
     const initialUrl = page.url();
     expect(initialUrl).toMatch(/\/course-content\//);
 
-    // Click Progress tab
+    // Click Progress tab — the native page renders once the route changes.
     const progressTab = page.getByRole('link', { name: 'Progress' }).first();
     await progressTab.click();
-
-    // Wait for iframe to load
-    const iframeElement = page.locator('iframe').first();
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
-    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/\/progress(\?|$)/, { timeout: 30000 });
+    await expect(page.getByTestId('course-progress')).toBeVisible({ timeout: 120000 });
 
     const progressUrl = page.url();
     logger.info(`Progress URL: ${progressUrl}`);
@@ -538,15 +510,14 @@ test.describe('Journey 05: Course Content Tabs', () => {
     // Click Dates tab
     const datesTab = page.getByRole('link', { name: 'Dates' }).first();
     await datesTab.click();
-    await expect(iframeElement).toBeVisible({ timeout: 120000 });
-    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/\/dates(\?|$)/, { timeout: 30000 });
+    await expect(page.getByTestId('course-dates')).toBeVisible({ timeout: 120000 });
 
     const datesUrl = page.url();
     logger.info(`Dates URL: ${datesUrl}`);
 
-    // URLs should be different when switching tabs
-    // (Next.js client-side routing may not always change the URL immediately)
-    logger.info('Tab switching completed — URLs observed');
+    expect(datesUrl).not.toBe(progressUrl);
+    logger.info('Tab switching completed — URL follows the active tab');
   });
 
   test('Checkpoint 13: Agent tab visibility + navigation', async ({ page }) => {

@@ -1,7 +1,10 @@
 'use client';
 
-import { EdxIframe } from '@/components/edx-iframe/edx-iframe';
+import { useParams } from 'next/navigation';
+import { CourseDiscussions } from './_components/course-discussions';
 
 export default function DiscussionTab() {
-  return <EdxIframe />;
+  const params = useParams();
+  const courseId = decodeURIComponent(params.course_id as string);
+  return <CourseDiscussions courseId={courseId} />;
 }

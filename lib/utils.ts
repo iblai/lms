@@ -46,6 +46,25 @@ const isErrorObject = (data: unknown): data is { detail?: string; message?: stri
   return typeof data === 'object' && data !== null && ('detail' in data || 'message' in data);
 };
 
+/**
+ * DRF-style validation errors (`{ field_errors: { field: { developer_message } } }`),
+ * as the Open edX discussion API returns them, flattened to one line per field.
+ */
+const fieldErrorsMessage = (data: unknown): string | null => {
+  if (typeof data !== 'object' || data === null || !('field_errors' in data)) return null;
+  const fieldErrors = (data as { field_errors: unknown }).field_errors;
+  if (typeof fieldErrors !== 'object' || fieldErrors === null) return null;
+  const lines = Object.entries(fieldErrors).map(([field, error]) => {
+    const detail =
+      typeof error === 'object' && error !== null
+        ? ((error as { developer_message?: string; user_message?: string }).user_message ??
+          (error as { developer_message?: string }).developer_message)
+        : undefined;
+    return `${field}: ${detail ?? String(error)}`;
+  });
+  return lines.length ? lines.join('; ') : null;
+};
+
 export const getServiceUrl = (service: SERVICES) => {
   switch (service) {
     case SERVICES.LMS:
@@ -126,7 +145,7 @@ export const iblFetchBaseQuery: BaseQueryFn<
           ? errorData
           : isErrorObject(errorData)
             ? errorData.detail || errorData.message || 'Unknown server error'
-            : 'Unknown server error';
+            : (fieldErrorsMessage(errorData) ?? 'Unknown server error');
       throw new Error(errorMessage); // Let this error bubble up directly
     }
     return { data: result?.data };

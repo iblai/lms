@@ -30,6 +30,8 @@ import { rbacSlice } from '@/features/rbac';
 import { tenantSlice } from '@/features/tenant';
 import { mentorSlice } from '@/features/mentor';
 import { StudioSlice } from '@/services/studio';
+import { CourseHomeSlice } from '@/services/course-home';
+import { DiscussionsSlice } from '@/services/discussions';
 
 // The catalog search and recommendations power Home's Explore rail and the
 // Discover page — keep their caches warm past the RTK Query 60s default so
@@ -84,6 +86,8 @@ export const store = configureStore({
     [tenantSlice.reducerPath]: tenantSlice.reducer,
     mentor: mentorSlice.reducer,
     [StudioSlice.reducerPath]: StudioSlice.reducer,
+    [CourseHomeSlice.reducerPath]: CourseHomeSlice.reducer,
+    [DiscussionsSlice.reducerPath]: DiscussionsSlice.reducer,
     monetization: monetizationSlice.reducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
     [auditLogsApiSlice.reducerPath]: auditLogsApiSlice.reducer,
@@ -105,6 +109,8 @@ export const store = configureStore({
       EdxSSOSlice.middleware,
       CoreSlice.middleware,
       StudioSlice.middleware,
+      CourseHomeSlice.middleware,
+      DiscussionsSlice.middleware,
       authApiSlice.middleware,
       auditLogsApiSlice.middleware,
       ...skillsMiddleware,
