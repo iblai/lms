@@ -244,12 +244,12 @@
       "checkpoints": [
         {
           "id": "tabs-01",
-          "description": "Course content page loads with all tab links visible",
+          "description": "Course content page loads with the Progress, Dates and Discussions tab links, plus the Course and/or Agent tab (the Course tab is hidden when the course turns off course_content_mode for the viewer)",
           "status": "covered"
         },
         {
           "id": "tabs-02",
-          "description": "Course tab displays iframe with edX content",
+          "description": "Course tab displays iframe with edX content (skips when the course hides the Course tab)",
           "status": "covered"
         },
         {
@@ -299,7 +299,7 @@
         },
         {
           "id": "tabs-12",
-          "description": "No error messages on any course tab",
+          "description": "No error messages (edX errors or the native pages' \"Couldn't load\" banner) on any course tab the course shows",
           "status": "covered"
         },
         {

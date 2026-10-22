@@ -245,11 +245,19 @@ export async function navigateToAdvancedSettings(page: Page): Promise<Locator> {
  * share one "Administration" tab that opens the admin area with a section nav.
  * Resolves a tab by name wherever it is (opening the menu or the admin area
  * when needed), or null when it doesn't exist for this course/user.
+ *
+ * Pass `staffArea: false` for learner tabs that may legitimately be absent
+ * (Course, Agent): the lookup then stops at the tab row and its menu instead
+ * of opening the Administration area to keep searching.
  */
 export async function getCourseContentTab(
   page: Page,
   name: string | RegExp,
-  { exact = true, timeout = 30_000 }: { exact?: boolean; timeout?: number } = {},
+  {
+    exact = true,
+    timeout = 30_000,
+    staffArea = true,
+  }: { exact?: boolean; timeout?: number; staffArea?: boolean } = {},
 ): Promise<Locator | null> {
   const tabs = page.getByTestId('course-content-tabs');
   await tabs.waitFor({ state: 'visible', timeout }).catch(() => null);
@@ -276,6 +284,10 @@ export async function getCourseContentTab(
     }
     await page.keyboard.press('Escape');
     await openMenu.waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => null);
+  }
+
+  if (!staffArea) {
+    return null;
   }
 
   // Staff pages: enter the admin area (its tab may itself sit in the overflow

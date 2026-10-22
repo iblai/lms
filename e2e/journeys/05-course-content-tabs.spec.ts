@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Locator, Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
 import {
   getCourseContentTab,
@@ -47,11 +47,21 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
 }
 
 /**
+ * The Course tab only shows when the course enables `course_content_mode` for
+ * this viewer's audience; agent-only courses replace it with the Agent tab.
+ * Looks the tab up in the tab row (and its More menu) only, so a missing tab
+ * resolves to null instead of a detour through the Administration area.
+ */
+async function getCourseTab(page: Page): Promise<Locator | null> {
+  return getCourseContentTab(page, 'Course', { staffArea: false });
+}
+
+/**
  * Journey 05: Course Content Tabs
  *
  * Validates all course content tabs:
- *  1. All tabs visible (Course, Progress, Dates, Discussion)
- *  2. Course tab iframe content
+ *  1. Core tabs visible (Course and/or Agent, Progress, Dates, Discussions)
+ *  2. Course tab iframe content (skipped when the course hides the Course tab)
  *  3. Progress tab (native): completion ring, grade bar, grade summary
  *  4. Dates tab (native): timeline with the Today marker
  *  5. Discussions tab (native): All posts / My posts / Topics / Learners views
@@ -61,7 +71,7 @@ async function navigateToCourseContent(page: Page): Promise<boolean> {
  *  9. Instructor tab (optional)
  * 10. Bookmarks (optional)
  * 11. URL updates on tab switch
- * 12. No error messages
+ * 12. No error messages on the tabs the course shows
  */
 test.describe('Journey 05: Course Content Tabs', () => {
   test.setTimeout(200000);
@@ -75,16 +85,22 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const courseTab = page.getByRole('link', { name: 'Course' }).first();
-    const progressTab = page.getByRole('link', { name: 'Progress' }).first();
-    const datesTab = page.getByRole('link', { name: 'Dates' }).first();
-    const discussionTab = page.getByRole('link', { name: 'Discussions' }).first();
+    // Progress, Dates and Discussions are always there.
+    for (const name of ['Progress', 'Dates', 'Discussions']) {
+      const tab = await getCourseContentTab(page, name, { staffArea: false });
+      expect(tab, `${name} tab should be present`).not.toBeNull();
+    }
 
-    await expect(courseTab).toBeVisible({ timeout: 30000 });
-    await expect(progressTab).toBeVisible({ timeout: 30000 });
-    await expect(datesTab).toBeVisible({ timeout: 30000 });
-    await expect(discussionTab).toBeVisible({ timeout: 30000 });
-    logger.info('All four core tabs are visible');
+    // Course and Agent each depend on the course's content-mode settings, but
+    // the course always offers at least one way into its content.
+    const courseTab = await getCourseTab(page);
+    const agentTab = await getCourseContentTab(page, 'Agent', { staffArea: false });
+    expect(Boolean(courseTab) || Boolean(agentTab), 'Course or Agent tab should be present').toBe(
+      true,
+    );
+    logger.info(
+      `Core tabs visible — Course: ${Boolean(courseTab)}, Agent: ${Boolean(agentTab)}, Progress, Dates, Discussions`,
+    );
   });
 
   test('Checkpoint 2: Course tab shows iframe content', async ({ page }) => {
@@ -95,8 +111,16 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const courseTab = page.getByRole('link', { name: 'Course' }).first();
+    const courseTab = await getCourseTab(page);
+
+    if (!courseTab) {
+      logger.info('Course tab hidden by the course content-mode settings — skipping');
+      test.skip();
+      return;
+    }
+
     await courseTab.click();
+    await expect(page).toHaveURL(/\/course(\?|$)/, { timeout: 30000 });
 
     const iframeElement = page.locator('iframe').first();
     await expect(iframeElement).toBeVisible({ timeout: 120000 });
@@ -499,8 +523,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     expect(initialUrl).toMatch(/\/course-content\//);
 
     // Click Progress tab — the native page renders once the route changes.
-    const progressTab = page.getByRole('link', { name: 'Progress' }).first();
-    await progressTab.click();
+    const progressTab = await getCourseContentTab(page, 'Progress', { staffArea: false });
+    expect(progressTab).not.toBeNull();
+    await progressTab!.click();
     await expect(page).toHaveURL(/\/progress(\?|$)/, { timeout: 30000 });
     await expect(page.getByTestId('course-progress')).toBeVisible({ timeout: 120000 });
 
@@ -508,8 +533,9 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info(`Progress URL: ${progressUrl}`);
 
     // Click Dates tab
-    const datesTab = page.getByRole('link', { name: 'Dates' }).first();
-    await datesTab.click();
+    const datesTab = await getCourseContentTab(page, 'Dates', { staffArea: false });
+    expect(datesTab).not.toBeNull();
+    await datesTab!.click();
     await expect(page).toHaveURL(/\/dates(\?|$)/, { timeout: 30000 });
     await expect(page.getByTestId('course-dates')).toBeVisible({ timeout: 120000 });
 
@@ -894,35 +920,69 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const tabs = ['Course', 'Progress', 'Dates', 'Discussions'];
+    // Each tab and what proves it finished loading. Course is an edX iframe and
+    // only exists when the course enables it; the other three are native pages.
+    const tabs: Array<{ name: string; ready: () => Promise<void> }> = [
+      {
+        name: 'Course',
+        ready: async () => {
+          await expect(page.locator('iframe').first()).toBeVisible({ timeout: 120000 });
+          await expect(page.frameLocator('iframe').first().locator('body')).toBeVisible({
+            timeout: 120000,
+          });
+        },
+      },
+      {
+        name: 'Progress',
+        ready: () => expect(page.getByTestId('course-progress')).toBeVisible({ timeout: 120000 }),
+      },
+      {
+        name: 'Dates',
+        ready: () => expect(page.getByTestId('course-dates')).toBeVisible({ timeout: 120000 }),
+      },
+      {
+        name: 'Discussions',
+        ready: () =>
+          expect(page.getByTestId('course-discussions')).toBeVisible({ timeout: 120000 }),
+      },
+    ];
 
-    for (const tabName of tabs) {
-      const tab = page.getByRole('link', { name: tabName }).first();
+    for (const { name: tabName, ready } of tabs) {
+      const tab = await getCourseContentTab(page, tabName, { staffArea: false });
+
+      if (!tab) {
+        // Only the Course tab is optional (course content-mode settings).
+        expect(tabName, `${tabName} tab should be present`).toBe('Course');
+        logger.info('Course tab hidden by the course content-mode settings — not checked');
+        continue;
+      }
+
       await tab.click();
-
-      const iframeElement = page.locator('iframe').first();
-      await expect(iframeElement).toBeVisible({ timeout: 120000 });
-
-      const tabIframe = page.frameLocator('iframe').first();
-      const bodyLocator = tabIframe.locator('body');
-      await expect(bodyLocator).toBeVisible({ timeout: 120000 });
+      await ready();
 
       // Check for error indicators
       const badRequestError = page.getByText(/Bad request/i);
       const serverError = page.getByText(/500|Server error/i);
       const tryAgainButton = page.getByRole('button', { name: /try again/i });
+      // The native pages' own load-failure banner.
+      const loadError = page.getByRole('alert').filter({ hasText: /Couldn.t load/i });
 
       const hasBadRequest = await badRequestError.isVisible({ timeout: 2000 }).catch(() => false);
       const hasServerError = await serverError.isVisible({ timeout: 1000 }).catch(() => false);
       const hasTryAgain = await tryAgainButton.isVisible({ timeout: 1000 }).catch(() => false);
+      const hasLoadError = await loadError
+        .first()
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
 
-      if (hasBadRequest || hasServerError || hasTryAgain) {
+      if (hasBadRequest || hasServerError || hasTryAgain || hasLoadError) {
         logger.info(`Error detected on ${tabName} tab`);
       }
 
       expect(hasBadRequest).toBeFalsy();
       expect(hasServerError).toBeFalsy();
       expect(hasTryAgain).toBeFalsy();
+      expect(hasLoadError).toBeFalsy();
 
       logger.info(`No errors on ${tabName} tab`);
     }
