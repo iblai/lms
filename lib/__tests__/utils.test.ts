@@ -213,6 +213,43 @@ describe('utils', () => {
       );
     });
 
+    it('flattens DRF field errors into the message', async () => {
+      mockFetchBaseQueryResult.mockResolvedValueOnce({
+        error: {
+          status: 400,
+          data: {
+            field_errors: {
+              anonymous_to_peers: { developer_message: 'This field is not initializable.' },
+              title: { user_message: 'Title is required', developer_message: 'blank' },
+              raw_body: 'cannot be empty',
+            },
+          },
+        },
+      });
+
+      await expect(
+        iblFetchBaseQuery({ url: '/test', service: SERVICES.LMS }, mockApi, extraOptions),
+      ).rejects.toThrow(
+        'anonymous_to_peers: This field is not initializable.; title: Title is required; raw_body: cannot be empty',
+      );
+    });
+
+    it('falls back to Unknown server error for unusable field errors', async () => {
+      mockFetchBaseQueryResult.mockResolvedValueOnce({
+        error: { status: 400, data: { field_errors: {} } },
+      });
+      await expect(
+        iblFetchBaseQuery({ url: '/test', service: SERVICES.LMS }, mockApi, extraOptions),
+      ).rejects.toThrow('Unknown server error');
+
+      mockFetchBaseQueryResult.mockResolvedValueOnce({
+        error: { status: 400, data: { field_errors: 'nope' } },
+      });
+      await expect(
+        iblFetchBaseQuery({ url: '/test', service: SERVICES.LMS }, mockApi, extraOptions),
+      ).rejects.toThrow('Unknown server error');
+    });
+
     it('throws Unknown server error for null error data', async () => {
       mockFetchBaseQueryResult.mockResolvedValueOnce({
         error: { status: 500, data: null },

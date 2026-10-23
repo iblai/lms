@@ -22,7 +22,6 @@ import {
   Settings2,
   Sparkles,
   SquarePen,
-  TimerIcon,
   UserCog,
   Users,
   Wrench,
@@ -601,17 +600,6 @@ export default function CourseContentLayout({
         label: 'Authoring',
         href: authoring.href,
         icon: SquarePen,
-        group: 'course',
-        external: true,
-      });
-    }
-    if (has('instructor')) {
-      // Proctoring stays on the legacy page: its own product surface.
-      sections.push({
-        key: 'special-exams',
-        label: 'Proctoring',
-        href: `${config.urls.lms()}/courses/${courseId}/instructor#view-special_exams`,
-        icon: TimerIcon,
         group: 'course',
         external: true,
       });

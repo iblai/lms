@@ -70,6 +70,7 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "dayjs": "1.11.19",
+    "dompurify": "3.4.0",
     "embla-carousel-react": "8.5.1",
     "framer-motion": "12.35.0",
     "input-otp": "1.4.1",

@@ -296,11 +296,13 @@ export interface AssignmentPolicy {
   short_label: string;
   type: string;
   weight: number;
+  /** Sent by newer LMS releases; otherwise derived from the section scores. */
+  average_grade?: number;
+  weighted_grade?: number;
 }
 
-export interface GradeRange {
-  Pass: number;
-}
+/** Letter grade → minimum fraction; a pass/fail course has the single key `Pass`. */
+export type GradeRange = Record<string, number>;
 
 export interface GradingPolicy {
   assignment_policies: AssignmentPolicy[];
@@ -308,7 +310,8 @@ export interface GradingPolicy {
 }
 
 export interface ProblemScore {
-  // Add specific properties if needed
+  earned: number;
+  possible: number;
 }
 
 export interface Subsection {
@@ -342,7 +345,8 @@ export interface CourseProgress {
   can_show_upgrade_sock: boolean;
   verified_mode: string | null;
   access_expiration: string | null;
-  certificate_data: CertificateData;
+  /** `null` when the course issues no certificate for this learner. */
+  certificate_data: CertificateData | null;
   completion_summary: CompletionSummary;
   course_grade: CourseGrade;
   credit_course_requirements: any | null;
@@ -351,10 +355,12 @@ export interface CourseProgress {
   grading_policy: GradingPolicy;
   has_scheduled_content: boolean;
   section_scores: SectionScore[];
-  studio_url: string;
+  studio_url: string | null;
   username: string;
   user_has_passing_grade: boolean;
   verification_data: VerificationData;
+  disable_progress_graph?: boolean;
+  user_timezone?: string | null;
 }
 
 export interface CourseCompletionData {

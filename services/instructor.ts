@@ -82,25 +82,19 @@ const readErrorMessage = async (response: Response) => {
   }
 };
 
-export const legacyInstructorApi = async <T>(
-  courseId: string,
-  action: string,
-  params: FormParams = {},
-): Promise<T> => {
+/** Form-posts to a legacy LMS view (session + CSRF) and returns its JSON. */
+export const legacyLmsPost = async <T>(path: string, params: FormParams = {}): Promise<T> => {
   const token = await getCsrfToken();
-  const response = await fetch(
-    `${config.urls.lms()}/courses/${courseId}/instructor/api/${action}`,
-    {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'X-CSRFToken': token,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
-      },
-      body: form(params).toString(),
+  const response = await fetch(`${config.urls.lms()}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'X-CSRFToken': token,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
     },
-  );
+    body: form(params).toString(),
+  });
   if (!response.ok) {
     // A stale token is the usual 403; drop it so the next call fetches afresh.
     if (response.status === 403) resetLegacyCsrfToken();
@@ -108,6 +102,9 @@ export const legacyInstructorApi = async <T>(
   }
   return (await response.json()) as T;
 };
+
+export const legacyInstructorApi = <T>(courseId: string, action: string, params: FormParams = {}) =>
+  legacyLmsPost<T>(`/courses/${courseId}/instructor/api/${action}`, params);
 
 export type ReportKind =
   | 'calculate_grades_csv'
