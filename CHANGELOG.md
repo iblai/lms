@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.97.0](https://github.com/iblai/lms/compare/skills-v0.96.3...skills-v0.97.0) (2026-10-23)
+
+### Features
+
+* course tab should be considered optional on e2e tests ([68cfa0a](https://github.com/iblai/lms/commit/68cfa0a2e4ad72af627095700f47083473c249d9))
+* mfe pages natively built + revamped ([9407276](https://github.com/iblai/lms/commit/9407276ed2cfc03cb66dcdb6cd6b7bf911fb9567))
+
 ## [0.96.3](https://github.com/iblai/lms/compare/skills-v0.96.2...skills-v0.96.3) (2026-10-21)
 
 ### Chores
