@@ -20,6 +20,8 @@ export function CourseAccessGuard({
   isAdmin = false,
   isWatcher = false,
   isAdminResolved = true,
+  isEnrolled = true,
+  isEnrollmentResolved = true,
   children,
 }: {
   course: CourseEdxData | null;
@@ -31,6 +33,10 @@ export function CourseAccessGuard({
   isWatcher?: boolean;
   /** Whether the admin check has resolved; access decisions wait for this. */
   isAdminResolved?: boolean;
+  /** Whether the viewer may open the content without an enrollment — false sends them to the course about page. */
+  isEnrolled?: boolean;
+  /** Whether the enrollment check has resolved; access decisions wait for this. */
+  isEnrollmentResolved?: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -43,7 +49,9 @@ export function CourseAccessGuard({
 
   // Wait for both the course info and the admin check before deciding access,
   // otherwise an admin could be momentarily redirected before their role resolves.
-  const isReady = isLoaded && isAdminResolved;
+  const isReady = isLoaded && isAdminResolved && isEnrollmentResolved;
+
+  const shouldRedirectToAbout = isReady && !!course && !isEnrolled;
 
   const viewer = { isAdmin, isWatcher };
 
@@ -76,7 +84,9 @@ export function CourseAccessGuard({
     ((onAgentTab && !agentAccessible) || (onCourseTab && !courseAccessible));
 
   useEffect(() => {
-    if (shouldRedirectToSibling && pathname) {
+    if (shouldRedirectToAbout) {
+      router.replace(`/platform/${tenant}/courses/${course?.course_key}`);
+    } else if (shouldRedirectToSibling && pathname) {
       const siblingTab = shouldRedirectAgentToCourse ? 'course' : 'agent';
       const siblingPath = pathname.replace(/\/(agent|course)$/, `/${siblingTab}`);
       router.replace(siblingPath);
@@ -85,9 +95,15 @@ export function CourseAccessGuard({
     } else if (isNotFound) {
       router.push(getErrorPageUrl(404, tenant));
     }
-  }, [isNotFound, isTabDisabled, shouldRedirectToSibling, shouldRedirectAgentToCourse]);
+  }, [
+    isNotFound,
+    isTabDisabled,
+    shouldRedirectToSibling,
+    shouldRedirectAgentToCourse,
+    shouldRedirectToAbout,
+  ]);
 
-  if (!isReady || isNotFound || isTabDisabled || shouldRedirectToSibling) {
+  if (!isReady || isNotFound || isTabDisabled || shouldRedirectToSibling || shouldRedirectToAbout) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
