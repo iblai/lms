@@ -39,8 +39,7 @@ const mergePatch = (url: string, patch: object) => ({
 });
 
 /**
- * Open edX discussion REST API behind the native Discussions tab. Everything
- * here takes the LMS JWT the app already sends.
+ * Open edX discussion REST API behind the native Discussions tab.
  */
 export const DiscussionsSlice = createApi({
   reducerPath: 'DiscussionsSlice',

@@ -1,7 +1,8 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { iblFetchBaseQuery } from '@/lib/utils';
+import { getStoredToken, iblFetchBaseQuery } from '@/lib/utils';
 import { SERVICES } from '@/lib/constants';
 import { config } from '@/lib/config';
+import { LOCALSTORAGE_KEYS } from '@/constants/storage';
 import type {
   Cohort,
   CohortSettings,
@@ -38,7 +39,8 @@ const form = (params: Record<string, string | number | boolean | undefined>) => 
 
 type FormParams = Record<string, string | number | boolean | undefined>;
 
-// Actions this LMS release serves as DRF views: they take the JWT.
+// Actions this LMS release serves as DRF views: they take the JWT, which DM's
+// edX proxy mints from the DM token.
 const instructorApi = (courseId: string, action: string, params: FormParams = {}) => ({
   url: `/courses/${courseId}/instructor/api/${action}`,
   method: 'POST',
@@ -47,16 +49,21 @@ const instructorApi = (courseId: string, action: string, params: FormParams = {}
   isJson: false,
 });
 
-// The rest are still legacy Django views (session + CSRF only, no JWT). They
-// are reached the way the edX MFEs on other hosts do it: the LMS session
-// cookie travels cross-site (SameSite=None, CORS allows credentials) and a
-// CSRF token comes from the LMS's own csrf endpoint, fetched once per page.
+// The rest are still legacy Django views (session + CSRF only, no JWT, so the
+// proxy cannot reach them either). They are reached the way the edX MFEs on
+// other hosts do it: the LMS session cookie travels cross-site
+// (SameSite=None, CORS allows credentials). The CSRF token comes from the
+// LMS's csrf endpoint through DM's proxy, fetched once per page; the views
+// accept it alongside the session.
 let csrfToken: Promise<string> | null = null;
 export const resetLegacyCsrfToken = () => {
   csrfToken = null;
 };
 const getCsrfToken = () => {
-  csrfToken ??= fetch(`${config.urls.lms()}/csrf/api/v1/token`, { credentials: 'include' })
+  csrfToken ??= fetch(`${config.urls.dm()}/v1/lms/csrf/api/v1/token`, {
+    headers: { Authorization: `Token ${getStoredToken(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}` },
+    credentials: 'omit',
+  })
     .then(async (response) => {
       if (!response.ok) throw new Error('Could not get a CSRF token from the LMS');
       const body = (await response.json()) as { csrfToken?: string };
@@ -116,8 +123,8 @@ export type ReportKind =
 
 /**
  * Open edX grades / cohorts / enrollment / instructor endpoints behind the
- * native course admin pages. All of them accept the LMS JWT the app already
- * sends; the legacy `instructor/api/*` views take form bodies.
+ * native course admin pages. All of them take the JWT; the legacy
+ * `instructor/api/*` views take form bodies.
  */
 export const InstructorSlice = createApi({
   reducerPath: 'InstructorSlice',
@@ -222,7 +229,8 @@ export const InstructorSlice = createApi({
     >({
       query: ({ courseId, isCohorted }) => ({
         url: `/api/cohorts/v1/settings/${course(courseId)}`,
-        method: 'PATCH',
+        // The cohort settings view only takes PUT; edX answers 405 to PATCH.
+        method: 'PUT',
         body: { is_cohorted: isCohorted },
         service: SERVICES.LMS,
       }),

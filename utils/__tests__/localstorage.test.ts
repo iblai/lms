@@ -450,19 +450,14 @@ describe('saveUserTokens', () => {
     dm_token: { token: 'dm-tok', expires: 'dm-exp' },
   } as any;
 
-  it('persists both axd and dm tokens with their expiries', () => {
+  it('persists both axd and dm tokens with their expiries, bare like the SSO login page', () => {
     saveUserTokens(tokenResponse);
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('axd_token', JSON.stringify('axd-tok'));
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-      'axd_token_expires',
-      JSON.stringify('axd-exp'),
-    );
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dm_token', JSON.stringify('dm-tok'));
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-      'dm_token_expires',
-      JSON.stringify('dm-exp'),
-    );
+    // Not JSON-encoded: readers send the stored value as-is, and DM refuses `"token"`.
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('axd_token', 'axd-tok');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('axd_token_expires', 'axd-exp');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dm_token', 'dm-tok');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('dm_token_expires', 'dm-exp');
   });
 
   it('writes exactly four keys', () => {

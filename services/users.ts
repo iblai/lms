@@ -8,11 +8,12 @@ export const UserMetaDataSlice = createApi({
   reducerPath: 'UserMetaDataSlice',
   baseQuery: iblFetchBaseQuery,
   endpoints: (builder) => ({
+    // The merged edX + DM profile, served by DM itself (the same payload the
+    // edX `/api/ibl/users/manage/metadata/` endpoint used to proxy).
     getUserMetaData: builder.query<UserMetadata, string>({
       query: (username) => ({
-        url: `/api/ibl/users/manage/metadata/?username=${username}`,
-        service: SERVICES.LMS,
-        includeCredentials: true,
+        url: `/api/core/users/metadata/proxy/?username=${encodeURIComponent(username)}`,
+        service: SERVICES.DM,
       }),
     }),
     uploadProfileImage: builder.mutation<any, { formData: FormData; username: string }>({

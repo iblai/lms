@@ -218,6 +218,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
 
   beforeEach(() => {
     capturedBaseQueryArgs = [];
+    // The DM catalog endpoints take `username=<self>`, read from the stored user.
+    window.localStorage.setItem('userData', JSON.stringify({ user_nicename: 'jane' }));
 
     store = configureStore({
       reducer: {
@@ -228,40 +230,56 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
     setupListeners(store.dispatch);
   });
 
-  it('getCourseMetaData builds the expected URL with encoded courseKey', async () => {
-    await store.dispatch(
+  it('getCourseMetaData merges DM public metadata with the edX course detail', async () => {
+    const result = await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
+      }),
+    );
+    expect(capturedBaseQueryArgs.map((call) => call.url)).toEqual([
+      '/api/catalog/metadata/course-public/?course_id=course-v1%3AOrg%2BRun%2B1',
+      '/api/courses/v1/courses/course-v1:Org+Run+1',
+    ]);
+    // Both mocked responses are `{ ok: true }`: the DM half is spread in and
+    // the edX half is mapped onto the plugin's field names.
+    expect(result.data).toMatchObject({ ok: true, course_key: 'course-v1:Org+Run+1', org: 'Org' });
+  });
+
+  it('getCourseMetaData keeps the anonymous read on the edX plugin endpoint', async () => {
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
+        courseKey: 'course-v1:Org+Run+2',
+        noAuth: true,
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
     expect(capturedBaseQueryArgs[0].method).toBe('GET');
     expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/v1/course_metadata?course_key=course-v1%3AOrg%2BRun%2B1',
+      '/api/ibl/v1/course_metadata?course_key=course-v1%3AOrg%2BRun%2B2',
     );
   });
 
-  it('getCourseCompletionOutlines builds the expected URL with encoded courseKey', async () => {
+  it('getCourseCompletionOutlines reads the outline from DM for the stored user', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseCompletionOutlines as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
-    expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/completion/course_outline/course-v1:Org+Run+1?course_id=course-v1%3AOrg%2BRun%2B1',
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/api/catalog/enrollment/courses/completion/?username=jane&course_id=course-v1%3AOrg%2BRun%2B1&endpoint=outline',
     );
   });
 
-  it('getCourseEligibility builds the expected URL with encoded courseKey', async () => {
+  it('getCourseEligibility reads eligibility from DM for the stored user', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseEligibility as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
-    expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/enrollment/enroll_status?course_id=course-v1%3AOrg%2BRun%2B1',
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/api/catalog/eligibility/courses/check/?username=jane&course_id=course-v1%3AOrg%2BRun%2B1',
     );
   });
 
@@ -348,7 +366,8 @@ describe('getCourseMetaData caching', () => {
       }),
     );
 
-    expect(capturedBaseQueryArgs).toHaveLength(1);
+    // One cache entry, filled by a single read (DM metadata + edX detail).
+    expect(capturedBaseQueryArgs).toHaveLength(2);
     const queries = (store.getState() as any)[CourseMetadataSlice.reducerPath].queries;
     expect(Object.keys(queries)).toEqual([
       'getCourseMetaData({"courseKey":"course-v1:Org+Run+1"})',
@@ -362,7 +381,8 @@ describe('getCourseMetaData caching', () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({ courseKey: 'b' }),
     );
-    expect(capturedBaseQueryArgs).toHaveLength(2);
+    // Two reads of two requests each.
+    expect(capturedBaseQueryArgs).toHaveLength(4);
   });
 
   it('keeps the payload well past the RTK Query 60s default', () => {

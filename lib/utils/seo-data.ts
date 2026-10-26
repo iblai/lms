@@ -5,6 +5,10 @@ import { config } from '@/lib/config';
  * Server-side data fetchers for per-entity SEO metadata. These hit the public
  * (no-auth) endpoints and are wrapped in React `cache()` so a page's
  * generateMetadata and its layout's JSON-LD share a single request-scoped fetch.
+ *
+ * TODO(iblai-platform#2707 B3): both fetchers still call the edX plugin
+ * endpoints anonymously; DM's course/program public metadata refuses
+ * anonymous calls, so there is no DM path for SSR yet.
  */
 
 export interface EntitySeoData {

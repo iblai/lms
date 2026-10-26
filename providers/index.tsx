@@ -72,6 +72,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         },
       },
       config.urls.studioUrl(),
+      undefined,
+      { edxProxy: true },
     );
     setReady(true);
   };
