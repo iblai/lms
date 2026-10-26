@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.97.2](https://github.com/iblai/lms/compare/skills-v0.97.1...skills-v0.97.2) (2026-10-26)
+
+### CI
+
+* request a prod-images release after each image build ([74662bb](https://github.com/iblai/lms/commit/74662bb61330346b6bcfdbb312721c4e34cc59b1))
+
 ## [0.97.1](https://github.com/iblai/lms/compare/skills-v0.97.0...skills-v0.97.1) (2026-10-23)
 
 ### Chores

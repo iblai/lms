@@ -121,8 +121,10 @@ vi.mock('@/utils/helpers', () => ({
 const mockUseGetCourseBlockDetailsQuery: any = vi.fn(
   (..._args: any[]) => ({ data: undefined }) as any,
 );
+const mockUseGetCourseEligibilityQuery: any = vi.fn();
 vi.mock('@/services/course-metadata', () => ({
   useGetCourseBlockDetailsQuery: (...args: any[]) => mockUseGetCourseBlockDetailsQuery(...args),
+  useGetCourseEligibilityQuery: (...args: any[]) => mockUseGetCourseEligibilityQuery(...args),
 }));
 
 // Mock the course-role hook — drives the staff-only tab gates
@@ -220,8 +222,12 @@ vi.mock('@/components/course-outline-drawer', () => ({
 }));
 
 // Mock CourseAccessGuard — renders children unconditionally so layout tests are isolated
+const mockCourseAccessGuard = vi.hoisted(() => vi.fn());
 vi.mock('@/components/course-access-guard', () => ({
-  CourseAccessGuard: ({ children }: any) => <>{children}</>,
+  CourseAccessGuard: (props: any) => {
+    mockCourseAccessGuard(props);
+    return <>{props.children}</>;
+  },
 }));
 
 // Mock CourseLessonNavigator — layout tests don't need to exercise navigator internals
@@ -428,6 +434,10 @@ describe('CourseContentLayout', () => {
       data: { is_platform_admin: false },
     } as any);
     mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });
+    mockUseGetCourseEligibilityQuery.mockReturnValue({
+      data: { is_enrolled: true, is_admin: false },
+      isSuccess: true,
+    });
   });
 
   it('renders without crashing', () => {
@@ -2735,6 +2745,100 @@ describe('CourseContentLayout', () => {
 
       expect(screen.queryByText('Lesson complete')).not.toBeInTheDocument();
       expect(mockHandleFetchCourseSyllabus).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('enrollment gate', () => {
+    const guardProps = () => mockCourseAccessGuard.mock.lastCall?.[0];
+    const renderLayout = () =>
+      render(
+        <CourseContentLayout params={defaultParams}>
+          <div>children</div>
+        </CourseContentLayout>,
+      );
+    const resolveAdminCheck = (isPlatformAdmin = false) =>
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: isPlatformAdmin },
+        isSuccess: true,
+      } as any);
+    const setEnrollStatus = (data: Record<string, unknown>) =>
+      mockUseGetCourseEligibilityQuery.mockReturnValue({ data, isSuccess: true });
+
+    beforeEach(() => resolveAdminCheck());
+
+    it('looks up the enrollment status for the course', () => {
+      renderLayout();
+      expect(mockUseGetCourseEligibilityQuery).toHaveBeenCalledWith({
+        courseKey: 'course-v1:test+course+2024',
+      });
+    });
+
+    it('marks an unenrolled learner as not enrolled', () => {
+      setEnrollStatus({ is_enrolled: false, is_admin: false });
+      renderLayout();
+      expect(guardProps()).toMatchObject({ isEnrolled: false, isEnrollmentResolved: true });
+    });
+
+    it('marks an enrolled learner as enrolled', () => {
+      renderLayout();
+      expect(guardProps()).toMatchObject({ isEnrolled: true, isEnrollmentResolved: true });
+    });
+
+    it.each([
+      ['a platform admin', () => resolveAdminCheck(true)],
+      ['a watcher', () => mockCheckRbacPermission.mockReturnValue(true)],
+      [
+        'course staff',
+        () => {
+          courseUserRolesState.current = {
+            ...courseUserRolesState.current,
+            isCourseLimitedStaff: true,
+            hasCourseStaffAccess: true,
+          };
+        },
+      ],
+      ['an edX course admin', () => setEnrollStatus({ is_enrolled: false, is_admin: true })],
+    ])('lets %s through without an enrollment', (_label, grant) => {
+      setEnrollStatus({ is_enrolled: false, is_admin: false });
+      grant();
+      renderLayout();
+      expect(guardProps()).toMatchObject({ isEnrolled: true, isEnrollmentResolved: true });
+    });
+
+    it('lets the viewer through when the status lookup fails', () => {
+      mockUseGetCourseEligibilityQuery.mockReturnValue({ data: undefined, isError: true });
+      renderLayout();
+      expect(guardProps()).toMatchObject({ isEnrolled: true, isEnrollmentResolved: true });
+    });
+
+    it.each([
+      ['the status lookup', () => mockUseGetCourseEligibilityQuery.mockReturnValue({})],
+      [
+        'the course roles',
+        () => {
+          courseUserRolesState.current = { ...courseUserRolesState.current, isResolved: false };
+        },
+      ],
+      [
+        'the admin check',
+        () =>
+          vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({ data: undefined } as any),
+      ],
+    ])('holds the decision until %s resolves', (_label, pending) => {
+      pending();
+      renderLayout();
+      expect(guardProps()).toMatchObject({ isEnrollmentResolved: false });
+    });
+
+    it('checks monetization access once enrollment is confirmed', () => {
+      renderLayout();
+      expect(mockHandleCheckCourseMonetizationAccess).toHaveBeenCalled();
+    });
+
+    it('skips the paywall check for an unenrolled learner', () => {
+      setEnrollStatus({ is_enrolled: false, is_admin: false });
+      renderLayout();
+      expect(mockHandleCheckCourseMonetizationAccess).not.toHaveBeenCalled();
     });
   });
 });

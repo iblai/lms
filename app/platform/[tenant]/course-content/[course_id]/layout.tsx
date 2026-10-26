@@ -61,7 +61,10 @@ import type { CourseBlockDetailsBlock } from '@/types/courses';
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { useGetCourseBlockDetailsQuery } from '@/services/course-metadata';
+import {
+  useGetCourseBlockDetailsQuery,
+  useGetCourseEligibilityQuery,
+} from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
@@ -140,8 +143,25 @@ export default function CourseContentLayout({
   // platform admins: full staff (course-staff / course-instructor) get every
   // tab, limited staff get all of them except Authoring — they run the course
   // but can't edit it in Studio.
-  const { isCourseStaff, hasCourseStaffAccess } = useCourseUserRoles(courseId);
+  const {
+    isCourseStaff,
+    hasCourseStaffAccess,
+    isResolved: courseRolesResolved,
+  } = useCourseUserRoles(courseId);
   const canViewStaffTabs = isAdmin || hasCourseStaffAccess;
+  const {
+    data: enrollStatus,
+    isSuccess: enrollStatusSuccess,
+    isError: enrollStatusError,
+  } = useGetCourseEligibilityQuery({ courseKey: courseId });
+  const canSkipEnrollment =
+    isAdmin || isWatcher || hasCourseStaffAccess || enrollStatus?.is_admin === true;
+  // A failed status lookup lets the viewer through rather than locking out
+  // enrolled learners on a transient error — edX still enforces enrollment.
+  const isEnrolled = canSkipEnrollment || enrollStatus?.is_enrolled !== false;
+  const isEnrollmentResolved = Boolean(
+    (enrollStatusSuccess || enrollStatusError) && courseRolesResolved && isAdminResolved,
+  );
   const canViewAuthoringTab = isAdmin || isCourseStaff;
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -184,11 +204,18 @@ export default function CourseContentLayout({
   };
 
   useEffect(() => {
-    checkCourseMonetizationAccess();
     handleFetchCourseInfo();
     handleFetchCourseProgress();
     handleFetchCourseCompletion(getUserId());
   }, [courseId]);
+
+  // Unenrolled viewers are sent to the about page, which has its own purchase
+  // CTA; opening the paywall here first would leave it over that page and its
+  // close action would redirect to the 402 page.
+  const enrollmentConfirmed = isEnrollmentResolved && isEnrolled;
+  useEffect(() => {
+    if (enrollmentConfirmed) checkCourseMonetizationAccess();
+  }, [courseId, enrollmentConfirmed]);
 
   useEffect(() => {
     if (!isEmpty(course)) {
@@ -669,6 +696,8 @@ export default function CourseContentLayout({
       isAdmin={isAdmin}
       isWatcher={isWatcher}
       isAdminResolved={isAdminResolved}
+      isEnrolled={isEnrolled}
+      isEnrollmentResolved={isEnrollmentResolved}
     >
       <CourseOutlineContext.Provider
         value={{
