@@ -5,6 +5,7 @@ vi.mock('@/lib/config', () => ({
     urls: {
       studio: () => 'https://studio.example.com',
       lms: () => 'https://lms.example.com',
+      dm: () => 'https://dm.example.com',
     },
   },
 }));
@@ -143,7 +144,9 @@ describe('seo-data', () => {
         price: '49.00',
         org: 'acme',
       });
-      expect(fetchSpy.mock.calls[0][0]).toContain('course_key=course-v1%3Aacme%2BX%2B2024');
+      expect(fetchSpy.mock.calls[0][0]).toBe(
+        'https://dm.example.com/v1/courses/metadata?course_id=course-v1%3Aacme%2BX%2B2024',
+      );
     });
 
     it('falls back to top-level fields and display_name', async () => {

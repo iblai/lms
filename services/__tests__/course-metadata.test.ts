@@ -230,22 +230,30 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
     setupListeners(store.dispatch);
   });
 
-  it('getCourseMetaData merges DM public metadata with the edX course detail', async () => {
-    const result = await store.dispatch(
+  it('getCourseMetaData reads the plugin-shaped payload from DM', async () => {
+    await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
-    expect(capturedBaseQueryArgs.map((call) => call.url)).toEqual([
-      '/api/catalog/metadata/course-public/?course_id=course-v1%3AOrg%2BRun%2B1',
-      '/api/courses/v1/courses/course-v1:Org+Run+1',
-    ]);
-    // Both mocked responses are `{ ok: true }`: the DM half is spread in and
-    // the edX half is mapped onto the plugin's field names.
-    expect(result.data).toMatchObject({ ok: true, course_key: 'course-v1:Org+Run+1', org: 'Org' });
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'GET',
+      url: '/v1/courses/metadata?course_id=course-v1%3AOrg%2BRun%2B1',
+    });
   });
 
-  it('getCourseMetaData keeps the anonymous read on the edX plugin endpoint', async () => {
+  it('getCourseMetaData reads a null price as Free', async () => {
+    const result = await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
+        courseKey: 'course-v1:Org+Run+3',
+      }),
+    );
+    // The mocked payload carries no price; a priced course keeps its value.
+    expect(result.data).toMatchObject({ ok: true, course_price: 'Free' });
+  });
+
+  it('getCourseMetaData reads anonymously from the same DM endpoint', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
         courseKey: 'course-v1:Org+Run+2',
@@ -253,9 +261,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
-    expect(capturedBaseQueryArgs[0].method).toBe('GET');
-    expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/v1/course_metadata?course_key=course-v1%3AOrg%2BRun%2B2',
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/v1/courses/metadata?course_id=course-v1%3AOrg%2BRun%2B2',
     );
   });
 
@@ -366,8 +373,7 @@ describe('getCourseMetaData caching', () => {
       }),
     );
 
-    // One cache entry, filled by a single read (DM metadata + edX detail).
-    expect(capturedBaseQueryArgs).toHaveLength(2);
+    expect(capturedBaseQueryArgs).toHaveLength(1);
     const queries = (store.getState() as any)[CourseMetadataSlice.reducerPath].queries;
     expect(Object.keys(queries)).toEqual([
       'getCourseMetaData({"courseKey":"course-v1:Org+Run+1"})',
@@ -381,8 +387,7 @@ describe('getCourseMetaData caching', () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({ courseKey: 'b' }),
     );
-    // Two reads of two requests each.
-    expect(capturedBaseQueryArgs).toHaveLength(4);
+    expect(capturedBaseQueryArgs).toHaveLength(2);
   });
 
   it('keeps the payload well past the RTK Query 60s default', () => {

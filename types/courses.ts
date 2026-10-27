@@ -97,38 +97,6 @@ export interface CourseEdxData {
   course_content_mode_audience?: ('learners' | 'watchers' | 'admins')[];
 }
 
-/**
- * Open edX course detail (`GET /api/courses/v1/courses/{id}`), the edX half of
- * `CourseEdxData` when it is rebuilt through DM.
- */
-export interface EdxCourseDetail {
-  id?: string;
-  course_id: string;
-  name: string;
-  number?: string;
-  org: string;
-  short_description?: string | null;
-  overview?: string | null;
-  effort?: string | null;
-  start?: string | null;
-  end?: string | null;
-  start_display?: string | null;
-  start_type?: string;
-  enrollment_start?: string | null;
-  enrollment_end?: string | null;
-  pacing?: string;
-  invitation_only?: boolean;
-  hidden?: boolean;
-  mobile_available?: boolean;
-  blocks_url?: string;
-  media?: {
-    course_image?: { uri?: string | null };
-    banner_image?: { uri?: string | null; uri_absolute?: string | null };
-    course_video?: { uri?: string | null };
-    image?: { raw?: string; small?: string; large?: string };
-  };
-}
-
 export interface Course {
   id?: number;
   data?: CourseData;

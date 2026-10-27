@@ -6,9 +6,9 @@ import { config } from '@/lib/config';
  * (no-auth) endpoints and are wrapped in React `cache()` so a page's
  * generateMetadata and its layout's JSON-LD share a single request-scoped fetch.
  *
- * TODO(iblai-platform#2707 B3): both fetchers still call the edX plugin
- * endpoints anonymously; DM's course/program public metadata refuses
- * anonymous calls, so there is no DM path for SSR yet.
+ * TODO(iblai-platform#2707 B3): the program fetcher still calls the Studio
+ * plugin endpoint anonymously; DM's program metadata refuses anonymous calls,
+ * so there is no DM path for program SSR yet.
  */
 
 export interface EntitySeoData {
@@ -79,12 +79,13 @@ export const getProgramSeoData = cache(
 );
 
 /**
- * Fetches public course metadata for SEO. The course_metadata endpoint accepts
- * anonymous requests, so no auth token is attached.
+ * Fetches public course metadata for SEO from DM, which serves the edX
+ * plugin's `course_metadata` payload and accepts anonymous requests, so no
+ * auth token is attached.
  */
 export const getCourseSeoData = cache(async (courseKey: string): Promise<EntitySeoData | null> => {
   try {
-    const url = `${config.urls.lms()}/api/ibl/v1/course_metadata?course_key=${encodeURIComponent(
+    const url = `${config.urls.dm()}/v1/courses/metadata?course_id=${encodeURIComponent(
       courseKey,
     )}`;
     const res = await fetch(url, { cache: 'no-store' });

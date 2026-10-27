@@ -1,5 +1,4 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import type { BaseQueryApi } from '@reduxjs/toolkit/query';
 import {
   CourseBlockDetailsResponse,
   CourseCompletion,
@@ -9,12 +8,10 @@ import {
   CourseEnrollmentResponse,
   CourseOutlineResponse,
   CourseProgress,
-  EdxCourseDetail,
 } from '@/types/courses';
-import { CustomQueryArgs, iblFetchBaseQuery } from '@/lib/utils';
+import { iblFetchBaseQuery } from '@/lib/utils';
 import { COURSE_METADATA_CACHE_SECONDS, SERVICES } from '@/lib/constants';
 import { getUserName } from '@/utils/helpers';
-import { mergeCourseMetadata } from '@/utils/course-metadata-merge';
 
 /**
  * DM's catalog user endpoints take `username=<self>` where the edX plugin
@@ -22,65 +19,24 @@ import { mergeCourseMetadata } from '@/utils/course-metadata-merge';
  */
 const selfParam = () => `username=${encodeURIComponent(getUserName() ?? '')}`;
 
-/** One request through the base query, unwrapped to its payload. */
-const fetchData = async <T>(
-  args: CustomQueryArgs,
-  api: BaseQueryApi,
-  extraOptions: Record<string, unknown>,
-): Promise<T> => {
-  const result = await iblFetchBaseQuery(args, api, extraOptions);
-  if (result.error) {
-    throw result.error;
-  }
-  return result.data as T;
-};
-
 // Define a service using a base URL and expected endpoints
 export const CourseMetadataSlice = createApi({
   reducerPath: 'CourseMetadataSlice',
   baseQuery: iblFetchBaseQuery,
   endpoints: (builder) => ({
-    // The edX plugin merged DM catalog metadata with the edX course details;
-    // it is rebuilt here from DM's public metadata plus Open edX's course
-    // detail through DM's proxy (iblai-platform#2707 row 7). Anonymous
-    // visitors keep the plugin endpoint: DM's public metadata refuses
-    // anonymous calls (gap B3).
+    // DM serves the same payload the edX plugin's `course_metadata` did, to
+    // signed-in and anonymous callers alike.
     getCourseMetaData: builder.query<CourseEdxData, { courseKey: string; noAuth?: boolean }>({
-      queryFn: async ({ courseKey, noAuth = false }, api, extraOptions) => {
-        if (noAuth) {
-          const data = await fetchData<CourseEdxData>(
-            {
-              url: `/api/ibl/v1/course_metadata?course_key=${encodeURIComponent(courseKey)}`,
-              service: SERVICES.LMS_DIRECT,
-              noAuth,
-            },
-            api,
-            extraOptions,
-          );
-          return { data };
-        }
-        const [dmMetadata, edxCourse] = await Promise.all([
-          fetchData<Record<string, unknown>>(
-            {
-              url: `/api/catalog/metadata/course-public/?course_id=${encodeURIComponent(courseKey)}`,
-              service: SERVICES.DM,
-            },
-            api,
-            extraOptions,
-          ).catch((error: unknown) => {
-            // The DM half only enriches the record; a course DM has no catalog
-            // entry for still renders from its edX details.
-            console.warn('[course-metadata] DM public metadata unavailable:', error);
-            return {};
-          }),
-          fetchData<EdxCourseDetail>(
-            { url: `/api/courses/v1/courses/${courseKey}`, service: SERVICES.LMS },
-            api,
-            extraOptions,
-          ),
-        ]);
-        return { data: mergeCourseMetadata(courseKey, dmMetadata, edxCourse) };
-      },
+      query: ({ courseKey, noAuth = false }) => ({
+        url: `/v1/courses/metadata?course_id=${encodeURIComponent(courseKey)}`,
+        service: SERVICES.DM,
+        noAuth,
+      }),
+      // DM leaves the price null where the plugin said "Free".
+      transformResponse: (course: CourseEdxData) => ({
+        ...course,
+        course_price: course.course_price ?? 'Free',
+      }),
       // One cache entry per course, keyed on the course alone. `noAuth` only
       // decides whether the request carries credentials — it describes the
       // caller, not the resource — and leaving it in the default key meant
