@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-10-22 | 272 checkpoints | 38 journeys | 100% covered
+> Last updated: 2026-10-27 | 276 checkpoints | 39 journeys | 100% covered
 
 ## How This Works
 
@@ -573,6 +573,22 @@ starts an LMS session with a token minted from the app's own SSO token request (
 - [x] Clicking the new unit puts its usage id in `?unit_id`, fires the `Switched to "<unit>"` toast, updates the unit breadcrumb and `aria-current`, and the agent answers the switch
 - [x] Sending "mark this lesson as completed" makes the agent think, use a tool and confirm the completion; the mentor relays a `lesson.completed` message with the unit's usage id, `completion: 1` and display name
 - [x] The outline refreshes: the new unit's completion icon becomes the filled check and the completed-unit count grows by one; the unit is deleted from Studio afterwards
+
+---
+
+## Journey 40: Chat Sidebar Close (4 checkpoints) — `journeys/40-chat-sidebar-close.spec.ts`
+
+**Source files:** `components/chat-button.tsx`, `hooks/use-default-mentor.ts`, `app/_components/app-layout.tsx`
+
+The chat launcher embeds the tenant's default agent through `agent-ai` with `showclosebutton`, so the
+mentor renders its own Close (X) button. The button lives inside the mentor iframe and only posts
+`{ closeEmbed: true, collapseSidebarCopilot: true }`; the host hides the sidebar and restores the launcher.
+Skips when the launcher is not shown (mentor sidebar hidden on the tenant).
+
+- [x] The "Open chat assistant" launcher on home opens the chat sidebar (launcher hidden) with one `agent-ai` element on the host tenant, flagged `showclosebutton`
+- [x] The sidebar embeds the resolved agent: the iframe points at `/platform/<tenant>/<mentor>` and carries `show-close-button=true`
+- [x] Clicking the agent's Close chat (X) button inside the embed hides the chat sidebar and brings the launcher back
+- [x] Reopening from the launcher shows the same agent again with its close button
 
 ---
 
