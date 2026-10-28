@@ -23,6 +23,7 @@ const env = {
   NEXT_PUBLIC_PLATFORM_BASE_DOMAIN: process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN,
   NEXT_PUBLIC_ENABLE_RBAC: process.env.NEXT_PUBLIC_ENABLE_RBAC,
   NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
+  NEXT_PUBLIC_HELP_CENTER_URL: process.env.NEXT_PUBLIC_HELP_CENTER_URL,
   NEXT_PUBLIC_MAIN_PLATFORM_KEY: process.env.NEXT_PUBLIC_MAIN_PLATFORM_KEY,
   NEXT_PUBLIC_HIDE_DISCOVER_TAB: process.env.NEXT_PUBLIC_HIDE_DISCOVER_TAB,
   NEXT_PUBLIC_ADDITIONAL_LEFT_HEADER_MENU_ITEMS:
@@ -89,6 +90,7 @@ export const config = {
     platformBaseDomain: () => getEnv('NEXT_PUBLIC_PLATFORM_BASE_DOMAIN', ''),
     enableRBAC: () => getEnv('NEXT_PUBLIC_ENABLE_RBAC', 'false') === 'true',
     supportEmail: () => getEnv('NEXT_PUBLIC_SUPPORT_EMAIL', 'support@ibl.ai'),
+    helpCenterUrl: () => getEnv('NEXT_PUBLIC_HELP_CENTER_URL', 'https://ibl.ai/support'),
     mainPlatformKey: () => getEnv('NEXT_PUBLIC_MAIN_PLATFORM_KEY', 'main'),
     hideDiscoverTab: () => getEnv('NEXT_PUBLIC_HIDE_DISCOVER_TAB', 'false') === 'true',
     additionalLeftHeaderMenuItems: () =>

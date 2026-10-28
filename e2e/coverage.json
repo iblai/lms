@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-10-26",
+  "lastUpdated": "2026-10-28",
   "summary": {
-    "totalCheckpoints": 273,
-    "coveredCheckpoints": 273,
+    "totalCheckpoints": 276,
+    "coveredCheckpoints": 276,
     "percent": 100,
     "totalJourneys": 38
   },
@@ -339,17 +339,17 @@
         },
         {
           "id": "tabs-20",
-          "description": "Learning/Assessment toggle on /agent only renders when getCourseBlockDetails returns a block of type=ibl_mentor_xblock",
+          "description": "The /agent tab offers no Learn/Assess switch (nor its hint popover)",
           "status": "covered"
         },
         {
           "id": "tabs-21",
-          "description": "Toggling Assessment mode on /agent hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it",
+          "description": "A unit whose getCourseBlockDetails includes a block of type=ibl_mentor_xblock opens straight in assessment mode on /agent (edX iframe shown, agent chat hidden) with a \"Switched to assessment mode\" toast",
           "status": "covered"
         },
         {
           "id": "tabs-22",
-          "description": "On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch",
+          "description": "On mobile viewports the vertical 3-dot course-controls popover lists the controls (e.g. Fullscreen) with no Learn/Assess switch",
           "status": "covered"
         },
         {
@@ -1133,7 +1133,10 @@
       "sourceFiles": [
         "components/nav-bar.tsx",
         "components/app-sidebar/index.tsx",
-        "components/header/profile/user-profile-button.tsx"
+        "components/header/profile/user-profile-button.tsx",
+        "components/header/learner-mode-switch.tsx",
+        "hooks/use-learner-mode.ts",
+        "lib/config.ts"
       ],
       "checkpoints": [
         {
@@ -1179,6 +1182,21 @@
         {
           "id": "nav-09",
           "description": "Navbar shows the current course title on a course page (no enrolled-courses dropdown)",
+          "status": "covered"
+        },
+        {
+          "id": "nav-10",
+          "description": "Admin switches the navbar User/Admin toggle; User mode hides staff sidebar entries, Admin mode restores them",
+          "status": "covered"
+        },
+        {
+          "id": "nav-11",
+          "description": "Below xl the User/Admin toggle moves from the navbar into the profile dropdown",
+          "status": "covered"
+        },
+        {
+          "id": "nav-12",
+          "description": "Profile dropdown Help link opens the help center in exactly one new tab",
           "status": "covered"
         }
       ]

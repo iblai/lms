@@ -4,6 +4,9 @@ import '@testing-library/jest-dom';
 import React from 'react';
 
 // Mock next/link
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('next/link', () => ({
   default: ({ href, children, className }: any) => (
     <a href={href} className={className}>
@@ -372,6 +375,7 @@ import { markEdxIframeUnloaded, markEdxUnitLoaded } from '@/hooks/courses/use-ed
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { NAVBAR_COURSE_CONTROLS_ID } from '@/constants/global';
+import { toast } from 'sonner';
 
 describe('CourseContentLayout', () => {
   const defaultParams = Promise.resolve({ course_id: 'course-v1%3Atest%2Bcourse%2B2024' });
@@ -408,6 +412,7 @@ describe('CourseContentLayout', () => {
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mentorState.agentReady = true;
     mockCheckRbacPermission.mockReturnValue(false);
+    mockLearnerMode.isInstructorMode = true;
     courseUserRolesState.current = {
       courseRoles: [],
       isCourseStaff: false,
@@ -861,6 +866,23 @@ describe('CourseContentLayout', () => {
         <div>children</div>
       </CourseContentLayout>,
     );
+    expect(rowLabels()).toEqual(['Agent', 'Course', 'Progress', 'Dates', 'Discussions']);
+    expect(screen.queryByTestId('course-tabs-staff-divider')).not.toBeInTheDocument();
+  });
+
+  it('shows only the learner tabs to an admin previewing the learner view', () => {
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: true },
+    } as any);
+    mockCheckRbacPermission.mockReturnValue(true);
+    mockLearnerMode.isInstructorMode = false;
+
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+
     expect(rowLabels()).toEqual(['Agent', 'Course', 'Progress', 'Dates', 'Discussions']);
     expect(screen.queryByTestId('course-tabs-staff-divider')).not.toBeInTheDocument();
   });
@@ -1626,7 +1648,7 @@ describe('CourseContentLayout', () => {
     });
   });
 
-  describe('learning/assessment mode toggle', () => {
+  describe('assessment mode auto-switch', () => {
     const unit = { id: 'unit-vertical-1', display_name: 'Unit 1' };
     const outlineWithUnit = {
       id: 'course-root',
@@ -1688,59 +1710,84 @@ describe('CourseContentLayout', () => {
       mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blocks });
     };
 
-    it('hides the toggle on a non-agent tab even when the block has a mentor xblock', async () => {
-      const { usePathname } = await import('next/navigation');
-      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
-      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
-
+    // Exposes the mode the layout hands the agent page through the context.
+    const AgentModeProbe = () => {
+      const { agentMode } = React.useContext(EdxIframeContext) as { agentMode?: string };
+      return <div data-testid="agent-mode">{agentMode}</div>;
+    };
+    const renderLayout = () =>
       render(
         <CourseContentLayout params={defaultParams}>
-          <div>children</div>
+          <AgentModeProbe />
         </CourseContentLayout>,
       );
 
-      expect(screen.queryByTestId('agent-mode-switch')).not.toBeInTheDocument();
+    it('switches the agent tab to assessment mode on a unit with an ibl_mentor_xblock', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      renderLayout();
+
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('assessment');
+      expect(toast.success).toHaveBeenCalledWith('Switched to assessment mode');
     });
 
-    it('hides the toggle on the agent tab when no block has type=ibl_mentor_xblock', async () => {
+    it('stays in learning mode, without the toast, on a unit with no ibl_mentor_xblock', async () => {
       await setupAgentTab(blockDetailsWithoutMentor);
 
-      render(
-        <CourseContentLayout params={defaultParams}>
-          <div>children</div>
-        </CourseContentLayout>,
-      );
+      renderLayout();
 
-      expect(screen.queryByTestId('agent-mode-switch')).not.toBeInTheDocument();
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('learning');
+      expect(toast.success).not.toHaveBeenCalledWith('Switched to assessment mode');
     });
 
-    it('shows the toggle on the agent tab when at least one block has type=ibl_mentor_xblock', async () => {
+    it('stays in learning mode on a non-agent tab even when the unit has a mentor xblock', async () => {
       await setupAgentTab(blockDetailsWithMentor);
+      const { usePathname } = await import('next/navigation');
+      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
 
-      render(
-        <CourseContentLayout params={defaultParams}>
-          <div>children</div>
-        </CourseContentLayout>,
-      );
+      renderLayout();
 
-      // Inline (md+) and popover (mobile) variants both render the same Switch.
-      const switches = screen.getAllByTestId('agent-mode-switch');
-      expect(switches.length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Learn').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Assess').length).toBeGreaterThan(0);
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('learning');
+      expect(toast.success).not.toHaveBeenCalledWith('Switched to assessment mode');
     });
 
-    it('renders a vertical 3-dot trigger (mobile) when the toggle is visible', async () => {
+    it('returns to learning mode when the next unit has no mentor xblock', async () => {
       await setupAgentTab(blockDetailsWithMentor);
+      const { rerender } = renderLayout();
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('assessment');
 
-      render(
+      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithoutMentor });
+      rerender(
         <CourseContentLayout params={defaultParams}>
-          <div>children</div>
+          <AgentModeProbe />
         </CourseContentLayout>,
       );
 
-      const moreVerticalIcons = screen.getAllByTestId('more-vertical');
-      expect(moreVerticalIcons.length).toBeGreaterThan(0);
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('learning');
+    });
+
+    it('toasts only when it switches, not while staying in assessment mode', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+      const { rerender } = renderLayout();
+      rerender(
+        <CourseContentLayout params={defaultParams}>
+          <AgentModeProbe />
+        </CourseContentLayout>,
+      );
+
+      expect(
+        vi.mocked(toast.success).mock.calls.filter(([m]) => m === 'Switched to assessment mode'),
+      ).toHaveLength(1);
+    });
+
+    it('no longer offers a Learn/Assess switch', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      renderLayout();
+
+      expect(screen.queryByLabelText('Toggle assessment mode')).not.toBeInTheDocument();
+      expect(screen.queryByText('Learn')).not.toBeInTheDocument();
+      expect(screen.queryByText('Assess')).not.toBeInTheDocument();
     });
 
     it('skips the block-details query when not on the agent tab', async () => {
@@ -1759,198 +1806,6 @@ describe('CourseContentLayout', () => {
           mockUseGetCourseBlockDetailsQuery.mock.calls.length - 1
         ];
       expect(lastCall?.[1]).toEqual(expect.objectContaining({ skip: true }));
-    });
-
-    it('toggles agent mode from learning to assessment when the switch is clicked', async () => {
-      await setupAgentTab(blockDetailsWithMentor);
-
-      render(
-        <CourseContentLayout params={defaultParams}>
-          <div>children</div>
-        </CourseContentLayout>,
-      );
-
-      const switches = screen.getAllByTestId('agent-mode-switch');
-      const initialSwitch = switches[0];
-      expect(initialSwitch).toHaveAttribute('aria-checked', 'false');
-
-      fireEvent.click(initialSwitch);
-
-      // After click, every rendered switch should reflect the new checked state.
-      const updatedSwitches = screen.getAllByTestId('agent-mode-switch');
-      updatedSwitches.forEach((s) => expect(s).toHaveAttribute('aria-checked', 'true'));
-    });
-  });
-
-  describe('one-time agent-mode hint popover', () => {
-    const STORAGE_KEY = 'skills:agent-mode-hint-dismissed';
-
-    const blockDetailsWithMentor = {
-      root: 'unit-vertical-1',
-      blocks: {
-        'unit-vertical-1': { id: 'unit-vertical-1', type: 'vertical', display_name: 'Unit' },
-        'mentor-block': { id: 'mentor-block', type: 'ibl_mentor_xblock', display_name: 'Mentor' },
-      },
-    };
-
-    // Puts the layout on the agent tab with a mentor xblock present, which is
-    // what makes the Learn/Assess switch (and therefore the hint) eligible.
-    const setupAgentTab = async () => {
-      const { usePathname } = await import('next/navigation');
-      vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/agent');
-      vi.mocked(useCourseDetail).mockReturnValue({
-        handleFetchCourseInfo: mockHandleFetchCourseInfo,
-        handleFetchCourseSyllabus: mockHandleFetchCourseSyllabus,
-        handleOpenLesson: mockHandleOpenLesson,
-        handleFetchCourseProgress: mockHandleFetchCourseProgress,
-        handleFetchCourseCompletion: mockHandleFetchCourseCompletion,
-        handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
-        course: { agent_content_mode: true, course_content_mode: true },
-        courseInfoLoadingState: 'successful',
-        courseOutline: null,
-        courseOutlineLoading: false,
-        courseCompletion: null,
-        courseGradingPolicyActive: false,
-      } as any);
-      mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
-    };
-
-    beforeEach(() => {
-      localStorage.clear();
-      // Keep the unrelated "Loaded" toast timer from firing during our waits.
-      mentorState.spinnerHidden = false;
-    });
-
-    it('does not show the hint before the 600ms delay elapses', async () => {
-      // No shouldAdvanceTime here: this test asserts the hint is absent just
-      // under the threshold, so the clock must only move when advanced explicitly.
-      vi.useFakeTimers();
-      try {
-        await setupAgentTab();
-        render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
-
-        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(599);
-        });
-        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('shows the hint 600ms after the Learn/Assess switch appears (first visit)', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        await setupAgentTab();
-        render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
-
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(600);
-        });
-        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('does not show the hint when it was previously dismissed (persisted in localStorage)', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        localStorage.setItem(STORAGE_KEY, 'true');
-        await setupAgentTab();
-        render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
-
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(1000);
-        });
-        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('does not show the hint on a non-agent tab (switch not visible)', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        const { usePathname } = await import('next/navigation');
-        vi.mocked(usePathname).mockReturnValue('/course-content/course-v1:test+course+2024/course');
-        mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blockDetailsWithMentor });
-
-        render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
-
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(1000);
-        });
-        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('persists dismissal to localStorage and hides the hint when "Got it" is clicked', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        await setupAgentTab();
-        render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
-
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(600);
-        });
-        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
-
-        expect(localStorage.getItem(STORAGE_KEY)).toBe('true');
-        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
-    });
-
-    it('persists dismissal and hides the hint when the X button is clicked', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      try {
-        await setupAgentTab();
-        render(
-          <CourseContentLayout params={defaultParams}>
-            <div>children</div>
-          </CourseContentLayout>,
-        );
-
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(600);
-        });
-        expect(screen.getByText('Two ways to learn')).toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
-
-        expect(localStorage.getItem(STORAGE_KEY)).toBe('true');
-        expect(screen.queryByText('Two ways to learn')).not.toBeInTheDocument();
-      } finally {
-        vi.useRealTimers();
-      }
     });
   });
 

@@ -12,6 +12,7 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { getUserName } from '@/utils/helpers';
@@ -75,8 +76,9 @@ export function ProductTour() {
   const [session, setSession] = useState<TourSession>('idle');
   const [steps, setSteps] = useState<TourStep[]>([]);
 
-  const isAdmin = departmentMemberCheck?.is_platform_admin === true;
-  const isWatcher = checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
+  const { isInstructorMode } = useLearnerMode();
+  const isAdmin = departmentMemberCheck?.is_platform_admin === true && isInstructorMode;
+  const isWatcher = isInstructorMode && checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE);
   const discoverEnabled = isDiscoverEnabled({
     hideDiscoverTab: config.settings.hideDiscoverTab(),
     enableDiscoverPage: metadata?.enable_discover_page,

@@ -7,6 +7,9 @@ const mockPush = vi.fn();
 let mockPathname = '/platform/test-tenant/home';
 let mockSearch = '';
 
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({ push: mockPush })),
   usePathname: vi.fn(() => mockPathname),
@@ -251,6 +254,7 @@ describe('AppSidebar', () => {
     mockPathname = '/platform/test-tenant/home';
     mockSearch = '';
     mockRbacPermissions = [];
+    mockLearnerMode.isInstructorMode = true;
     mockGetVisibleAnalyticsTabs.mockReturnValue(ALL_TABS);
     vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(isDiscoverEnabled).mockReturnValue(true);
@@ -552,6 +556,29 @@ describe('AppSidebar', () => {
       expect(screen.getByTestId('library-dialog')).toBeInTheDocument();
       fireEvent.click(screen.getByText('Dismiss dialog'));
       expect(screen.queryByTestId('library-dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('learner mode (admin previewing the learner view)', () => {
+    beforeEach(() => {
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true, is_department_admin: true },
+      } as any);
+      mockRbacPermissions = ['/platforms/test-tenant/#can_view_analytics', '/watchedgroups/#list'];
+      mockLearnerMode.isInstructorMode = false;
+    });
+
+    it('hides Studio and Analytics', () => {
+      render(<AppSidebar />);
+      expect(screen.queryByTestId('section-studio')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('menu-analytics')).not.toBeInTheDocument();
+    });
+
+    it('keeps the real admin flag but drops the live-admin signal for the footer', () => {
+      render(<AppSidebar />);
+      const footer = screen.getByTestId('sidebar-footer');
+      expect(footer).toHaveAttribute('data-is-admin', 'true');
+      expect(footer).toHaveAttribute('data-is-live-admin', 'false');
     });
   });
 

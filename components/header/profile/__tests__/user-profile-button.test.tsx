@@ -4,6 +4,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { UserProfileButton } from '../user-profile-button';
 
 // Hoisted mock functions
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 const {
   mockSaveCurrentTenant,
   mockSaveUserTenants,
@@ -24,7 +27,9 @@ const {
 let mockEnableGravatarOnProfilePic = 'true';
 let mockDefaultSupportPhoneNumber = '(571) 293-0242';
 let mockEnableSupportPhone = false;
-let mockTenantMetadata: { support_phone_number?: string } | undefined = undefined;
+let mockTenantMetadata: { support_phone_number?: string; support_url?: string } | undefined =
+  undefined;
+let mockMetadataLoaded = true;
 
 // The route the button is rendered under. `useTenantParam` reads it, so this is
 // what decides which tenant the dropdown — and its onboarding links — point at.
@@ -62,6 +67,13 @@ vi.mock('@/utils/localstorage', () => ({
   useIsAdmin: () => mockIsAdmin,
 }));
 
+let mockIsPlatformAdmin = true;
+vi.mock('@/services/core', () => ({
+  useGetDepartmentMemberCheckQuery: () => ({
+    data: { is_platform_admin: mockIsPlatformAdmin },
+  }),
+}));
+
 // Mock config
 vi.mock('@/lib/config', () => ({
   config: {
@@ -73,6 +85,7 @@ vi.mock('@/lib/config', () => ({
       mainPlatformKey: () => 'main',
       defaultSupportPhoneNumber: () => mockDefaultSupportPhoneNumber,
       enableSupportPhone: () => mockEnableSupportPhone,
+      helpCenterUrl: () => 'https://ibl.ai/support',
     },
     urls: {
       auth: () => 'https://auth.example.com',
@@ -103,7 +116,7 @@ vi.mock('@/features/rbac', () => ({
 // Mock web-utils
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   Tenant: {},
-  useTenantMetadata: () => ({ metadata: mockTenantMetadata }),
+  useTenantMetadata: () => ({ metadata: mockTenantMetadata, metadataLoaded: mockMetadataLoaded }),
 }));
 
 // Mock UserProfileDropdown
@@ -117,7 +130,13 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <span data-testid="show-tenant-switcher">{String(props.showTenantSwitcher)}</span>
       <span data-testid="show-account-tab">{String(props.showAccountTab)}</span>
       <span data-testid="show-help-link">{String(props.showHelpLink)}</span>
+      <span data-testid="help-center-url">{props.helpCenterUrl}</span>
+      <span data-testid="metadata">{JSON.stringify(props.metadata)}</span>
+      <span data-testid="metadata-loaded">{String(props.metadataLoaded)}</span>
       <span data-testid="show-learner-mode-switch">{String(props.showLearnerModeSwitch)}</span>
+      <span data-testid="has-learner-mode-switch-component">
+        {String(!!props.LearnerModeSwitchComponent)}
+      </span>
       <span data-testid="show-gradebook-tab">{String(props.showGradebookTab)}</span>
       <span data-testid="current-spa">{props.currentSPA}</span>
       <span data-testid="enable-gravatar-on-profile-pic">
@@ -161,10 +180,13 @@ describe('UserProfileButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAdmin = true; // Reset to admin by default
+    mockIsPlatformAdmin = true;
+    mockLearnerMode.isInstructorMode = true;
     mockEnableGravatarOnProfilePic = 'true'; // Reset to gravatar enabled by default
     mockDefaultSupportPhoneNumber = '(571) 293-0242'; // Reset to config default
     mockEnableSupportPhone = false; // Reset to support phone disabled by default
     mockTenantMetadata = undefined; // Reset to no tenant metadata
+    mockMetadataLoaded = true;
     mockUserTenants = defaultUserTenants; // Reset to default tenant list
     mockRouteParams = { tenant: 'test-tenant' }; // Reset to the tenant in the URL
   });
@@ -200,22 +222,55 @@ describe('UserProfileButton', () => {
       expect(screen.getByTestId('show-account-tab')).toHaveTextContent('false');
     });
 
-    it('should not show help link', () => {
+    it('shows the help link with the configured help center as the fallback URL', () => {
       render(<UserProfileButton />);
 
-      expect(screen.getByTestId('show-help-link')).toHaveTextContent('false');
+      expect(screen.getByTestId('show-help-link')).toHaveTextContent('true');
+      expect(screen.getByTestId('help-center-url')).toHaveTextContent('https://ibl.ai/support');
     });
 
-    it('should not show learner mode switch', () => {
+    it('passes tenant metadata through so a tenant support_url and show_help apply', () => {
+      mockTenantMetadata = { support_url: 'help.acme.edu' };
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('metadata')).toHaveTextContent(
+        JSON.stringify({ support_url: 'help.acme.edu' }),
+      );
+      expect(screen.getByTestId('metadata-loaded')).toHaveTextContent('true');
+    });
+
+    it('reports metadata as not loaded until the tenant metadata resolves', () => {
+      mockMetadataLoaded = false;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('metadata-loaded')).toHaveTextContent('false');
+    });
+
+    it('shows the learner mode switch to platform admins, with the switch component', () => {
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-learner-mode-switch')).toHaveTextContent('true');
+      expect(screen.getByTestId('has-learner-mode-switch-component')).toHaveTextContent('true');
+    });
+
+    it('hides the learner mode switch from non-admins', () => {
+      mockIsPlatformAdmin = false;
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('show-learner-mode-switch')).toHaveTextContent('false');
     });
 
-    it('should set userIsStudent to false', () => {
+    it('sets userIsStudent to false in admin mode', () => {
       render(<UserProfileButton />);
 
       expect(screen.getByTestId('user-is-student')).toHaveTextContent('false');
+    });
+
+    it('sets userIsStudent to true while an admin previews the learner view', () => {
+      mockLearnerMode.isInstructorMode = false;
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('user-is-student')).toHaveTextContent('true');
     });
 
     it('should show the gradebook tab', () => {

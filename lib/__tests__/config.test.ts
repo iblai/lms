@@ -356,6 +356,20 @@ describe('config module', () => {
       expect(config.settings.supportEmail()).toBe('help@example.com');
     });
 
+    it('returns helpCenterUrl with default when undefined', async () => {
+      delete processEnv.NEXT_PUBLIC_HELP_CENTER_URL;
+
+      const { config } = await import('../config');
+      expect(config.settings.helpCenterUrl()).toBe('https://ibl.ai/support');
+    });
+
+    it('returns helpCenterUrl when configured', async () => {
+      processEnv.NEXT_PUBLIC_HELP_CENTER_URL = 'https://help.example.com';
+
+      const { config } = await import('../config');
+      expect(config.settings.helpCenterUrl()).toBe('https://help.example.com');
+    });
+
     it('returns mainPlatformKey with default when undefined', async () => {
       delete processEnv.NEXT_PUBLIC_MAIN_PLATFORM_KEY;
 

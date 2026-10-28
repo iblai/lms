@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('@/hooks/use-tenant-param', () => ({
   useTenantParam: vi.fn(() => 'test-tenant'),
 }));
@@ -54,6 +57,7 @@ import { config } from '@/lib/config';
 describe('NotificationsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLearnerMode.isInstructorMode = true;
     vi.mocked(useTenantParam).mockReturnValue('test-tenant');
     vi.mocked(useAppSelector).mockReturnValue({ canView: true });
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
@@ -112,14 +116,19 @@ describe('NotificationsPage', () => {
       data: undefined,
     } as any);
     render(<NotificationsPage />);
-    // isAdmin should be undefined -> rendered as "undefined"
-    expect(screen.getByTestId('is-admin')).toHaveTextContent('undefined');
+    expect(screen.getByTestId('is-admin')).toHaveTextContent('false');
   });
 
   it('passes isAdmin false when not a platform admin', () => {
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false },
     } as any);
+    render(<NotificationsPage />);
+    expect(screen.getByTestId('is-admin')).toHaveTextContent('false');
+  });
+
+  it('passes isAdmin false while an admin previews the learner view', () => {
+    mockLearnerMode.isInstructorMode = false;
     render(<NotificationsPage />);
     expect(screen.getByTestId('is-admin')).toHaveTextContent('false');
   });

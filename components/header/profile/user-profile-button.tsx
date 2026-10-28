@@ -14,6 +14,9 @@ import { useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstora
 import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import { selectRbacPermissions, updateRbacPermissions } from '@/features/rbac';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
+import { LearnerModeSwitch } from '@/components/header/learner-mode-switch';
 
 export const UserProfileButton = () => {
   const username = getUserName();
@@ -21,8 +24,14 @@ export const UserProfileButton = () => {
   const tenantKey = useTenantParam();
   const { currentTenant, saveCurrentTenant } = useCurrentTenant();
   const { userTenants = [], saveUserTenants } = useUserTenants();
-  const { metadata } = useTenantMetadata({ org: tenantKey });
+  const { metadata, metadataLoaded } = useTenantMetadata({ org: tenantKey });
   const isAdmin = useIsAdmin();
+  // Same admin signal as the navbar's inline switch, so the two never disagree.
+  const { data: departmentMemberCheck } = useGetDepartmentMemberCheckQuery({
+    platform_key: tenantKey,
+  });
+  const isPlatformAdmin = departmentMemberCheck?.is_platform_admin === true;
+  const { isInstructorMode } = useLearnerMode();
   const rbackPermissions = useAppSelector(selectRbacPermissions);
   const dispatch = useAppDispatch();
   const onboardingBasePath = window.location.origin + `/platform/${tenantKey}`;
@@ -56,7 +65,7 @@ export const UserProfileButton = () => {
       // User data
       username={username || undefined}
       userIsAdmin={isAdmin}
-      userIsStudent={false}
+      userIsStudent={!isInstructorMode}
       email={email}
       mainPlatformKey={config.settings.mainPlatformKey()}
       // Tenant data
@@ -70,23 +79,23 @@ export const UserProfileButton = () => {
       showTenantSwitcher={
         isAdmin || userTenants.some((t) => t.key !== 'main' && t.key !== tenantKey)
       }
-      showHelpLink={false} // Skills app doesn't have help link in dropdown
+      showHelpLink={true}
       showLogoutButton={true}
-      showLearnerModeSwitch={false} // Skills app doesn't have learner mode switch
+      showLearnerModeSwitch={isPlatformAdmin}
       currentSPA={config.settings.appName() || 'skills'}
       showGradebookTab={true}
       // Customization
-      helpCenterUrl=""
+      helpCenterUrl={config.settings.helpCenterUrl()}
       enableGravatarOnProfilePic={config.settings.enableGravatarOnProfilePic() !== 'false'}
       // Callbacks
       onLogout={handleLogout}
       onTenantChange={handleTenantChange}
       onHelpClick={handleHelpClick}
       // Custom components
-      LearnerModeSwitchComponent={undefined}
+      LearnerModeSwitchComponent={LearnerModeSwitch}
       // Additional data
-      metadata={undefined}
-      metadataLoaded={false}
+      metadata={metadata}
+      metadataLoaded={metadataLoaded}
       // Customization
       showMentorAIDisplayCheckbox={true}
       showLeaderboardDisplayCheckbox={true}
