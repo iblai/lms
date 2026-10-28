@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.98.0](https://github.com/iblai/lms/compare/skills-v0.97.2...skills-v0.98.0) (2026-10-28)
+
+### Features
+
+* sidebar agent embed should always have the close button visible ([d55b183](https://github.com/iblai/lms/commit/d55b183001b412115b022b02190dc6d9607044e2))
+
 ## [0.97.2](https://github.com/iblai/lms/compare/skills-v0.97.1...skills-v0.97.2) (2026-10-26)
 
 ### CI
