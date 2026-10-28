@@ -379,6 +379,31 @@ describe('ChatButton', () => {
       expect(container.querySelector('agent-ai')).toBeInTheDocument();
     });
   });
+
+  it.each([
+    ['desktop', false],
+    ['mobile', true],
+  ])('enables the agent close button on %s', async (_, isMobile) => {
+    await setLoadedQuery();
+    const contextValue = { ...defaultContextValue, courseMentor: 'course-mentor-id' };
+    const { container } = renderWithContext(
+      <ChatButton isMobile={isMobile} />,
+      contextValue as any,
+    );
+
+    const openBtn = await waitFor(() => {
+      const btn = isMobile
+        ? container.querySelector('button')
+        : screen.getByLabelText('Open chat assistant');
+      expect(btn).toBeInTheDocument();
+      return btn as HTMLButtonElement;
+    });
+    fireEvent.click(openBtn);
+
+    await waitFor(() => {
+      expect(container.querySelector('agent-ai')).toHaveAttribute('showclosebutton');
+    });
+  });
 });
 
 describe('ChatButton - mentor resolution logic', () => {

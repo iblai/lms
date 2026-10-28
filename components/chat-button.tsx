@@ -123,6 +123,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
                 contextOrigins: `${config.urls.lms()}`,
                 authRelyOnHost: true,
                 isContextAware: true,
+                showCloseButton: true,
                 theme: 'light',
                 style: {
                   height: '100%',
@@ -171,6 +172,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
 
       {alreadyOpened && mentorInUse && (
         <div
+          data-testid="chat-panel"
           className={`z-20 mr-4 flex h-[calc(100vh-120px)] w-[360px] flex-col overflow-hidden rounded-sm bg-white shadow-[0_0_10px_rgba(0,0,0,0.1)] ${
             isOpen ? 'flex' : 'hidden'
           }`}
@@ -191,6 +193,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
               contextOrigins: `${config.urls.lms()}`,
               authRelyOnHost: true,
               isContextAware: true,
+              showCloseButton: true,
               theme: 'light',
               style: {
                 height: '100%',
