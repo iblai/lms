@@ -62,6 +62,7 @@ import {
 } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { canMonetize, useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 
 interface ProgramSettingsForm {
   subject: string;
@@ -228,6 +229,7 @@ export default function ProgramDetailPage() {
   const tenant = useTenantParam();
   const dispatch = useDispatch();
   const isAdmin = useIsAdmin();
+  const { isInstructorMode } = useLearnerMode();
   const { currentTenant } = useCurrentTenant();
   const { userTenants } = useUserTenants();
   const userIsLoggedIn = isLoggedIn();
@@ -285,7 +287,7 @@ export default function ProgramDetailPage() {
   });
 
   const programOrg = (program as any)?.org || (program as any)?.platform_key || tenant;
-  const showTabs = !!program && program?.platform_key === tenant && isAdmin;
+  const showTabs = !!program && program?.platform_key === tenant && isAdmin && isInstructorMode;
 
   const {
     data: programMetadata,

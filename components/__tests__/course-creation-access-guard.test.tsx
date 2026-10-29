@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('@/hooks/use-tenant-param', () => ({
   useTenantParam: vi.fn(() => 'test-tenant'),
 }));
@@ -31,6 +34,7 @@ describe('useCanCreateCourse', () => {
     vi.clearAllMocks();
     mockUseCurrentTenant.mockReturnValue({ currentTenant: { is_admin: false } });
     mockCheckRbacPermission.mockReturnValue(false);
+    mockLearnerMode.isInstructorMode = true;
   });
 
   it('allows course creation for tenant admins', () => {
@@ -64,6 +68,16 @@ describe('useCanCreateCourse', () => {
 
     expect(result.current.canCreateCourse).toBe(false);
     expect(result.current.resolved).toBe(true);
+  });
+
+  it('denies course creation to an admin previewing the learner view', () => {
+    mockUseCurrentTenant.mockReturnValue({ currentTenant: { is_admin: true } });
+    mockCheckRbacPermission.mockReturnValue(true);
+    mockLearnerMode.isInstructorMode = false;
+
+    const { result } = renderHook(() => useCanCreateCourse());
+
+    expect(result.current.canCreateCourse).toBe(false);
   });
 
   it('reports unresolved while the stored tenant is still null', () => {

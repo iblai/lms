@@ -8,6 +8,9 @@ const mockReplace = vi.fn();
 let mockPathname = '/platform/test-tenant/home';
 let mockSearchParams = new URLSearchParams();
 
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('next/navigation', () => ({
   useParams: () => ({ tenant: 'test-tenant' }),
   useRouter: vi.fn(() => ({ push: mockPush, replace: mockReplace })),
@@ -143,6 +146,7 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
           data-testid="notification-dropdown"
           data-org={notifications.org}
           data-user={notifications.userId}
+          data-is-admin={String(notifications.isAdmin)}
         />
       )}
       {visibleToLoggedInUsersOnly && profile}
@@ -192,6 +196,7 @@ describe('NavBar', () => {
     mockSearchParams = new URLSearchParams();
     mockIsAdmin.current = false;
     mockIsTabletUp.current = true;
+    mockLearnerMode.isInstructorMode = true;
     const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
     vi.mocked(isLoggedIn).mockReturnValue(true);
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
@@ -317,6 +322,67 @@ describe('NavBar', () => {
       ] as any);
       render(<NavBar />);
       expect(screen.getAllByText('Docs').length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('learner mode switch', () => {
+    const setPlatformAdmin = (isPlatformAdmin: boolean) =>
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: isPlatformAdmin, is_department_admin: false },
+      } as any);
+
+    it('is offered to platform admins in the mode-switcher slot, labelled on both sides', () => {
+      setPlatformAdmin(true);
+      render(<NavBar />);
+      const toggle = screen.getByTestId('learner-mode-toggle');
+      expect(screen.getByTestId('mode-switcher-slot')).toContainElement(toggle);
+      expect(screen.getByText('User')).toBeInTheDocument();
+      expect(screen.getByText('Admin')).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Admin mode enabled' })).toBeChecked();
+    });
+
+    it('is hidden from non-admins', () => {
+      render(<NavBar />);
+      expect(screen.queryByTestId('learner-mode-toggle')).not.toBeInTheDocument();
+    });
+
+    it('is hidden when logged out', async () => {
+      setPlatformAdmin(true);
+      const { isLoggedIn } = await import('@iblai/iblai-js/web-utils');
+      vi.mocked(isLoggedIn).mockReturnValue(false);
+      render(<NavBar />);
+      expect(screen.queryByTestId('learner-mode-toggle')).not.toBeInTheDocument();
+    });
+
+    it('toggles the mode when clicked', () => {
+      setPlatformAdmin(true);
+      render(<NavBar />);
+      fireEvent.click(screen.getByRole('switch'));
+      expect(mockLearnerMode.toggleLearnerMode).toHaveBeenCalled();
+    });
+
+    it('sits after the tenant-configured right links, next to the bell', () => {
+      setPlatformAdmin(true);
+      vi.mocked(parseMarkdownLinks).mockReturnValue([
+        { label: 'Docs', link: 'https://docs.example.com' },
+      ] as any);
+      render(<NavBar />);
+      const slot = screen.getByTestId('mode-switcher-slot');
+      expect(slot.lastElementChild).toBe(screen.getByTestId('learner-mode-toggle'));
+    });
+
+    it('treats an admin previewing the learner view as a non-admin for notifications', () => {
+      setPlatformAdmin(true);
+      mockLearnerMode.isInstructorMode = false;
+      render(<NavBar />);
+      expect(screen.getByRole('switch', { name: 'Admin mode disabled' })).not.toBeChecked();
+      expect(screen.getByTestId('notification-dropdown')).toHaveAttribute('data-is-admin', 'false');
+    });
+
+    it('passes admin to notifications in admin mode', () => {
+      setPlatformAdmin(true);
+      render(<NavBar />);
+      expect(screen.getByTestId('notification-dropdown')).toHaveAttribute('data-is-admin', 'true');
     });
   });
 

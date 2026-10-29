@@ -3,6 +3,9 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 const state = vi.hoisted(() => ({
   pathname: '/platform/test-tenant/home',
   search: '',
@@ -167,6 +170,7 @@ describe('isTourExcludedPath', () => {
 describe('ProductTour', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    mockLearnerMode.isInstructorMode = true;
     state.pathname = '/platform/test-tenant/home';
     state.search = '';
     state.isMobile = false;
@@ -219,6 +223,19 @@ describe('ProductTour', () => {
       viewer: { isAdmin: true, isWatcher: true },
       discoverEnabled: false,
     });
+  });
+
+  it('gives an admin previewing the learner view the learner tour', async () => {
+    state.role = { data: { is_platform_admin: true }, isLoading: false };
+    state.rbac = ['/watchedgroups/#list'];
+    mockLearnerMode.isInstructorMode = false;
+
+    render(<ProductTour />);
+    await startTour();
+
+    expect(steps.build).toHaveBeenCalledWith(
+      expect.objectContaining({ viewer: { isAdmin: false, isWatcher: false } }),
+    );
   });
 
   it('retries until the targets are mounted', async () => {

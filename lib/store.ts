@@ -28,6 +28,7 @@ import { EdxSSOSlice } from '@/services/edx-sso';
 import { CoreSlice } from '@/services/core';
 import { rbacSlice } from '@/features/rbac';
 import { tenantSlice } from '@/features/tenant';
+import { learnerModeSlice } from '@/features/learner-mode';
 import { mentorSlice } from '@/features/mentor';
 import { StudioSlice } from '@/services/studio';
 import { CourseHomeSlice } from '@/services/course-home';
@@ -84,6 +85,7 @@ export const store = configureStore({
     [CoreSlice.reducerPath]: CoreSlice.reducer,
     [rbacSlice.reducerPath]: rbacSlice.reducer,
     [tenantSlice.reducerPath]: tenantSlice.reducer,
+    [learnerModeSlice.reducerPath]: learnerModeSlice.reducer,
     mentor: mentorSlice.reducer,
     [StudioSlice.reducerPath]: StudioSlice.reducer,
     [CourseHomeSlice.reducerPath]: CourseHomeSlice.reducer,

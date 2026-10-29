@@ -333,6 +333,7 @@ All app config is `NEXT_PUBLIC_*` (exposed to the browser). Defaults below match
 | `NEXT_PUBLIC_MENTOR_URL`                              | No       | `https://mentorai.iblai.app`   | AI mentor service URL                                                 |
 | `NEXT_PUBLIC_PLATFORM_BASE_DOMAIN`                    | No       |                                | Tenant subdomain root                                                 |
 | `NEXT_PUBLIC_SUPPORT_EMAIL`                           | No       | `support@ibl.ai`               | Support contact email                                                 |
+| `NEXT_PUBLIC_HELP_CENTER_URL`                         | No       | `https://ibl.ai/support`       | Default Help link in the profile dropdown                             |
 | `NEXT_PUBLIC_COPYRIGHT`                               | No       |                                | Footer copyright string                                               |
 | `NEXT_PUBLIC_HIDE_RECOMMENDED_TAB`                    | No       | `false`                        | Hide the recommendations page                                         |
 | `NEXT_PUBLIC_COURSE_ELIGIBILITY_ENABLED`              | No       | `false`                        | Enable enrollment prerequisite checks                                 |

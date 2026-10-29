@@ -5,6 +5,7 @@ import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { useCurrentTenant } from '@/utils/localstorage';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 
 /**
  * Whether the current user may create courses: tenant admin, further narrowed
@@ -15,6 +16,7 @@ export function useCanCreateCourse() {
   const tenant = useTenantParam();
   const { currentTenant } = useCurrentTenant();
   const rbacPermissions = useAppSelector(selectRbacPermissions);
+  const { isInstructorMode } = useLearnerMode();
 
   const isAdmin = !!currentTenant?.is_admin;
   const hasRbacPermission = checkRbacPermission(
@@ -23,7 +25,7 @@ export function useCanCreateCourse() {
   );
 
   return {
-    canCreateCourse: isAdmin || hasRbacPermission,
+    canCreateCourse: isInstructorMode && (isAdmin || hasRbacPermission),
     // localStorage-backed state resolves after mount; null means "still unknown".
     resolved: currentTenant !== null,
   };

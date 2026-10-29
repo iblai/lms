@@ -3,6 +3,9 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock rbac feature
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('@/features/rbac', () => ({
   selectRbacPermissions: vi.fn(() => ['perm-1', 'perm-2']),
 }));
@@ -56,6 +59,7 @@ import { useParams } from 'next/navigation';
 describe('NotificationsPage ([notificationId])', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLearnerMode.isInstructorMode = true;
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: true },
     } as any);
@@ -102,7 +106,13 @@ describe('NotificationsPage ([notificationId])', () => {
       data: undefined,
     } as any);
     render(<NotificationsPage />);
-    expect(screen.getByTestId('is-admin')).toHaveTextContent('undefined');
+    expect(screen.getByTestId('is-admin')).toHaveTextContent('false');
+  });
+
+  it('passes isAdmin false while an admin previews the learner view', () => {
+    mockLearnerMode.isInstructorMode = false;
+    render(<NotificationsPage />);
+    expect(screen.getByTestId('is-admin')).toHaveTextContent('false');
   });
 
   it('calls the department member check query with the tenant platform_key', () => {

@@ -56,6 +56,7 @@ import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 import { getUserEmail, getUserName } from '@/utils/helpers';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
 import { ProfileCredentialsContent } from '@/components/profile/profile-credentials-content';
 import { ProfileSkillsContent } from '@/components/profile/profile-skills-content';
@@ -233,6 +234,10 @@ export function AppSidebar() {
   }, [pathname]);
 
   const isPlatformAdmin = !!departmentMemberCheck?.is_platform_admin;
+  // An admin previewing the learner view (navbar User/Admin switch) loses
+  // every staff entry point, as a plain learner would.
+  const { isInstructorMode } = useLearnerMode();
+  const isLiveAdmin = isPlatformAdmin && isInstructorMode;
 
   // Discover follows the same gate as the nav-bar: the config flag
   // supersedes the tenant's `enable_discover_page` metadata.
@@ -244,6 +249,7 @@ export function AppSidebar() {
   // Studio mirrors the nav-bar implementation: config-flag gated,
   // admin-only, external link to the Studio host.
   const studioAllowed =
+    isInstructorMode &&
     config.settings.studioHeaderMenuEnabled() &&
     (departmentMemberCheck?.is_platform_admin || departmentMemberCheck?.is_department_admin);
 
@@ -296,6 +302,7 @@ export function AppSidebar() {
   // Analytics is visible to users with the RBAC permission OR watchers
   // (same rule main applied to the old navbar's AI Analytics link).
   const analyticsAllowed =
+    isInstructorMode &&
     config.settings.aiAnalyticsHeaderMenuEnabled() &&
     (checkRbacPermission(rbacPermissions, `/platforms/${tenant}/#can_view_analytics`) ||
       checkRbacPermission(rbacPermissions, WATCHER_RBAC_RESOURCE));
@@ -441,12 +448,10 @@ export function AppSidebar() {
         openSectionId={openSection}
         onOpenSectionChange={(id) => setOpenSection(id as SidebarOpenSection | null)}
         footer={{
-          // SkillsAI has no User/Admin toggle, so the live-admin signal is
-          // just the platform-admin flag. Notifications are shown to every
-          // logged-in user (as before); the admin cluster is narrowed by
-          // the SDK's per-item RBAC checks.
+          // Notifications are shown to every logged-in user (as before); the
+          // admin cluster is narrowed by the SDK's per-item RBAC checks.
           isAdmin: isPlatformAdmin,
-          isLiveAdmin: isPlatformAdmin,
+          isLiveAdmin,
           enableRbac: config.settings.enableRBAC(),
           rbacPermissions,
           tenantKey: tenant,

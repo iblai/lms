@@ -191,4 +191,100 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     }
     await expect(navbar.getByRole('button', { name: 'Switch course' })).toHaveCount(0);
   });
+
+  test('CP-10: Admin can switch the navbar between Admin and User modes', async ({ page }) => {
+    const navbar = page.getByRole('banner');
+    const modeSwitch = navbar.getByTestId('learner-mode-switch');
+
+    // Admin-only — skip for accounts that are not platform admins.
+    if (!(await modeSwitch.isVisible({ timeout: 30_000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+
+    // Starts in admin mode, sitting just left of the notification bell.
+    await expect(modeSwitch).toBeChecked();
+    await expect(navbar.getByText('User', { exact: true })).toBeVisible();
+    await expect(navbar.getByText('Admin', { exact: true })).toBeVisible();
+
+    const sidebar = page.getByRole('complementary').first();
+    const expandButton = sidebar.getByRole('button', { name: /expand sidebar/i });
+    if (await expandButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await expandButton.click();
+    }
+    const analyticsSection = sidebar.getByRole('button', { name: 'Analytics' });
+    const hadAnalytics = await analyticsSection
+      .waitFor({ state: 'visible', timeout: 10_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    // User mode mimics a plain learner: staff entry points leave the sidebar.
+    await modeSwitch.click();
+    await expect(modeSwitch).not.toBeChecked();
+    if (hadAnalytics) {
+      await expect(analyticsSection).toHaveCount(0);
+    }
+
+    // And back to admin mode restores them.
+    await modeSwitch.click();
+    await expect(modeSwitch).toBeChecked();
+    if (hadAnalytics) {
+      await expect(analyticsSection).toBeVisible({ timeout: 10_000 });
+    }
+  });
+
+  test('CP-11: Below xl the mode switch moves into the profile dropdown', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    const navbar = page.getByRole('banner');
+    const profileButton = navbar.getByRole('button', { name: 'More options' });
+    await expect(profileButton).toBeVisible({ timeout: 15_000 });
+
+    // The inline switch is hidden at this width.
+    await expect(navbar.getByTestId('learner-mode-toggle')).toBeHidden();
+
+    await profileButton.click();
+    await expect(page.getByRole('menu')).toBeVisible({ timeout: 10_000 });
+    const menuSwitch = page.getByRole('menu').getByTestId('learner-mode-switch');
+
+    // Admin-only — skip for accounts that are not platform admins.
+    if (!(await menuSwitch.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+
+    await expect(menuSwitch).toBeChecked();
+    await menuSwitch.click();
+    await expect(menuSwitch).not.toBeChecked();
+    await menuSwitch.click();
+    await expect(menuSwitch).toBeChecked();
+  });
+
+  test('CP-12: Profile dropdown Help link opens the help center in one new tab', async ({
+    page,
+  }) => {
+    const profileButton = page.getByRole('banner').getByRole('button', { name: 'More options' });
+    await expect(profileButton).toBeVisible({ timeout: 15_000 });
+    await profileButton.click();
+    await expect(page.getByRole('menu')).toBeVisible({ timeout: 10_000 });
+
+    const helpLink = page.getByRole('menu').getByRole('link', { name: /help/i });
+    // A tenant can turn the help center off (show_help: false).
+    if (!(await helpLink.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+
+    await expect(helpLink).toHaveAttribute('href', /^https?:\/\//);
+    await expect(helpLink).toHaveAttribute('target', '_blank');
+
+    const context = page.context();
+    const pagesBefore = context.pages().length;
+    const [helpPage] = await Promise.all([context.waitForEvent('page'), helpLink.click()]);
+    // The SDK anchor and onHelpClick used to both open the URL; wait long
+    // enough for a second tab to show up if that regresses.
+    await page.waitForTimeout(1_000);
+    expect(context.pages().length).toBe(pagesBefore + 1);
+    await helpPage.close();
+  });
 });

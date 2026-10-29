@@ -5,6 +5,7 @@ import { useAppSelector } from '@/lib/hooks';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 import { NotificationDisplay } from '@iblai/iblai-js/web-containers';
 
 export default function NotificationsPage() {
@@ -14,13 +15,14 @@ export default function NotificationsPage() {
   });
 
   const rbacPermissions = useAppSelector(selectRbacPermissions);
+  const { isInstructorMode } = useLearnerMode();
 
   return (
     <div className="h-full">
       <NotificationDisplay
         org={tenant}
         userId={getUserName()}
-        isAdmin={departmentMemberCheck?.is_platform_admin}
+        isAdmin={departmentMemberCheck?.is_platform_admin === true && isInstructorMode}
         enableRbac={config.settings.enableRBAC()}
         rbacPermissions={rbacPermissions}
       />

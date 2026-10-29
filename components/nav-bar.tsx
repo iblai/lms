@@ -32,6 +32,8 @@ import {
 // import { resolveOnboardingFlow } from '@/lib/onboarding-flow';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
+import { LearnerModeSwitch } from '@/components/header/learner-mode-switch';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 // import { useIsAdmin } from '@/utils/localstorage';
 
 /** Shared navbar page-title rendering (course / program / catalog). */
@@ -177,6 +179,8 @@ export function NavBar() {
   // const searchParams = useSearchParams();
   // const isAdmin = useIsAdmin();
   const { toggleSidebar } = useSidebar();
+  const isPlatformAdmin = departmentMemberCheck?.is_platform_admin === true;
+  const { isInstructorMode } = useLearnerMode();
 
   const { metadata } = useTenantMetadata({ org: tenant });
   // The search bar is gated like the old navbar's: by the config flag and
@@ -304,7 +308,7 @@ export function NavBar() {
       )}
 
       {/* Slot the course-content layout portals its course controls into
-          (autoplay, media dropdown, fullscreen, Learn/Assess). Empty — and
+          (new chat, autoplay, media dropdown, fullscreen). Empty — and
           therefore zero-width — on every other page. */}
       <div id={NAVBAR_COURSE_CONTROLS_ID} className="mr-3 ml-auto flex shrink-0 items-center" />
     </div>
@@ -354,6 +358,29 @@ export function NavBar() {
   //     </div>
   //   ) : null;
 
+  // Mirrors the OS SPA: inline from xl up (the shell hides the slot below
+  // that), where the profile dropdown carries the same switch instead.
+  const learnerModeSwitch =
+    isUserLoggedIn && isPlatformAdmin ? (
+      <div className="flex items-center gap-2" data-testid="learner-mode-toggle">
+        <span
+          className={`text-sm whitespace-nowrap text-[var(--navbar-text)] ${
+            isInstructorMode ? 'opacity-60' : 'font-semibold'
+          }`}
+        >
+          User
+        </span>
+        <LearnerModeSwitch />
+        <span
+          className={`text-sm whitespace-nowrap text-[var(--navbar-text)] ${
+            isInstructorMode ? 'font-semibold' : 'opacity-60'
+          }`}
+        >
+          Admin
+        </span>
+      </div>
+    ) : null;
+
   const rightLinks =
     additionalRightHeaderMenuItems.length > 0 ? (
       <>
@@ -374,10 +401,11 @@ export function NavBar() {
   // The shell's `modeSwitcher` slot sits just left of the invariant right
   // cluster (search, bell, profile) — where a page-scoped control belongs.
   const modeSwitcher =
-    onboardingFlowSwitch || rightLinks ? (
+    onboardingFlowSwitch || rightLinks || learnerModeSwitch ? (
       <>
         {onboardingFlowSwitch}
         {rightLinks}
+        {learnerModeSwitch}
       </>
     ) : undefined;
 
@@ -394,7 +422,7 @@ export function NavBar() {
             ? {
                 org: tenant,
                 userId: getUserName() ?? '',
-                isAdmin: departmentMemberCheck?.is_platform_admin,
+                isAdmin: isPlatformAdmin && isInstructorMode,
                 onViewNotifications: handleViewNotifications,
               }
             : null

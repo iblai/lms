@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-10-28 | 277 checkpoints | 39 journeys | 100% covered
+> Last updated: 2026-10-28 | 280 checkpoints | 39 journeys | 100% covered
 
 ## How This Works
 
@@ -93,9 +93,9 @@ When adding a new page or modifying an existing user flow:
 - [x] Switching units on the `/agent` tab fires the `Switched to "<unit>"` confirmation toast
 - [x] Switching units on the `/agent` tab posts a `MENTOR:CHAT_ACTION_ADD_MESSAGE` into the `<agent-ai>` shadow-root iframe and the agent renders an AI response
 - [x] New-chat button (in the navbar course controls) on the `/agent` tab renders once the mentor spinner is hidden, posts `MENTOR:NEW_CHAT`, and surfaces the iframe's `.chat-welcome-button`
-- [x] Learning/Assessment toggle on `/agent` only renders when `getCourseBlockDetails` returns a block of `type=ibl_mentor_xblock`
-- [x] Toggling Assessment mode on `/agent` hides the agent chat and reveals the edX iframe; toggling back to Learning reverses it
-- [x] On mobile viewports the toggle is reachable through a vertical 3-dot popover trigger that opens a Popover containing the same switch
+- [x] The `/agent` tab offers no Learn/Assess switch (nor its hint popover)
+- [x] A unit whose `getCourseBlockDetails` includes a block of `type=ibl_mentor_xblock` opens straight in assessment mode on `/agent` (edX iframe shown, agent chat hidden) with a "Switched to assessment mode" toast
+- [x] On mobile viewports the vertical 3-dot course-controls popover lists the controls (e.g. Fullscreen) with no Learn/Assess switch
 - [x] Authoring tab links to `<studio-url>/course/<course-id>` and opens in a new tab _(admin only)_
 - [x] Settings tab (platform admin) navigates to `/course-content/<id>/configuration` and renders the `configuration-tab` _(admin only)_
 - [x] Configuration route displays the Credentials section (heading, "Add Credential" button, list toggle) _(admin only)_
@@ -330,9 +330,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 22: Navigation — NavBar & Sidebar (9 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
+## Journey 22: Navigation — NavBar & Sidebar (12 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
 
-**Source files:** `components/nav-bar.tsx`, `components/app-sidebar/index.tsx`, `components/header/profile/user-profile-button.tsx`
+**Source files:** `components/nav-bar.tsx`, `components/app-sidebar/index.tsx`, `components/header/profile/user-profile-button.tsx`, `components/header/learner-mode-switch.tsx`, `hooks/use-learner-mode.ts`, `lib/config.ts`
 
 - [x] NavBar (PlatformNavbar shell) renders with Search, Notifications, and User Profile elements
 - [x] Sidebar "Home" item navigates to /home
@@ -343,6 +343,9 @@ When adding a new page or modifying an existing user flow:
 - [x] User profile dropdown opens with Profile link, tenant selector, and logout option
 - [x] Sidebar logo navigates to the home page
 - [x] Navbar shows the current course title on a course page (no enrolled-courses dropdown)
+- [x] Admin switches the navbar User/Admin toggle; User mode hides staff sidebar entries, Admin mode restores them _(admin only — skips for non-admin)_
+- [x] Below xl the User/Admin toggle moves from the navbar into the profile dropdown _(admin only — skips for non-admin)_
+- [x] Profile dropdown Help link opens the help center in exactly one new tab _(skips when the tenant sets `show_help: false`)_
 
 ---
 

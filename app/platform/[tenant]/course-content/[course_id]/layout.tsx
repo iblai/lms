@@ -25,7 +25,6 @@ import {
   UserCog,
   Users,
   Wrench,
-  X,
 } from 'lucide-react';
 import { useCourseDetail } from '@/hooks/courses/use-course-detail';
 import { useCourseUserRoles } from '@/hooks/courses/use-course-user-roles';
@@ -61,13 +60,13 @@ import type { CourseBlockDetailsBlock } from '@/types/courses';
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useLearnerMode } from '@/hooks/use-learner-mode';
 import {
   useGetCourseBlockDetailsQuery,
   useGetCourseEligibilityQuery,
 } from '@/services/course-metadata';
 import { Switch } from '@/components/ui/switch';
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useLocalStorage } from '@/hooks/localstorage/use-local-storage';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   setAdvancedDisplayMonetizationCheckoutModal,
   useTenantMetadata,
@@ -136,7 +135,14 @@ export default function CourseContentLayout({
     rbacPermissions,
     `/platforms/${tenant}/#can_view_analytics`,
   );
-  const contentModeViewer = { isAdmin, isWatcher };
+  // An admin previewing the learner view (navbar User/Admin switch) gets the
+  // learner's tabs and content modes; access checks keep the real role so
+  // flipping the switch inside a course never locks them out of it.
+  const { isInstructorMode } = useLearnerMode();
+  const contentModeViewer = {
+    isAdmin: isAdmin && isInstructorMode,
+    isWatcher: isWatcher && isInstructorMode,
+  };
   const resolvedParams = use(params);
   const courseId = decodeURIComponent(resolvedParams.course_id);
   // Course-scoped staff roles open the staff-only tabs to people who aren't
@@ -148,7 +154,7 @@ export default function CourseContentLayout({
     hasCourseStaffAccess,
     isResolved: courseRolesResolved,
   } = useCourseUserRoles(courseId);
-  const canViewStaffTabs = isAdmin || hasCourseStaffAccess;
+  const canViewStaffTabs = isInstructorMode && (isAdmin || hasCourseStaffAccess);
   const {
     data: enrollStatus,
     isSuccess: enrollStatusSuccess,
@@ -162,7 +168,7 @@ export default function CourseContentLayout({
   const isEnrollmentResolved = Boolean(
     (enrollStatusSuccess || enrollStatusError) && courseRolesResolved && isAdminResolved,
   );
-  const canViewAuthoringTab = isAdmin || isCourseStaff;
+  const canViewAuthoringTab = isInstructorMode && (isAdmin || isCourseStaff);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
@@ -281,7 +287,9 @@ export default function CourseContentLayout({
   const hasMentorXblock = Object.values(courseBlockDetails?.blocks ?? {}).some(
     (block) => block.type === 'ibl_mentor_xblock',
   );
-  const assessmentToggleVisible = currentTab === 'agent' && hasMentorXblock;
+  // A unit carrying the mentor xblock is an assessment: the agent tab opens it
+  // straight in assessment mode, and every other unit runs in learning mode.
+  const isAssessmentUnit = currentTab === 'agent' && hasMentorXblock;
   const fullscreenToggleVisible = currentTab === 'agent';
   // Only once the mentor has finished loading — before that there is no chat
   // to reset, and the iframe isn't listening yet.
@@ -297,19 +305,6 @@ export default function CourseContentLayout({
   const [mobileMediaPreviewBlock, setMobileMediaPreviewBlock] =
     useState<CourseBlockDetailsBlock | null>(null);
 
-  // One-time informative hint shown under the Learn/Assess switcher (which
-  // lives in the navbar) the first time it becomes available. Persisted so it
-  // doesn't nag on every visit.
-  const [agentModeHintDismissed, setAgentModeHintDismissed] = useLocalStorage<boolean>(
-    'skills:agent-mode-hint-dismissed',
-    false,
-    {
-      serializer: (value) => (value ? 'true' : 'false'),
-      deserializer: (value) => value === 'true',
-    },
-  );
-  const [agentModeHintOpen, setAgentModeHintOpen] = useState(false);
-
   // Navbar slot (rendered empty by the NavBar on every page) that the course
   // controls below portal into, so they sit left of the navbar search bar
   // while their state stays in this layout. Resolved in an effect: the NavBar
@@ -319,25 +314,13 @@ export default function CourseContentLayout({
   useEffect(() => {
     setNavbarControlsSlot(document.getElementById(NAVBAR_COURSE_CONTROLS_ID));
   }, []);
-  const dismissAgentModeHint = () => {
-    setAgentModeHintOpen(false);
-    setAgentModeHintDismissed(true);
-  };
 
   useEffect(() => {
-    if (assessmentToggleVisible && !agentModeHintDismissed) {
-      // Small delay so the switcher has settled into place before anchoring.
-      const timer = setTimeout(() => setAgentModeHintOpen(true), 600);
-      return () => clearTimeout(timer);
-    }
-    setAgentModeHintOpen(false);
-  }, [assessmentToggleVisible, agentModeHintDismissed]);
-
-  useEffect(() => {
-    if (!assessmentToggleVisible && agentMode !== 'learning') {
-      setAgentMode('learning');
-    }
-  }, [assessmentToggleVisible]);
+    const unitMode: AgentMode = isAssessmentUnit ? 'assessment' : 'learning';
+    if (agentMode === unitMode) return;
+    setAgentMode(unitMode);
+    if (unitMode === 'assessment') toast.success('Switched to assessment mode');
+  }, [isAssessmentUnit]);
   // Leaving the agent tab should always drop out of fullscreen.
   useEffect(() => {
     if (!fullscreenToggleVisible && agentFullscreen) {
@@ -513,7 +496,7 @@ export default function CourseContentLayout({
         },
       );
     }
-    if (canViewAnalytics || hasCourseStaffAccess) {
+    if (isInstructorMode && (canViewAnalytics || hasCourseStaffAccess)) {
       tabs.push({
         key: 'analytics',
         label: 'Analytics',
@@ -551,6 +534,7 @@ export default function CourseContentLayout({
     canViewStaffTabs,
     canViewAuthoringTab,
     hasCourseStaffAccess,
+    isInstructorMode,
     course?.learning_info,
     course?.instructor_info?.instructors,
     canViewAnalytics,
@@ -730,8 +714,8 @@ export default function CourseContentLayout({
 
             {/* Main content area */}
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-              {/* Course controls (autoplay, media dropdown, fullscreen,
-                  Learn/Assess) render in the top navbar — left of the
+              {/* Course controls (new chat, autoplay, media dropdown,
+                  fullscreen) render in the top navbar — left of the
                   search bar — via the NavBar's portal slot; their state
                   stays in this layout. */}
               {navbarControlsSlot &&
@@ -793,84 +777,6 @@ export default function CourseContentLayout({
                         <Maximize className="h-5 w-5" />
                       </button>
                     )}
-                    {assessmentToggleVisible && (
-                      <Popover
-                        open={agentModeHintOpen}
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            dismissAgentModeHint();
-                          }
-                        }}
-                      >
-                        <PopoverAnchor asChild>
-                          <div
-                            className="hidden items-center gap-2 text-xs text-gray-600 md:flex"
-                            role="group"
-                            aria-label="Agent display mode"
-                          >
-                            <span
-                              className={
-                                agentMode === 'learning' ? 'font-medium text-amber-600' : ''
-                              }
-                            >
-                              Learn
-                            </span>
-                            <Switch
-                              checked={agentMode === 'assessment'}
-                              onCheckedChange={(checked) =>
-                                setAgentMode(checked ? 'assessment' : 'learning')
-                              }
-                              aria-label="Toggle assessment mode"
-                              className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                            />
-                            <span
-                              className={
-                                agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
-                              }
-                            >
-                              Assess
-                            </span>
-                          </div>
-                        </PopoverAnchor>
-                        <PopoverContent
-                          side="bottom"
-                          align="end"
-                          sideOffset={10}
-                          className="w-64 p-3"
-                          onOpenAutoFocus={(event) => event.preventDefault()}
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="flex-1 text-xs text-gray-600">
-                              <p className="mb-1 font-medium text-gray-900">Two ways to learn</p>
-                              <p>
-                                Use this switch to move between{' '}
-                                <span className="font-medium text-amber-600">Learn</span> mode,
-                                where the agent teaches you, and{' '}
-                                <span className="font-medium text-amber-600">Assess</span> mode,
-                                where it quizzes you on what you&apos;ve covered.
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={dismissAgentModeHint}
-                              aria-label="Dismiss"
-                              className="-mt-1 -mr-1 rounded p-1 text-gray-400 transition-colors hover:text-gray-700 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <div className="mt-2 flex justify-end">
-                            <button
-                              type="button"
-                              onClick={dismissAgentModeHint}
-                              className="rounded bg-amber-500 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-600 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                            >
-                              Got it
-                            </button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    )}
                   </div>,
                   navbarControlsSlot,
                 )}
@@ -927,8 +833,7 @@ export default function CourseContentLayout({
                         the course controls, sitting left of the prev/next unit
                         buttons; desktop shows them inline in the navbar via
                         the portal above. */}
-                    {(assessmentToggleVisible ||
-                      autoplayToggleVisible ||
+                    {(autoplayToggleVisible ||
                       fullscreenToggleVisible ||
                       newChatVisible ||
                       unitMediaVisible) && (
@@ -1005,36 +910,6 @@ export default function CourseContentLayout({
                                 <Maximize className="h-4 w-4 text-gray-500" />
                                 <span>Fullscreen</span>
                               </button>
-                            )}
-                            {assessmentToggleVisible && (
-                              <div
-                                className="flex items-center gap-2 text-xs text-gray-600"
-                                role="group"
-                                aria-label="Agent display mode"
-                              >
-                                <span
-                                  className={
-                                    agentMode === 'learning' ? 'font-medium text-amber-600' : ''
-                                  }
-                                >
-                                  Learn
-                                </span>
-                                <Switch
-                                  checked={agentMode === 'assessment'}
-                                  onCheckedChange={(checked) =>
-                                    setAgentMode(checked ? 'assessment' : 'learning')
-                                  }
-                                  aria-label="Toggle assessment mode"
-                                  className="data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-gray-300"
-                                />
-                                <span
-                                  className={
-                                    agentMode === 'assessment' ? 'font-medium text-amber-600' : ''
-                                  }
-                                >
-                                  Assess
-                                </span>
-                              </div>
                             )}
                           </div>
                         </PopoverContent>

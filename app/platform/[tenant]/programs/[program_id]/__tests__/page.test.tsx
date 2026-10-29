@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearnerMode: vi.fn() }));
+vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
+
 vi.mock('next/image', () => ({
   default: ({ src, alt, onError, ...props }: any) => (
     <img src={typeof src === 'string' ? src : ''} alt={alt} onError={onError} {...props} />
