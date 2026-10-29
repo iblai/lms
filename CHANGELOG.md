@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.99.0](https://github.com/iblai/lms/compare/skills-v0.98.0...skills-v0.99.0) (2026-10-29)
+
+### Features
+
+* edx to dm endpoint update ([d6af414](https://github.com/iblai/lms/commit/d6af414db2d2e75e690426a0b89a3a2336f59fbc))
+* edx to dm endpoint update ([61d09df](https://github.com/iblai/lms/commit/61d09dfc286154d2c25119f316e52754db42ce9d))
+* fixme added to product tour tests temporarily ([aa63e70](https://github.com/iblai/lms/commit/aa63e70e8d16930b0ef52f57dc4723421be94bb5))
+* lms fix redirection to course about page when not enrolled ([94749d8](https://github.com/iblai/lms/commit/94749d8f3c67c94f43914dc3cc6a54a66e1423aa))
+
+### Bug Fixes
+
+* playwright update ([11edd6b](https://github.com/iblai/lms/commit/11edd6bf0fa0f334786a43c93628bbf4369957ea))
+
+### Tests
+
+* **course-agent-chat:** wait for the context request effect to flush ([97e3747](https://github.com/iblai/lms/commit/97e3747bf3928fdee2b39e73f8595026c0099201))
+* **studio:** exercise StudioSlice query functions via store dispatch ([0280c2b](https://github.com/iblai/lms/commit/0280c2ba149660221c6f31d87b0fb31d57f81437))
+
 ## [0.98.0](https://github.com/iblai/lms/compare/skills-v0.97.2...skills-v0.98.0) (2026-10-28)
 
 ### Features
