@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.100.0](https://github.com/iblai/lms/compare/skills-v0.99.0...skills-v0.100.0) (2026-10-29)
+
+### Features
+
+* admin User/Admin mode switch, automatic assessment mode, and Help link in the profile dropdown ([e66174c](https://github.com/iblai/lms/commit/e66174c3f2a91d242dbd49712f85ff8efda8594e))
+
 ## [0.99.0](https://github.com/iblai/lms/compare/skills-v0.98.0...skills-v0.99.0) (2026-10-29)
 
 ### Features
