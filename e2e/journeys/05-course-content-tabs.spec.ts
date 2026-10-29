@@ -168,7 +168,7 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await expect(page.getByRole('heading', { name: 'Your progress' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Course completion' })).toBeVisible();
     await expect(page.getByTestId('completion-donut')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Grades' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Grades', exact: true })).toBeVisible();
     await expect(page.getByTestId('current-grade')).toHaveText(/\d+%/);
     await expect(page.getByTestId('passing-grade')).toHaveText(/\d+%/);
     // A grading policy shows as the summary table; a course without one says so.
