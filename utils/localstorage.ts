@@ -84,11 +84,23 @@ export function useUserData() {
   return validationResult.data;
 }
 
+/**
+ * Stores the tokens bare, exactly as the SSO login page does: every reader
+ * (the app's and the SDK's `getHeaders`, the expiry checks) sends the stored
+ * value as-is, and a JSON-encoded `"token"` is refused by DM as invalid.
+ */
 export function saveUserTokens(tokenResponse: TokenResponse) {
-  setLocalStorageItem(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY, tokenResponse.axd_token.token);
-  setLocalStorageItem(LOCALSTORAGE_KEYS.TOKEN_EXPIRY, tokenResponse.axd_token.expires);
-  setLocalStorageItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY, tokenResponse.dm_token.token);
-  setLocalStorageItem(LOCALSTORAGE_KEYS.DM_TOKEN_EXPIRY, tokenResponse.dm_token.expires);
+  if (typeof window === 'undefined') {
+    return;
+  }
+  try {
+    window.localStorage.setItem(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY, tokenResponse.axd_token.token);
+    window.localStorage.setItem(LOCALSTORAGE_KEYS.TOKEN_EXPIRY, tokenResponse.axd_token.expires);
+    window.localStorage.setItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY, tokenResponse.dm_token.token);
+    window.localStorage.setItem(LOCALSTORAGE_KEYS.DM_TOKEN_EXPIRY, tokenResponse.dm_token.expires);
+  } catch (error) {
+    console.error('Error setting localStorage:', error);
+  }
 }
 
 export function useUsername() {

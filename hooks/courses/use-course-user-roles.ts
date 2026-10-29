@@ -30,9 +30,10 @@ export interface CourseUserRoles {
 }
 
 /**
- * Course-scoped role flags for the signed-in user, read off the platform-wide
- * role listing (`GET /api/ibl/users/manage/roles/`) and narrowed to one course
- * run. Skipped entirely when we have neither a username nor a course ID.
+ * Course-scoped role flags for the signed-in user, read off the edX enrollment
+ * roles API (`GET /api/enrollment/v1/roles/`, through DM's proxy) and narrowed
+ * to one course run. Skipped entirely when we have neither a username nor a
+ * course ID.
  */
 export function useCourseUserRoles(courseId: string | undefined): CourseUserRoles {
   const username = getUserName();

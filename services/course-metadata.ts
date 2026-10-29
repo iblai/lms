@@ -11,17 +11,31 @@ import {
 } from '@/types/courses';
 import { iblFetchBaseQuery } from '@/lib/utils';
 import { COURSE_METADATA_CACHE_SECONDS, SERVICES } from '@/lib/constants';
+import { getUserName } from '@/utils/helpers';
+
+/**
+ * DM's catalog user endpoints take `username=<self>` where the edX plugin
+ * inferred the caller from the JWT.
+ */
+const selfParam = () => `username=${encodeURIComponent(getUserName() ?? '')}`;
+
 // Define a service using a base URL and expected endpoints
 export const CourseMetadataSlice = createApi({
   reducerPath: 'CourseMetadataSlice',
   baseQuery: iblFetchBaseQuery,
   endpoints: (builder) => ({
+    // DM serves the same payload the edX plugin's `course_metadata` did, to
+    // signed-in and anonymous callers alike.
     getCourseMetaData: builder.query<CourseEdxData, { courseKey: string; noAuth?: boolean }>({
       query: ({ courseKey, noAuth = false }) => ({
-        url: `/api/ibl/v1/course_metadata?course_key=${encodeURIComponent(courseKey)}`,
-        service: SERVICES.LMS,
-        includeCredentials: true,
+        url: `/v1/courses/metadata?course_id=${encodeURIComponent(courseKey)}`,
+        service: SERVICES.DM,
         noAuth,
+      }),
+      // DM leaves the price null where the plugin said "Free".
+      transformResponse: (course: CourseEdxData) => ({
+        ...course,
+        course_price: course.course_price ?? 'Free',
       }),
       // One cache entry per course, keyed on the course alone. `noAuth` only
       // decides whether the request carries credentials — it describes the
@@ -32,20 +46,24 @@ export const CourseMetadataSlice = createApi({
       serializeQueryArgs: ({ queryArgs }) => ({ courseKey: queryArgs.courseKey }),
       keepUnusedDataFor: COURSE_METADATA_CACHE_SECONDS,
     }),
+    // The completion outline from DM. DM answers 404 for a course the user is
+    // not enrolled in, where the edX plugin returned an empty outline; both
+    // reach the callers as "no outline".
     getCourseCompletionOutlines: builder.query<CourseOutlineResponse, { courseKey: string }>({
       query: ({ courseKey }) => ({
-        url: `/api/ibl/completion/course_outline/${courseKey}?course_id=${encodeURIComponent(
+        url: `/api/catalog/enrollment/courses/completion/?${selfParam()}&course_id=${encodeURIComponent(
           courseKey,
-        )}`,
-        service: SERVICES.LMS,
-        includeCredentials: true,
+        )}&endpoint=outline`,
+        service: SERVICES.DM,
       }),
     }),
+    // Same fields as the edX plugin's `enroll_status`, plus `is_eligible`.
     getCourseEligibility: builder.query<CourseEligibilityResponse, { courseKey: string }>({
       query: ({ courseKey }) => ({
-        url: `/api/ibl/enrollment/enroll_status?course_id=${encodeURIComponent(courseKey)}`,
-        service: SERVICES.LMS,
-        includeCredentials: true,
+        url: `/api/catalog/eligibility/courses/check/?${selfParam()}&course_id=${encodeURIComponent(
+          courseKey,
+        )}`,
+        service: SERVICES.DM,
       }),
     }),
     createCourseEnrollment: builder.mutation<CourseEnrollmentResponse, CourseEnrollmentRequest>({
@@ -61,7 +79,6 @@ export const CourseMetadataSlice = createApi({
       query: ({ courseKey }) => ({
         url: `/api/course_home/progress/${courseKey}`,
         service: SERVICES.LMS,
-        includeCredentials: true,
       }),
     }),
     getCourseCompletion: builder.query<CourseCompletion, { courseKey: string; userID: number }>({
@@ -78,7 +95,6 @@ export const CourseMetadataSlice = createApi({
       query: ({ blockId, username }) => ({
         url: `/api/courses/v2/blocks/${encodeURIComponent(blockId)}?username=${encodeURIComponent(username)}&depth=all`,
         service: SERVICES.LMS,
-        includeCredentials: true,
       }),
     }),
   }),

@@ -881,14 +881,15 @@ describe('CourseAgentChat', () => {
       const postMessage = vi.spyOn(iframe.contentWindow!, 'postMessage');
       try {
         const { container } = renderWithContext();
+        // The request is sent from a passive effect, which React may flush
+        // after the commit that puts `<agent-ai>` in the DOM.
         await waitFor(() => {
           expect(container.querySelector('agent-ai')).toBeInTheDocument();
+          expect(postMessage).toHaveBeenCalledWith(
+            { type: EDX_CONTEXT_REQUEST_MESSAGE_TYPE },
+            expect.any(String),
+          );
         });
-
-        expect(postMessage).toHaveBeenCalledWith(
-          { type: EDX_CONTEXT_REQUEST_MESSAGE_TYPE },
-          expect.any(String),
-        );
       } finally {
         iframe.remove();
       }

@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-10-16",
+  "lastUpdated": "2026-10-28",
   "summary": {
-    "totalCheckpoints": 276,
-    "coveredCheckpoints": 276,
+    "totalCheckpoints": 277,
+    "coveredCheckpoints": 277,
     "percent": 100,
     "totalJourneys": 39
   },
@@ -1488,7 +1488,11 @@
       "id": "course-access-guard-tenant-redirect",
       "name": "Course Access Guard — Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
-      "sourceFiles": ["components/course-access-guard.tsx", "utils/helpers.ts"],
+      "sourceFiles": [
+        "components/course-access-guard.tsx",
+        "utils/helpers.ts",
+        "app/platform/[tenant]/course-content/[course_id]/layout.tsx"
+      ],
       "checkpoints": [
         {
           "id": "cag-01",
@@ -1508,6 +1512,11 @@
         {
           "id": "cag-04",
           "description": "Renders course about page for a foreign platform_key (cross-tenant gating removed)",
+          "status": "covered"
+        },
+        {
+          "id": "cag-05",
+          "description": "Unenrolled learner opening course content is redirected to the course about page",
           "status": "covered"
         }
       ]

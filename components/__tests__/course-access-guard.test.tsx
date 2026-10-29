@@ -572,4 +572,93 @@ describe('CourseAccessGuard', () => {
       expect(document.querySelector('.animate-spin')).toBeInTheDocument();
     });
   });
+
+  describe('enrollment', () => {
+    const course = {
+      platform_key: 'test-tenant',
+      course_key: 'course-v1:test+course+2024',
+      course_content_mode: true,
+    } as any;
+
+    beforeEach(() => {
+      mockPathname.current = '/course-content/course-v1:test+course+2024/course';
+    });
+
+    it('redirects an unenrolled viewer to the course about page', () => {
+      render(
+        <CourseAccessGuard
+          course={course}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+          isEnrolled={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockReplace).toHaveBeenCalledWith(
+        '/platform/test-tenant/courses/course-v1:test+course+2024',
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(screen.queryByText('content')).not.toBeInTheDocument();
+    });
+
+    it('sends an unenrolled viewer to the about page even when the tab is denied', () => {
+      render(
+        <CourseAccessGuard
+          course={{ ...course, course_content_mode: false }}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+          isEnrolled={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockReplace).toHaveBeenCalledWith(
+        '/platform/test-tenant/courses/course-v1:test+course+2024',
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it('still reports a missing course as 404 rather than redirecting to its about page', () => {
+      render(
+        <CourseAccessGuard course={null} courseInfoLoadingState="failure" isEnrolled={false}>
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockPush).toHaveBeenCalledWith('/error/404?tenant=test-tenant');
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('renders the content for an enrolled viewer', () => {
+      render(
+        <CourseAccessGuard
+          course={course}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+          isEnrolled
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(screen.getByText('content')).toBeInTheDocument();
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('waits for the enrollment check before deciding', () => {
+      render(
+        <CourseAccessGuard
+          course={course}
+          courseInfoLoadingState="successful"
+          currentTab="course"
+          isEnrolled={false}
+          isEnrollmentResolved={false}
+        >
+          <div>content</div>
+        </CourseAccessGuard>,
+      );
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(screen.queryByText('content')).not.toBeInTheDocument();
+      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+  });
 });

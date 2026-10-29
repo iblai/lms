@@ -22,7 +22,9 @@ vi.mock('@/lib/utils', async (importOriginal) => {
     },
   };
 });
-vi.mock('@/lib/config', () => ({ config: { urls: { lms: () => 'https://lms.example.org' } } }));
+vi.mock('@/lib/config', () => ({
+  config: { urls: { lms: () => 'https://lms.example.org', dm: () => 'https://dm.example.org' } },
+}));
 
 // The legacy (session + CSRF) transport talks to fetch directly.
 type FetchCall = { url: string; init: RequestInit };
@@ -177,7 +179,7 @@ describe('InstructorSlice', () => {
     );
     expect(
       (await run('updateCohortSettings', { courseId: COURSE, isCohorted: true })).call,
-    ).toMatchObject({ method: 'PATCH', body: { is_cohorted: true } });
+    ).toMatchObject({ method: 'PUT', body: { is_cohorted: true } });
     expect(
       (await run('createCohort', { courseId: COURSE, name: 'A', assignmentType: 'random' })).call,
     ).toMatchObject({ method: 'POST', body: { name: 'A', assignment_type: 'random' } });
@@ -241,6 +243,7 @@ describe('InstructorSlice', () => {
   });
 
   it('reads forum members through the session transport, unwrapping the role key', async () => {
+    window.localStorage.setItem('dm_token', 'dm-tok');
     legacyResponse = () =>
       new Response(JSON.stringify({ Moderator: [{ username: 'mod' }] }), { status: 200 });
     expect(
@@ -256,8 +259,12 @@ describe('InstructorSlice', () => {
     expect(
       (await run('listForumMembers', { courseId: COURSE, rolename: 'Administrator' })).result.data,
     ).toEqual([]);
-    // The CSRF token is fetched once and reused.
+    // The CSRF token is fetched once, through DM's edX proxy with the DM token, and reused.
     expect(csrfCalls()).toHaveLength(1);
+    expect(csrfCalls()[0]).toMatchObject({
+      url: 'https://dm.example.org/v1/lms/csrf/api/v1/token',
+      init: { credentials: 'omit', headers: { Authorization: 'Token dm-tok' } },
+    });
     expect(captured).toHaveLength(0);
   });
 

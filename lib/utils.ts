@@ -65,43 +65,47 @@ const fieldErrorsMessage = (data: unknown): string | null => {
   return lines.length ? lines.join('; ') : null;
 };
 
+// `LMS` / `STUDIO` go through DM's edX proxy with the DM token; only the
+// `*_DIRECT` services reach the edX hosts themselves, with the edX JWT.
 export const getServiceUrl = (service: SERVICES) => {
   switch (service) {
     case SERVICES.LMS:
+      return `${config.urls.dm()}/v1/lms`;
+    case SERVICES.LMS_DIRECT:
       return config.urls.lms();
     case SERVICES.DM:
       return config.urls.dm();
     case SERVICES.AXD:
       return config.urls.axd();
     case SERVICES.STUDIO:
+      return `${config.urls.dm()}/v1/studio`;
+    case SERVICES.STUDIO_DIRECT:
       return config.urls.studio();
     default:
       return config.urls.dm(); // Default to DM URL if no match
   }
 };
 
+/**
+ * A stored token, bare. A writer that JSON-encodes strings (the SDK's token
+ * refresh through `LocalStorageService`) leaves `"token"` behind, which DM
+ * refuses as invalid.
+ */
+export const getStoredToken = (key: string) => {
+  const token = window.localStorage.getItem(key);
+  return token && token.startsWith('"') && token.endsWith('"') ? token.slice(1, -1) : token;
+};
+
 function getHeaders(service: SERVICES) {
   switch (service) {
-    case SERVICES.LMS:
-      return {
-        Authorization: `JWT ${window.localStorage.getItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}`,
-      };
-    case SERVICES.DM:
-      return {
-        Authorization: `Token ${window.localStorage.getItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}`,
-      };
+    case SERVICES.LMS_DIRECT:
+    case SERVICES.STUDIO_DIRECT:
+      return { Authorization: `JWT ${getStoredToken(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}` };
     case SERVICES.AXD:
-      return {
-        Authorization: `Token ${window.localStorage.getItem(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY)}`,
-      };
-    case SERVICES.STUDIO:
-      return {
-        Authorization: `JWT ${window.localStorage.getItem(LOCALSTORAGE_KEYS.EDX_TOKEN_KEY)}`,
-      };
+      return { Authorization: `Token ${getStoredToken(LOCALSTORAGE_KEYS.AXD_TOKEN_KEY)}` };
     default:
-      return {
-        Authorization: `Token ${window.localStorage.getItem(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}`,
-      };
+      // DM itself, and the LMS / Studio calls that go through its edX proxy.
+      return { Authorization: `Token ${getStoredToken(LOCALSTORAGE_KEYS.DM_TOKEN_KEY)}` };
   }
 }
 

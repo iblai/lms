@@ -1,6 +1,5 @@
 import { test as setup, expect } from '@playwright/test';
 import path from 'path';
-import { markProductTourSeen, trackUserMetadata } from '../utils/product-tour';
 
 const SKILL_HOST = process.env.SKILLS_HOST || 'http://localhost:3000';
 const AUTH_HOST = process.env.AUTH_HOST || '';
@@ -13,9 +12,6 @@ setup('authenticate', async ({ page }, testInfo) => {
   // This avoids browserName collisions — Edge reports as "chromium", same as Chrome.
   const browserLabel = testInfo.project.name.replace('setup-', '');
   const storageStatePath = path.join(__dirname, `../playwright/.auth/user-${browserLabel}.json`);
-
-  // The app's own user-metadata request is reused below to mark the product tour seen.
-  const userMetadata = trackUserMetadata(page);
 
   // Navigate to the skills host
   await page.goto(SKILL_HOST, { timeout: 120_000 });
@@ -66,10 +62,10 @@ setup('authenticate', async ({ page }, testInfo) => {
     });
   }
 
-  // The first-visit product tour would otherwise start, and block the page,
-  // in every journey; it is marked seen on the user's metadata. Journey 38
-  // replays it with `?tour=1`.
-  await markProductTourSeen(page, userMetadata);
+  // TODO: restore `markProductTourSeen` (e2e/utils/product-tour.ts) once it
+  // reads user metadata from DM (`/api/core/users/metadata/proxy/`); it still
+  // waits for the edX GET and times out. Until then the tour isn't marked seen
+  // here, so a test user without the record gets the tour overlay.
 
   // Save storage state
   await page.context().storageState({ path: storageStatePath });

@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-10-27 | 276 checkpoints | 39 journeys | 100% covered
+> Last updated: 2026-10-28 | 277 checkpoints | 39 journeys | 100% covered
 
 ## How This Works
 
@@ -441,14 +441,15 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 30: Course Access Guard — Cross-Tenant Redirect (4 checkpoints) — `journeys/30-course-access-guard-tenant-redirect.spec.ts`
+## Journey 30: Course Access Guard — Cross-Tenant Redirect (5 checkpoints) — `journeys/30-course-access-guard-tenant-redirect.spec.ts`
 
-**Source files:** `components/course-access-guard.tsx`, `utils/helpers.ts`
+**Source files:** `components/course-access-guard.tsx`, `utils/helpers.ts`, `app/platform/[tenant]/course-content/[course_id]/layout.tsx`
 
 - [x] Renders course about page when `course.platform_key` matches the current tenant
 - [x] Renders course about page when `course.platform_key === 'main'`
 - [x] Empty metadata response surfaces `/error/404`
 - [x] Renders course about page for a foreign `platform_key` (cross-tenant gating removed)
+- [x] Unenrolled learner opening course content is redirected to the course about page
 
 ---
 

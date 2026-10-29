@@ -95,10 +95,10 @@ describe('utils', () => {
   });
 
   describe('getServiceUrl', () => {
-    it('returns LMS URL for LMS service', () => {
+    it('routes the LMS service through the DM edX proxy', () => {
       const result = getServiceUrl(SERVICES.LMS);
-      expect(result).toBe('https://lms.example.com');
-      expect(config.urls.lms).toHaveBeenCalled();
+      expect(result).toBe('https://dm.example.com/v1/lms');
+      expect(config.urls.dm).toHaveBeenCalled();
     });
 
     it('returns DM URL for DM service', () => {
@@ -113,9 +113,16 @@ describe('utils', () => {
       expect(config.urls.axd).toHaveBeenCalled();
     });
 
-    it('returns STUDIO URL for STUDIO service', () => {
+    it('routes the STUDIO service through the DM edX proxy', () => {
       const result = getServiceUrl(SERVICES.STUDIO);
-      expect(result).toBe('https://studio.example.com');
+      expect(result).toBe('https://dm.example.com/v1/studio');
+      expect(config.urls.dm).toHaveBeenCalled();
+    });
+
+    it('returns the LMS and Studio hosts for the *_DIRECT services', () => {
+      expect(getServiceUrl(SERVICES.LMS_DIRECT)).toBe('https://lms.example.com');
+      expect(config.urls.lms).toHaveBeenCalled();
+      expect(getServiceUrl(SERVICES.STUDIO_DIRECT)).toBe('https://studio.example.com');
       expect(config.urls.studio).toHaveBeenCalled();
     });
 
@@ -324,7 +331,14 @@ describe('utils', () => {
 
     it('handles different service types for proper header generation', async () => {
       // Test each service type
-      const services = [SERVICES.LMS, SERVICES.DM, SERVICES.AXD, SERVICES.STUDIO];
+      const services = [
+        SERVICES.LMS,
+        SERVICES.DM,
+        SERVICES.AXD,
+        SERVICES.STUDIO,
+        SERVICES.LMS_DIRECT,
+        SERVICES.STUDIO_DIRECT,
+      ];
 
       for (const service of services) {
         mockFetchBaseQueryResult.mockResolvedValueOnce({ data: { success: true } });
@@ -352,12 +366,12 @@ describe('utils', () => {
       forced: undefined,
     };
 
-    it('configures fetchBaseQuery with correct baseUrl for LMS service', async () => {
+    it('configures fetchBaseQuery with the DM proxy baseUrl for the LMS service', async () => {
       mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
 
       await iblFetchBaseQuery({ url: '/test', service: SERVICES.LMS }, mockApi, {});
 
-      expect(capturedFetchBaseQueryConfig.baseUrl).toBe('https://lms.example.com');
+      expect(capturedFetchBaseQueryConfig.baseUrl).toBe('https://dm.example.com/v1/lms');
     });
 
     it('configures fetchBaseQuery with credentials omit by default', async () => {
@@ -380,18 +394,33 @@ describe('utils', () => {
       expect(capturedFetchBaseQueryConfig.credentials).toBe('omit');
     });
 
-    it('prepareHeaders adds JWT Authorization for LMS service', async () => {
+    it('prepareHeaders adds the DM Token Authorization for the LMS and STUDIO services', async () => {
+      for (const service of [SERVICES.LMS, SERVICES.STUDIO]) {
+        mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
+
+        await iblFetchBaseQuery({ url: '/test', service }, mockApi, {});
+
+        // Create mock headers and call prepareHeaders
+        const mockHeaders = new Map<string, string>();
+        mockHeaders.set = vi.fn();
+
+        capturedFetchBaseQueryConfig.prepareHeaders(mockHeaders);
+
+        expect(mockHeaders.set).toHaveBeenCalledWith('Content-Type', 'application/json');
+        expect(mockHeaders.set).toHaveBeenCalledWith('Authorization', 'Token test-dm-token');
+        expect(mockHeaders.set).not.toHaveBeenCalledWith('Authorization', 'JWT test-jwt-token');
+      }
+    });
+
+    it('keeps the LMS host and the edX JWT for the LMS_DIRECT service', async () => {
       mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
 
-      await iblFetchBaseQuery({ url: '/test', service: SERVICES.LMS }, mockApi, {});
+      await iblFetchBaseQuery({ url: '/test', service: SERVICES.LMS_DIRECT }, mockApi, {});
 
-      // Create mock headers and call prepareHeaders
+      expect(capturedFetchBaseQueryConfig.baseUrl).toBe('https://lms.example.com');
       const mockHeaders = new Map<string, string>();
       mockHeaders.set = vi.fn();
-
       capturedFetchBaseQueryConfig.prepareHeaders(mockHeaders);
-
-      expect(mockHeaders.set).toHaveBeenCalledWith('Content-Type', 'application/json');
       expect(mockHeaders.set).toHaveBeenCalledWith('Authorization', 'JWT test-jwt-token');
     });
 
@@ -421,17 +450,33 @@ describe('utils', () => {
       expect(mockHeaders.set).toHaveBeenCalledWith('Authorization', 'Token test-axd-token');
     });
 
-    it('prepareHeaders adds JWT Authorization for STUDIO service', async () => {
+    it('prepareHeaders adds the edX JWT for the STUDIO_DIRECT service', async () => {
       mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
 
-      await iblFetchBaseQuery({ url: '/test', service: SERVICES.STUDIO }, mockApi, {});
+      await iblFetchBaseQuery({ url: '/test', service: SERVICES.STUDIO_DIRECT }, mockApi, {});
 
+      expect(capturedFetchBaseQueryConfig.baseUrl).toBe('https://studio.example.com');
       const mockHeaders = new Map<string, string>();
       mockHeaders.set = vi.fn();
 
       capturedFetchBaseQueryConfig.prepareHeaders(mockHeaders);
 
       expect(mockHeaders.set).toHaveBeenCalledWith('Authorization', 'JWT test-jwt-token');
+    });
+
+    it('prepareHeaders sends a JSON-quoted stored token bare', async () => {
+      localStorageMock.getItem.mockImplementationOnce((key: string) =>
+        key === 'dm_token' ? '"quoted-dm-token"' : null,
+      );
+      mockFetchBaseQueryResult.mockResolvedValueOnce({ data: {} });
+
+      await iblFetchBaseQuery({ url: '/test', service: SERVICES.DM }, mockApi, {});
+
+      const mockHeaders = new Map<string, string>();
+      mockHeaders.set = vi.fn();
+      capturedFetchBaseQueryConfig.prepareHeaders(mockHeaders);
+
+      expect(mockHeaders.set).toHaveBeenCalledWith('Authorization', 'Token quoted-dm-token');
     });
 
     it('prepareHeaders defaults to DM Token for unknown service', async () => {

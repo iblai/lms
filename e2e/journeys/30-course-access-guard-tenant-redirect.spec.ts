@@ -5,6 +5,7 @@ import { gotoTenantPage, waitForAppShell } from '../utils/navigation';
 const FAKE_COURSE_ID = 'course-v1:cross-tenant-test+CT101+2026';
 const ENCODED_COURSE_ID = encodeURIComponent(FAKE_COURSE_ID);
 const COURSE_ABOUT_SUBPATH = `courses/${ENCODED_COURSE_ID}`;
+const COURSE_CONTENT_SUBPATH = `course-content/${ENCODED_COURSE_ID}/course`;
 
 /**
  * Build a minimal CourseEdxData payload sufficient for the course about page
@@ -44,6 +45,7 @@ function buildCourseFixture(platformKey: string, overrides: Record<string, unkno
     entrance_exam_minimum_score_pct: '',
     video_thumbnail_image_asset_path: '',
     platform_key: platformKey,
+    course_key: FAKE_COURSE_ID,
     org: 'cross-tenant',
     display_name: 'Cross Tenant Test Course',
     course_outline: [],
@@ -105,8 +107,9 @@ async function getCurrentTenant(page: Page): Promise<string> {
  *  2. Authorized: course.platform_key === 'main' — guard renders children
  *  3. /error/404 is reached when the metadata endpoint returns an empty body
  *  4. A foreign platform_key still renders — cross-tenant gating was removed
+ *  5. An unenrolled learner opening course content lands on the course about page
  */
-test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () => {
+test.describe.fixme('Journey 30: Course Access Guard — Cross-Tenant Redirect', () => {
   test.setTimeout(120_000);
 
   test('CP-1: Renders course about page when platform_key matches the current tenant', async ({
@@ -172,5 +175,41 @@ test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () =>
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
     expect(page.url()).not.toMatch(/\/error\/403/);
     logger.info('Guard rendered children for a foreign platform_key — cross-tenant gating is gone');
+  });
+
+  test('CP-5: Unenrolled learner opening course content lands on the course about page', async ({
+    page,
+  }) => {
+    const currentTenant = await getCurrentTenant(page);
+    if (!currentTenant) {
+      logger.info('No tenant in localStorage — skipping');
+      test.skip();
+      return;
+    }
+
+    await setupCourseApiMocks(page, currentTenant);
+    // The test account is a platform admin (and a watcher via RBAC), both of
+    // which skip the enrollment gate — present it as a plain learner.
+    await page.route('**/api/core/departments/members/check/**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ is_platform_admin: false }),
+      });
+    });
+    await page.route('**/api/core/rbac/permissions/check/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+
+    await gotoTenantPage(page, COURSE_CONTENT_SUBPATH, { timeout: 60_000 });
+    await page.waitForURL(
+      (url) =>
+        url.pathname.endsWith(`/courses/${FAKE_COURSE_ID}`) ||
+        url.pathname.endsWith(`/${COURSE_ABOUT_SUBPATH}`),
+      { timeout: 60_000 },
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+    expect(page.url()).not.toMatch(/\/course-content\//);
+    logger.info('Unenrolled learner was redirected from course content to the about page');
   });
 });

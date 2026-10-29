@@ -218,6 +218,8 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
 
   beforeEach(() => {
     capturedBaseQueryArgs = [];
+    // The DM catalog endpoints take `username=<self>`, read from the stored user.
+    window.localStorage.setItem('userData', JSON.stringify({ user_nicename: 'jane' }));
 
     store = configureStore({
       reducer: {
@@ -228,40 +230,63 @@ describe('CourseMetadataSlice query functions (executed via store dispatch)', ()
     setupListeners(store.dispatch);
   });
 
-  it('getCourseMetaData builds the expected URL with encoded courseKey', async () => {
+  it('getCourseMetaData reads the plugin-shaped payload from DM', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
-    expect(capturedBaseQueryArgs[0].method).toBe('GET');
-    expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/v1/course_metadata?course_key=course-v1%3AOrg%2BRun%2B1',
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'GET',
+      url: '/v1/courses/metadata?course_id=course-v1%3AOrg%2BRun%2B1',
+    });
+  });
+
+  it('getCourseMetaData reads a null price as Free', async () => {
+    const result = await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
+        courseKey: 'course-v1:Org+Run+3',
+      }),
+    );
+    // The mocked payload carries no price; a priced course keeps its value.
+    expect(result.data).toMatchObject({ ok: true, course_price: 'Free' });
+  });
+
+  it('getCourseMetaData reads anonymously from the same DM endpoint', async () => {
+    await store.dispatch(
+      (CourseMetadataSlice.endpoints.getCourseMetaData as any).initiate({
+        courseKey: 'course-v1:Org+Run+2',
+        noAuth: true,
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/v1/courses/metadata?course_id=course-v1%3AOrg%2BRun%2B2',
     );
   });
 
-  it('getCourseCompletionOutlines builds the expected URL with encoded courseKey', async () => {
+  it('getCourseCompletionOutlines reads the outline from DM for the stored user', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseCompletionOutlines as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
-    expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/completion/course_outline/course-v1:Org+Run+1?course_id=course-v1%3AOrg%2BRun%2B1',
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/api/catalog/enrollment/courses/completion/?username=jane&course_id=course-v1%3AOrg%2BRun%2B1&endpoint=outline',
     );
   });
 
-  it('getCourseEligibility builds the expected URL with encoded courseKey', async () => {
+  it('getCourseEligibility reads eligibility from DM for the stored user', async () => {
     await store.dispatch(
       (CourseMetadataSlice.endpoints.getCourseEligibility as any).initiate({
         courseKey: 'course-v1:Org+Run+1',
       }),
     );
     expect(capturedBaseQueryArgs).toHaveLength(1);
-    expect(capturedBaseQueryArgs[0].url).toContain(
-      '/api/ibl/enrollment/enroll_status?course_id=course-v1%3AOrg%2BRun%2B1',
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/api/catalog/eligibility/courses/check/?username=jane&course_id=course-v1%3AOrg%2BRun%2B1',
     );
   });
 

@@ -1,7 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+
+// Mock iblFetchBaseQuery to avoid Node 25 + jsdom AbortSignal cross-realm
+// incompatibility in fetchBaseQuery's Request constructor.
+let capturedBaseQueryArgs: any[] = [];
+vi.mock('@/lib/utils', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/lib/utils')>();
+  return {
+    ...original,
+    iblFetchBaseQuery: async (args: any) => {
+      capturedBaseQueryArgs.push({ ...args, method: (args.method ?? 'GET').toUpperCase() });
+      return { data: { name: 'Program' } };
+    },
+  };
+});
+
+import { SERVICES } from '@/lib/constants';
 import { StudioSlice } from '../studio';
 
-// Don't mock the module - test the actual slice
 describe('StudioSlice', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -166,5 +183,96 @@ describe('StudioSlice internal utils', () => {
     const selector = endpoint.select({ course_id: 'test-course' });
     expect(selector).toBeDefined();
     expect(typeof selector).toBe('function');
+  });
+});
+
+describe('StudioSlice query functions (executed via store dispatch)', () => {
+  let store: ReturnType<typeof configureStore>;
+
+  beforeEach(() => {
+    capturedBaseQueryArgs = [];
+    window.localStorage.setItem('userData', JSON.stringify({ user_nicename: 'jane' }));
+    store = configureStore({
+      reducer: { [StudioSlice.reducerPath]: StudioSlice.reducer },
+      middleware: (getDefault) => getDefault().concat(StudioSlice.middleware),
+    });
+    setupListeners(store.dispatch);
+  });
+
+  it('getCoursesAdvancedSettings reads from Studio', async () => {
+    await store.dispatch(
+      (StudioSlice.endpoints.getCoursesAdvancedSettings as any).initiate({
+        course_id: 'course-v1:Org+Run+1',
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'GET',
+      url: '/api/contentstore/v0/advanced_settings/course-v1:Org+Run+1?fetch_all=0',
+      service: SERVICES.STUDIO,
+    });
+  });
+
+  it('updateCoursesAdvancedSettings PATCHes Studio with the settings', async () => {
+    const advanced_settings = { display_name: { value: 'New' } };
+    await store.dispatch(
+      (StudioSlice.endpoints.updateCoursesAdvancedSettings as any).initiate({
+        course_id: 'course-v1:Org+Run+1',
+        advanced_settings,
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'PATCH',
+      url: '/api/contentstore/v0/advanced_settings/course-v1:Org+Run+1',
+      body: advanced_settings,
+      service: SERVICES.STUDIO,
+    });
+  });
+
+  it('getProgramMetadata reads from DM and wraps the payload as formData', async () => {
+    const result: any = await store.dispatch(
+      (StudioSlice.endpoints.getProgramMetadata as any).initiate({
+        programId: 'program-v1:Org+P 1',
+        org: 'Org&Co',
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'GET',
+      url: '/api/catalog/metadata/program/?program_id=program-v1%3AOrg%2BP%201&org=Org%26Co&username=jane',
+      service: SERVICES.DM,
+    });
+    expect(result.data).toEqual({
+      formData: { name: 'Program', program_id: 'program-v1:Org+P 1', org: 'Org&Co' },
+    });
+  });
+
+  it('getProgramMetadata sends an empty username when no user is stored', async () => {
+    window.localStorage.removeItem('userData');
+    await store.dispatch(
+      (StudioSlice.endpoints.getProgramMetadata as any).initiate({ programId: 'p1', org: 'o1' }),
+    );
+    expect(capturedBaseQueryArgs[0].url).toBe(
+      '/api/catalog/metadata/program/?program_id=p1&org=o1&username=',
+    );
+  });
+
+  it('updateProgramMetadata POSTs through the Studio plugin with credentials', async () => {
+    await store.dispatch(
+      (StudioSlice.endpoints.updateProgramMetadata as any).initiate({
+        programId: 'p1',
+        org: 'o1',
+        settings: { name: 'Renamed' },
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'POST',
+      url: '/api/ibl/catalog/metadata/program/settings/?program_id=p1&org=o1',
+      body: { program_id: 'p1', org: 'o1', name: 'Renamed' },
+      service: SERVICES.STUDIO_DIRECT,
+      includeCredentials: true,
+    });
   });
 });
