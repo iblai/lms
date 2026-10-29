@@ -2,10 +2,10 @@
   "version": 2,
   "lastUpdated": "2026-10-28",
   "summary": {
-    "totalCheckpoints": 276,
-    "coveredCheckpoints": 276,
+    "totalCheckpoints": 280,
+    "coveredCheckpoints": 280,
     "percent": 100,
-    "totalJourneys": 38
+    "totalJourneys": 39
   },
   "journeys": [
     {
@@ -38,7 +38,7 @@
     },
     {
       "id": "onboarding-first-time-user",
-      "name": "Onboarding \u2014 First-Time User",
+      "name": "Onboarding — First-Time User",
       "spec": "02-onboarding-first-time-user.spec.ts",
       "sourceFiles": [
         "app/start/page.tsx",
@@ -172,7 +172,7 @@
     },
     {
       "id": "course-content-tabs",
-      "name": "Course Content \u2014 Tab Navigation & Iframes",
+      "name": "Course Content — Tab Navigation & Iframes",
       "spec": "05-course-content-tabs.spec.ts",
       "sourceFiles": [
         "app/course-content/[course_id]/course/page.tsx",
@@ -284,7 +284,7 @@
         },
         {
           "id": "tabs-09",
-          "description": "Administration area (staff) renders natively behind one \"Administration\" tab \u2014 a grouped section nav (Overview \u00b7 Grades \u00b7 Membership \u00b7 Cohorts \u00b7 Extensions \u00b7 Attempts \u00b7 Reports \u00b7 Analytics \u00b7 Settings \u00b7 Authoring), overview stat cards, and ?section= deep links",
+          "description": "Administration area (staff) renders natively behind one \"Administration\" tab — a grouped section nav (Overview · Grades · Membership · Cohorts · Extensions · Attempts · Reports · Analytics · Settings · Authoring), overview stat cards, and ?section= deep links",
           "status": "covered"
         },
         {
@@ -409,12 +409,12 @@
         },
         {
           "id": "tabs-34",
-          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit\u2019s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
+          "description": "Unit media dropdown (next to the fullscreen control) lists the current unit’s pdf / video / ibl-media-catalog blocks with name and type; selecting one previews student_view_url in an overlay on the Agent tab and posts a SCROLL_TO message to the edX iframe on the Course tab",
           "status": "covered"
         },
         {
           "id": "tabs-35",
-          "description": "Course content layout requests the signed-in user\u2019s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
+          "description": "Course content layout requests the signed-in user’s role listing (GET /api/ibl/users/manage/roles/, looked up by username / email / user_id) so course-scoped roles can gate the staff tabs",
           "status": "covered"
         },
         {
@@ -429,7 +429,7 @@
         },
         {
           "id": "tabs-38",
-          "description": "Grades (staff only, same gate as the admin Overview) navigates to `/gradebook` and renders the native grade table off the grades API (learner count, search, per-subsection columns, Percent/Absolute score view, a Filters popover with the edX gradebook's filters \u2014 assignment type / assignment / assignment grade range, overall grade range, track, cohort, include course team \u2014 and removable filter chips; learners are shown by profile name or email, never username)",
+          "description": "Grades (staff only, same gate as the admin Overview) navigates to `/gradebook` and renders the native grade table off the grades API (learner count, search, per-subsection columns, Percent/Absolute score view, a Filters popover with the edX gradebook's filters — assignment type / assignment / assignment grade range, overall grade range, track, cohort, include course team — and removable filter chips; learners are shown by profile name or email, never username)",
           "status": "covered"
         }
       ]
@@ -480,7 +480,7 @@
     },
     {
       "id": "profile-skills",
-      "name": "Profile \u2014 Skills",
+      "name": "Profile — Skills",
       "spec": "07-profile-skills.spec.ts",
       "sourceFiles": [
         "app/profile/skills/page.tsx",
@@ -518,7 +518,7 @@
     },
     {
       "id": "profile-credentials",
-      "name": "Profile \u2014 Credentials",
+      "name": "Profile — Credentials",
       "spec": "08-profile-credentials.spec.ts",
       "sourceFiles": ["app/profile/credentials/page.tsx", "components/credential-box.tsx"],
       "checkpoints": [
@@ -551,7 +551,7 @@
     },
     {
       "id": "profile-pathways",
-      "name": "Profile \u2014 Pathways",
+      "name": "Profile — Pathways",
       "spec": "09-profile-pathways.spec.ts",
       "sourceFiles": [
         "app/profile/pathways/page.tsx",
@@ -587,7 +587,7 @@
     },
     {
       "id": "profile-programs",
-      "name": "Profile \u2014 Programs",
+      "name": "Profile — Programs",
       "spec": "10-profile-programs.spec.ts",
       "sourceFiles": ["app/profile/programs/page.tsx", "app/programs/[program_id]/page.tsx"],
       "checkpoints": [
@@ -628,7 +628,7 @@
         },
         {
           "id": "prog-08",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates content",
+          "description": "Tab switching About → Courses → Settings updates content",
           "status": "covered"
         },
         {
@@ -645,7 +645,7 @@
     },
     {
       "id": "profile-courses",
-      "name": "Profile \u2014 Courses",
+      "name": "Profile — Courses",
       "spec": "11-profile-courses.spec.ts",
       "sourceFiles": ["app/profile/courses/page.tsx"],
       "checkpoints": [
@@ -673,7 +673,7 @@
     },
     {
       "id": "profile-public",
-      "name": "Profile \u2014 Public",
+      "name": "Profile — Public",
       "spec": "12-profile-public.spec.ts",
       "sourceFiles": ["app/profile/public/page.tsx"],
       "checkpoints": [
@@ -914,7 +914,7 @@
     },
     {
       "id": "analytics-content",
-      "name": "Analytics Content \u2014 Courses & Programs",
+      "name": "Analytics Content — Courses & Programs",
       "spec": "18-analytics-content.spec.ts",
       "sourceFiles": [
         "app/analytics/courses/page.tsx",
@@ -1128,7 +1128,7 @@
     },
     {
       "id": "navigation-navbar",
-      "name": "Navigation \u2014 NavBar & Sidebar",
+      "name": "Navigation — NavBar & Sidebar",
       "spec": "22-navigation-navbar.spec.ts",
       "sourceFiles": [
         "components/nav-bar.tsx",
@@ -1299,7 +1299,7 @@
     },
     {
       "id": "chat-embed",
-      "name": "Chat Embed \u2014 Mentor Widget",
+      "name": "Chat Embed — Mentor Widget",
       "spec": "25-chat-embed.spec.ts",
       "sourceFiles": ["components/chat-button.tsx", "components/chat/index.tsx"],
       "checkpoints": [
@@ -1357,7 +1357,7 @@
         },
         {
           "id": "err-03",
-          "description": "Non-existent route renders the 404 page in place \u2014 URL unchanged, 404 status",
+          "description": "Non-existent route renders the 404 page in place — URL unchanged, 404 status",
           "status": "covered"
         },
         {
@@ -1440,7 +1440,7 @@
     },
     {
       "id": "accessibility-wcag",
-      "name": "Accessibility \u2014 WCAG 2.1 AA",
+      "name": "Accessibility — WCAG 2.1 AA",
       "spec": "29-accessibility-wcag.spec.ts",
       "sourceFiles": [
         "app/home/page.tsx",
@@ -1504,7 +1504,7 @@
     },
     {
       "id": "course-access-guard-tenant-redirect",
-      "name": "Course Access Guard \u2014 Cross-Tenant Redirect",
+      "name": "Course Access Guard — Cross-Tenant Redirect",
       "spec": "30-course-access-guard-tenant-redirect.spec.ts",
       "sourceFiles": [
         "components/course-access-guard.tsx",
@@ -1571,7 +1571,7 @@
         },
         {
           "id": "pdp-05",
-          "description": "Tab switching About \u2192 Courses \u2192 Settings updates aria-selected and tab content",
+          "description": "Tab switching About → Courses → Settings updates aria-selected and tab content",
           "status": "covered"
         },
         {
@@ -1697,14 +1697,14 @@
         },
         {
           "id": "useronb-04",
-          "description": "The member flow holds the onboarding route \u2014 a tenant with no form configured shows the notice instead of redirecting away",
+          "description": "The member flow holds the onboarding route — a tenant with no form configured shows the notice instead of redirecting away",
           "status": "covered"
         }
       ]
     },
     {
       "id": "user-onboarding-agent-link",
-      "name": "User Onboarding \u2014 Per-Agent Links",
+      "name": "User Onboarding — Per-Agent Links",
       "spec": "36-user-onboarding-agent-link.spec.ts",
       "sourceFiles": [
         "app/platform/[tenant]/onboarding/[agentId]/page.tsx",
@@ -1803,7 +1803,7 @@
         },
         {
           "id": "tour-04",
-          "description": "Admin/watcher reaches the account tools (sidebar footer) step last \u2014 skips for a learner",
+          "description": "Admin/watcher reaches the account tools (sidebar footer) step last — skips for a learner",
           "status": "covered"
         },
         {
@@ -1841,12 +1841,12 @@
         },
         {
           "id": "lesson-02",
-          "description": "Administration \u2192 Authoring links to <STUDIO_DOMAIN_URL>/course/<course-id> and opens Studio's course outline in a new tab (the test starts the edX session through the SSO login endpoint first)",
+          "description": "Administration → Authoring links to <STUDIO_DOMAIN_URL>/course/<course-id> and opens Studio's course outline in a new tab (the test starts the edX session through the SSO login endpoint first)",
           "status": "covered"
         },
         {
           "id": "lesson-03",
-          "description": "Expanding the subsection in Studio lists its units; Actions \u2192 Duplicate on the last unit appends a \"Duplicate of \u2026\" unit flagged \"Unpublished units will not be released\"",
+          "description": "Expanding the subsection in Studio lists its units; Actions → Duplicate on the last unit appends a \"Duplicate of …\" unit flagged \"Unpublished units will not be released\"",
           "status": "covered"
         },
         {
@@ -1877,6 +1877,38 @@
         {
           "id": "lesson-09",
           "description": "The outline refreshes: the new unit's completion icon becomes the filled check and the completed-unit count grows by one; the unit is deleted from Studio afterwards",
+          "status": "covered"
+        }
+      ]
+    },
+    {
+      "id": "chat-sidebar-close",
+      "name": "Chat Sidebar Close",
+      "spec": "40-chat-sidebar-close.spec.ts",
+      "sourceFiles": [
+        "components/chat-button.tsx",
+        "hooks/use-default-mentor.ts",
+        "app/_components/app-layout.tsx"
+      ],
+      "checkpoints": [
+        {
+          "id": "chat-close-01",
+          "description": "The \"Open chat assistant\" launcher on home opens the chat sidebar (launcher hidden) with one agent-ai element on the host tenant, flagged showclosebutton",
+          "status": "covered"
+        },
+        {
+          "id": "chat-close-02",
+          "description": "The sidebar embeds the resolved agent: the iframe points at /platform/<tenant>/<mentor> and carries show-close-button=true",
+          "status": "covered"
+        },
+        {
+          "id": "chat-close-03",
+          "description": "Clicking the agent's Close chat (X) button inside the embed hides the chat sidebar and brings the launcher back",
+          "status": "covered"
+        },
+        {
+          "id": "chat-close-04",
+          "description": "Reopening from the launcher shows the same agent again with its close button",
           "status": "covered"
         }
       ]

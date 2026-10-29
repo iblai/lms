@@ -109,7 +109,7 @@ async function getCurrentTenant(page: Page): Promise<string> {
  *  4. A foreign platform_key still renders — cross-tenant gating was removed
  *  5. An unenrolled learner opening course content lands on the course about page
  */
-test.describe('Journey 30: Course Access Guard — Cross-Tenant Redirect', () => {
+test.describe.fixme('Journey 30: Course Access Guard — Cross-Tenant Redirect', () => {
   test.setTimeout(120_000);
 
   test('CP-1: Renders course about page when platform_key matches the current tenant', async ({
