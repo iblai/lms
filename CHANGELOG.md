@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.100.1](https://github.com/iblai/lms/compare/skills-v0.100.0...skills-v0.100.1) (2026-10-30)
+
+### CI
+
+* **pr-gate:** say what the e2e run found in the merge box, linked to it ([3e29f1f](https://github.com/iblai/lms/commit/3e29f1f67d35e9b743e2545e7d41b2f51e0a2dd2))
+
 ## [0.100.0](https://github.com/iblai/lms/compare/skills-v0.99.0...skills-v0.100.0) (2026-10-29)
 
 ### Features
