@@ -14,8 +14,7 @@ import { UserSkill } from '@/types/skills';
 
 /**
  * The learner's skills — Earned / Self-Reported / Desired sections with
- * add + rate + delete flows. Shared by the profile > Skills page and the
- * sidebar Skills dialog.
+ * add + rate + delete flows, on the profile > Skills page.
  */
 export function ProfileSkillsContent() {
   const {

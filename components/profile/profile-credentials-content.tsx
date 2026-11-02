@@ -11,8 +11,8 @@ import { CredentialMiniBox } from '@/components/credential-mini-box';
 import { Assertion } from '@iblai/iblai-api';
 
 /**
- * The learner's credentials — search + grid + detail modal. Shared by the
- * profile > Credentials page and the sidebar Credentials dialog.
+ * The learner's credentials — search + grid + detail modal, on the
+ * profile > Credentials page.
  */
 export function ProfileCredentialsContent() {
   const [searchQuery, setSearchQuery] = useState('');
