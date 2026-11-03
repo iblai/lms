@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.100.2](https://github.com/iblai/lms/compare/skills-v0.100.1...skills-v0.100.2) (2026-11-03)
+
+### Bug Fixes
+
+* **e2e:** install pnpm with npm, not corepack, in the e2e image ([aed4ed0](https://github.com/iblai/lms/commit/aed4ed0397542809affd2b4597f5dc3ad4441c12))
+
+### Chores
+
+* **e2e:** enable Chromium sandbox and update Playwright to 1.64.1 ([c18840d](https://github.com/iblai/lms/commit/c18840db08e00231ff41965e47c265ca5abf1118))
+
 ## [0.100.1](https://github.com/iblai/lms/compare/skills-v0.100.0...skills-v0.100.1) (2026-10-30)
 
 ### CI

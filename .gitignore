@@ -66,6 +66,8 @@ e2e/playwright-report
 e2e/test-results.json
 playwright/.auth
 e2e/playwright/.auth
+# Seed test the Playwright MCP server writes at runtime (see e2e/mcp.config.ts)
+e2e/.mcp-scratch/
 
 # tauri builds
 *.pkg
