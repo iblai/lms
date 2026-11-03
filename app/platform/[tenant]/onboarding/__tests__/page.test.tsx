@@ -299,6 +299,17 @@ describe('OnboardingPage — who sees which flow', () => {
     expect(wizardProps.current!.renderFinalStep).toBeInstanceOf(Function);
   });
 
+  it('names the resolved flow on the page container', () => {
+    vi.mocked(useIsAdmin).mockReturnValue(true);
+    const { unmount } = render(<OnboardingPage />);
+    expect(screen.getByTestId('onboarding-page')).toHaveAttribute('data-flow', 'admin');
+    unmount();
+
+    vi.mocked(useIsAdmin).mockReturnValue(false);
+    render(<OnboardingPage />);
+    expect(screen.getByTestId('onboarding-page')).toHaveAttribute('data-flow', 'user');
+  });
+
   it('runs the member flow for an admin once the navbar sets the preview param', () => {
     vi.mocked(useIsAdmin).mockReturnValue(true);
     previewUserFlow();

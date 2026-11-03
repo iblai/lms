@@ -72,7 +72,13 @@ export function OnboardingFlowPage({ agentId }: { agentId?: string }) {
     // flex-1 + min-h-0 rather than a plain padded box: the member flow's agent
     // step uses a `h-full` shell, which needs an ancestor with a real height to
     // stretch into.
-    <div className="flex min-h-0 flex-1 flex-col pt-4" data-testid="onboarding-page">
+    // `data-flow` names the resolved flow for e2e: the SDK's setup flow skips
+    // the steps the platform already answers, so no single step marks it.
+    <div
+      className="flex min-h-0 flex-1 flex-col pt-4"
+      data-testid="onboarding-page"
+      data-flow={flow}
+    >
       <OnboardingWizard
         // Remounts on the switch — and on a move between agent links — so no
         // run inherits another's step or answers.
