@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.100.3](https://github.com/iblai/lms/compare/skills-v0.100.2...skills-v0.100.3) (2026-11-03)
+
+### Bug Fixes
+
+* discussion tab no longer display when discussions disabled ([87d55fe](https://github.com/iblai/lms/commit/87d55fe94869c0cfd12b17d26cf078de6c42c8a6))
+
 ## [0.100.2](https://github.com/iblai/lms/compare/skills-v0.100.1...skills-v0.100.2) (2026-11-03)
 
 ### Bug Fixes
