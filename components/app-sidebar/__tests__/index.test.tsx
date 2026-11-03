@@ -34,6 +34,7 @@ vi.mock('@/lib/config', () => ({
       mainPlatformKey: vi.fn(() => 'main'),
       appName: vi.fn(() => 'skills'),
       platformBaseDomain: vi.fn(() => 'example.com'),
+      enableGravatarOnProfilePic: vi.fn(() => 'true'),
     },
     urls: {
       studioUrl: vi.fn(() => 'https://studio.example.com'),
@@ -49,6 +50,7 @@ vi.mock('@/hooks/use-tenant-param', () => ({
 vi.mock('@/utils/helpers', () => ({
   getUserName: vi.fn(() => 'test-user'),
   getUserEmail: vi.fn(() => 'test-user@example.com'),
+  onAccountDeleted: vi.fn(),
 }));
 
 vi.mock('@/utils/discover-visibility', () => ({
@@ -93,28 +95,6 @@ vi.mock('@/components/logo', () => ({
   Logo: () => <div data-testid="logo" />,
 }));
 
-vi.mock('@/components/profile/profile-credentials-content', () => ({
-  ProfileCredentialsContent: () => <div data-testid="credentials-content" />,
-}));
-
-vi.mock('@/components/profile/profile-skills-content', () => ({
-  ProfileSkillsContent: () => <div data-testid="skills-content" />,
-}));
-
-vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ open, onOpenChange, children }: any) =>
-    open ? (
-      <div data-testid="library-dialog">
-        <button onClick={() => onOpenChange(false)}>Dismiss dialog</button>
-        {children}
-      </div>
-    ) : null,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <h2>{children}</h2>,
-  DialogDescription: ({ children }: any) => <p>{children}</p>,
-}));
-
 // `getVisibleAnalyticsTabs` is stubbed rather than run for real — the SDK owns
 // (and tests) the watcher rule; here we only care that the sidebar honours
 // whatever it returns. Defaults to every tab; override per test to narrow.
@@ -139,9 +119,6 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
 }));
 
 vi.mock('@iblai/iblai-js/web-containers', () => ({
-  GradebookTab: ({ org, username }: any) => (
-    <div data-testid="gradebook-tab" data-org={org} data-username={username} />
-  ),
   InviteUserDialog: ({ tenant, isOpen, onClose }: any) =>
     isOpen ? (
       <div data-testid="invite-dialog" data-tenant={tenant}>
@@ -160,9 +137,35 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
   PlatformSidebarCollapsedLabelFlyout: ({ label, children }: any) => (
     <div data-testid={`flyout-${label}`}>{children}</div>
   ),
-  PlatformAccountSheet: ({ tab, onClose, onInviteClick }: any) =>
+  UserProfileModal: ({
+    isOpen,
+    onClose,
+    targetTab,
+    params,
+    email,
+    tenants,
+    currentSPA,
+    showGradebookTab,
+    onAccountDeleted,
+  }: any) =>
+    isOpen ? (
+      <div
+        data-testid="profile-modal"
+        data-tab={targetTab}
+        data-tenant={params.tenantKey}
+        data-admin={String(params.isAdmin)}
+        data-email={email}
+        data-tenants={tenants.map((t: any) => t.key).join(',')}
+        data-spa={currentSPA}
+        data-gradebook={String(showGradebookTab)}
+      >
+        <button onClick={onClose}>Close profile</button>
+        <button onClick={onAccountDeleted}>Delete account</button>
+      </div>
+    ) : null,
+  PlatformAccountSheet: ({ tab, username, onClose, onInviteClick }: any) =>
     tab ? (
-      <div data-testid="account-sheet" data-tab={tab}>
+      <div data-testid="account-sheet" data-tab={tab} data-username={username}>
         <button onClick={onClose}>Close account sheet</button>
         <button onClick={onInviteClick}>Invite from sheet</button>
       </div>
@@ -240,8 +243,8 @@ import { isLoggedIn } from '@iblai/iblai-js/web-utils';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { config } from '@/lib/config';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
-import { canMonetize, useUserTenants } from '@/utils/localstorage';
-import { getUserName } from '@/utils/helpers';
+import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
+import { getUserName, onAccountDeleted } from '@/utils/helpers';
 
 const expandedRow = (id: string) =>
   within(screen.getByTestId(`section-${id}-expanded`)).getByRole('button');
@@ -265,6 +268,7 @@ describe('AppSidebar', () => {
     } as any);
     vi.mocked(canMonetize).mockReturnValue(true);
     vi.mocked(useUserTenants).mockReturnValue({ userTenants: [{ key: 'test-tenant' }] } as any);
+    vi.mocked(useCurrentTenant).mockReturnValue({ currentTenant: { key: 'test-tenant' } } as any);
     vi.mocked(getUserName).mockReturnValue('test-user');
   });
 
@@ -516,46 +520,46 @@ describe('AppSidebar', () => {
     });
   });
 
-  describe('library dialogs', () => {
-    it('opens the Gradebook dialog with the SDK gradebook wired to org/username', () => {
+  describe('profile rows', () => {
+    it.each(['gradebook', 'credentials', 'skills'])(
+      'opens the whole profile modal on %s, not a standalone dialog',
+      (tab) => {
+        render(<AppSidebar />);
+        expect(screen.queryByTestId('profile-modal')).not.toBeInTheDocument();
+        fireEvent.click(expandedRow(tab));
+        expect(mockPush).not.toHaveBeenCalled();
+        const modal = screen.getByTestId('profile-modal');
+        expect(modal).toHaveAttribute('data-tab', tab);
+        expect(modal).toHaveAttribute('data-tenant', 'test-tenant');
+        expect(modal).toHaveAttribute('data-email', 'test-user@example.com');
+        expect(modal).toHaveAttribute('data-tenants', 'test-tenant');
+        expect(modal).toHaveAttribute('data-spa', 'skills');
+        expect(modal).toHaveAttribute('data-gradebook', 'true');
+      },
+    );
+
+    it('opens the profile modal from the collapsed rail too', () => {
       render(<AppSidebar />);
-      expect(screen.queryByTestId('library-dialog')).not.toBeInTheDocument();
-      fireEvent.click(expandedRow('gradebook'));
-      expect(mockPush).not.toHaveBeenCalled();
-      const dialog = screen.getByTestId('library-dialog');
-      expect(within(dialog).getByRole('heading', { name: 'Gradebook' })).toBeInTheDocument();
-      expect(
-        within(dialog).getByText(
-          'Your grades and progress across courses, programs, and pathways.',
-        ),
-      ).toBeInTheDocument();
-      const gradebook = within(dialog).getByTestId('gradebook-tab');
-      expect(gradebook).toHaveAttribute('data-org', 'test-tenant');
-      expect(gradebook).toHaveAttribute('data-username', 'test-user');
+      fireEvent.click(collapsedRow('skills'));
+      expect(screen.getByTestId('profile-modal')).toHaveAttribute('data-tab', 'skills');
     });
 
-    it('opens the Credentials dialog hosting the profile credentials content', () => {
+    it("passes the current tenant's admin flag to the profile modal", () => {
+      vi.mocked(useCurrentTenant).mockReturnValue({
+        currentTenant: { key: 'test-tenant', is_admin: true },
+      } as any);
       render(<AppSidebar />);
       fireEvent.click(expandedRow('credentials'));
-      const dialog = screen.getByTestId('library-dialog');
-      expect(within(dialog).getByRole('heading', { name: 'Credentials' })).toBeInTheDocument();
-      expect(within(dialog).getByTestId('credentials-content')).toBeInTheDocument();
+      expect(screen.getByTestId('profile-modal')).toHaveAttribute('data-admin', 'true');
     });
 
-    it('opens the Skills dialog hosting the profile skills content', () => {
+    it('closes the profile modal and wires account deletion to the LMS handler', () => {
       render(<AppSidebar />);
-      fireEvent.click(expandedRow('skills'));
-      const dialog = screen.getByTestId('library-dialog');
-      expect(within(dialog).getByRole('heading', { name: 'Skills' })).toBeInTheDocument();
-      expect(within(dialog).getByTestId('skills-content')).toBeInTheDocument();
-    });
-
-    it('closes the dialog through onOpenChange', () => {
-      render(<AppSidebar />);
-      fireEvent.click(expandedRow('gradebook'));
-      expect(screen.getByTestId('library-dialog')).toBeInTheDocument();
-      fireEvent.click(screen.getByText('Dismiss dialog'));
-      expect(screen.queryByTestId('library-dialog')).not.toBeInTheDocument();
+      fireEvent.click(expandedRow('credentials'));
+      fireEvent.click(screen.getByText('Delete account'));
+      expect(onAccountDeleted).toHaveBeenCalled();
+      fireEvent.click(screen.getByText('Close profile'));
+      expect(screen.queryByTestId('profile-modal')).not.toBeInTheDocument();
     });
   });
 
@@ -649,7 +653,7 @@ describe('AppSidebar', () => {
   it('handles a null username by passing empty strings downstream', () => {
     vi.mocked(getUserName).mockReturnValue(null as any);
     render(<AppSidebar />);
-    fireEvent.click(expandedRow('gradebook'));
-    expect(screen.getByTestId('gradebook-tab')).toHaveAttribute('data-username', '');
+    fireEvent.click(screen.getByText('footer-management'));
+    expect(screen.getByTestId('account-sheet')).toHaveAttribute('data-username', '');
   });
 });

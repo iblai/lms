@@ -15,12 +15,13 @@ import {
   Route,
   Sparkles,
 } from 'lucide-react';
-import { GradebookTab, InviteUserDialog } from '@iblai/iblai-js/web-containers';
+import { InviteUserDialog } from '@iblai/iblai-js/web-containers';
 import {
   PLATFORM_SIDEBAR_NAV_MUTED,
   PlatformAccountSheet,
   PlatformSidebar,
   PlatformSidebarCollapsedLabelFlyout,
+  UserProfileModal,
 } from '@iblai/iblai-js/web-containers/next';
 import type {
   PlatformAccountTab,
@@ -38,13 +39,6 @@ import {
 } from '@iblai/iblai-js/web-utils';
 
 import { cn } from '@/lib/utils';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { config } from '@/lib/config';
 import { Logo } from '@/components/logo';
 import { useTenantParam } from '@/hooks/use-tenant-param';
@@ -53,45 +47,17 @@ import { useAppSelector } from '@/lib/hooks';
 import { selectRbacPermissions } from '@/features/rbac';
 import { checkRbacPermission } from '@/hoc';
 import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
-import { getUserEmail, getUserName } from '@/utils/helpers';
+import { getUserEmail, getUserName, onAccountDeleted } from '@/utils/helpers';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 import { useLearnerMode } from '@/hooks/use-learner-mode';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
-import { ProfileCredentialsContent } from '@/components/profile/profile-credentials-content';
-import { ProfileSkillsContent } from '@/components/profile/profile-skills-content';
 
 type SidebarOpenSection = 'analytics';
 
-type LibraryDialogId = 'gradebook' | 'credentials' | 'skills';
-
-/** Content hosted in the shared dialog shell: the SDK Gradebook, plus the
- * profile > Credentials and profile > Skills page content (shared with
- * those routes via the components/profile/* content components). */
-const LIBRARY_DIALOGS: Record<
-  LibraryDialogId,
-  {
-    title: string;
-    description: string;
-    render: (ctx: { org: string; username: string }) => React.ReactNode;
-  }
-> = {
-  gradebook: {
-    title: 'Gradebook',
-    description: 'Your grades and progress across courses, programs, and pathways.',
-    render: ({ org, username }) => <GradebookTab org={org} username={username} />,
-  },
-  credentials: {
-    title: 'Credentials',
-    description: 'Credentials you have earned.',
-    render: () => <ProfileCredentialsContent />,
-  },
-  skills: {
-    title: 'Skills',
-    description: 'Your earned, self-reported, and desired skills.',
-    render: () => <ProfileSkillsContent />,
-  },
-};
+/** Profile tabs the sidebar opens the whole profile modal on. Credentials and
+ * Skills are sub-tabs of its Education tab. */
+type ProfileShortcutTab = 'gradebook' | 'credentials' | 'skills';
 
 /**
  * A flat (no sub-menu) top-level nav row, styled to match the SDK's
@@ -221,7 +187,7 @@ export function AppSidebar() {
 
   const [accountTab, setAccountTab] = React.useState<PlatformAccountTab | null>(null);
   const [inviteOpen, setInviteOpen] = React.useState(false);
-  const [libraryDialog, setLibraryDialog] = React.useState<LibraryDialogId | null>(null);
+  const [profileTab, setProfileTab] = React.useState<ProfileShortcutTab | null>(null);
   const [openSection, setOpenSection] = React.useState<SidebarOpenSection | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -338,9 +304,9 @@ export function AppSidebar() {
       ),
     });
 
-    // Dialog rows: open the shared library dialog instead of routing.
-    const dialogRow = (
-      id: LibraryDialogId,
+    // Profile rows: open the profile modal on that tab instead of routing.
+    const profileRow = (
+      id: ProfileShortcutTab,
       icon: PlatformSidebarNavIcon,
       label: string,
     ): PlatformSidebarSectionConfig => ({
@@ -351,7 +317,7 @@ export function AppSidebar() {
           collapsed={ctx.collapsed}
           icon={icon}
           label={label}
-          onClick={() => setLibraryDialog(id)}
+          onClick={() => setProfileTab(id)}
           onAfterNav={ctx.onAfterNav}
         />
       ),
@@ -391,9 +357,9 @@ export function AppSidebar() {
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
     }
-    list.push(dialogRow('gradebook', ClipboardList, 'Gradebook'));
-    list.push(dialogRow('credentials', Award, 'Credentials'));
-    list.push(dialogRow('skills', Sparkles, 'Skills'));
+    list.push(profileRow('gradebook', ClipboardList, 'Gradebook'));
+    list.push(profileRow('credentials', Award, 'Credentials'));
+    list.push(profileRow('skills', Sparkles, 'Skills'));
     return list;
   }, [
     tenant,
@@ -497,29 +463,29 @@ export function AppSidebar() {
         />
       )}
 
-      {/* Gradebook / Credentials / Skills — SDK list components hosted in a
-          shared dialog shell. Height is PINNED (not max-h) so the chrome
-          stays stable while the lists switch between loading skeletons,
-          results, and pagination. */}
-      <Dialog
-        open={libraryDialog !== null}
-        onOpenChange={(open) => !open && setLibraryDialog(null)}
-      >
-        <DialogContent className="mx-auto my-auto flex h-[85vh] w-[95vw] max-w-none flex-col gap-0 rounded-lg p-0 sm:max-w-7xl">
-          <DialogHeader className="flex-shrink-0 border-b border-gray-200 p-4 pt-[30px]">
-            <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {libraryDialog ? LIBRARY_DIALOGS[libraryDialog].title : ''}
-            </DialogTitle>
-            <DialogDescription className="text-sm leading-relaxed text-gray-600">
-              {libraryDialog ? LIBRARY_DIALOGS[libraryDialog].description : ''}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto p-6">
-            {libraryDialog &&
-              LIBRARY_DIALOGS[libraryDialog].render({ org: tenant, username: username ?? '' })}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Gradebook / Credentials / Skills open the whole profile modal on
+          that tab (Credentials and Skills are Education sub-tabs), so the
+          rest of the profile stays one click away. */}
+      {profileTab && (
+        <UserProfileModal
+          key={profileTab}
+          isOpen
+          onClose={() => setProfileTab(null)}
+          params={{ tenantKey: tenant, isAdmin: !!currentTenant?.is_admin }}
+          email={userEmail}
+          mainPlatformKey={config.settings.mainPlatformKey()}
+          tenants={(userTenants ?? []) as Tenant[]}
+          targetTab={profileTab}
+          currentSPA={config.settings.appName() || 'skills'}
+          authURL={config.urls.auth()}
+          showMentorAIDisplayCheckbox
+          showLeaderboardDisplayCheckbox
+          showGradebookTab
+          useGravatarPicFallback={config.settings.enableGravatarOnProfilePic() !== 'false'}
+          onAccountDeleted={() => onAccountDeleted()}
+          enableMemoryTab
+        />
+      )}
     </>
   );
 }

@@ -32,9 +32,12 @@ test.describe('Journey 35: User Onboarding', () => {
 
   type Page = import('@playwright/test').Page;
 
-  // The setup flow's first step. Matched on the input id rather than its label
-  // so the assertion does not ride on the UI language.
-  const adminFirstStep = (page: Page) => page.locator('#onboarding-org-name');
+  // The setup flow once a step has painted. Not a specific step: the SDK skips
+  // the ones the platform already answers (a named tenant opens past the
+  // organization step), so the page's resolved flow plus the wizard's progress
+  // row marks it, without riding on the UI language.
+  const adminFlow = (page: Page) =>
+    page.locator('[data-testid="onboarding-page"][data-flow="admin"]').getByRole('progressbar');
 
   /** Whatever the member flow can put on screen: a question step, the closing
    *  agent, or the "nothing configured" notice. */
@@ -67,7 +70,7 @@ test.describe('Journey 35: User Onboarding', () => {
     await gotoTenantPage(page, `onboarding${flow ? `?flow=${flow}` : ''}`, { timeout: 120000 });
     await expect(page.getByTestId('onboarding-page')).toBeVisible({ timeout: 120000 });
     // One flow or the other has painted — never a blank shell.
-    await expect(memberFlow(page).or(adminFirstStep(page)).first()).toBeVisible({
+    await expect(memberFlow(page).or(adminFlow(page)).first()).toBeVisible({
       timeout: 120000,
     });
   }
@@ -78,7 +81,7 @@ test.describe('Journey 35: User Onboarding', () => {
     if (await isAdminSession(page)) {
       // Admins land on whichever flow their tenant actually runs: the member
       // one when it is configured, else their own setup flow.
-      await expect(memberFlow(page).or(adminFirstStep(page)).first()).toBeVisible({
+      await expect(memberFlow(page).or(adminFlow(page)).first()).toBeVisible({
         timeout: 60000,
       });
       logger.info('Admin session served a flow');
@@ -87,7 +90,7 @@ test.describe('Journey 35: User Onboarding', () => {
 
     // Members only ever get the member flow — the setup steps are not theirs.
     await expect(memberFlow(page)).toBeVisible({ timeout: 60000 });
-    await expect(adminFirstStep(page)).toHaveCount(0);
+    await expect(adminFlow(page)).toHaveCount(0);
     logger.info('Member session served the tenant onboarding');
   });
 
@@ -102,18 +105,18 @@ test.describe('Journey 35: User Onboarding', () => {
       // `flow=admin` is an admin's word; a member asking for it still gets the
       // member flow rather than the setup steps.
       await expect(memberFlow(page)).toBeVisible({ timeout: 60000 });
-      await expect(adminFirstStep(page)).toHaveCount(0);
+      await expect(adminFlow(page)).toHaveCount(0);
       logger.info('Member session ignored the flow param, as it must');
       return;
     }
 
-    await expect(adminFirstStep(page)).toBeVisible({ timeout: 60000 });
+    await expect(adminFlow(page)).toBeVisible({ timeout: 60000 });
 
     // ...and the other side of the param takes the admin back to the member
     // flow, whatever their tenant's default is.
     await gotoOnboarding(page, 'user');
     await expect(memberFlow(page)).toBeVisible({ timeout: 60000 });
-    await expect(adminFirstStep(page)).toHaveCount(0);
+    await expect(adminFlow(page)).toHaveCount(0);
     logger.info('Flow param switches an admin between setup and member onboarding');
   });
 
@@ -144,7 +147,7 @@ test.describe('Journey 35: User Onboarding', () => {
     await gotoOnboarding(page, 'user');
 
     // Organization → sector → invite belong to the setup flow alone.
-    await expect(adminFirstStep(page)).toHaveCount(0);
+    await expect(adminFlow(page)).toHaveCount(0);
     await expect(page.getByRole('heading', { name: /Welcome to/i })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: /Invite your team/i })).toHaveCount(0);
     logger.info('Member flow confirmed free of the admin setup steps');

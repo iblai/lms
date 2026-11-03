@@ -46,9 +46,12 @@ test.describe('Journey 36: User Onboarding — Per-Agent Links', () => {
    */
   const UNKNOWN_AGENT_ID = 'e2e-no-such-onboarding-agent';
 
-  // The setup flow's first step, matched on the input id rather than its label
-  // so the assertion does not ride on the UI language.
-  const adminFirstStep = (page: Page) => page.locator('#onboarding-org-name');
+  // The setup flow once a step has painted. Not a specific step: the SDK skips
+  // the ones the platform already answers (a named tenant opens past the
+  // organization step), so the page's resolved flow plus the wizard's progress
+  // row marks it, without riding on the UI language.
+  const adminFlow = (page: Page) =>
+    page.locator('[data-testid="onboarding-page"][data-flow="admin"]').getByRole('progressbar');
 
   const agentStep = (page: Page) => page.getByTestId('user-onboarding-agent-step');
   const emptyNotice = (page: Page) => page.getByTestId('user-onboarding-empty');
@@ -77,7 +80,7 @@ test.describe('Journey 36: User Onboarding — Per-Agent Links', () => {
   async function gotoOnboarding(page: Page, subpath = '') {
     await gotoTenantPage(page, `onboarding${subpath}`, { timeout: 120000 });
     await expect(page.getByTestId('onboarding-page')).toBeVisible({ timeout: 120000 });
-    await expect(memberFlow(page).or(adminFirstStep(page)).first()).toBeVisible({
+    await expect(memberFlow(page).or(adminFlow(page)).first()).toBeVisible({
       timeout: 120000,
     });
   }
@@ -147,7 +150,7 @@ test.describe('Journey 36: User Onboarding — Per-Agent Links', () => {
     // following one sees what that audience gets, not their own first-run setup.
     await gotoOnboarding(page, `/${UNKNOWN_AGENT_ID}`);
 
-    await expect(adminFirstStep(page)).toHaveCount(0);
+    await expect(adminFlow(page)).toHaveCount(0);
     await expect(page.getByRole('heading', { name: /Welcome to/i })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: /Invite your team/i })).toHaveCount(0);
     logger.info('Agent route confirmed free of the admin setup steps');
@@ -162,14 +165,14 @@ test.describe('Journey 36: User Onboarding — Per-Agent Links', () => {
       // `flow=admin` is an admin's word; a member asking for it on an agent
       // link still gets the member flow.
       await expect(memberFlow(page)).toBeVisible({ timeout: 60000 });
-      await expect(adminFirstStep(page)).toHaveCount(0);
+      await expect(adminFlow(page)).toHaveCount(0);
       logger.info('Member session ignored the flow param on an agent link, as it must');
       return;
     }
 
     // The agent id only defaults the flow; an explicit switch is a decision and
     // still wins.
-    await expect(adminFirstStep(page)).toBeVisible({ timeout: 60000 });
+    await expect(adminFlow(page)).toBeVisible({ timeout: 60000 });
     logger.info('Admin switched to the setup flow from an agent link');
   });
 });
