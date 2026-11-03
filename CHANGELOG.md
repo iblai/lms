@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.101.0](https://github.com/iblai/lms/compare/skills-v0.100.3...skills-v0.101.0) (2026-11-03)
+
+### Features
+
+* profile top sidebar shortcuts should open full profile component ([95d48c7](https://github.com/iblai/lms/commit/95d48c7505ff7686d1a5eb361d32961556563fa8))
+
+### Bug Fixes
+
+* playwright > onboarding test issue resolved ([e6766bc](https://github.com/iblai/lms/commit/e6766bcb7731719e6415f2787e197b06cb40961d))
+
 ## [0.100.3](https://github.com/iblai/lms/compare/skills-v0.100.2...skills-v0.100.3) (2026-11-03)
 
 ### Bug Fixes
