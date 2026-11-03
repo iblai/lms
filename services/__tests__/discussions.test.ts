@@ -12,6 +12,7 @@ type Captured = {
   headers?: Record<string, string>;
 };
 let captured: Captured[] = [];
+const statusResult = vi.hoisted(() => ({ current: {} as { error?: { status: number } } }));
 vi.mock('@/lib/utils', async (importOriginal) => {
   const original = await importOriginal<typeof import('@/lib/utils')>();
   return {
@@ -26,6 +27,10 @@ vi.mock('@/lib/utils', async (importOriginal) => {
         headers: args.headers,
       });
       return { data: { ok: true } };
+    },
+    iblStatusFetchBaseQuery: async (args: any) => {
+      captured.push({ url: args.url, method: 'GET', service: args.service });
+      return statusResult.current.error ? { error: statusResult.current.error } : { data: {} };
     },
   };
 });
@@ -74,6 +79,30 @@ describe('DiscussionsSlice', () => {
     });
     const topics = await run('getCourseTopics', { courseId: COURSE });
     expect(topics.url).toBe(`/api/discussion/v1/course_topics/${ENC}`);
+  });
+
+  it('treats only a 404 on the threads list as discussions being off', async () => {
+    const probe = async (error?: { status: number }) => {
+      statusResult.current = { error };
+      const before = captured.length;
+      const result = await store.dispatch(
+        (DiscussionsSlice.endpoints as any).getDiscussionsAvailable.initiate(
+          { courseId: COURSE },
+          { forceRefetch: true },
+        ),
+      );
+      return { call: captured[before], available: result.data };
+    };
+
+    const ok = await probe();
+    expect(paramsOf(ok.call.url)).toEqual({
+      path: '/api/discussion/v1/threads/',
+      params: { course_id: COURSE, page: '1', page_size: '1' },
+    });
+    expect(ok.call.service).toBe('LMS');
+    expect(ok.available).toBe(true);
+    expect((await probe({ status: 404 })).available).toBe(false);
+    expect((await probe({ status: 500 })).available).toBe(true);
   });
 
   it('lists threads with only the filters that are set', async () => {

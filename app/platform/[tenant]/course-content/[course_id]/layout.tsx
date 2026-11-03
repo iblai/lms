@@ -60,6 +60,7 @@ import type { CourseBlockDetailsBlock } from '@/types/courses';
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { useChatState } from '@/components/chat-button';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
+import { useGetDiscussionsAvailableQuery } from '@/services/discussions';
 import { useLearnerMode } from '@/hooks/use-learner-mode';
 import {
   useGetCourseBlockDetailsQuery,
@@ -407,6 +408,7 @@ export default function CourseContentLayout({
     !course ||
     (isAgentContentModeOn(course) &&
       canViewContentModeAudience(course.agent_content_mode_audience, contentModeViewer));
+  const { data: discussionsTabVisible = true } = useGetDiscussionsAvailableQuery({ courseId });
   const courseTabVisible =
     !course ||
     (isCourseContentModeOn(course) &&
@@ -450,14 +452,16 @@ export default function CourseContentLayout({
         icon: CalendarDays,
         group: 'learn',
       },
-      {
+    );
+    if (discussionsTabVisible) {
+      tabs.push({
         key: 'forum',
         label: 'Discussions',
         href: `${courseBasePath}/discussion`,
         icon: MessagesSquare,
         group: 'learn',
-      },
-    );
+      });
+    }
     if (course?.learning_info && course.learning_info.length > 0) {
       tabs.push({
         key: 'learning-info',
@@ -530,6 +534,7 @@ export default function CourseContentLayout({
     courseId,
     agentTabVisible,
     courseTabVisible,
+    discussionsTabVisible,
     currentCourseInfo?.id,
     canViewStaffTabs,
     canViewAuthoringTab,

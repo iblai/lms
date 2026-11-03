@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-10-28",
+  "lastUpdated": "2026-11-03",
   "summary": {
-    "totalCheckpoints": 280,
-    "coveredCheckpoints": 280,
+    "totalCheckpoints": 281,
+    "coveredCheckpoints": 281,
     "percent": 100,
     "totalJourneys": 39
   },
@@ -430,6 +430,11 @@
         {
           "id": "tabs-38",
           "description": "Grades (staff only, same gate as the admin Overview) navigates to `/gradebook` and renders the native grade table off the grades API (learner count, search, per-subsection columns, Percent/Absolute score view, a Filters popover with the edX gradebook's filters — assignment type / assignment / assignment grade range, overall grade range, track, cohort, include course team — and removable filter chips; learners are shown by profile name or email, never username)",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-39",
+          "description": "Discussions tab is left out of the tab row when the course's threads list (`GET /api/discussion/v1/threads/`) answers 404, and a direct visit to `/discussion` shows a \"Discussions aren't available\" notice instead of the forum",
           "status": "covered"
         }
       ]

@@ -133,6 +133,19 @@ const baseQuery = (service: SERVICES, isJson = true, noAuth = false) =>
     },
   });
 
+/**
+ * `iblFetchBaseQuery` without the error rewriting: a failed request comes back
+ * as `{ error }` with its HTTP status intact, for callers that branch on it.
+ */
+export const iblStatusFetchBaseQuery: BaseQueryFn<
+  CustomQueryArgs,
+  unknown,
+  FetchBaseQueryError,
+  Record<string, unknown>,
+  FetchBaseQueryMeta
+> = (args, api, extraOptions) =>
+  baseQuery(args.service, args.isJson, args.noAuth)(args, api, extraOptions);
+
 export const iblFetchBaseQuery: BaseQueryFn<
   CustomQueryArgs,
   unknown,

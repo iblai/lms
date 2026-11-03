@@ -1543,4 +1543,40 @@ test.describe('Journey 05: Course Content Tabs', () => {
     });
     logger.info('Analytics tab renders AnalyticsCourseDetail (stat cards + Enrolled Users table)');
   });
+
+  test('Checkpoint 39: Discussions tab is hidden when the threads list 404s', async ({ page }) => {
+    // No test course has discussions off, so the threads list is answered the
+    // way edX answers it for such a course.
+    let threadsRejected = false;
+    await page.route(/\/api\/discussion\/v1\/threads\/\?/, async (route) => {
+      threadsRejected = true;
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ detail: 'Not found.' }),
+      });
+    });
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    await expect(await getCourseContentTab(page, 'Dates', { staffArea: false })).not.toBeNull();
+    await expect.poll(() => threadsRejected, { timeout: 30_000 }).toBe(true);
+    await expect(
+      page
+        .getByTestId('course-content-tabs')
+        .getByRole('link', { name: 'Discussions', exact: true }),
+    ).toHaveCount(0, { timeout: 30_000 });
+    expect(await getCourseContentTab(page, 'Discussions', { staffArea: false })).toBeNull();
+
+    const discussionUrl = page.url().replace(/\/[^/?]+(\?.*)?$/, '/discussion');
+    await page.goto(discussionUrl);
+    await expect(page.getByTestId('discussions-unavailable')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('course-discussions')).toHaveCount(0);
+    logger.info('Discussions tab hidden and /discussion shows the unavailable notice');
+  });
 });
