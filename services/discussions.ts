@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { iblFetchBaseQuery } from '@/lib/utils';
+import { iblFetchBaseQuery, iblStatusFetchBaseQuery } from '@/lib/utils';
 import { SERVICES } from '@/lib/constants';
 import type {
   CommentPatch,
@@ -58,6 +58,22 @@ export const DiscussionsSlice = createApi({
         service: SERVICES.LMS,
       }),
       providesTags: ['Topics'],
+    }),
+    // edX answers the threads list with a 404 when discussions are off for the
+    // course. Any other failure counts as available, so a transient error
+    // doesn't hide the tab.
+    getDiscussionsAvailable: builder.query<boolean, { courseId: string }>({
+      queryFn: async ({ courseId }, api, extraOptions) => {
+        const result = await iblStatusFetchBaseQuery(
+          {
+            url: `/api/discussion/v1/threads/?${query({ course_id: courseId, page: 1, page_size: 1 })}`,
+            service: SERVICES.LMS,
+          },
+          api,
+          extraOptions,
+        );
+        return { data: result.error?.status !== 404 };
+      },
     }),
 
     getThreads: builder.query<ThreadsPage, ThreadsQuery>({
@@ -257,6 +273,7 @@ export const DiscussionsSlice = createApi({
 export const {
   useGetDiscussionConfigQuery,
   useGetCourseTopicsQuery,
+  useGetDiscussionsAvailableQuery,
   useGetThreadsQuery,
   useGetThreadQuery,
   useCreateThreadMutation,

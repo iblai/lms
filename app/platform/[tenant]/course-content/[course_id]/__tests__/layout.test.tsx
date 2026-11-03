@@ -152,6 +152,11 @@ vi.mock('@/services/core', () => ({
   })),
 }));
 
+const mockUseGetDiscussionsAvailableQuery = vi.hoisted(() => vi.fn());
+vi.mock('@/services/discussions', () => ({
+  useGetDiscussionsAvailableQuery: (...args: any[]) => mockUseGetDiscussionsAvailableQuery(...args),
+}));
+
 // Mock useChatState
 const mockSetCourseMentor = vi.fn();
 vi.mock('@/components/chat-button', () => ({
@@ -439,6 +444,7 @@ describe('CourseContentLayout', () => {
       data: { is_platform_admin: false },
     } as any);
     mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: undefined });
+    mockUseGetDiscussionsAvailableQuery.mockReturnValue({ data: undefined });
     mockUseGetCourseEligibilityQuery.mockReturnValue({
       data: { is_enrolled: true, is_admin: false },
       isSuccess: true,
@@ -482,6 +488,30 @@ describe('CourseContentLayout', () => {
     expect(tabLink('Course')).toBeInTheDocument();
     expect(tabLink('Progress')).toBeInTheDocument();
     expect(tabLink('Dates')).toBeInTheDocument();
+    expect(tabLink('Discussions')).toBeInTheDocument();
+  });
+
+  it('hides the Discussions tab when the threads list 404s for the course', () => {
+    mockUseGetDiscussionsAvailableQuery.mockReturnValue({ data: false });
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
+    expect(mockUseGetDiscussionsAvailableQuery).toHaveBeenCalledWith({
+      courseId: 'course-v1:test+course+2024',
+    });
+    expect(queryTabLink('Discussions')).not.toBeInTheDocument();
+    expect(tabLink('Dates')).toBeInTheDocument();
+  });
+
+  it('keeps the Discussions tab when discussions are available', () => {
+    mockUseGetDiscussionsAvailableQuery.mockReturnValue({ data: true });
+    render(
+      <CourseContentLayout params={defaultParams}>
+        <div>children</div>
+      </CourseContentLayout>,
+    );
     expect(tabLink('Discussions')).toBeInTheDocument();
   });
 
