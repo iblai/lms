@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.102.0](https://github.com/iblai/lms/compare/skills-v0.101.0...skills-v0.102.0) (2026-11-05)
+
+### Features
+
+* **course-about:** play the course intro video from the about page ([ed23cbb](https://github.com/iblai/lms/commit/ed23cbb19e2f89a19ad2c396d078336259ca9845))
+
 ## [0.101.0](https://github.com/iblai/lms/compare/skills-v0.100.3...skills-v0.101.0) (2026-11-03)
 
 ### Features
