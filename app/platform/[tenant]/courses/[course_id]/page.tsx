@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { Clock, Calendar, Globe, DollarSign } from 'lucide-react';
 import isEmpty from 'lodash/isEmpty';
@@ -15,6 +14,7 @@ import { useCourseDetailContext } from '@/hooks/courses/course-detail-context';
 import { useChatState } from '@/components/chat-button';
 import { AboutTab } from './_components/about-tab';
 import { SyllabusTab } from './_components/syllabus-tab';
+import { CoursePreviewMedia } from './_components/course-preview-media';
 
 dayjs.extend(duration);
 
@@ -176,17 +176,12 @@ export default function CourseDetailsPage() {
                 </div>
                 <div className="md:col-span-1">
                   <div className="sticky space-y-6">
-                    <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white">
-                      <Image
-                        src={`${config.urls.lms()}${course.course_image_asset_path}`}
-                        alt={course.title}
-                        fill
-                        className="object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = randomCourseImage;
-                        }}
-                      />
-                    </div>
+                    <CoursePreviewMedia
+                      title={course.title}
+                      imageSrc={`${config.urls.lms()}${course.course_image_asset_path}`}
+                      fallbackImageSrc={randomCourseImage}
+                      introVideo={course.intro_video}
+                    />
                     {courseEligibilityLoading || courseButtonActionLoading ? (
                       <SkeletonCourseAccessBtn />
                     ) : (
