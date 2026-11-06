@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.102.1](https://github.com/iblai/lms/compare/skills-v0.102.0...skills-v0.102.1) (2026-11-06)
+
+### CI
+
+* pin GitHub Actions to commit SHAs ([be90ef2](https://github.com/iblai/lms/commit/be90ef222af334d95701b9c91a1636c04c1a1fab))
+
 ## [0.102.0](https://github.com/iblai/lms/compare/skills-v0.101.0...skills-v0.102.0) (2026-11-05)
 
 ### Features
