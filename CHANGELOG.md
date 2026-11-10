@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.102.2](https://github.com/iblai/lms/compare/skills-v0.102.1...skills-v0.102.2) (2026-11-10)
+
+### Chores
+
+* **deps:** bump core deps and refresh security overrides ([d1f059a](https://github.com/iblai/lms/commit/d1f059a25708559b4aeb12d69cae2d9e3feffc9c))
+* **tauri:** release app-v1.0.19 ([57515fa](https://github.com/iblai/lms/commit/57515fa2e54b5a57f9aa7555455641fec9bf38b2))
+
 ## [0.102.1](https://github.com/iblai/lms/compare/skills-v0.102.0...skills-v0.102.1) (2026-11-06)
 
 ### CI

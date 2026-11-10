@@ -64,3 +64,7 @@ tauri-build = { version = "2", features = [] }
 # Reads the shipped version out of tauri.conf.json for the Sentry release tag;
 # already in the graph via tauri-build, so this adds no download.
 serde_json = "1.0"
+
+[patch.crates-io]
+serde_with = { git = "https://github.com/jonasbb/serde_with", tag = "v3.21.0" }
+serde_with_macros = { git = "https://github.com/jonasbb/serde_with", tag = "v3.21.0" }
