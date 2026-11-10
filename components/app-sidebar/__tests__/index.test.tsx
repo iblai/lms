@@ -133,21 +133,6 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
 // the expanded and the collapsed rail so the wrapper's FlatNavRow covers
 // both), and exposes the open-section + footer-action callbacks as buttons.
 const mockOnAfterNav = vi.fn();
-vi.mock('../account-tab-dialog', () => ({
-  AccountTabDialog: ({ tab, username, helpUrl, onClose, onInviteClick }: any) =>
-    tab ? (
-      <div
-        data-testid="account-sheet"
-        data-tab={tab}
-        data-username={username}
-        data-help-url={helpUrl}
-      >
-        <button onClick={onClose}>Close account sheet</button>
-        <button onClick={onInviteClick}>Invite from sheet</button>
-      </div>
-    ) : null,
-}));
-
 vi.mock('@iblai/iblai-js/web-containers/next', () => ({
   PLATFORM_SIDEBAR_NAV_MUTED: '#8a8a8e',
   PlatformSidebarCollapsedLabelFlyout: ({ label, children }: any) => (
@@ -177,6 +162,18 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       >
         <button onClick={onClose}>Close profile</button>
         <button onClick={onAccountDeleted}>Delete account</button>
+      </div>
+    ) : null,
+  PlatformAccountSheet: ({ tab, username, helpUrl, onClose, onInviteClick }: any) =>
+    tab ? (
+      <div
+        data-testid="account-sheet"
+        data-tab={tab}
+        data-username={username}
+        data-help-url={helpUrl}
+      >
+        <button onClick={onClose}>Close account sheet</button>
+        <button onClick={onInviteClick}>Invite from sheet</button>
       </div>
     ) : null,
   PlatformSidebar: ({

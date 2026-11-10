@@ -18,11 +18,13 @@ import {
 import { InviteUserDialog } from '@iblai/iblai-js/web-containers';
 import {
   PLATFORM_SIDEBAR_NAV_MUTED,
+  PlatformAccountSheet,
   PlatformSidebar,
   PlatformSidebarCollapsedLabelFlyout,
   UserProfileModal,
 } from '@iblai/iblai-js/web-containers/next';
 import type {
+  PlatformAccountTab,
   PlatformSidebarFooterActionId,
   PlatformSidebarMenu,
   PlatformSidebarNavIcon,
@@ -50,8 +52,6 @@ import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 import { useLearnerMode } from '@/hooks/use-learner-mode';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
-
-import { AccountTabDialog, type AccountTab } from './account-tab-dialog';
 
 type SidebarOpenSection = 'analytics';
 
@@ -185,7 +185,7 @@ export function AppSidebar() {
   );
   const { metadata } = useTenantMetadata({ org: tenant });
 
-  const [accountTab, setAccountTab] = React.useState<AccountTab | null>(null);
+  const [accountTab, setAccountTab] = React.useState<PlatformAccountTab | null>(null);
   const [inviteOpen, setInviteOpen] = React.useState(false);
   const [profileTab, setProfileTab] = React.useState<ProfileShortcutTab | null>(null);
   const [openSection, setOpenSection] = React.useState<SidebarOpenSection | null>(null);
@@ -440,12 +440,14 @@ export function AppSidebar() {
         }}
       />
 
-      <AccountTabDialog
+      <PlatformAccountSheet
         tab={accountTab}
         onClose={() => setAccountTab(null)}
         tenantKey={tenant}
         username={username ?? ''}
+        email={userEmail}
         onInviteClick={() => setInviteOpen(true)}
+        mainPlatformKey={config.settings.mainPlatformKey()}
         authUrl={config.urls.auth()}
         currentSpa={config.settings.appName() || 'skills'}
         platformBaseDomain={config.settings.platformBaseDomain()}
