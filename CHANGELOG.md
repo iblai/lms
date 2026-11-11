@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.102.6](https://github.com/iblai/lms/compare/skills-v0.102.5...skills-v0.102.6) (2026-11-11)
+
+### Chores
+
+* **deps:** make the minimatch override safe for eslintrc ([be07655](https://github.com/iblai/lms/commit/be076556ed19ba949d0ee0b07507e6999075d7c6))
+
 ## [0.102.5](https://github.com/iblai/lms/compare/skills-v0.102.4...skills-v0.102.5) (2026-11-11)
 
 ### Chores
