@@ -385,8 +385,11 @@ export function AppSidebar() {
         case 'management':
           setAccountTab('management');
           return;
-        case 'integrations':
-          setAccountTab('integrations');
+        case 'api':
+          setAccountTab('api');
+          return;
+        case 'secrets':
+          setAccountTab('secrets');
           return;
         case 'monetization':
           setAccountTab('monetization');
@@ -450,7 +453,9 @@ export function AppSidebar() {
         platformBaseDomain={config.settings.platformBaseDomain()}
         showGradebookTab={true}
         onboardingBasePath={onboardingBasePath}
+        enableRbac={config.settings.enableRBAC()}
         rbacPermissions={rbacPermissions}
+        helpUrl={config.settings.helpCenterUrl() || undefined}
       />
 
       {inviteOpen && (

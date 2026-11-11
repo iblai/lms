@@ -35,6 +35,7 @@ vi.mock('@/lib/config', () => ({
       appName: vi.fn(() => 'skills'),
       platformBaseDomain: vi.fn(() => 'example.com'),
       enableGravatarOnProfilePic: vi.fn(() => 'true'),
+      helpCenterUrl: vi.fn(() => 'https://ibl.ai/support'),
     },
     urls: {
       studioUrl: vi.fn(() => 'https://studio.example.com'),
@@ -163,9 +164,15 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         <button onClick={onAccountDeleted}>Delete account</button>
       </div>
     ) : null,
-  PlatformAccountSheet: ({ tab, username, onClose, onInviteClick }: any) =>
+  PlatformAccountSheet: ({ tab, username, helpUrl, enableRbac, onClose, onInviteClick }: any) =>
     tab ? (
-      <div data-testid="account-sheet" data-tab={tab} data-username={username}>
+      <div
+        data-testid="account-sheet"
+        data-tab={tab}
+        data-username={username}
+        data-help-url={helpUrl}
+        data-enable-rbac={String(enableRbac)}
+      >
         <button onClick={onClose}>Close account sheet</button>
         <button onClick={onInviteClick}>Invite from sheet</button>
       </div>
@@ -226,13 +233,19 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         data-notifications-allowed={String(footer.notificationsAllowed)}
         data-invites-allowed={String(footer.invitesUserTypeAllowed)}
       >
-        {['notifications', 'invites', 'management', 'integrations', 'monetization', 'advanced'].map(
-          (actionId) => (
-            <button key={actionId} onClick={() => footer.onAction(actionId)}>
-              {`footer-${actionId}`}
-            </button>
-          ),
-        )}
+        {[
+          'notifications',
+          'invites',
+          'management',
+          'api',
+          'secrets',
+          'monetization',
+          'advanced',
+        ].map((actionId) => (
+          <button key={actionId} onClick={() => footer.onAction(actionId)}>
+            {`footer-${actionId}`}
+          </button>
+        ))}
       </div>
     </div>
   ),
@@ -263,6 +276,7 @@ describe('AppSidebar', () => {
     vi.mocked(isDiscoverEnabled).mockReturnValue(true);
     vi.mocked(config.settings.aiAnalyticsHeaderMenuEnabled).mockReturnValue(true);
     vi.mocked(config.settings.studioHeaderMenuEnabled).mockReturnValue(true);
+    vi.mocked(config.settings.enableRBAC).mockReturnValue(true);
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false, is_department_admin: false },
     } as any);
@@ -630,7 +644,8 @@ describe('AppSidebar', () => {
 
     it.each([
       ['management', 'footer-management'],
-      ['integrations', 'footer-integrations'],
+      ['api', 'footer-api'],
+      ['secrets', 'footer-secrets'],
       ['monetization', 'footer-monetization'],
       ['advanced', 'footer-advanced'],
     ])('opens the account sheet on the %s tab', (tab, buttonLabel) => {
@@ -639,6 +654,28 @@ describe('AppSidebar', () => {
       fireEvent.click(screen.getByText(buttonLabel));
       expect(screen.getByTestId('account-sheet')).toHaveAttribute('data-tab', tab);
     });
+
+    it("gives the account sheet the help centre link for the API page's Help link", () => {
+      render(<AppSidebar />);
+      fireEvent.click(screen.getByText('footer-api'));
+      expect(screen.getByTestId('account-sheet')).toHaveAttribute(
+        'data-help-url',
+        'https://ibl.ai/support',
+      );
+    });
+
+    it.each([true, false])(
+      "gives the account sheet the platform's RBAC setting (RBAC on: %s)",
+      (rbacOn) => {
+        vi.mocked(config.settings.enableRBAC).mockReturnValue(rbacOn);
+        render(<AppSidebar />);
+        fireEvent.click(screen.getByText('footer-api'));
+        expect(screen.getByTestId('account-sheet')).toHaveAttribute(
+          'data-enable-rbac',
+          String(rbacOn),
+        );
+      },
+    );
 
     it('closes the account sheet and can open the invite dialog from it', () => {
       render(<AppSidebar />);
