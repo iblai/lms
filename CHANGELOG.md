@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.102.4](https://github.com/iblai/lms/compare/skills-v0.102.3...skills-v0.102.4) (2026-11-11)
+
+### Chores
+
+* **deps:** pin vite to 7.3.7, bump @vitejs/plugin-react to 5.2.0 ([aed3736](https://github.com/iblai/lms/commit/aed3736fc8b0ec4b0ca132f138f4da6f8ebf6c67))
+
+## [0.102.3](https://github.com/iblai/lms/compare/skills-v0.102.2...skills-v0.102.3) (2026-11-11)
+
+### Chores
+
+* **deps:** further dep bumps, override refresh, vitest 5 migration ([2c59e49](https://github.com/iblai/lms/commit/2c59e490d934dcd42b6ad89739a6dfc9a68aa944))
+* **tauri:** release app-v1.0.20 ([c7c4a3f](https://github.com/iblai/lms/commit/c7c4a3fabd2be5cee02dc6fbeaf6bda6729b3ecc))
+
 ## [0.102.2](https://github.com/iblai/lms/compare/skills-v0.102.1...skills-v0.102.2) (2026-11-10)
 
 ### Chores

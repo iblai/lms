@@ -1,6 +1,6 @@
 {
   "name": "ibl-web-nextjs-skills-spa",
-  "version": "0.102.2",
+  "version": "0.102.4",
   "private": false,
   "packageManager": "pnpm@10.11.1",
   "engines": {
@@ -117,8 +117,8 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.1",
     "@types/react-gravatar": "2.6.14",
-    "@vitejs/plugin-react": "4.4.0",
-    "@vitest/coverage-istanbul": "3.2.4",
+    "@vitejs/plugin-react": "5.2.0",
+    "@vitest/coverage-istanbul": "5.1.0",
     "cross-env": "7.0.3",
     "dotenv": "16.6.1",
     "eslint": "9.39.4",
@@ -126,7 +126,7 @@
     "husky": "9.1.7",
     "jsdom": "26.1.0",
     "lint-staged": "16.4.0",
-    "postcss": "8.5.8",
+    "postcss": "8.5.18",
     "postcss-loader": "8.2.1",
     "prettier": "3.8.1",
     "prettier-plugin-tailwindcss": "0.6.11",
@@ -135,7 +135,7 @@
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "4.1.1"
+    "vitest": "5.1.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
