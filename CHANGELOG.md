@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.102.7](https://github.com/iblai/lms/compare/skills-v0.102.6...skills-v0.102.7) (2026-11-11)
+
+### Chores
+
+* **deps:** bump fast-uri override to 3.1.9 ([af316b8](https://github.com/iblai/lms/commit/af316b8f48e2bb5a105455435de343cdeef2a743))
+
 ## [0.102.6](https://github.com/iblai/lms/compare/skills-v0.102.5...skills-v0.102.6) (2026-11-11)
 
 ### Chores
