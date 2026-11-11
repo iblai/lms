@@ -453,6 +453,7 @@ export function AppSidebar() {
         platformBaseDomain={config.settings.platformBaseDomain()}
         showGradebookTab={true}
         onboardingBasePath={onboardingBasePath}
+        enableRbac={config.settings.enableRBAC()}
         rbacPermissions={rbacPermissions}
         helpUrl={config.settings.helpCenterUrl() || undefined}
       />

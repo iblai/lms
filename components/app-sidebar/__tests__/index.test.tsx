@@ -164,13 +164,14 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         <button onClick={onAccountDeleted}>Delete account</button>
       </div>
     ) : null,
-  PlatformAccountSheet: ({ tab, username, helpUrl, onClose, onInviteClick }: any) =>
+  PlatformAccountSheet: ({ tab, username, helpUrl, enableRbac, onClose, onInviteClick }: any) =>
     tab ? (
       <div
         data-testid="account-sheet"
         data-tab={tab}
         data-username={username}
         data-help-url={helpUrl}
+        data-enable-rbac={String(enableRbac)}
       >
         <button onClick={onClose}>Close account sheet</button>
         <button onClick={onInviteClick}>Invite from sheet</button>
@@ -275,6 +276,7 @@ describe('AppSidebar', () => {
     vi.mocked(isDiscoverEnabled).mockReturnValue(true);
     vi.mocked(config.settings.aiAnalyticsHeaderMenuEnabled).mockReturnValue(true);
     vi.mocked(config.settings.studioHeaderMenuEnabled).mockReturnValue(true);
+    vi.mocked(config.settings.enableRBAC).mockReturnValue(true);
     vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
       data: { is_platform_admin: false, is_department_admin: false },
     } as any);
@@ -661,6 +663,19 @@ describe('AppSidebar', () => {
         'https://ibl.ai/support',
       );
     });
+
+    it.each([true, false])(
+      "gives the account sheet the platform's RBAC setting (RBAC on: %s)",
+      (rbacOn) => {
+        vi.mocked(config.settings.enableRBAC).mockReturnValue(rbacOn);
+        render(<AppSidebar />);
+        fireEvent.click(screen.getByText('footer-api'));
+        expect(screen.getByTestId('account-sheet')).toHaveAttribute(
+          'data-enable-rbac',
+          String(rbacOn),
+        );
+      },
+    );
 
     it('closes the account sheet and can open the invite dialog from it', () => {
       render(<AppSidebar />);
