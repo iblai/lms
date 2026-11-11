@@ -68,3 +68,4 @@ serde_json = "1.0"
 [patch.crates-io]
 serde_with = { git = "https://github.com/jonasbb/serde_with", tag = "v3.21.0" }
 serde_with_macros = { git = "https://github.com/jonasbb/serde_with", tag = "v3.21.0" }
+rustls = { git = "https://github.com/rustls/rustls", tag = "v/0.23.46" }
