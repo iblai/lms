@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.102.4](https://github.com/iblai/lms/compare/skills-v0.102.3...skills-v0.102.4) (2026-11-11)
+
+### Chores
+
+* **deps:** pin vite to 7.3.7, bump @vitejs/plugin-react to 5.2.0 ([aed3736](https://github.com/iblai/lms/commit/aed3736fc8b0ec4b0ca132f138f4da6f8ebf6c67))
+
 ## [0.102.3](https://github.com/iblai/lms/compare/skills-v0.102.2...skills-v0.102.3) (2026-11-11)
 
 ### Chores
