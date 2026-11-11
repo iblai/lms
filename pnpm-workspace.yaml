@@ -1,4 +1,10 @@
 overrides:
+  minimatch: 11.0.1
+  # @eslint/eslintrc does `import minimatch from 'minimatch'` (CJS default import),
+  # which breaks against ESM-only minimatch >=9 and fails `next lint`. Keep just
+  # eslintrc on CJS 3.x so the global minimatch pin above stays safe even if a
+  # security tool regenerates it. Do not remove this scoped override.
+  '@eslint/eslintrc>minimatch': 3.1.5
   vite: 7.3.7
   zod: 4.6.6
   basic-ftp: 5.3.1
