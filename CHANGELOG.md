@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.103.0](https://github.com/iblai/lms/compare/skills-v0.102.7...skills-v0.103.0) (2026-11-11)
+
+### Features
+
+* **lms:** updates for the secrets, apis and networks ([9d680e2](https://github.com/iblai/lms/commit/9d680e2fb40ab6a9ca3fa0ca56773b16f0a27b25))
+
+### Bug Fixes
+
+* **lms:** rbac for the sidebar and removed agent settings launcher ([b23fdc6](https://github.com/iblai/lms/commit/b23fdc665b98ba649c7ffc0fd937e07c5a829c7f))
+* **lms:** revert sidebar footer for sidemenu popup ([cffeee8](https://github.com/iblai/lms/commit/cffeee8f6eaaceb94ed0fdd4e8995b191837195f))
+
 ## [0.102.7](https://github.com/iblai/lms/compare/skills-v0.102.6...skills-v0.102.7) (2026-11-11)
 
 ### Chores
