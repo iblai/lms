@@ -409,6 +409,10 @@ describe('ProgramDetailPage', () => {
     mockCheckAccess.mockResolvedValue({ data: { has_access: false, pricing: { amount: 99 } } });
     await renderPage();
     const cta = await screen.findByTestId('program-page-cta');
+    // Wait for the async access check to resolve the CTA into the paywall action
+    // (hasMonetizationAccess starts true → "Enroll Now"); clicking before it
+    // flips to "Purchase Now" invokes enrollment instead of the paywall.
+    await waitFor(() => expect(cta).toHaveTextContent('Purchase Now'));
     fireEvent.click(cta);
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith({
