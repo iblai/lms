@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.102.5](https://github.com/iblai/lms/compare/skills-v0.102.4...skills-v0.102.5) (2026-11-11)
+
+### Chores
+
+* **deps:** refresh overrides (qs, fast-uri, @hono/node-server, postcss) ([d4c0130](https://github.com/iblai/lms/commit/d4c01300164622eb93a1a515ce5cb9815b7ac88d))
+
 ## [0.102.4](https://github.com/iblai/lms/compare/skills-v0.102.3...skills-v0.102.4) (2026-11-11)
 
 ### Chores
