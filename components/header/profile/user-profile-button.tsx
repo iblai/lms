@@ -1,13 +1,7 @@
 'use client';
 
 import { UserProfileDropdown } from '@iblai/iblai-js/web-containers/next';
-import {
-  getUserName,
-  handleLogout,
-  handleTenantSwitch,
-  onAccountDeleted,
-  getUserEmail,
-} from '@/utils/helpers';
+import { getUserName, handleLogout, onAccountDeleted, getUserEmail } from '@/utils/helpers';
 import { Tenant, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { useCurrentTenant, useIsAdmin, useUserTenants } from '@/utils/localstorage';
@@ -35,10 +29,6 @@ export const UserProfileButton = () => {
   const rbackPermissions = useAppSelector(selectRbacPermissions);
   const dispatch = useAppDispatch();
   const onboardingBasePath = window.location.origin + `/platform/${tenantKey}`;
-
-  const handleTenantChange = (newTenantKey: string) => {
-    handleTenantSwitch(newTenantKey);
-  };
 
   const handleHelpClick = (url: string) => {
     window.open(url, '_blank');
@@ -79,6 +69,9 @@ export const UserProfileButton = () => {
       showTenantSwitcher={
         isAdmin || userTenants.some((t) => t.key !== 'main' && t.key !== tenantKey)
       }
+      // Picking an organization happens on the auth app — only it can mint the
+      // target organization's tokens.
+      showOrganizationsLink={true}
       showHelpLink={true}
       showLogoutButton={true}
       showLearnerModeSwitch={isPlatformAdmin}
@@ -89,7 +82,6 @@ export const UserProfileButton = () => {
       enableGravatarOnProfilePic={config.settings.enableGravatarOnProfilePic() !== 'false'}
       // Callbacks
       onLogout={handleLogout}
-      onTenantChange={handleTenantChange}
       onHelpClick={handleHelpClick}
       // Custom components
       LearnerModeSwitchComponent={LearnerModeSwitch}

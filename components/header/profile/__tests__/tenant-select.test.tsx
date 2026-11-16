@@ -1,12 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { TenantSelect } from '../tenant-select';
-
-// Hoisted mock functions
-const { mockHandleTenantSwitch } = vi.hoisted(() => ({
-  mockHandleTenantSwitch: vi.fn(),
-}));
 
 // Mutable state for per-test config control
 let mockTenantKey = 'test-tenant';
@@ -20,7 +15,6 @@ let mockEnableRBAC = false;
 vi.mock('@/utils/helpers', () => ({
   getTenant: () => mockTenantKey,
   getTenants: () => mockTenants,
-  handleTenantSwitch: mockHandleTenantSwitch,
 }));
 
 // Mock web-utils (Tenant is a type-only export at runtime)
@@ -55,9 +49,6 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
       <span data-testid="tenant-count">{String(props.tenants?.length)}</span>
       <span data-testid="enable-rbac">{String(props.enableRbac)}</span>
       <span data-testid="rbac-permissions">{JSON.stringify(props.rbacPermissions)}</span>
-      <button data-testid="change-btn" onClick={() => props.onTenantChange?.('new-tenant')}>
-        Change
-      </button>
     </div>
   ),
 }));
@@ -123,16 +114,6 @@ describe('TenantSelect', () => {
 
       expect(screen.queryByTestId('tenant-switcher')).not.toBeInTheDocument();
       expect(container).toBeEmptyDOMElement();
-    });
-  });
-
-  describe('callbacks', () => {
-    it('wires onTenantChange to handleTenantSwitch', () => {
-      render(<TenantSelect />);
-
-      fireEvent.click(screen.getByTestId('change-btn'));
-
-      expect(mockHandleTenantSwitch).toHaveBeenCalledWith('new-tenant');
     });
   });
 });

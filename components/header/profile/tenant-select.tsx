@@ -1,5 +1,5 @@
 import { TenantSwitcher } from '@iblai/iblai-js/web-containers';
-import { getTenant, getTenants, handleTenantSwitch } from '@/utils/helpers';
+import { getTenant, getTenants } from '@/utils/helpers';
 import { Tenant } from '@iblai/iblai-js/web-utils';
 import isEmpty from 'lodash/isEmpty';
 import { selectRbacPermissions } from '@/features/rbac';
@@ -19,7 +19,6 @@ export function TenantSelect() {
     <TenantSwitcher
       currentTenantKey={tenantKey}
       tenants={tenants}
-      onTenantChange={handleTenantSwitch}
       rbacPermissions={rbacPermissions}
       enableRbac={config.settings.enableRBAC()}
     />

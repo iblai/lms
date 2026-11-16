@@ -12,14 +12,12 @@ const {
   mockSaveUserTenants,
   mockDispatch,
   mockHandleLogout,
-  mockHandleTenantSwitch,
   mockOnAccountDeleted,
 } = vi.hoisted(() => ({
   mockSaveCurrentTenant: vi.fn(),
   mockSaveUserTenants: vi.fn(),
   mockDispatch: vi.fn(),
   mockHandleLogout: vi.fn(),
-  mockHandleTenantSwitch: vi.fn(),
   mockOnAccountDeleted: vi.fn(),
 }));
 
@@ -44,7 +42,6 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: () => 'testuser',
   getUserEmail: () => 'test@example.com',
   handleLogout: mockHandleLogout,
-  handleTenantSwitch: mockHandleTenantSwitch,
   onAccountDeleted: mockOnAccountDeleted,
 }));
 
@@ -148,9 +145,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
-      <button data-testid="tenant-change-btn" onClick={() => props.onTenantChange?.('new-tenant')}>
-        Change Tenant
-      </button>
+      <span data-testid="show-organizations-link">{String(props.showOrganizationsLink)}</span>
       <button
         data-testid="tenant-update-btn"
         onClick={() => props.onTenantUpdate?.({ key: 'test-tenant', is_admin: true, org: 'org' })}
@@ -318,6 +313,14 @@ describe('UserProfileButton', () => {
     });
   });
 
+  describe('organization switching', () => {
+    it('shows the Organizations item, which opens the auth app chooser', () => {
+      render(<UserProfileButton />);
+
+      expect(screen.getByTestId('show-organizations-link')).toHaveTextContent('true');
+    });
+  });
+
   describe('callbacks', () => {
     it('should handle logout click', () => {
       render(<UserProfileButton />);
@@ -326,15 +329,6 @@ describe('UserProfileButton', () => {
       fireEvent.click(logoutBtn);
 
       expect(mockHandleLogout).toHaveBeenCalled();
-    });
-
-    it('should handle tenant change', () => {
-      render(<UserProfileButton />);
-
-      const tenantChangeBtn = screen.getByTestId('tenant-change-btn');
-      fireEvent.click(tenantChangeBtn);
-
-      expect(mockHandleTenantSwitch).toHaveBeenCalledWith('new-tenant');
     });
 
     it('should handle help click', () => {
