@@ -161,7 +161,7 @@ export default function CourseDetailsPage() {
             {/* Tab Content */}
             <div className="h-[calc(100%-100px)] h-full w-full overflow-y-auto bg-amber-50 p-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div className="md:col-span-2">
+                <div className="order-2 md:order-1 md:col-span-2">
                   {activeTab === 'about' && <AboutTab course={course} />}
 
                   {activeTab === 'syllabus' && (
@@ -174,7 +174,7 @@ export default function CourseDetailsPage() {
                     />
                   )}
                 </div>
-                <div className="md:col-span-1">
+                <div className="order-1 md:order-2 md:col-span-1">
                   <div className="sticky space-y-6">
                     <CoursePreviewMedia
                       title={course.title}

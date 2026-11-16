@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
@@ -505,6 +505,64 @@ describe('NavBar', () => {
       // No id-derived fallback — the raw id reads as noise.
       expect(screen.queryByTestId('navbar-page-title')).not.toBeInTheDocument();
       expect(screen.queryByText('XYZ 2026')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('truncated page titles', () => {
+    const widths = { scroll: 0, client: 0 };
+    let restore: (() => void)[] = [];
+
+    beforeEach(() => {
+      widths.scroll = 0;
+      widths.client = 0;
+      restore = (['scrollWidth', 'clientWidth'] as const).map((prop) => {
+        const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop);
+        Object.defineProperty(HTMLElement.prototype, prop, {
+          configurable: true,
+          get: () => (prop === 'scrollWidth' ? widths.scroll : widths.client),
+        });
+        return () => {
+          if (original) Object.defineProperty(HTMLElement.prototype, prop, original);
+        };
+      });
+    });
+
+    afterEach(() => restore.forEach((fn) => fn()));
+
+    it('shows an info button that reveals the full title on click', async () => {
+      widths.scroll = 600;
+      widths.client = 200;
+      mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/agent';
+      render(<NavBar />);
+      const title = await screen.findByRole('heading', { name: 'Course Beta' });
+      expect(title).toHaveAttribute('title', 'Course Beta');
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Show full title' }));
+      expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent('Course Beta');
+    });
+
+    it('shows no info button when the title fits', async () => {
+      widths.scroll = 200;
+      widths.client = 200;
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
+      const title = await screen.findByRole('heading', { name: 'Course Alpha' });
+      expect(title).not.toHaveAttribute('title');
+      expect(screen.queryByRole('button', { name: 'Show full title' })).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['program', '/platform/test-tenant/programs/program-alpha', 'Program Alpha'],
+      ['pathway', '/platform/test-tenant/pathways/uuid-alpha', 'Pathway Alpha'],
+    ])('reveals the full %s title on click', async (_kind, pathname, name) => {
+      widths.scroll = 600;
+      widths.client = 200;
+      mockPathname = pathname;
+      render(<NavBar />);
+      expect(screen.getByRole('heading', { name })).toHaveAttribute('title', name);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Show full title' }));
+      expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent(name);
     });
   });
 
