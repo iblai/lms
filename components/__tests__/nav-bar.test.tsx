@@ -534,10 +534,15 @@ describe('NavBar', () => {
       widths.client = 200;
       mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/agent';
       render(<NavBar />);
-      const title = await screen.findByRole('heading', { name: 'Course Beta' });
-      expect(title).toHaveAttribute('title', 'Course Beta');
+      // The ⓘ only renders once the truncation effect has run, so waiting for
+      // it is what makes the `title` assertion safe.
+      const info = await screen.findByRole('button', { name: 'Show full title' });
+      expect(screen.getByRole('heading', { name: 'Course Beta' })).toHaveAttribute(
+        'title',
+        'Course Beta',
+      );
 
-      fireEvent.click(await screen.findByRole('button', { name: 'Show full title' }));
+      fireEvent.click(info);
       expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent('Course Beta');
     });
 
@@ -559,9 +564,10 @@ describe('NavBar', () => {
       widths.client = 200;
       mockPathname = pathname;
       render(<NavBar />);
+      const info = await screen.findByRole('button', { name: 'Show full title' });
       expect(screen.getByRole('heading', { name })).toHaveAttribute('title', name);
 
-      fireEvent.click(await screen.findByRole('button', { name: 'Show full title' }));
+      fireEvent.click(info);
       expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent(name);
     });
   });
