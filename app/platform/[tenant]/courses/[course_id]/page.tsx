@@ -161,20 +161,9 @@ export default function CourseDetailsPage() {
             {/* Tab Content */}
             <div className="h-[calc(100%-100px)] h-full w-full overflow-y-auto bg-amber-50 p-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div className="order-2 md:order-1 md:col-span-2">
-                  {activeTab === 'about' && <AboutTab course={course} />}
-
-                  {activeTab === 'syllabus' && (
-                    <SyllabusTab
-                      courseOutline={courseOutline}
-                      courseOutlineLoading={courseOutlineLoading}
-                      expandedSections={expandedSections}
-                      toggleSection={toggleSection}
-                      handleOpenLesson={handleOpenLesson}
-                    />
-                  )}
-                </div>
-                <div className="order-1 md:order-2 md:col-span-1">
+                {/* Sidebar first in the DOM so mobile reading and tab order match the
+                    layout; md:order-* puts the content column left from tablet up. */}
+                <div className="md:order-2 md:col-span-1">
                   <div className="sticky space-y-6">
                     <CoursePreviewMedia
                       title={course.title}
@@ -215,6 +204,19 @@ export default function CourseDetailsPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+                <div className="md:order-1 md:col-span-2">
+                  {activeTab === 'about' && <AboutTab course={course} />}
+
+                  {activeTab === 'syllabus' && (
+                    <SyllabusTab
+                      courseOutline={courseOutline}
+                      courseOutlineLoading={courseOutlineLoading}
+                      expandedSections={expandedSections}
+                      toggleSection={toggleSection}
+                      handleOpenLesson={handleOpenLesson}
+                    />
+                  )}
                 </div>
               </div>
             </div>

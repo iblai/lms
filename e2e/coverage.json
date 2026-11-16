@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-11-03",
+  "lastUpdated": "2026-11-16",
   "summary": {
-    "totalCheckpoints": 281,
-    "coveredCheckpoints": 281,
+    "totalCheckpoints": 283,
+    "coveredCheckpoints": 283,
     "percent": 100,
     "totalJourneys": 39
   },
@@ -166,6 +166,11 @@
         {
           "id": "course-05",
           "description": "About page exposes only About and Syllabus tabs; the Configuration/Learning Info/Instructors tabs and Authoring link were moved to the course-content view (covered by tabs-24..32)",
+          "status": "covered"
+        },
+        {
+          "id": "course-06",
+          "description": "Mobile viewport (375px): the course image, CTA and price/language/duration/date block come before the About description, visually and in the DOM",
           "status": "covered"
         }
       ]
@@ -1202,6 +1207,11 @@
         {
           "id": "nav-12",
           "description": "Profile dropdown Help link opens the help center in exactly one new tab",
+          "status": "covered"
+        },
+        {
+          "id": "nav-13",
+          "description": "On a 320px viewport a truncated navbar course title shows an ⓘ button whose popover reveals the full title inside the viewport and closes on Escape; a title that fits gets no ⓘ",
           "status": "covered"
         }
       ]

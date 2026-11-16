@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { logger } from '@iblai/iblai-js/playwright';
 import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
 
 /**
@@ -286,5 +287,74 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     await page.waitForTimeout(1_000);
     expect(context.pages().length).toBe(pagesBefore + 1);
     await helpPage.close();
+  });
+
+  test('CP-13: On a narrow viewport a truncated course title gets an info button that reveals the full title', async ({
+    page,
+  }) => {
+    // Narrow enough that most course titles cannot fit beside the hamburger,
+    // bell and avatar.
+    await page.setViewportSize({ width: 320, height: 568 });
+    // Any course will do; fall back to the full catalog when the account has
+    // no enrolments. isVisible() never waits, so wait for either the first
+    // card or the catalog's empty state.
+    let opened = false;
+    for (const catalog of ['discover?content=courses&enrolled=true', 'discover?content=courses']) {
+      await gotoTenantPage(page, catalog, { timeout: 120_000 });
+      await waitForAppShell(page);
+      const courseCard = page.locator('[data-testid="discover-content-card"]').first();
+      const hasCourse = await Promise.race([
+        courseCard.waitFor({ state: 'visible', timeout: 120_000 }).then(() => true),
+        page
+          .getByTestId('empty-box')
+          .waitFor({ state: 'visible', timeout: 120_000 })
+          .then(() => false),
+      ]).catch(() => false);
+      if (hasCourse) {
+        await courseCard.click();
+        opened = true;
+        break;
+      }
+    }
+    if (!opened) {
+      test.skip();
+      return;
+    }
+    await page.waitForURL(/\/courses\//, { timeout: 120_000 });
+    await waitForAppShell(page);
+
+    const navbar = page.getByRole('banner');
+    const title = navbar.getByTestId('navbar-page-title');
+    await expect(title).toBeVisible({ timeout: 30_000 });
+    // The h1 always holds the full text; CSS does the ellipsizing.
+    const fullTitle = (await title.textContent())?.trim() ?? '';
+    // Measure after webfonts have swapped in, like the component's own re-measure.
+    await page.evaluate(() => document.fonts.ready);
+    const truncated = await title.evaluate((el) => el.scrollWidth > el.clientWidth + 1);
+    logger.info(
+      truncated
+        ? `Title "${fullTitle}" is truncated at 320px — checking the ⓘ popover`
+        : `Title "${fullTitle}" fits at 320px — checking there is no ⓘ`,
+    );
+    const info = navbar.getByRole('button', { name: 'Show full title' });
+
+    if (!truncated) {
+      await expect(info).toHaveCount(0);
+      await expect(title).not.toHaveAttribute('title', /./);
+      return;
+    }
+
+    await expect(title).toHaveAttribute('title', fullTitle);
+    await info.click();
+    const popover = page.getByTestId('navbar-page-title-full');
+    await expect(popover).toBeVisible({ timeout: 10_000 });
+    await expect(popover).toHaveText(fullTitle);
+    const box = await popover.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+
+    await page.keyboard.press('Escape');
+    await expect(popover).toHaveCount(0);
   });
 });
