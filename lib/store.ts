@@ -20,7 +20,12 @@ import {
 } from '@iblai/iblai-js/data-layer';
 import { CATALOG_CACHE_SECONDS } from '@/lib/constants';
 // @ts-ignore
-import { monetizationSlice } from '@iblai/iblai-js/web-utils';
+import {
+  monetizationSlice,
+  subscriptionReducer,
+  topBannerReducer,
+  appleRestrictionReducer,
+} from '@iblai/iblai-js/web-utils';
 import { CareerSlice } from '@/services/career';
 import { NotificationsSlice } from '@/services/notifications';
 import { InstructorSlice } from '@/services/instructor';
@@ -91,6 +96,9 @@ export const store = configureStore({
     [CourseHomeSlice.reducerPath]: CourseHomeSlice.reducer,
     [DiscussionsSlice.reducerPath]: DiscussionsSlice.reducer,
     monetization: monetizationSlice.reducer,
+    subscription: subscriptionReducer,
+    topBanner: topBannerReducer,
+    appleRestriction: appleRestrictionReducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
     [auditLogsApiSlice.reducerPath]: auditLogsApiSlice.reducer,
     ...skillsReducer,

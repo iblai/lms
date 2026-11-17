@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
-import Providers from '../index';
+import Providers, { isPaywallResponse } from '../index';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -18,6 +18,13 @@ vi.mock('@/lib/config', () => ({
       legacyLmsUrl: () => 'https://lms.example.com',
       studio: () => 'https://api.example.com/studio',
       studioUrl: () => 'https://studio.example.com',
+      mentor: () => 'https://mentor.example.com',
+    },
+    settings: {
+      mainPlatformKey: () => 'main',
+      supportEmail: () => 'support@example.com',
+      stripeEnabled: () => true,
+      planFeatures: () => ({ free: [], premium: [], max: [], ultra: [] }),
     },
   },
 }));
@@ -40,6 +47,8 @@ vi.mock('@/utils/localstorage', () => ({
   saveUserTokens: vi.fn(),
 }));
 
+const mockHandle402Error = vi.hoisted(() => vi.fn(async () => {}));
+
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="auth-provider">{children}</div>
@@ -47,6 +56,10 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
   TenantProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="tenant-provider">{children}</div>
   ),
+  SubscriptionConfigProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="subscription-config-provider">{children}</div>
+  ),
+  use402ErrorCheck: () => ({ handle402Error: mockHandle402Error }),
   isLoggedIn: vi.fn(() => true),
   setAccessCheckResponse: vi.fn(() => ({ type: 'auth/setAccessCheckResponse' })),
   useCurrentTenant: () => ({ saveCurrentTenant: vi.fn() }),
@@ -154,6 +167,65 @@ describe('Providers', () => {
 
     await waitFor(() => {
       expect(initializeDataLayer).toHaveBeenCalled();
+    });
+  });
+
+  // Two things answer 402: the paywall (a course the person has not bought)
+  // and the credits ledger (the organization ran out of AI credits). Only the
+  // second goes to the SDK's credits routing, like the embedded agent's 402.
+  describe('402 routing', () => {
+    it('tells a paywall body from a credits body', () => {
+      expect(isPaywallResponse({ has_access: false, item_type: 'course', pricing: null })).toBe(
+        true,
+      );
+      expect(isPaywallResponse({ item_type: 'program', item_id: 'p1' })).toBe(true);
+      expect(isPaywallResponse({ error: 'Insufficient balance', pricing_table: {} })).toBe(false);
+      expect(isPaywallResponse({ error: 'Insufficient balance' })).toBe(false);
+      expect(isPaywallResponse(undefined)).toBe(false);
+      expect(isPaywallResponse('nope')).toBe(false);
+    });
+
+    it('sends a credits 402 to the SDK handler and a paywall 402 to the monetization slice', async () => {
+      const store = createTestStore();
+      // @ts-ignore
+      const { initializeDataLayer } = await import('@iblai/iblai-js/data-layer');
+      const { setAccessCheckResponse } = await import('@iblai/iblai-js/web-utils');
+      vi.mocked(initializeDataLayer).mockClear();
+      vi.mocked(setAccessCheckResponse).mockClear();
+      mockHandle402Error.mockClear();
+
+      render(
+        <Provider store={store}>
+          <Providers>
+            <div>Test Child</div>
+          </Providers>
+        </Provider>,
+      );
+      await waitFor(() => {
+        expect(initializeDataLayer).toHaveBeenCalled();
+      });
+      const handlers = vi.mocked(initializeDataLayer).mock.calls.at(-1)![4] as Record<
+        number,
+        (body: unknown) => void
+      >;
+
+      const credits = {
+        error: 'Insufficient balance',
+        pricing_table: { pricing_table_id: 'prc_1' },
+      };
+      handlers[402](credits);
+      expect(mockHandle402Error).toHaveBeenCalledWith(credits);
+      expect(setAccessCheckResponse).not.toHaveBeenCalled();
+
+      const paywall = {
+        has_access: false,
+        item_type: 'course',
+        item_id: 'c1',
+        pricing: { prices: [] },
+      };
+      handlers[402](paywall);
+      expect(setAccessCheckResponse).toHaveBeenCalledWith(paywall);
+      expect(mockHandle402Error).toHaveBeenCalledTimes(1);
     });
   });
 

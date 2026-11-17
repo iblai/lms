@@ -37,6 +37,11 @@ const env = {
   NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER: process.env.NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER,
   NEXT_PUBLIC_ENABLE_SUPPORT_PHONE: process.env.NEXT_PUBLIC_ENABLE_SUPPORT_PHONE,
   NEXT_PUBLIC_IBL_SENTRY_DSN: process.env.NEXT_PUBLIC_IBL_SENTRY_DSN,
+  NEXT_PUBLIC_STRIPE_ENABLED: process.env.NEXT_PUBLIC_STRIPE_ENABLED,
+  NEXT_PUBLIC_PLAN_FEATURES_FREE: process.env.NEXT_PUBLIC_PLAN_FEATURES_FREE,
+  NEXT_PUBLIC_PLAN_FEATURES_PRO: process.env.NEXT_PUBLIC_PLAN_FEATURES_PRO,
+  NEXT_PUBLIC_PLAN_FEATURES_MAX: process.env.NEXT_PUBLIC_PLAN_FEATURES_MAX,
+  NEXT_PUBLIC_PLAN_FEATURES_ULTRA: process.env.NEXT_PUBLIC_PLAN_FEATURES_ULTRA,
 };
 
 const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} : {});
@@ -44,6 +49,13 @@ const runtimeEnv = () => (typeof window !== 'undefined' ? window.__ENV__ || {} :
 export const getEnv = (key: keyof typeof env, fallback = ''): string => {
   return runtimeEnv()[key] ?? env[key] ?? fallback;
 };
+
+/** A `|`-separated env list as trimmed, non-empty entries. */
+const getEnvList = (key: keyof typeof env): string[] =>
+  getEnv(key)
+    .split('|')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
 const apiBaseUrl = () => getEnv('NEXT_PUBLIC_API_BASE_URL', 'https://api.iblai.app');
 
@@ -105,5 +117,15 @@ export const config = {
     defaultSupportPhoneNumber: () =>
       getEnv('NEXT_PUBLIC_DEFAULT_SUPPORT_PHONE_NUMBER', '(571) 293-0242') || '(571) 293-0242',
     enableSupportPhone: () => getEnv('NEXT_PUBLIC_ENABLE_SUPPORT_PHONE', 'false') === 'true',
+    stripeEnabled: () => getEnv('NEXT_PUBLIC_STRIPE_ENABLED', 'true') === 'true',
+    // The bullets on each card of the plan picker, by the SDK's plan key (Pro is
+    // `premium`). Each variable is a `|`-separated list; `**text**` shows in
+    // bold. A plan whose variable is unset or empty keeps the SDK's bullets.
+    planFeatures: (): Record<string, string[]> => ({
+      free: getEnvList('NEXT_PUBLIC_PLAN_FEATURES_FREE'),
+      premium: getEnvList('NEXT_PUBLIC_PLAN_FEATURES_PRO'),
+      max: getEnvList('NEXT_PUBLIC_PLAN_FEATURES_MAX'),
+      ultra: getEnvList('NEXT_PUBLIC_PLAN_FEATURES_ULTRA'),
+    }),
   },
 };

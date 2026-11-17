@@ -709,6 +709,16 @@ describe('CourseAgentChat', () => {
       expect(el.hasAttribute('enablelessoncompletion')).toBe(true);
     });
 
+    it('hands credit exhaustion to this page so the plan picker opens at page size', async () => {
+      const { container } = renderInCourse();
+
+      await waitFor(() => {
+        expect(container.querySelector('agent-ai')).toBeInTheDocument();
+      });
+
+      expect(container.querySelector('agent-ai')).toHaveAttribute('handlecreditexhaustion');
+    });
+
     it('names the unit the learner is actually on', async () => {
       const { container } = renderInCourse({
         currentUnitID: 'block-v1:test+101+type@vertical+block@unit-2',

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -19,8 +19,16 @@ vi.mock('next/navigation', () => ({
 }));
 
 const mockIsAdmin = vi.hoisted(() => ({ current: false }));
+const mockCurrentTenant = vi.hoisted(() => ({
+  current: { key: 'test-tenant', show_paywall: true } as {
+    key: string;
+    show_paywall?: boolean;
+  } | null,
+}));
+const mockOnTrial = vi.hoisted(() => ({ current: false }));
 vi.mock('@/utils/localstorage', () => ({
   useIsAdmin: () => mockIsAdmin.current,
+  useCurrentTenant: () => ({ currentTenant: mockCurrentTenant.current }),
 }));
 
 vi.mock('next/link', () => ({
@@ -40,6 +48,7 @@ vi.mock('react-responsive', () => ({
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
+  getUserEmail: vi.fn(() => 'test-user@example.com'),
   parseMarkdownLinks: vi.fn(() => []),
   redirectToAuthSpa: vi.fn(),
   redirectToAuthSpaJoinTenant: vi.fn(),
@@ -53,6 +62,8 @@ vi.mock('@/lib/config', () => ({
       studioHeaderMenuEnabled: vi.fn(() => true),
       additionalLeftHeaderMenuItems: vi.fn(() => ''),
       additionalRightHeaderMenuItems: vi.fn(() => ''),
+      mainPlatformKey: vi.fn(() => 'main'),
+      stripeEnabled: vi.fn(() => true),
     },
     urls: {
       studioUrl: vi.fn(() => 'https://studio.example.com'),
@@ -119,6 +130,7 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
     left,
     modeSwitcher,
     search,
+    creditBalance,
     notifications,
     profile,
     visibleToLoggedInUsersOnly,
@@ -127,6 +139,19 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
     <nav data-testid="platform-navbar">
       <div data-testid="left-slot">{left}</div>
       <div data-testid="mode-switcher-slot">{modeSwitcher}</div>
+      {creditBalance && (
+        <div
+          data-testid="credit-balance-config"
+          data-tenant={creditBalance.tenantKey}
+          data-paywall={String(creditBalance.currentTenant?.show_paywall)}
+          data-stripe={String(creditBalance.stripeEnabled)}
+          data-live-admin={String(creditBalance.isLiveAdmin)}
+          data-trial={String(creditBalance.userOnFreeTrial)}
+          data-main={creditBalance.mainPlatformKey}
+          data-email={creditBalance.currentUserEmail}
+          data-user={creditBalance.username}
+        />
+      )}
       {search && (
         <form
           role="search"
@@ -180,10 +205,11 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: vi.fn(() => true),
   useTenantMetadata: vi.fn(() => ({ metadata: {}, isLoading: false, isError: false })),
+  useUserIsOnTrial: () => mockOnTrial.current,
 }));
 
 import { NavBar } from '../nav-bar';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { parseMarkdownLinks } from '@/utils/helpers';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
@@ -386,6 +412,68 @@ describe('NavBar', () => {
     });
   });
 
+  // The SDK shell places the credit balance just left of the bell, as on
+  // OS, and runs the visibility formula itself (stripe on, paywall tenant,
+  // live admin or trial user); the wrapper's job is to feed it the facts.
+  describe('credit balance', () => {
+    const setPlatformAdmin = (isPlatformAdmin: boolean) =>
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: isPlatformAdmin, is_department_admin: false },
+      } as any);
+
+    beforeEach(() => {
+      mockCurrentTenant.current = { key: 'test-tenant', show_paywall: true };
+      mockOnTrial.current = false;
+    });
+
+    it('feeds the SDK the tenant, the paywall flag, the ecommerce switch and the identity', () => {
+      setPlatformAdmin(true);
+      render(<NavBar />);
+      const cfg = screen.getByTestId('credit-balance-config');
+      expect(cfg).toHaveAttribute('data-tenant', 'test-tenant');
+      expect(cfg).toHaveAttribute('data-paywall', 'true');
+      expect(cfg).toHaveAttribute('data-stripe', 'true');
+      expect(cfg).toHaveAttribute('data-live-admin', 'true');
+      expect(cfg).toHaveAttribute('data-trial', 'false');
+      expect(cfg).toHaveAttribute('data-main', 'main');
+      expect(cfg).toHaveAttribute('data-email', 'test-user@example.com');
+      expect(cfg).toHaveAttribute('data-user', 'test-user');
+    });
+
+    it('treats an admin previewing the learner view as not live, like notifications', () => {
+      setPlatformAdmin(true);
+      mockLearnerMode.isInstructorMode = false;
+      render(<NavBar />);
+      expect(screen.getByTestId('credit-balance-config')).toHaveAttribute(
+        'data-live-admin',
+        'false',
+      );
+    });
+
+    it('reports a free-trial user so the SDK shows the balance to them too', () => {
+      mockOnTrial.current = true;
+      render(<NavBar />);
+      const cfg = screen.getByTestId('credit-balance-config');
+      expect(cfg).toHaveAttribute('data-live-admin', 'false');
+      expect(cfg).toHaveAttribute('data-trial', 'true');
+    });
+
+    it('passes no tenant facts before the current tenant is known', () => {
+      mockCurrentTenant.current = null;
+      render(<NavBar />);
+      expect(screen.getByTestId('credit-balance-config')).toHaveAttribute(
+        'data-paywall',
+        'undefined',
+      );
+    });
+
+    it('feeds nothing when logged out', () => {
+      vi.mocked(isLoggedIn).mockReturnValue(false);
+      render(<NavBar />);
+      expect(screen.queryByTestId('credit-balance-config')).not.toBeInTheDocument();
+    });
+  });
+
   describe('catalog page title', () => {
     it('shows "Explore Content" in the left cluster on the catalog page', () => {
       mockPathname = '/platform/test-tenant/discover';
@@ -505,6 +593,115 @@ describe('NavBar', () => {
       // No id-derived fallback — the raw id reads as noise.
       expect(screen.queryByTestId('navbar-page-title')).not.toBeInTheDocument();
       expect(screen.queryByText('XYZ 2026')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('truncated page titles', () => {
+    const widths = { scroll: 0, client: 0 };
+    let restore: (() => void)[] = [];
+
+    beforeEach(() => {
+      widths.scroll = 0;
+      widths.client = 0;
+      restore = (['scrollWidth', 'clientWidth'] as const).map((prop) => {
+        const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop);
+        Object.defineProperty(HTMLElement.prototype, prop, {
+          configurable: true,
+          get: () => (prop === 'scrollWidth' ? widths.scroll : widths.client),
+        });
+        return () => {
+          // jsdom defines these on Element.prototype, so there is normally no
+          // own descriptor to put back — the stub has to be deleted instead.
+          if (original) Object.defineProperty(HTMLElement.prototype, prop, original);
+          else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[prop];
+        };
+      });
+    });
+
+    afterEach(() => {
+      restore.forEach((fn) => fn());
+      vi.unstubAllGlobals();
+    });
+
+    it('shows an info button that reveals the full title on click', async () => {
+      widths.scroll = 600;
+      widths.client = 200;
+      mockPathname = '/platform/test-tenant/course-content/course-v1:main+BBB+2026/agent';
+      render(<NavBar />);
+      // The ⓘ only renders once the truncation effect has run, so waiting for
+      // it is what makes the `title` assertion safe.
+      const info = await screen.findByRole('button', { name: 'Show full title' });
+      expect(screen.getByRole('heading', { name: 'Course Beta' })).toHaveAttribute(
+        'title',
+        'Course Beta',
+      );
+
+      fireEvent.click(info);
+      expect(await screen.findByRole('dialog', { name: 'Full page title' })).toHaveTextContent(
+        'Course Beta',
+      );
+    });
+
+    it('shows no info button when the title fits', async () => {
+      widths.scroll = 200;
+      widths.client = 200;
+      mockPathname = '/platform/test-tenant/courses/course-v1:main+AAA+2026';
+      render(<NavBar />);
+      const title = await screen.findByRole('heading', { name: 'Course Alpha' });
+      expect(title).not.toHaveAttribute('title');
+      expect(screen.queryByRole('button', { name: 'Show full title' })).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['program', '/platform/test-tenant/programs/program-alpha', 'Program Alpha'],
+      ['pathway', '/platform/test-tenant/pathways/uuid-alpha', 'Pathway Alpha'],
+    ])('reveals the full %s title on click', async (_kind, pathname, name) => {
+      widths.scroll = 600;
+      widths.client = 200;
+      mockPathname = pathname;
+      render(<NavBar />);
+      const info = await screen.findByRole('button', { name: 'Show full title' });
+      expect(screen.getByRole('heading', { name })).toHaveAttribute('title', name);
+
+      fireEvent.click(info);
+      expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent(name);
+    });
+
+    it('re-measures on resize and drops the info button once the title fits again', async () => {
+      const observers: Array<{
+        cb: ResizeObserverCallback;
+        observe: ReturnType<typeof vi.fn>;
+        disconnect: ReturnType<typeof vi.fn>;
+      }> = [];
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          observe = vi.fn();
+          unobserve = vi.fn();
+          disconnect = vi.fn();
+          constructor(public cb: ResizeObserverCallback) {
+            observers.push(this);
+          }
+        },
+      );
+      widths.scroll = 600;
+      widths.client = 200;
+      mockPathname = '/platform/test-tenant/programs/program-alpha';
+      const { unmount } = render(<NavBar />);
+      await screen.findByRole('button', { name: 'Show full title' });
+
+      const observer = observers.at(-1)!;
+      expect(observer.observe).toHaveBeenCalledWith(
+        screen.getByRole('heading', { name: 'Program Alpha' }),
+      );
+
+      widths.scroll = 200;
+      act(() => observer.cb([], observer as unknown as ResizeObserver));
+      expect(screen.queryByRole('button', { name: 'Show full title' })).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Program Alpha' })).not.toHaveAttribute('title');
+
+      unmount();
+      expect(observer.disconnect).toHaveBeenCalled();
     });
   });
 

@@ -12,14 +12,12 @@ const {
   mockSaveUserTenants,
   mockDispatch,
   mockHandleLogout,
-  mockHandleTenantSwitch,
   mockOnAccountDeleted,
 } = vi.hoisted(() => ({
   mockSaveCurrentTenant: vi.fn(),
   mockSaveUserTenants: vi.fn(),
   mockDispatch: vi.fn(),
   mockHandleLogout: vi.fn(),
-  mockHandleTenantSwitch: vi.fn(),
   mockOnAccountDeleted: vi.fn(),
 }));
 
@@ -44,7 +42,6 @@ vi.mock('@/utils/helpers', () => ({
   getUserName: () => 'testuser',
   getUserEmail: () => 'test@example.com',
   handleLogout: mockHandleLogout,
-  handleTenantSwitch: mockHandleTenantSwitch,
   onAccountDeleted: mockOnAccountDeleted,
 }));
 
@@ -148,9 +145,8 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
       <button data-testid="logout-btn" onClick={() => props.onLogout?.()}>
         Logout
       </button>
-      <button data-testid="tenant-change-btn" onClick={() => props.onTenantChange?.('new-tenant')}>
-        Change Tenant
-      </button>
+      <span data-testid="show-organizations-link">{String(props.showOrganizationsLink)}</span>
+      <span data-testid="auth-url">{String(props.authURL)}</span>
       <button
         data-testid="tenant-update-btn"
         onClick={() => props.onTenantUpdate?.({ key: 'test-tenant', is_admin: true, org: 'org' })}
@@ -318,6 +314,16 @@ describe('UserProfileButton', () => {
     });
   });
 
+  describe('organization switching', () => {
+    it('leaves the Organizations item on and gives it the auth app it opens', () => {
+      render(<UserProfileButton />);
+
+      // The SDK shows the item by default but only renders it with an authURL.
+      expect(screen.getByTestId('show-organizations-link')).not.toHaveTextContent('false');
+      expect(screen.getByTestId('auth-url')).toHaveTextContent('https://auth.example.com');
+    });
+  });
+
   describe('callbacks', () => {
     it('should handle logout click', () => {
       render(<UserProfileButton />);
@@ -326,15 +332,6 @@ describe('UserProfileButton', () => {
       fireEvent.click(logoutBtn);
 
       expect(mockHandleLogout).toHaveBeenCalled();
-    });
-
-    it('should handle tenant change', () => {
-      render(<UserProfileButton />);
-
-      const tenantChangeBtn = screen.getByTestId('tenant-change-btn');
-      fireEvent.click(tenantChangeBtn);
-
-      expect(mockHandleTenantSwitch).toHaveBeenCalledWith('new-tenant');
     });
 
     it('should handle help click', () => {

@@ -7,7 +7,7 @@ import {
   initializeDataLayer,
   TokenResponse,
 } from '@iblai/iblai-js/data-layer';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { config } from '@/lib/config';
 import {
   handleTenantSwitch,
@@ -18,7 +18,9 @@ import {
 import {
   AuthProvider,
   setAccessCheckResponse,
+  SubscriptionConfigProvider,
   TenantProvider,
+  use402ErrorCheck,
   useCurrentTenant,
 } from '@iblai/iblai-js/web-utils';
 import { getErrorPageUrl, getTenant, getUserName, redirectToAuthSpa } from '@/utils/helpers';
@@ -34,6 +36,18 @@ declare global {
   }
 }
 
+/**
+ * Two things answer 402 here. The paywall (a course or program the person has
+ * not bought) describes the item and its prices; the credits ledger (the
+ * organization ran out of AI credits) carries an error sentence and, for the
+ * account owner, a Stripe pricing table. Only the paywall shape names an item.
+ */
+export function isPaywallResponse(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false;
+  const b = body as Record<string, unknown>;
+  return 'has_access' in b || 'item_type' in b || 'pricing' in b;
+}
+
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [tenant, setTenant] = useState('');
@@ -47,6 +61,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   // blanks the page out instead of showing the 404.
   const requestedTenant = routeTenant || pathname.match(/^\/platform\/([^/]+)/)?.[1] || '';
   const [ready, setReady] = useState(false);
+  const planFeatures = useMemo(() => config.settings.planFeatures(), []);
+  // The data layer is initialized once; the ref keeps that one-time callback
+  // on the current handler (its routing reads live admin/trial state).
+  const { handle402Error } = use402ErrorCheck();
+  const handle402ErrorRef = useRef(handle402Error);
+  handle402ErrorRef.current = handle402Error;
   const { saveCurrentTenant } = useCurrentTenant();
   const { saveUserTenants } = useUserTenants();
   const isSsoLoginRoute = /^\/sso-login/.test(pathname);
@@ -68,6 +88,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           redirectToAuthSpa(undefined, undefined, true);
         },
         402: (error402Response) => {
+          if (!isPaywallResponse(error402Response)) {
+            // Out of credits: the same next step the embedded agent's 402
+            // gets (Billing for an admin, the plan picker for a trial user,
+            // the contact-your-admin notice for everyone else).
+            void handle402ErrorRef.current(
+              (error402Response ?? {}) as Parameters<typeof handle402Error>[0],
+            );
+            return;
+          }
           dispatch(setAccessCheckResponse(error402Response as unknown as AccessCheckResponse));
         },
       },
@@ -148,7 +177,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   if (!requestedTenant && window.location.pathname.startsWith('/platform/')) return null;
 
   return (
-    <>
+    <SubscriptionConfigProvider
+      config={{
+        mainTenantKey: config.settings.mainPlatformKey(),
+        mentorUrl: config.urls.mentor(),
+        stripeEnabled: config.settings.stripeEnabled(),
+        supportEmail: config.settings.supportEmail(),
+        planFeatures,
+      }}
+    >
       {/* Mounted past the `ready` gate so `/env.js` — the source of the runtime
           Sentry DSN — has already been loaded by the effect above. */}
       <SentryInit />
@@ -192,6 +229,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           {children}
         </TenantProvider>
       </AuthProvider>
-    </>
+    </SubscriptionConfigProvider>
   );
 }

@@ -1,16 +1,22 @@
 'use client';
 import Link from 'next/link';
-import { Menu } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Info, Menu } from 'lucide-react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from 'react-responsive';
 
 import { UserProfileButton } from './header/profile/user-profile-button';
-import { getUserName, parseMarkdownLinks, redirectToAuthSpaJoinTenant } from '@/utils/helpers';
+import {
+  getUserEmail,
+  getUserName,
+  parseMarkdownLinks,
+  redirectToAuthSpaJoinTenant,
+} from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { PlatformNavbar } from '@iblai/iblai-js/web-containers';
 import { useSidebar } from '@iblai/iblai-js/web-containers/next';
-import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata, useUserIsOnTrial } from '@iblai/iblai-js/web-utils';
+import { useCurrentTenant } from '@/utils/localstorage';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useCourseMetadata } from '@/hooks/courses/use-course-metadata';
@@ -19,6 +25,7 @@ import {
   useGetUserEnrolledProgramsQuery,
 } from '@/services/catalog';
 import { config } from '@/lib/config';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 // Parked with the onboarding flow switch below (see `onboardingFlowSwitch`).
 // import { Label } from '@/components/ui/label';
 // import { Switch } from '@/components/ui/switch';
@@ -34,28 +41,28 @@ import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 import { LearnerModeSwitch } from '@/components/header/learner-mode-switch';
 import { useLearnerMode } from '@/hooks/use-learner-mode';
+import { useIsomorphicLayoutEffect } from '@/hooks/localstorage/use-isomorphic-layout-effect';
 // import { useIsAdmin } from '@/utils/localstorage';
 
 /** Shared navbar page-title rendering (course / program / catalog). */
-function NavbarTitle({
-  label,
-  className,
-  style,
-}: {
-  label: string;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+const NavbarTitle = forwardRef<
+  HTMLHeadingElement,
+  { label: string; className?: string; style?: React.CSSProperties; title?: string }
+>(function NavbarTitle({ label, className, style, title }, ref) {
   return (
     <h1
-      className={`truncate text-lg font-medium text-[var(--navbar-text)] sm:text-xl ${className ?? ''}`}
+      ref={ref}
+      // Smaller below the app's tablet cutoff so more of a long title fits
+      // beside the hamburger, bell and avatar.
+      className={`truncate text-base font-medium text-[var(--navbar-text)] md:text-xl ${className ?? ''}`}
       style={style}
+      title={title}
       data-testid="navbar-page-title"
     >
       {label}
     </h1>
   );
-}
+});
 
 /**
  * Current course title — shown in the navbar's left cluster on the
@@ -102,10 +109,77 @@ function CourseTitle() {
   // with the content below. Inline style + media-query hook rather than a
   // Tailwind utility.
   return (
-    <NavbarTitle
+    <TruncatableNavbarTitle
       label={title}
       style={isCourseContentPage && isTabletUp ? { marginLeft: -11 } : undefined}
     />
+  );
+}
+
+function useIsTruncated<T extends HTMLElement>(text: string) {
+  const ref = useRef<T>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  // Layout effect so the first paint already has the ⓘ in place, instead of
+  // the title re-truncating a frame later when the button mounts.
+  useIsomorphicLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // 1px tolerance: scrollWidth and clientWidth round independently, so a
+    // title that exactly fits can read as 1px over.
+    const measure = () => setIsTruncated(el.scrollWidth > el.clientWidth + 1);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [text]);
+
+  return { ref, isTruncated };
+}
+
+/**
+ * Navbar title that, once ellipsized, exposes an info button revealing the
+ * full label in a popover. A click-driven popover rather than a hover
+ * tooltip so it also works on touch screens, where truncation is most common.
+ */
+function TruncatableNavbarTitle({ label, style }: { label: string; style?: React.CSSProperties }) {
+  const { ref, isTruncated } = useIsTruncated<HTMLHeadingElement>(label);
+
+  return (
+    <div className="flex min-w-0 items-center gap-1">
+      <NavbarTitle
+        ref={ref}
+        label={label}
+        className="min-w-0"
+        style={style}
+        title={isTruncated ? label : undefined}
+      />
+      {isTruncated && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label="Show full title"
+              data-testid="navbar-page-title-info"
+              className="shrink-0 rounded-full p-1 text-[var(--navbar-text)] opacity-70 hover:bg-[var(--navbar-hover-bg)] hover:opacity-100 focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
+            >
+              <Info className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            collisionPadding={16}
+            aria-label="Full page title"
+            className="w-auto border-0 p-3 text-sm font-medium whitespace-normal shadow-lg"
+            style={{ maxWidth: 'min(28rem, calc(100vw - 32px))', overflowWrap: 'anywhere' }}
+            data-testid="navbar-page-title-full"
+          >
+            {label}
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
   );
 }
 
@@ -131,7 +205,7 @@ function ProgramTitle({ tenant }: { tenant: string }) {
   const current = (data ?? []).find((program) => program.program_id === programId);
   const label = current?.name || programId;
 
-  return <NavbarTitle label={label} />;
+  return <TruncatableNavbarTitle label={label} />;
 }
 
 /**
@@ -157,7 +231,7 @@ function PathwayTitle({ tenant }: { tenant: string }) {
   const current = (data ?? []).find((pathway) => pathway.pathway_uuid === pathwayId);
   const label = current?.name || 'Pathway';
 
-  return <NavbarTitle label={label} />;
+  return <TruncatableNavbarTitle label={label} />;
 }
 
 /**
@@ -181,6 +255,8 @@ export function NavBar() {
   const { toggleSidebar } = useSidebar();
   const isPlatformAdmin = departmentMemberCheck?.is_platform_admin === true;
   const { isInstructorMode } = useLearnerMode();
+  const { currentTenant } = useCurrentTenant();
+  const userOnFreeTrial = useUserIsOnTrial();
 
   const { metadata } = useTenantMetadata({ org: tenant });
   // The search bar is gated like the old navbar's: by the config flag and
@@ -417,6 +493,22 @@ export function NavBar() {
         left={leftCluster}
         modeSwitcher={modeSwitcher}
         search={discoverEnabled ? { onSubmit: handleSearchSubmit } : null}
+        creditBalance={
+          isUserLoggedIn
+            ? {
+                tenantKey: tenant,
+                currentTenant: currentTenant
+                  ? { key: currentTenant.key, show_paywall: currentTenant.show_paywall }
+                  : null,
+                stripeEnabled: config.settings.stripeEnabled(),
+                isLiveAdmin: isPlatformAdmin && isInstructorMode,
+                userOnFreeTrial,
+                mainPlatformKey: config.settings.mainPlatformKey(),
+                currentUserEmail: getUserEmail() ?? '',
+                username: getUserName() ?? '',
+              }
+            : null
+        }
         notifications={
           isUserLoggedIn
             ? {

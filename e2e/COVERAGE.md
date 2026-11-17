@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-11-03 | 281 checkpoints | 39 journeys | 100% covered
+> Last updated: 2026-11-16 | 286 checkpoints | 39 journeys | 100% covered
 
 ## How This Works
 
@@ -55,9 +55,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 4: Course About (5 checkpoints) — `journeys/04-course-about-and-configuration.spec.ts`
+## Journey 4: Course About (6 checkpoints) — `journeys/04-course-about-and-configuration.spec.ts`
 
-**Source files:** `app/courses/[course_id]/page.tsx`, `components/course-access-guard.tsx`
+**Source files:** `app/courses/[course_id]/page.tsx`, `app/platform/[tenant]/courses/[course_id]/page.tsx`, `components/course-access-guard.tsx`
 
 > The admin Configuration/Learning Info/Instructors tabs and the Authoring link were moved off the about page into the course-content view; their coverage now lives in Journey 5 (`tabs-24`..`tabs-32`).
 
@@ -66,6 +66,7 @@ When adding a new page or modifying an existing user flow:
 - [x] "Access Course" button is visible for enrolled users and navigates to course content
 - [x] Enrollment button is shown for non-enrolled users
 - [x] About page exposes only About and Syllabus tabs; Configuration/Learning Info/Instructors tabs and the Authoring link are absent, and Syllabus still switches within the page
+- [x] Mobile viewport (375px): the course image, CTA and price/language/duration/date block come before the About description, visually and in the DOM
 
 ---
 
@@ -331,7 +332,7 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 22: Navigation — NavBar & Sidebar (12 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
+## Journey 22: Navigation — NavBar & Sidebar (15 checkpoints) — `journeys/22-navigation-navbar.spec.ts`
 
 **Source files:** `components/nav-bar.tsx`, `components/app-sidebar/index.tsx`, `components/header/profile/user-profile-button.tsx`, `components/header/learner-mode-switch.tsx`, `hooks/use-learner-mode.ts`, `lib/config.ts`
 
@@ -347,6 +348,9 @@ When adding a new page or modifying an existing user flow:
 - [x] Admin switches the navbar User/Admin toggle; User mode hides staff sidebar entries, Admin mode restores them _(admin only — skips for non-admin)_
 - [x] Below xl the User/Admin toggle moves from the navbar into the profile dropdown _(admin only — skips for non-admin)_
 - [x] Profile dropdown Help link opens the help center in exactly one new tab _(skips when the tenant sets `show_help: false`)_
+- [x] A live admin of a paywall tenant sees the SDK credit balance just left of the notification bell, with the credits actions in its dropdown; others do not see it
+- [x] A free-trial user sees the admin cluster in the sidebar and each entry opens the SDK plan picker instead of the action _(skips for other accounts)_
+- [x] On a 320px viewport a truncated navbar course title shows an ⓘ button whose popover reveals the full title inside the viewport and closes on Escape; a title that fits gets no ⓘ
 
 ---
 
@@ -521,9 +525,9 @@ When adding a new page or modifying an existing user flow:
 
 ---
 
-## Journey 37: Mentor Embed Loads (4 checkpoints) — `journeys/37-mentor-embed-loads.spec.ts`
+## Journey 37: Mentor Embed Loads (5 checkpoints) — `journeys/37-mentor-embed-loads.spec.ts`
 
-**Source files:** `components/course-agent-chat.tsx`, `components/chat-button.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`
+**Source files:** `components/course-agent-chat.tsx`, `components/chat-button.tsx`, `app/platform/[tenant]/onboarding/onboarding-flow-page.tsx`, `components/credit-exhaustion-handler.tsx`, `components/app-sidebar/index.tsx`
 
 The mentor is embedded through the `agent-ai` web component, which puts the mentor app in an
 iframe inside its own shadow root. The host owns the auth and answers the embed over
@@ -534,6 +538,7 @@ not error — it spins. These checkpoints assert what an outside observer can di
 - [x] The embed reaches the mentor app inside the iframe rather than a spinner or an error
 - [x] The embed runs on the same tenant as the host, not a stale one
 - [x] The embed settles instead of re-navigating in an auth-handshake loop
+- [x] Credit exhaustion handed to the host by the embed opens the SDK credits flow (plan picker, Billing or contact-admin) at page size
 
 ---
 

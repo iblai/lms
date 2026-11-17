@@ -6,13 +6,24 @@ import { waitForAppShell, gotoTenantPage } from '../utils/navigation';
  * Helper: Navigate to the first course about page from /home.
  * Returns the course heading text or null if no courses exist.
  */
-async function navigateToCourseAbout(page: Page): Promise<string | null> {
+async function navigateToCourseAbout(
+  page: Page,
+  catalog = 'discover?content=courses&enrolled=true',
+): Promise<string | null> {
   // Enrolled courses live on the centralized catalog page.
-  await gotoTenantPage(page, 'discover?content=courses&enrolled=true', { timeout: 120000 });
+  await gotoTenantPage(page, catalog, { timeout: 120000 });
   await waitForAppShell(page);
 
   const courseCard = page.locator('[data-testid="discover-content-card"]').first();
-  const hasCourse = await courseCard.isVisible({ timeout: 120_000 }).catch(() => false);
+  // isVisible() never waits, so wait for either the first card or the
+  // catalog's empty state before deciding there is nothing to open.
+  const hasCourse = await Promise.race([
+    courseCard.waitFor({ state: 'visible', timeout: 120_000 }).then(() => true),
+    page
+      .getByTestId('empty-box')
+      .waitFor({ state: 'visible', timeout: 120_000 })
+      .then(() => false),
+  ]).catch(() => false);
 
   if (!hasCourse) return null;
 
@@ -36,6 +47,7 @@ async function navigateToCourseAbout(page: Page): Promise<string | null> {
  *  3. Access Course button
  *  4. Enrollment button for non-enrolled
  *  5. Only About and Syllabus tabs remain (moved tabs/links are gone)
+ *  6. Mobile: the image, CTA and course facts come before the description
  */
 test.describe('Journey 04: Course About', () => {
   test.setTimeout(200000);
@@ -169,5 +181,52 @@ test.describe('Journey 04: Course About', () => {
       timeout: 30000,
     });
     logger.info('About page exposes only About and Syllabus tabs');
+  });
+
+  test('Checkpoint 6: Mobile — image, CTA and course facts come before the description', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    // Any course will do for a layout check, so fall back to the full catalog
+    // when the account has no enrolments.
+    const courseName =
+      (await navigateToCourseAbout(page)) ??
+      (await navigateToCourseAbout(page, 'discover?content=courses'));
+
+    if (!courseName) {
+      test.skip();
+      return;
+    }
+
+    // Every label use-course-detail.ts can put on the course CTA.
+    const cta = page
+      .getByRole('button', {
+        name: /^(Access Course|Enroll Now|Request Access|Invitation Only|Buy Now|Purchase Now)/,
+      })
+      .first();
+    await expect(cta).toBeVisible({ timeout: 120_000 });
+    const description = page.getByRole('heading', { name: 'Course Description' });
+    await expect(description).toBeVisible({ timeout: 30000 });
+
+    const [ctaBox, descriptionBox] = await Promise.all([
+      cta.boundingBox(),
+      description.boundingBox(),
+    ]);
+    expect(ctaBox).not.toBeNull();
+    expect(descriptionBox).not.toBeNull();
+    expect(ctaBox!.y).toBeLessThan(descriptionBox!.y);
+
+    // DOM order has to match too, so tab and screen-reader order agree with
+    // what is on screen.
+    const ctaPrecedesDescription = await cta.evaluate((el, headingText) => {
+      const heading = [...document.querySelectorAll('h1, h2, h3')].find(
+        (h) => h.textContent?.trim() === headingText,
+      );
+      return (
+        !!heading && !!(el.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING)
+      );
+    }, 'Course Description');
+    expect(ctaPrecedesDescription).toBe(true);
+    logger.info('Mobile about page shows the image/CTA/facts block before the description');
   });
 });
