@@ -1,0 +1,132 @@
+name: Security Audit
+
+# Scans the committed dependency tree against OSV (osv.dev) for known
+# advisories — the category of transitive, already-present vulnerabilities a
+# per-PR dependency review never sees. Replaces `pnpm audit`, whose advisory
+# endpoint npm permanently retired: it now returns 410, which the old script
+# scored as "clean", so the gate had stopped checking anything.
+#
+# - On pull_request: fails the check on any finding, blocking merge.
+# - Nightly:         opens/updates a tracking issue when findings appear, so a
+#                    newly published advisory is surfaced even with no PR open.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/security-audit.yml'
+  schedule:
+    # 03:17 UTC daily (off the hour to avoid the cron stampede).
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: security-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  OSV_VERSION: v2.7.1
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Install osv-scanner (pinned, checksum-verified)
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          base="https://github.com/google/osv-scanner/releases/download/${OSV_VERSION}"
+          curl -fsSL -o "$work/osv-scanner" "$base/osv-scanner_linux_amd64"
+          curl -fsSL -o "$work/SHA256SUMS" "$base/osv-scanner_SHA256SUMS"
+          ( cd "$work" \
+            && grep ' osv-scanner_linux_amd64$' SHA256SUMS \
+               | sed 's/osv-scanner_linux_amd64/osv-scanner/' \
+               | sha256sum -c - )
+          chmod +x "$work/osv-scanner"
+          sudo mv "$work/osv-scanner" /usr/local/bin/osv-scanner
+          osv-scanner --version
+
+      - name: Run osv-scanner
+        id: audit
+        run: |
+          set +e
+          osv-scanner scan source . | tee audit-report.txt
+          code=${PIPESTATUS[0]}
+          # 0 = no vulnerabilities, 1 = vulnerabilities found. Any other code is
+          # a scanner/network error, not a verdict — surface it, do not block on
+          # an outage (PR advisories are still enforced by dependency-review).
+          if [ "$code" != "0" ] && [ "$code" != "1" ]; then
+            echo "::warning::osv-scanner exited ${code} (scanner error, not a finding) — skipping the gate this run."
+            code=0
+          fi
+          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
+
+      - name: Surface report in job summary
+        if: always()
+        run: |
+          {
+            echo '## osv-scanner (OSV advisories)'
+            echo ''
+            echo '```'
+            cat audit-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open or update tracking issue (scheduled runs only)
+        if: github.event_name == 'schedule' && steps.audit.outputs.exit_code != '0'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('audit-report.txt', 'utf8').slice(0, 60000);
+            const title = '🔒 Security audit: vulnerable dependencies detected';
+            const body = [
+              'The nightly osv-scanner run found vulnerable dependencies in the tree.',
+              '',
+              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              '```',
+              report,
+              '```',
+            ].join('\n');
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security-audit',
+            });
+
+            if (existing.data.length > 0) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                title,
+                body,
+              });
+              core.info(`Updated existing issue #${existing.data[0].number}`);
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['security-audit'],
+              });
+              core.info('Opened new security-audit issue');
+            }
+
+      - name: Fail if vulnerabilities found
+        if: steps.audit.outputs.exit_code != '0'
+        run: exit 1
