@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.104.0](https://github.com/iblai/lms/compare/skills-v0.103.0...skills-v0.104.0) (2026-11-17)
+
+### Features
+
+* **credits:** take over the embedded agent's credit exhaustion and ship the SDK's credits flows ([4ebe577](https://github.com/iblai/lms/commit/4ebe5772613ec867d515e94a523687e180e53bfd))
+
+### Bug Fixes
+
+* **e2e,a11y:** name the full-title dialog; sturdier course CTA and catalog waits ([c72c2aa](https://github.com/iblai/lms/commit/c72c2aa2a75f2e56b51a2611a8e0e926231fee08))
+* full page title on truncation; course sidebar first on mobile ([ba975f7](https://github.com/iblai/lms/commit/ba975f79a74703d0624d15bd28daa21c257df12a))
+* **profile:** drop onTenantChange for the SDK's organizations link ([a322f27](https://github.com/iblai/lms/commit/a322f2771495764ec7382ea39468bdd94a9b17b0))
+
+### Tests
+
+* **nav-bar:** wait for the truncation effect before asserting ([1f961a7](https://github.com/iblai/lms/commit/1f961a7d50a9d8dad272bd740c506ce323ee4748))
+
 ## [0.103.0](https://github.com/iblai/lms/compare/skills-v0.102.7...skills-v0.103.0) (2026-11-11)
 
 ### Features
