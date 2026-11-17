@@ -19,8 +19,16 @@ vi.mock('next/navigation', () => ({
 }));
 
 const mockIsAdmin = vi.hoisted(() => ({ current: false }));
+const mockCurrentTenant = vi.hoisted(() => ({
+  current: { key: 'test-tenant', show_paywall: true } as {
+    key: string;
+    show_paywall?: boolean;
+  } | null,
+}));
+const mockOnTrial = vi.hoisted(() => ({ current: false }));
 vi.mock('@/utils/localstorage', () => ({
   useIsAdmin: () => mockIsAdmin.current,
+  useCurrentTenant: () => ({ currentTenant: mockCurrentTenant.current }),
 }));
 
 vi.mock('next/link', () => ({
@@ -40,6 +48,7 @@ vi.mock('react-responsive', () => ({
 vi.mock('@/utils/helpers', () => ({
   getTenant: vi.fn(() => 'test-tenant'),
   getUserName: vi.fn(() => 'test-user'),
+  getUserEmail: vi.fn(() => 'test-user@example.com'),
   parseMarkdownLinks: vi.fn(() => []),
   redirectToAuthSpa: vi.fn(),
   redirectToAuthSpaJoinTenant: vi.fn(),
@@ -53,6 +62,8 @@ vi.mock('@/lib/config', () => ({
       studioHeaderMenuEnabled: vi.fn(() => true),
       additionalLeftHeaderMenuItems: vi.fn(() => ''),
       additionalRightHeaderMenuItems: vi.fn(() => ''),
+      mainPlatformKey: vi.fn(() => 'main'),
+      stripeEnabled: vi.fn(() => true),
     },
     urls: {
       studioUrl: vi.fn(() => 'https://studio.example.com'),
@@ -119,6 +130,7 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
     left,
     modeSwitcher,
     search,
+    creditBalance,
     notifications,
     profile,
     visibleToLoggedInUsersOnly,
@@ -127,6 +139,19 @@ vi.mock('@iblai/iblai-js/web-containers', () => ({
     <nav data-testid="platform-navbar">
       <div data-testid="left-slot">{left}</div>
       <div data-testid="mode-switcher-slot">{modeSwitcher}</div>
+      {creditBalance && (
+        <div
+          data-testid="credit-balance-config"
+          data-tenant={creditBalance.tenantKey}
+          data-paywall={String(creditBalance.currentTenant?.show_paywall)}
+          data-stripe={String(creditBalance.stripeEnabled)}
+          data-live-admin={String(creditBalance.isLiveAdmin)}
+          data-trial={String(creditBalance.userOnFreeTrial)}
+          data-main={creditBalance.mainPlatformKey}
+          data-email={creditBalance.currentUserEmail}
+          data-user={creditBalance.username}
+        />
+      )}
       {search && (
         <form
           role="search"
@@ -180,10 +205,11 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: vi.fn(() => true),
   useTenantMetadata: vi.fn(() => ({ metadata: {}, isLoading: false, isError: false })),
+  useUserIsOnTrial: () => mockOnTrial.current,
 }));
 
 import { NavBar } from '../nav-bar';
-import { useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
 import { config } from '@/lib/config';
 import { parseMarkdownLinks } from '@/utils/helpers';
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
@@ -383,6 +409,68 @@ describe('NavBar', () => {
       setPlatformAdmin(true);
       render(<NavBar />);
       expect(screen.getByTestId('notification-dropdown')).toHaveAttribute('data-is-admin', 'true');
+    });
+  });
+
+  // The SDK shell places the credit balance just left of the bell, as on
+  // OS, and runs the visibility formula itself (stripe on, paywall tenant,
+  // live admin or trial user); the wrapper's job is to feed it the facts.
+  describe('credit balance', () => {
+    const setPlatformAdmin = (isPlatformAdmin: boolean) =>
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: isPlatformAdmin, is_department_admin: false },
+      } as any);
+
+    beforeEach(() => {
+      mockCurrentTenant.current = { key: 'test-tenant', show_paywall: true };
+      mockOnTrial.current = false;
+    });
+
+    it('feeds the SDK the tenant, the paywall flag, the ecommerce switch and the identity', () => {
+      setPlatformAdmin(true);
+      render(<NavBar />);
+      const cfg = screen.getByTestId('credit-balance-config');
+      expect(cfg).toHaveAttribute('data-tenant', 'test-tenant');
+      expect(cfg).toHaveAttribute('data-paywall', 'true');
+      expect(cfg).toHaveAttribute('data-stripe', 'true');
+      expect(cfg).toHaveAttribute('data-live-admin', 'true');
+      expect(cfg).toHaveAttribute('data-trial', 'false');
+      expect(cfg).toHaveAttribute('data-main', 'main');
+      expect(cfg).toHaveAttribute('data-email', 'test-user@example.com');
+      expect(cfg).toHaveAttribute('data-user', 'test-user');
+    });
+
+    it('treats an admin previewing the learner view as not live, like notifications', () => {
+      setPlatformAdmin(true);
+      mockLearnerMode.isInstructorMode = false;
+      render(<NavBar />);
+      expect(screen.getByTestId('credit-balance-config')).toHaveAttribute(
+        'data-live-admin',
+        'false',
+      );
+    });
+
+    it('reports a free-trial user so the SDK shows the balance to them too', () => {
+      mockOnTrial.current = true;
+      render(<NavBar />);
+      const cfg = screen.getByTestId('credit-balance-config');
+      expect(cfg).toHaveAttribute('data-live-admin', 'false');
+      expect(cfg).toHaveAttribute('data-trial', 'true');
+    });
+
+    it('passes no tenant facts before the current tenant is known', () => {
+      mockCurrentTenant.current = null;
+      render(<NavBar />);
+      expect(screen.getByTestId('credit-balance-config')).toHaveAttribute(
+        'data-paywall',
+        'undefined',
+      );
+    });
+
+    it('feeds nothing when logged out', () => {
+      vi.mocked(isLoggedIn).mockReturnValue(false);
+      render(<NavBar />);
+      expect(screen.queryByTestId('credit-balance-config')).not.toBeInTheDocument();
     });
   });
 

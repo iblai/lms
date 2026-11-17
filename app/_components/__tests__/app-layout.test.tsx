@@ -85,6 +85,10 @@ vi.mock('@/utils/helpers', () => ({
 
 // Mock monetization wrapper (transitively pulls @iblai/iblai-js/web-containers,
 // which doesn't resolve under vitest's module resolver).
+vi.mock('@/components/credit-exhaustion-handler', () => ({
+  CreditExhaustionHandler: () => <div data-testid="credit-exhaustion-handler" />,
+}));
+
 vi.mock('../monetization-wrapper', () => ({
   MonetizationWrapper: () => <div data-testid="monetization-wrapper" />,
 }));

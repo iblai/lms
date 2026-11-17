@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
 let mockPathname = '/platform/test-tenant/home';
 let mockSearch = '';
 
@@ -11,7 +12,7 @@ const mockLearnerMode = vi.hoisted(() => ({ isInstructorMode: true, toggleLearne
 vi.mock('@/hooks/use-learner-mode', () => ({ useLearnerMode: () => mockLearnerMode }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(() => ({ push: mockPush })),
+  useRouter: vi.fn(() => ({ push: mockPush, replace: mockReplace })),
   usePathname: vi.fn(() => mockPathname),
   useSearchParams: vi.fn(() => new URLSearchParams(mockSearch)),
 }));
@@ -113,10 +114,17 @@ const ALL_TABS = [
 ];
 const mockGetVisibleAnalyticsTabs = vi.hoisted(() => vi.fn());
 
+const mockExecuteWithTrialCheck = vi.hoisted(() => vi.fn((action: () => unknown) => action()));
+const mockTrialGate = vi.hoisted(() => ({ current: false }));
+
 vi.mock('@iblai/iblai-js/web-utils', () => ({
   isLoggedIn: vi.fn(() => true),
   useTenantMetadata: vi.fn(() => ({ metadata: {} })),
   getVisibleAnalyticsTabs: mockGetVisibleAnalyticsTabs,
+  useShowFreeTrialDialog: () => ({
+    executeWithTrialCheck: mockExecuteWithTrialCheck,
+    isNewlyUserOnPreFreeOrAdvertisingMode: () => mockTrialGate.current,
+  }),
 }));
 
 vi.mock('@iblai/iblai-js/web-containers', () => ({
@@ -226,6 +234,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         data-testid="sidebar-footer"
         data-is-admin={String(footer.isAdmin)}
         data-is-live-admin={String(footer.isLiveAdmin)}
+        data-show-trial-gated={String(footer.showTrialGatedAdminMenu)}
         data-enable-rbac={String(footer.enableRbac)}
         data-tenant-key={footer.tenantKey}
         data-current-tenant-key={footer.currentTenant.key}
@@ -692,5 +701,136 @@ describe('AppSidebar', () => {
     render(<AppSidebar />);
     fireEvent.click(screen.getByText('footer-management'));
     expect(screen.getByTestId('account-sheet')).toHaveAttribute('data-username', '');
+  });
+});
+
+/**
+ * The SDK's credits flows send an admin to Billing by putting
+ * `profileTab=billing` in the URL (`openBillingTab` in web-utils), the way the
+ * OS app already opens its profile on that tab.
+ */
+describe('AppSidebar — Billing by URL', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPathname = '/platform/test-tenant/home';
+    mockSearch = 'profileTab=billing';
+    vi.mocked(isLoggedIn).mockReturnValue(true);
+  });
+
+  it('opens the profile modal on Billing when the URL asks for it', () => {
+    render(<AppSidebar />);
+    expect(screen.getByTestId('profile-modal')).toHaveAttribute('data-tab', 'billing');
+  });
+
+  it('drops profileTab from the URL when that modal closes', () => {
+    render(<AppSidebar />);
+    fireEvent.click(screen.getByText('Close profile'));
+    expect(screen.queryByTestId('profile-modal')).not.toBeInTheDocument();
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/home', { scroll: false });
+  });
+
+  it('keeps the other query params when it drops profileTab', () => {
+    mockSearch = 'content=courses&profileTab=billing';
+    render(<AppSidebar />);
+    fireEvent.click(screen.getByText('Close profile'));
+    expect(mockReplace).toHaveBeenCalledWith('/platform/test-tenant/home?content=courses', {
+      scroll: false,
+    });
+  });
+
+  it('leaves the URL alone when a profile opened from the rail closes', () => {
+    mockSearch = '';
+    render(<AppSidebar />);
+    fireEvent.click(expandedRow('skills'));
+    fireEvent.click(screen.getByText('Close profile'));
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * A free-trial user (the SDK gate's own predicate: a non-admin on the main or
+ * an advertising tenant with billing on) sees the whole admin cluster, as on
+ * OS; every entry runs through `executeWithTrialCheck`, which opens the plan
+ * picker instead of the action. The stubbed gate returns null to stand in for
+ * "the picker opened".
+ */
+describe('AppSidebar — free-trial gate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPathname = '/platform/test-tenant/home';
+    mockSearch = '';
+    mockRbacPermissions = [];
+    mockLearnerMode.isInstructorMode = true;
+    mockGetVisibleAnalyticsTabs.mockReturnValue(ALL_TABS);
+    vi.mocked(isLoggedIn).mockReturnValue(true);
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: false, is_department_admin: false },
+    } as any);
+    mockTrialGate.current = true;
+    mockExecuteWithTrialCheck.mockImplementation(() => null);
+  });
+
+  afterEach(() => {
+    mockTrialGate.current = false;
+    mockExecuteWithTrialCheck.mockImplementation((action: () => unknown) => action());
+  });
+
+  it('asks the SDK footer for the trial-gated admin cluster', () => {
+    render(<AppSidebar />);
+    expect(screen.getByTestId('sidebar-footer')).toHaveAttribute('data-show-trial-gated', 'true');
+  });
+
+  it('shows Studio and Analytics to a trial user who is not an admin', () => {
+    render(<AppSidebar />);
+    expect(screen.getByTestId('section-studio')).toBeInTheDocument();
+    expect(screen.getByTestId('section-analytics')).toBeInTheDocument();
+    expect(screen.queryByTestId('menu-analytics')).not.toBeInTheDocument();
+  });
+
+  it('routes a footer admin action through the gate instead of opening the sheet', () => {
+    render(<AppSidebar />);
+    fireEvent.click(screen.getByText('footer-management'));
+    expect(mockExecuteWithTrialCheck).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('account-sheet')).not.toBeInTheDocument();
+  });
+
+  it('routes Invites through the gate too', () => {
+    render(<AppSidebar />);
+    fireEvent.click(screen.getByText('footer-invites'));
+    expect(mockExecuteWithTrialCheck).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('invite-dialog')).not.toBeInTheDocument();
+  });
+
+  it('routes Analytics through the gate instead of navigating', () => {
+    render(<AppSidebar />);
+    fireEvent.click(expandedRow('analytics'));
+    expect(mockExecuteWithTrialCheck).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('leaves Notifications ungated', () => {
+    render(<AppSidebar />);
+    fireEvent.click(screen.getByText('footer-notifications'));
+    expect(mockExecuteWithTrialCheck).not.toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/notifications');
+  });
+
+  it('shows nothing extra to a plain learner the gate does not cover', () => {
+    mockTrialGate.current = false;
+    render(<AppSidebar />);
+    expect(screen.getByTestId('sidebar-footer')).toHaveAttribute('data-show-trial-gated', 'false');
+    expect(screen.queryByTestId('section-studio')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('section-analytics')).not.toBeInTheDocument();
+  });
+
+  it('lets a real admin run the action when the gate passes it through', () => {
+    mockTrialGate.current = false;
+    mockExecuteWithTrialCheck.mockImplementation((action: () => unknown) => action());
+    vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+      data: { is_platform_admin: true, is_department_admin: false },
+    } as any);
+    render(<AppSidebar />);
+    fireEvent.click(screen.getByText('footer-management'));
+    expect(screen.getByTestId('account-sheet')).toHaveAttribute('data-tab', 'management');
   });
 });

@@ -6,11 +6,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from 'react-responsive';
 
 import { UserProfileButton } from './header/profile/user-profile-button';
-import { getUserName, parseMarkdownLinks, redirectToAuthSpaJoinTenant } from '@/utils/helpers';
+import {
+  getUserEmail,
+  getUserName,
+  parseMarkdownLinks,
+  redirectToAuthSpaJoinTenant,
+} from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { PlatformNavbar } from '@iblai/iblai-js/web-containers';
 import { useSidebar } from '@iblai/iblai-js/web-containers/next';
-import { isLoggedIn, useTenantMetadata } from '@iblai/iblai-js/web-utils';
+import { isLoggedIn, useTenantMetadata, useUserIsOnTrial } from '@iblai/iblai-js/web-utils';
+import { useCurrentTenant } from '@/utils/localstorage';
 
 import { useGetDepartmentMemberCheckQuery } from '@/services/core';
 import { useCourseMetadata } from '@/hooks/courses/use-course-metadata';
@@ -250,6 +256,8 @@ export function NavBar() {
   const { toggleSidebar } = useSidebar();
   const isPlatformAdmin = departmentMemberCheck?.is_platform_admin === true;
   const { isInstructorMode } = useLearnerMode();
+  const { currentTenant } = useCurrentTenant();
+  const userOnFreeTrial = useUserIsOnTrial();
 
   const { metadata } = useTenantMetadata({ org: tenant });
   // The search bar is gated like the old navbar's: by the config flag and
@@ -486,6 +494,22 @@ export function NavBar() {
         left={leftCluster}
         modeSwitcher={modeSwitcher}
         search={discoverEnabled ? { onSubmit: handleSearchSubmit } : null}
+        creditBalance={
+          isUserLoggedIn
+            ? {
+                tenantKey: tenant,
+                currentTenant: currentTenant
+                  ? { key: currentTenant.key, show_paywall: currentTenant.show_paywall }
+                  : null,
+                stripeEnabled: config.settings.stripeEnabled(),
+                isLiveAdmin: isPlatformAdmin && isInstructorMode,
+                userOnFreeTrial,
+                mainPlatformKey: config.settings.mainPlatformKey(),
+                currentUserEmail: getUserEmail() ?? '',
+                username: getUserName() ?? '',
+              }
+            : null
+        }
         notifications={
           isUserLoggedIn
             ? {

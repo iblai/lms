@@ -287,4 +287,86 @@ test.describe('Journey 22: Navigation & NavBar', () => {
     expect(context.pages().length).toBe(pagesBefore + 1);
     await helpPage.close();
   });
+  /**
+   * The SDK's credit balance sits just left of the bell, as on OS. The shell
+   * shows it only to a live admin (or free-trial user) of a paywall tenant with
+   * ecommerce on, so the assertion is keyed on the facts the host stores.
+   */
+  test('CP-13: Admins of a paywall tenant see the credit balance beside the bell', async ({
+    page,
+  }) => {
+    const navbar = page.getByRole('banner');
+    await expect(navbar).toBeVisible({ timeout: 30_000 });
+
+    const facts = await page.evaluate(() => {
+      try {
+        const tenant = JSON.parse(localStorage.getItem('current_tenant') || '{}');
+        return { isAdmin: !!tenant.is_admin, showPaywall: !!tenant.show_paywall, key: tenant.key };
+      } catch {
+        return { isAdmin: false, showPaywall: false, key: null };
+      }
+    });
+    const trigger = navbar.getByTestId('credit-balance-trigger');
+    const bell = navbar.getByRole('button', { name: /notification/i }).first();
+
+    if (!(facts.isAdmin && facts.showPaywall)) {
+      await expect(trigger).toHaveCount(0);
+      return;
+    }
+
+    await expect(trigger).toBeVisible({ timeout: 30_000 });
+    await expect(trigger).toContainText(/credit/i);
+    if (await bell.isVisible({ timeout: 10_000 }).catch(() => false)) {
+      const [t, b] = await Promise.all([trigger.boundingBox(), bell.boundingBox()]);
+      expect(t && b && t.x < b.x).toBe(true);
+    }
+
+    // The dropdown offers the credits actions the SDK ships.
+    await trigger.click();
+    await expect(page.getByTestId('credit-balance-panel')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /add credits/i }).first()).toBeVisible();
+    await page.keyboard.press('Escape');
+  });
+  /**
+   * A free-trial user (a non-admin whose only organization is the main one,
+   * with billing on) sees the whole admin cluster, as on OS, and every entry
+   * opens the SDK plan picker instead of the real action. Keyed on the facts
+   * the host stores; skipped for any other kind of account.
+   */
+  test('CP-14: A free-trial user sees the admin cluster and gets the plan picker on click', async ({
+    page,
+  }) => {
+    const facts = await page.evaluate(() => {
+      try {
+        const tenant = JSON.parse(localStorage.getItem('current_tenant') || '{}');
+        const tenants = JSON.parse(localStorage.getItem('tenants') || '[]');
+        return {
+          isAdmin: tenant.is_admin === true,
+          key: tenant.key ?? null,
+          count: tenants.length,
+        };
+      } catch {
+        return { isAdmin: true, key: null, count: 0 };
+      }
+    });
+    const mainTenantKey = process.env.MAIN_PLATFORM_KEY || 'main';
+    if (facts.isAdmin || facts.count !== 1 || facts.key !== mainTenantKey) {
+      test.skip();
+      return;
+    }
+
+    const sidebar = page.getByRole('complementary').first();
+    const expandButton = sidebar.getByRole('button', { name: /expand sidebar/i });
+    if (await expandButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await expandButton.click();
+    }
+    const management = sidebar.getByRole('button', { name: /management/i }).first();
+    await expect(management).toBeVisible({ timeout: 30_000 });
+
+    await management.click();
+    await expect(page.getByRole('dialog', { name: /(choose|change) your plan/i })).toBeVisible({
+      timeout: 30_000,
+    });
+    await page.keyboard.press('Escape');
+  });
 });

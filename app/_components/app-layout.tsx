@@ -30,6 +30,14 @@ const MonetizationWrapper = dynamic(
   { ssr: false, loading: () => null },
 );
 
+// The SDK's plan picker and contact-admin modal, opened when the embedded agent
+// or one of this app's own calls runs out of credits; same reason to keep it out
+// of the shared chunk.
+const CreditExhaustionHandler = dynamic(
+  () => import('@/components/credit-exhaustion-handler').then((m) => m.CreditExhaustionHandler),
+  { ssr: false, loading: () => null },
+);
+
 // The chrome doesn't depend on the page children, so memoize it to skip re-renders
 // triggered by AppLayout updates (metadata loads, sidebar toggles) on every navigation.
 const NavBar = memo(NavBarBase);
@@ -104,6 +112,7 @@ export default function AppLayout({ children }: { children: any }) {
               {canMonetize(currentTenant as Tenant, userTenants as Tenant[]) && (
                 <MonetizationWrapper />
               )}
+              {userIsLoggedIn && <CreditExhaustionHandler />}
               <div className="flex min-h-0 flex-1 flex-col items-start md:flex-row">
                 <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-y-auto">
                   {children}

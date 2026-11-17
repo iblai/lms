@@ -214,6 +214,7 @@ export function CourseAgentChat() {
         contextOrigins: `${config.urls.lms()}`,
         authRelyOnHost: true,
         isContextAware: true,
+        handleCreditExhaustion: true,
         theme: 'light',
         style: { height: '100%', width: '100%' },
         extraparams: 'hide-sidebar=true&hide-navbar=true',

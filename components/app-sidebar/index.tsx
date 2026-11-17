@@ -34,6 +34,7 @@ import {
   getVisibleAnalyticsTabs,
   isLoggedIn,
   Tenant,
+  useShowFreeTrialDialog,
   useTenantMetadata,
   type AnalyticsTab,
 } from '@iblai/iblai-js/web-utils';
@@ -56,8 +57,8 @@ import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstor
 type SidebarOpenSection = 'analytics';
 
 /** Profile tabs the sidebar opens the whole profile modal on. Credentials and
- * Skills are sub-tabs of its Education tab. */
-type ProfileShortcutTab = 'gradebook' | 'credentials' | 'skills';
+ * Skills are sub-tabs of its Education tab; Billing is reached by URL. */
+type ProfileShortcutTab = 'gradebook' | 'credentials' | 'skills' | 'billing';
 
 /**
  * A flat (no sub-menu) top-level nav row, styled to match the SDK's
@@ -199,11 +200,38 @@ export function AppSidebar() {
     if (pathname?.includes('/analytics')) setOpenSection('analytics');
   }, [pathname]);
 
+  // The SDK's credits flows send an admin to Billing by putting
+  // `profileTab=billing` in the URL (`openBillingTab` in web-utils).
+  const profileTabParam = searchParams?.get('profileTab');
+  React.useEffect(() => {
+    if (profileTabParam === 'billing') setProfileTab('billing');
+  }, [profileTabParam]);
+
+  const closeProfile = () => {
+    setProfileTab(null);
+    if (!searchParams?.has('profileTab')) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('profileTab');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+
   const isPlatformAdmin = !!departmentMemberCheck?.is_platform_admin;
   // An admin previewing the learner view (navbar User/Admin switch) loses
   // every staff entry point, as a plain learner would.
   const { isInstructorMode } = useLearnerMode();
   const isLiveAdmin = isPlatformAdmin && isInstructorMode;
+
+  // A free-trial user sees the whole admin cluster, as on OS, and every entry
+  // opens the plan picker instead of the real action. The gate's own predicate
+  // decides who that is, so an entry only shows when clicking it will open the
+  // picker; everyone else keeps the admin gating below.
+  const { executeWithTrialCheck, isNewlyUserOnPreFreeOrAdvertisingMode } = useShowFreeTrialDialog();
+  const showTrialGatedAdminMenu = !!isNewlyUserOnPreFreeOrAdvertisingMode(true);
+  const runAdminAction = React.useCallback(
+    (action: () => void) => executeWithTrialCheck(action),
+    [executeWithTrialCheck],
+  );
 
   // Discover follows the same gate as the nav-bar: the config flag
   // supersedes the tenant's `enable_discover_page` metadata.
@@ -286,7 +314,13 @@ export function AppSidebar() {
       icon: PlatformSidebarNavIcon,
       label: string,
       href: string,
-      opts?: { exact?: boolean; activeOverride?: boolean; tourId?: string },
+      opts?: {
+        exact?: boolean;
+        activeOverride?: boolean;
+        tourId?: string;
+        /** Runs instead of navigating (a trial-gated entry). */
+        onClick?: () => void;
+      },
     ): PlatformSidebarSectionConfig => ({
       type: 'custom',
       id,
@@ -299,6 +333,7 @@ export function AppSidebar() {
           exact={opts?.exact}
           activeOverride={opts?.activeOverride}
           tourId={opts?.tourId}
+          onClick={opts?.onClick}
           onAfterNav={ctx.onAfterNav}
         />
       ),
@@ -353,9 +388,25 @@ export function AppSidebar() {
     list.push({ type: 'divider', id: 'library-divider' });
     if (studioAllowed) {
       list.push(flat('studio', PencilRuler, 'Studio', config.urls.studioUrl()));
+    } else if (showTrialGatedAdminMenu) {
+      list.push(
+        flat('studio', PencilRuler, 'Studio', config.urls.studioUrl(), {
+          onClick: () =>
+            runAdminAction(() =>
+              window.open(config.urls.studioUrl(), '_blank', 'noopener,noreferrer'),
+            ),
+        }),
+      );
     }
     if (analyticsAllowed) {
       list.push({ type: 'menu', menu: analyticsMenu });
+    } else if (showTrialGatedAdminMenu) {
+      const base = `/platform/${tenant}/analytics`;
+      list.push(
+        flat('analytics', analyticsMenu.icon, analyticsMenu.label, base, {
+          onClick: () => runAdminAction(() => router.push(base)),
+        }),
+      );
     }
     list.push(profileRow('gradebook', ClipboardList, 'Gradebook'));
     list.push(profileRow('credentials', Award, 'Credentials'));
@@ -367,6 +418,9 @@ export function AppSidebar() {
     analyticsAllowed,
     analyticsMenu,
     studioAllowed,
+    showTrialGatedAdminMenu,
+    runAdminAction,
+    router,
     catalogBase,
     onCatalogPage,
     catalogEnrolled,
@@ -380,26 +434,18 @@ export function AppSidebar() {
           router.push(`/platform/${tenant}/notifications`);
           return;
         case 'invites':
-          setInviteOpen(true);
+          runAdminAction(() => setInviteOpen(true));
           return;
         case 'management':
-          setAccountTab('management');
-          return;
         case 'api':
-          setAccountTab('api');
-          return;
         case 'secrets':
-          setAccountTab('secrets');
-          return;
         case 'monetization':
-          setAccountTab('monetization');
-          return;
         case 'advanced':
-          setAccountTab('advanced');
+          runAdminAction(() => setAccountTab(actionId));
           return;
       }
     },
-    [router, tenant],
+    [router, tenant, runAdminAction],
   );
 
   if (!isLoggedIn()) return null;
@@ -421,6 +467,7 @@ export function AppSidebar() {
           // admin cluster is narrowed by the SDK's per-item RBAC checks.
           isAdmin: isPlatformAdmin,
           isLiveAdmin,
+          showTrialGatedAdminMenu,
           enableRbac: config.settings.enableRBAC(),
           rbacPermissions,
           tenantKey: tenant,
@@ -475,7 +522,7 @@ export function AppSidebar() {
         <UserProfileModal
           key={profileTab}
           isOpen
-          onClose={() => setProfileTab(null)}
+          onClose={closeProfile}
           params={{ tenantKey: tenant, isAdmin: !!currentTenant?.is_admin }}
           email={userEmail}
           mainPlatformKey={config.settings.mainPlatformKey()}

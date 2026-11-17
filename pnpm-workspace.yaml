@@ -1,4 +1,11 @@
 overrides:
+  # LOCAL ONLY (yalc testing): one instance of each SDK package, or pnpm pairs the
+  # yalc'd iblai-js with registry copies of its dependencies. Do not commit.
+  '@iblai/iblai-js': 'file:.yalc/@iblai/iblai-js'
+  '@iblai/web-containers': 'file:.yalc/@iblai/web-containers'
+  '@iblai/web-utils': 'file:.yalc/@iblai/web-utils'
+  '@iblai/data-layer': 'file:.yalc/@iblai/data-layer'
+  '@iblai/agent-ai': 'file:.yalc/@iblai/agent-ai'
   minimatch: 11.0.1
   # @eslint/eslintrc does `import minimatch from 'minimatch'` (CJS default import),
   # which breaks against ESM-only minimatch >=9 and fails `next lint`. Keep just

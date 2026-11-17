@@ -148,6 +148,9 @@ vi.mock('@iblai/iblai-js/web-utils', () => ({
   monetizationSlice: {
     reducer: (state = {}) => state,
   },
+  subscriptionReducer: (state = {}) => state,
+  topBannerReducer: (state = {}) => state,
+  appleRestrictionReducer: (state = {}) => state,
 }));
 
 describe('store', () => {

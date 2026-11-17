@@ -123,6 +123,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
                 contextOrigins: `${config.urls.lms()}`,
                 authRelyOnHost: true,
                 isContextAware: true,
+                handleCreditExhaustion: true,
                 showCloseButton: true,
                 theme: 'light',
                 style: {
@@ -193,6 +194,7 @@ export function ChatButton({ isMobile = false }: ChatButtonProps) {
               contextOrigins: `${config.urls.lms()}`,
               authRelyOnHost: true,
               isContextAware: true,
+              handleCreditExhaustion: true,
               showCloseButton: true,
               theme: 'light',
               style: {

@@ -21,6 +21,8 @@ import { gotoTenantPage } from '../utils/navigation';
  *   2. The embed reaches the mentor app rather than a spinner or an error
  *   3. The embed carries the SAME tenant as the host, not a stale one
  *   4. The embed SETTLES — it does not reload itself in a loop
+ *   5. When the embed hands credit exhaustion to the host, the host answers
+ *      with the SDK's credits flow at page size
  *
  * Checkpoint 4 is the regression guard: a working embed navigates a small,
  * bounded number of times; a broken auth handshake re-navigates every few
@@ -172,5 +174,54 @@ test.describe('Journey 37: Mentor Embed Loads', () => {
         SETTLE_WINDOW_MS / 1000
       }s), which is the auth-handshake loop`,
     ).toBeLessThanOrEqual(MAX_EMBED_NAVIGATIONS);
+  });
+  /**
+   * The agent's `credits.exhausted` frame reaches the host as the element's
+   * `creditsexhausted` event. The host routes it by who is signed in, exactly
+   * as the agent would have inside its own frame: a free-trial owner gets the
+   * plan picker, an admin lands on Billing, anyone else the contact-admin
+   * notice. Dispatched on the element here, so it runs on any environment
+   * without spending the tenant's credits.
+   */
+  test('Checkpoint 5: Credit exhaustion handed to the host opens the SDK credits flow', async ({
+    page,
+  }) => {
+    if (!(await gotoEmbedSurface(page))) {
+      logger.info('No mentor embed configured on this tenant — nothing to assert');
+      return;
+    }
+
+    await page
+      .locator(AGENT_ELEMENT)
+      .first()
+      .evaluate((el) => {
+        el.dispatchEvent(
+          new CustomEvent('creditsexhausted', {
+            detail: {
+              type: 'credits.exhausted',
+              audience: 'trial',
+              error: 'Insufficient balance',
+              pricing_table: { pricing_table_id: 'prctbl_e2e', publishable_key: 'pk_test_e2e' },
+            },
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      });
+
+    const planPicker = page.getByRole('dialog', { name: /(choose|change) your plan/i });
+    const contactAdmin = page.getByRole('dialog', { name: /run out of credits/i });
+    const billing = page.getByTestId('billing-credits-section');
+    await expect
+      .poll(
+        async () =>
+          (await planPicker.isVisible().catch(() => false)) ||
+          (await contactAdmin.isVisible().catch(() => false)) ||
+          (await billing.isVisible().catch(() => false)) ||
+          page.url().includes('profileTab=billing'),
+        { timeout: 30000 },
+      )
+      .toBe(true);
+    logger.info(`Host answered credit exhaustion: ${page.url()}`);
   });
 });

@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-11-03",
+  "lastUpdated": "2026-11-16",
   "summary": {
-    "totalCheckpoints": 281,
-    "coveredCheckpoints": 281,
+    "totalCheckpoints": 284,
+    "coveredCheckpoints": 284,
     "percent": 100,
     "totalJourneys": 39
   },
@@ -1141,7 +1141,8 @@
         "components/header/profile/user-profile-button.tsx",
         "components/header/learner-mode-switch.tsx",
         "hooks/use-learner-mode.ts",
-        "lib/config.ts"
+        "lib/config.ts",
+        "components/credit-exhaustion-handler.tsx"
       ],
       "checkpoints": [
         {
@@ -1202,6 +1203,16 @@
         {
           "id": "nav-12",
           "description": "Profile dropdown Help link opens the help center in exactly one new tab",
+          "status": "covered"
+        },
+        {
+          "id": "nav-13",
+          "description": "A live admin of a paywall tenant sees the SDK credit balance just left of the notification bell, with the credits actions in its dropdown; others do not see it",
+          "status": "covered"
+        },
+        {
+          "id": "nav-14",
+          "description": "A free-trial user sees the admin cluster in the sidebar and each entry opens the SDK plan picker instead of the action; skipped for other accounts",
           "status": "covered"
         }
       ]
@@ -1750,7 +1761,9 @@
       "sourceFiles": [
         "components/course-agent-chat.tsx",
         "components/chat-button.tsx",
-        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx"
+        "app/platform/[tenant]/onboarding/onboarding-flow-page.tsx",
+        "components/credit-exhaustion-handler.tsx",
+        "components/app-sidebar/index.tsx"
       ],
       "checkpoints": [
         {
@@ -1771,6 +1784,11 @@
         {
           "id": "embed-04",
           "description": "The embed settles instead of re-navigating in an auth-handshake loop",
+          "status": "covered"
+        },
+        {
+          "id": "embed-05",
+          "description": "Credit exhaustion handed to the host by the embed opens the SDK credits flow (plan picker, Billing or contact-admin) at page size",
           "status": "covered"
         }
       ]

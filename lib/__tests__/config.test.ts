@@ -356,6 +356,47 @@ describe('config module', () => {
       expect(config.settings.supportEmail()).toBe('help@example.com');
     });
 
+    it('stripeEnabled defaults to on and reads the switch', async () => {
+      delete processEnv.NEXT_PUBLIC_STRIPE_ENABLED;
+      let mod = await import('../config');
+      expect(mod.config.settings.stripeEnabled()).toBe(true);
+
+      vi.resetModules();
+      processEnv.NEXT_PUBLIC_STRIPE_ENABLED = 'false';
+      mod = await import('../config');
+      expect(mod.config.settings.stripeEnabled()).toBe(false);
+    });
+
+    describe('planFeatures', () => {
+      it('keeps every plan empty (the SDK bullets) when nothing is configured', async () => {
+        for (const key of ['FREE', 'PRO', 'MAX', 'ULTRA']) {
+          delete processEnv[`NEXT_PUBLIC_PLAN_FEATURES_${key}`];
+        }
+        const { config } = await import('../config');
+        expect(config.settings.planFeatures()).toEqual({
+          free: [],
+          premium: [],
+          max: [],
+          ultra: [],
+        });
+      });
+
+      it('splits each list on "|", trims, drops empties and keys Pro as premium', async () => {
+        processEnv.NEXT_PUBLIC_PLAN_FEATURES_FREE = 'One| **Two** more ||Three|';
+        processEnv.NEXT_PUBLIC_PLAN_FEATURES_PRO = 'Only one';
+        processEnv.NEXT_PUBLIC_PLAN_FEATURES_MAX = ' | ';
+        delete processEnv.NEXT_PUBLIC_PLAN_FEATURES_ULTRA;
+
+        const { config } = await import('../config');
+        expect(config.settings.planFeatures()).toEqual({
+          free: ['One', '**Two** more', 'Three'],
+          premium: ['Only one'],
+          max: [],
+          ultra: [],
+        });
+      });
+    });
+
     it('returns helpCenterUrl with default when undefined', async () => {
       delete processEnv.NEXT_PUBLIC_HELP_CENTER_URL;
 
