@@ -146,6 +146,7 @@ vi.mock('@iblai/iblai-js/web-containers/next', () => ({
         Logout
       </button>
       <span data-testid="show-organizations-link">{String(props.showOrganizationsLink)}</span>
+      <span data-testid="auth-url">{String(props.authURL)}</span>
       <button
         data-testid="tenant-update-btn"
         onClick={() => props.onTenantUpdate?.({ key: 'test-tenant', is_admin: true, org: 'org' })}
@@ -314,10 +315,12 @@ describe('UserProfileButton', () => {
   });
 
   describe('organization switching', () => {
-    it('shows the Organizations item, which opens the auth app chooser', () => {
+    it('leaves the Organizations item on and gives it the auth app it opens', () => {
       render(<UserProfileButton />);
 
-      expect(screen.getByTestId('show-organizations-link')).toHaveTextContent('true');
+      // The SDK shows the item by default but only renders it with an authURL.
+      expect(screen.getByTestId('show-organizations-link')).not.toHaveTextContent('false');
+      expect(screen.getByTestId('auth-url')).toHaveTextContent('https://auth.example.com');
     });
   });
 

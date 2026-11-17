@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Info, Menu } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from 'react-responsive';
 
@@ -41,32 +41,28 @@ import { isDiscoverEnabled } from '@/utils/discover-visibility';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 import { LearnerModeSwitch } from '@/components/header/learner-mode-switch';
 import { useLearnerMode } from '@/hooks/use-learner-mode';
+import { useIsomorphicLayoutEffect } from '@/hooks/localstorage/use-isomorphic-layout-effect';
 // import { useIsAdmin } from '@/utils/localstorage';
 
-// Smaller below the app's tablet cutoff so more of a long title fits beside
-// the hamburger, bell and avatar.
-const NAVBAR_TITLE_CLASS = 'truncate text-base font-medium text-[var(--navbar-text)] md:text-xl';
-
 /** Shared navbar page-title rendering (course / program / catalog). */
-function NavbarTitle({
-  label,
-  className,
-  style,
-}: {
-  label: string;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+const NavbarTitle = forwardRef<
+  HTMLHeadingElement,
+  { label: string; className?: string; style?: React.CSSProperties; title?: string }
+>(function NavbarTitle({ label, className, style, title }, ref) {
   return (
     <h1
-      className={`${NAVBAR_TITLE_CLASS} ${className ?? ''}`}
+      ref={ref}
+      // Smaller below the app's tablet cutoff so more of a long title fits
+      // beside the hamburger, bell and avatar.
+      className={`truncate text-base font-medium text-[var(--navbar-text)] md:text-xl ${className ?? ''}`}
       style={style}
+      title={title}
       data-testid="navbar-page-title"
     >
       {label}
     </h1>
   );
-}
+});
 
 /**
  * Current course title — shown in the navbar's left cluster on the
@@ -124,10 +120,14 @@ function useIsTruncated<T extends HTMLElement>(text: string) {
   const ref = useRef<T>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
-  useEffect(() => {
+  // Layout effect so the first paint already has the ⓘ in place, instead of
+  // the title re-truncating a frame later when the button mounts.
+  useIsomorphicLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const measure = () => setIsTruncated(el.scrollWidth > el.clientWidth);
+    // 1px tolerance: scrollWidth and clientWidth round independently, so a
+    // title that exactly fits can read as 1px over.
+    const measure = () => setIsTruncated(el.scrollWidth > el.clientWidth + 1);
     measure();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
@@ -148,15 +148,13 @@ function TruncatableNavbarTitle({ label, style }: { label: string; style?: React
 
   return (
     <div className="flex min-w-0 items-center gap-1">
-      <h1
+      <NavbarTitle
         ref={ref}
-        className={`min-w-0 ${NAVBAR_TITLE_CLASS}`}
+        label={label}
+        className="min-w-0"
         style={style}
         title={isTruncated ? label : undefined}
-        data-testid="navbar-page-title"
-      >
-        {label}
-      </h1>
+      />
       {isTruncated && (
         <Popover>
           <PopoverTrigger asChild>
@@ -172,7 +170,8 @@ function TruncatableNavbarTitle({ label, style }: { label: string; style?: React
           <PopoverContent
             align="end"
             collisionPadding={16}
-            className="w-auto border-0 bg-white p-3 text-sm font-medium whitespace-normal text-gray-900 shadow-lg"
+            aria-label="Full page title"
+            className="w-auto border-0 p-3 text-sm font-medium whitespace-normal shadow-lg"
             style={{ maxWidth: 'min(28rem, calc(100vw - 32px))', overflowWrap: 'anywhere' }}
             data-testid="navbar-page-title-full"
           >

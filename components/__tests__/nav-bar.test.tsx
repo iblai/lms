@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
@@ -610,12 +610,18 @@ describe('NavBar', () => {
           get: () => (prop === 'scrollWidth' ? widths.scroll : widths.client),
         });
         return () => {
+          // jsdom defines these on Element.prototype, so there is normally no
+          // own descriptor to put back — the stub has to be deleted instead.
           if (original) Object.defineProperty(HTMLElement.prototype, prop, original);
+          else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[prop];
         };
       });
     });
 
-    afterEach(() => restore.forEach((fn) => fn()));
+    afterEach(() => {
+      restore.forEach((fn) => fn());
+      vi.unstubAllGlobals();
+    });
 
     it('shows an info button that reveals the full title on click', async () => {
       widths.scroll = 600;
@@ -631,7 +637,9 @@ describe('NavBar', () => {
       );
 
       fireEvent.click(info);
-      expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent('Course Beta');
+      expect(await screen.findByRole('dialog', { name: 'Full page title' })).toHaveTextContent(
+        'Course Beta',
+      );
     });
 
     it('shows no info button when the title fits', async () => {
@@ -657,6 +665,43 @@ describe('NavBar', () => {
 
       fireEvent.click(info);
       expect(await screen.findByTestId('navbar-page-title-full')).toHaveTextContent(name);
+    });
+
+    it('re-measures on resize and drops the info button once the title fits again', async () => {
+      const observers: Array<{
+        cb: ResizeObserverCallback;
+        observe: ReturnType<typeof vi.fn>;
+        disconnect: ReturnType<typeof vi.fn>;
+      }> = [];
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          observe = vi.fn();
+          unobserve = vi.fn();
+          disconnect = vi.fn();
+          constructor(public cb: ResizeObserverCallback) {
+            observers.push(this);
+          }
+        },
+      );
+      widths.scroll = 600;
+      widths.client = 200;
+      mockPathname = '/platform/test-tenant/programs/program-alpha';
+      const { unmount } = render(<NavBar />);
+      await screen.findByRole('button', { name: 'Show full title' });
+
+      const observer = observers.at(-1)!;
+      expect(observer.observe).toHaveBeenCalledWith(
+        screen.getByRole('heading', { name: 'Program Alpha' }),
+      );
+
+      widths.scroll = 200;
+      act(() => observer.cb([], observer as unknown as ResizeObserver));
+      expect(screen.queryByRole('button', { name: 'Show full title' })).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Program Alpha' })).not.toHaveAttribute('title');
+
+      unmount();
+      expect(observer.disconnect).toHaveBeenCalled();
     });
   });
 

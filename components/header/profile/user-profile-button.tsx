@@ -69,9 +69,6 @@ export const UserProfileButton = () => {
       showTenantSwitcher={
         isAdmin || userTenants.some((t) => t.key !== 'main' && t.key !== tenantKey)
       }
-      // Picking an organization happens on the auth app — only it can mint the
-      // target organization's tokens.
-      showOrganizationsLink={true}
       showHelpLink={true}
       showLogoutButton={true}
       showLearnerModeSwitch={isPlatformAdmin}
@@ -94,6 +91,9 @@ export const UserProfileButton = () => {
       showUsernameField={false}
       showPlatformName={false}
       enableCatalogInvite={true}
+      // Also what the dropdown's "Organizations" item (on by default) needs: it
+      // opens the auth app's chooser, the only place that can mint another
+      // organization's tokens.
       authURL={config.urls.auth()}
       onTenantUpdate={handleTenantUpdate}
       currentPlatformBaseDomain={config.settings.platformBaseDomain() || ''}
