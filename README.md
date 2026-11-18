@@ -4,7 +4,7 @@
 
 # ibl.ai/lms
 
-**Open-source skills intelligence platform — discover courses, track competencies, earn credentials, and accelerate workforce development.**
+**Open Source Agentic Learning Management System.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
