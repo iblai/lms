@@ -14,12 +14,6 @@
 
 [Features](#features) • [Quick Start](#quick-start) • [Deployment](#deployment) • [Architecture](#architecture) • [Configuration](#configuration) • [Contributing](#contributing)
 
-_Deployed at [lms.ibl.ai](https://lms.ibl.ai)_
-
-<br>
-
-### ⬇️ Get Agentic LMS
-
 <a href="https://lms.ibl.ai"><img src="https://img.shields.io/badge/Use_it_on_the_Web-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Use it on the Web" height="42"></a>
 &nbsp;
 <a href="https://github.com/iblai/lms/releases/download/app-v1.0.21/Agentic.LMS_1.0.21_universal.dmg"><img src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" height="42"></a>
