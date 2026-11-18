@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.104.1](https://github.com/iblai/lms/compare/skills-v0.104.0...skills-v0.104.1) (2026-11-18)
+
+### Chores
+
+* **ci:** add cargo-deny supply-chain gate for the Rust app (F4) ([4654205](https://github.com/iblai/lms/commit/4654205d99cd1b636d652f71c1b400726f064c7b))
+* **tauri:** release app-v1.0.21 ([f1dde2c](https://github.com/iblai/lms/commit/f1dde2c2a5f221a9a8ed58ea38349e085202243e))
+
 ## [0.104.0](https://github.com/iblai/lms/compare/skills-v0.103.0...skills-v0.104.0) (2026-11-17)
 
 ### Features
