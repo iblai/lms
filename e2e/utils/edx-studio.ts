@@ -101,6 +101,46 @@ export async function startEdxSession(
   }
 }
 
+/** Route of the Open edX authn MFE sign-in page, where Studio's LMS handshake lands without a session. */
+const MFE_LOGIN_PATH = '/authn/login';
+
+/**
+ * Wait for a Studio tab to land on `studioUrl`. When it stops on the authn MFE
+ * sign-in page at `mfeOrigin` instead (no edX session reached Studio), sign in
+ * there with `credentials` and wait for the OAuth2 handshake to bring the tab
+ * back. Without `mfeOrigin` any `/authn/login` page counts as the MFE sign-in.
+ * Returns whether the MFE sign-in was needed.
+ */
+export async function reachStudio(
+  studio: Page,
+  studioUrl: string,
+  mfeOrigin: string,
+  credentials: { username: string; password: string },
+): Promise<boolean> {
+  const onStudio = (url: URL) => url.href.startsWith(studioUrl);
+  const isMfeLogin = (url: URL) =>
+    url.pathname.startsWith(MFE_LOGIN_PATH) &&
+    (!mfeOrigin || url.origin === new URL(mfeOrigin).origin);
+  await expect(studio).toHaveURL((url) => onStudio(url) || isMfeLogin(url), { timeout: 120_000 });
+  if (!isMfeLogin(new URL(studio.url()))) return false;
+
+  expect(
+    credentials.username && credentials.password,
+    'Studio asked for an MFE sign-in but PLAYWRIGHT_USERNAME / PLAYWRIGHT_PASSWORD are not set',
+  ).toBeTruthy();
+  // Scoped to the form: the page also has a "Sign in" tab, and the password
+  // field's "Show password" toggle would match a loose "Password" label.
+  const form = studio.locator('#sign-in-form');
+  await expect(form).toBeVisible({ timeout: 60_000 });
+  await form.getByLabel('Username or email', { exact: true }).fill(credentials.username);
+  await form.getByLabel('Password', { exact: true }).fill(credentials.password);
+  await form.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(studio, 'the MFE sign-in did not lead back to Studio').toHaveURL(onStudio, {
+    timeout: 120_000,
+  });
+  return true;
+}
+
 // ── Studio course outline ───────────────────────────────────────────────────
 
 /** Studio's course-outline URL for a course, as the Authoring link builds it. */

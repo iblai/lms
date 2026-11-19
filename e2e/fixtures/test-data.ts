@@ -14,6 +14,11 @@ export const SAMPLE_LESSON_COMPLETION_COURSE_ID =
   process.env.SAMPLE_LESSON_COMPLETION_COURSE_ID || '';
 /** Open edX Studio origin the course's Authoring link opens (e.g. https://studio.learn.iblai.org). */
 export const STUDIO_DOMAIN_URL = (process.env.STUDIO_DOMAIN_URL || '').replace(/\/$/, '');
+/**
+ * Open edX MFE origin (e.g. https://apps.learn.iblai.org). Studio stops on its
+ * authn sign-in page when no edX session reached it; the journey then signs in there.
+ */
+export const MFE_DOMAIN_URL = (process.env.MFE_DOMAIN_URL || '').replace(/\/$/, '');
 
 // ── Auth credentials ────────────────────────────────────────────────────────
 export const PLAYWRIGHT_USERNAME = process.env.PLAYWRIGHT_USERNAME || '';
