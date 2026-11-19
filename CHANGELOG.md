@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.104.5](https://github.com/iblai/lms/compare/skills-v0.104.4...skills-v0.104.5) (2026-11-19)
+
+### Bug Fixes
+
+* **docker:** upgrade the runtime image's Alpine packages ([4c1fe69](https://github.com/iblai/lms/commit/4c1fe69eed0ca83f4df9f892acc4dfb2fef19789))
+
 ## [0.104.4](https://github.com/iblai/lms/compare/skills-v0.104.3...skills-v0.104.4) (2026-11-18)
 
 ## [0.104.3](https://github.com/iblai/lms/compare/skills-v0.104.2...skills-v0.104.3) (2026-11-18)
