@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { DEFAULT_OVERVIEW_PLACEHOLDER } from '@/utils/helpers';
+import DOMPurify from 'dompurify';
 
 interface AboutTabProps {
   course: any;
@@ -107,7 +108,10 @@ export function AboutTab({ course }: AboutTabProps) {
             <div
               ref={overviewRef}
               className="prose prose-sm course-overview-content max-w-none text-gray-600 [&_a]:text-amber-600 [&_a]:hover:text-amber-700 [&_article]:mb-3 [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-medium [&_h2]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-gray-700 [&_img]:my-2 [&_img]:rounded-lg [&_p]:mb-2 [&_p]:text-gray-600 [&_section]:mb-4"
-              dangerouslySetInnerHTML={{ __html: course.overview || '' }}
+              dangerouslySetInnerHTML={{
+                __html:
+                  typeof window !== 'undefined' ? DOMPurify.sanitize(course.overview || '') : '',
+              }}
             />
           ) : (
             <p className="text-gray-600">{course.overview || ''}</p>
