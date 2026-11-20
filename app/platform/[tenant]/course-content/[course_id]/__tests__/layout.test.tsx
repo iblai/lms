@@ -86,6 +86,7 @@ vi.mock('lucide-react', () => {
     Lightbulb: icon('icon-lightbulb'),
     Users: icon('icon-users'),
     Settings2: icon('icon-settings-2'),
+    Coins: icon('icon-coins'),
     ChartColumn: icon('icon-chart-column'),
     SquarePen: icon('icon-square-pen'),
     Ellipsis: icon('icon-ellipsis'),
@@ -138,6 +139,11 @@ const courseUserRolesState = vi.hoisted(() => ({
 const mockUseCourseUserRoles = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/courses/use-course-user-roles', () => ({
   useCourseUserRoles: (...args: any[]) => mockUseCourseUserRoles(...args),
+}));
+
+const mockUseCanSellItems = vi.hoisted(() => vi.fn(() => false));
+vi.mock('@/hooks/use-can-sell-items', () => ({
+  useCanSellItems: () => mockUseCanSellItems(),
 }));
 
 // Mock useGetDepartmentMemberCheckQuery
@@ -402,6 +408,7 @@ describe('CourseContentLayout', () => {
     mockTenantMetadata.current = { enable_course_voice_autoplay: true };
     mentorState.agentReady = true;
     mockCheckRbacPermission.mockReturnValue(false);
+    mockUseCanSellItems.mockReturnValue(false);
     courseUserRolesState.current = {
       courseRoles: [],
       isCourseStaff: false,
@@ -2530,6 +2537,37 @@ describe('CourseContentLayout', () => {
       } as any);
       renderLayout();
       expect(queryTabLink('Analytics')).not.toBeInTheDocument();
+    });
+
+    it('lists Monetization after Settings for a platform admin who can sell', async () => {
+      await useAdminRoute('monetization');
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      mockUseCanSellItems.mockReturnValue(true);
+      renderLayout();
+      const link = tabLink('Monetization');
+      expect(link).toHaveAttribute('href', expect.stringContaining('/monetization'));
+      // The next/link mock drops aria-current; the active style is the tell.
+      expect(link.className).toContain('text-amber-700');
+      const labels = adminNavLabels();
+      expect(labels.indexOf('Monetization')).toBe(labels.indexOf('Settings') + 1);
+    });
+
+    it('hides Monetization from a platform admin who cannot sell', async () => {
+      await useAdminRoute('configuration');
+      vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
+        data: { is_platform_admin: true },
+      } as any);
+      renderLayout();
+      expect(queryTabLink('Monetization')).not.toBeInTheDocument();
+    });
+
+    it('hides Monetization from a non-staff user even when they can sell', async () => {
+      await useAdminRoute('monetization');
+      mockUseCanSellItems.mockReturnValue(true);
+      renderLayout();
+      expect(queryTabLink('Monetization')).not.toBeInTheDocument();
     });
   });
 

@@ -11,6 +11,7 @@ import {
   ChartNoAxesColumn,
   CirclePause,
   CirclePlay,
+  Coins,
   ClipboardList,
   Lightbulb,
   ListTree,
@@ -38,6 +39,7 @@ import { AgentMode, EdxIframeContext } from '@/hooks/courses/edx-iframe-context'
 import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
 import { getUserId, getUserName } from '@/utils/helpers';
 import { useTenantParam } from '@/hooks/use-tenant-param';
+import { useCanSellItems } from '@/hooks/use-can-sell-items';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { CourseOutlineSidebar, CourseOutlineToggle } from '@/components/course-outline-sidebar';
 import { CourseOutlineDrawer } from '@/components/course-outline-drawer';
@@ -104,6 +106,7 @@ const ROUTE_SEGMENT_TO_TAB: Record<string, string> = {
   instructors: 'instructors',
   configuration: 'configuration',
   analytics: 'analytics',
+  monetization: 'monetization',
   'learning-info': 'learning-info',
 };
 const DEFAULT_TAB = 'course';
@@ -144,6 +147,7 @@ export default function CourseContentLayout({
   const { isCourseStaff, hasCourseStaffAccess } = useCourseUserRoles(courseId);
   const canViewStaffTabs = isAdmin || hasCourseStaffAccess;
   const canViewAuthoringTab = isAdmin || isCourseStaff;
+  const canSellItems = useCanSellItems(tenant);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const currentTab = pathname?.split('/').filter(Boolean).pop();
@@ -505,6 +509,15 @@ export default function CourseContentLayout({
         group: 'teach',
       });
     }
+    if (canViewStaffTabs && canSellItems) {
+      tabs.push({
+        key: 'monetization',
+        label: 'Monetization',
+        href: `${courseBasePath}/monetization`,
+        icon: Coins,
+        group: 'teach',
+      });
+    }
     if (canViewAuthoringTab) {
       tabs.push({
         key: 'authoring',
@@ -524,6 +537,7 @@ export default function CourseContentLayout({
     currentCourseInfo?.id,
     canViewStaffTabs,
     canViewAuthoringTab,
+    canSellItems,
     hasCourseStaffAccess,
     course?.learning_info,
     course?.instructor_info?.instructors,
@@ -591,6 +605,15 @@ export default function CourseContentLayout({
         label: 'Settings',
         href: `${courseBasePath}/configuration`,
         icon: Settings2,
+        group: 'course',
+      });
+    }
+    if (has('monetization')) {
+      sections.push({
+        key: 'monetization',
+        label: 'Monetization',
+        href: `${courseBasePath}/monetization`,
+        icon: Coins,
         group: 'course',
       });
     }
