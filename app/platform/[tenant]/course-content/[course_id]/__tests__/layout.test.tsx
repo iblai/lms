@@ -1714,7 +1714,35 @@ describe('CourseContentLayout', () => {
       },
     };
 
-    const setupAgentTab = async (blocks: any) => {
+    // The outline as the backend now serves it: the assessment unit lists its
+    // mentor xblock, settings included.
+    const outlineMentorBlock = {
+      id: 'mentor-xblock-1',
+      block_id: 'mentor-xblock-1',
+      type: 'ibl_mentor_xblock',
+      display_name: 'Mentor',
+      mentor: 'mentor-uuid-1',
+      mentor_domain: 'mentorai.example.org',
+      assessment_mode: true,
+    };
+    const outlineWithMentorUnit = {
+      id: 'course-root',
+      children: [
+        {
+          id: 'chapter-1',
+          children: [
+            {
+              id: 'seq-1',
+              children: [
+                { id: 'unit-vertical-1', display_name: 'Unit 1', children: [outlineMentorBlock] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const setupAgentTab = async (blocks: any, courseOutline: any = outlineWithUnit) => {
       const { useEdxIframe } = await import('@/hooks/courses/use-edx-iframe');
       const { usePathname } = await import('next/navigation');
 
@@ -1728,7 +1756,7 @@ describe('CourseContentLayout', () => {
         handleCheckCourseMonetizationAccess: mockHandleCheckCourseMonetizationAccess,
         course: { agent_content_mode: true, course_content_mode: true },
         courseInfoLoadingState: 'successful',
-        courseOutline: outlineWithUnit,
+        courseOutline,
         courseOutlineLoading: false,
         courseCompletion: null,
         courseGradingPolicyActive: false,
@@ -1740,10 +1768,19 @@ describe('CourseContentLayout', () => {
       mockUseGetCourseBlockDetailsQuery.mockReturnValue({ data: blocks });
     };
 
-    // Exposes the mode the layout hands the agent page through the context.
+    // Exposes the mode, and the mentor xblock to embed, that the layout hands
+    // the agent page through the context.
     const AgentModeProbe = () => {
-      const { agentMode } = React.useContext(EdxIframeContext) as { agentMode?: string };
-      return <div data-testid="agent-mode">{agentMode}</div>;
+      const { agentMode, assessmentMentor } = React.useContext(EdxIframeContext) as {
+        agentMode?: string;
+        assessmentMentor?: { mentor: string } | null;
+      };
+      return (
+        <>
+          <div data-testid="agent-mode">{agentMode}</div>
+          <div data-testid="assessment-mentor">{assessmentMentor?.mentor ?? 'none'}</div>
+        </>
+      );
     };
     const renderLayout = () =>
       render(
@@ -1759,6 +1796,32 @@ describe('CourseContentLayout', () => {
 
       expect(screen.getByTestId('agent-mode')).toHaveTextContent('assessment');
       expect(toast.success).toHaveBeenCalledWith('Switched to assessment mode');
+    });
+
+    it("switches to assessment mode off the outline's ibl_mentor_xblock child, before block details answer", async () => {
+      await setupAgentTab(undefined, outlineWithMentorUnit);
+
+      renderLayout();
+
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('assessment');
+      expect(toast.success).toHaveBeenCalledWith('Switched to assessment mode');
+    });
+
+    it("hands the outline's mentor xblock to the agent page, so it embeds the mentor itself", async () => {
+      await setupAgentTab(blockDetailsWithMentor, outlineWithMentorUnit);
+
+      renderLayout();
+
+      expect(screen.getByTestId('assessment-mentor')).toHaveTextContent('mentor-uuid-1');
+    });
+
+    it('hands no mentor xblock for a unit the outline does not describe, leaving it on the edX iframe', async () => {
+      await setupAgentTab(blockDetailsWithMentor);
+
+      renderLayout();
+
+      expect(screen.getByTestId('agent-mode')).toHaveTextContent('assessment');
+      expect(screen.getByTestId('assessment-mentor')).toHaveTextContent('none');
     });
 
     it('stays in learning mode, without the toast, on a unit with no ibl_mentor_xblock', async () => {

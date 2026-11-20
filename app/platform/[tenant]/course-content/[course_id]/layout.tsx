@@ -77,6 +77,7 @@ import { MONETIZATION_CLOSE_PAYLOAD, NAVBAR_COURSE_CONTROLS_ID } from '@/constan
 import { config } from '@/lib/config';
 import { selectMentorAgentReady, selectMentorSpinnerHidden } from '@/features/mentor';
 import { requestCourseAgentNewChat } from '@/utils/course-agent';
+import { findAssessmentMentorBlock } from '@/utils/assessment-mentor';
 import {
   canViewContentModeAudience,
   isAgentContentModeOn,
@@ -288,9 +289,17 @@ export default function CourseContentLayout({
   const hasMentorXblock = Object.values(courseBlockDetails?.blocks ?? {}).some(
     (block) => block.type === 'ibl_mentor_xblock',
   );
+  // The outline now lists the mentor xblock under its unit, settings included,
+  // so the agent tab can embed the mentor itself. Block details still flag a
+  // course published before the outline carried it; that unit stays on the
+  // edX iframe.
+  const assessmentMentor = useMemo(
+    () => findAssessmentMentorBlock(courseOutline, currentUnitID),
+    [courseOutline, currentUnitID],
+  );
   // A unit carrying the mentor xblock is an assessment: the agent tab opens it
   // straight in assessment mode, and every other unit runs in learning mode.
-  const isAssessmentUnit = currentTab === 'agent' && hasMentorXblock;
+  const isAssessmentUnit = currentTab === 'agent' && (assessmentMentor !== null || hasMentorXblock);
   const fullscreenToggleVisible = currentTab === 'agent';
   // Only once the mentor has finished loading — before that there is no chat
   // to reset, and the iframe isn't listening yet.
@@ -662,6 +671,7 @@ export default function CourseContentLayout({
       agentFullscreen,
       setAgentFullscreen,
       disableUnitAutoCompletion: unitAutoCompletionDisabled,
+      assessmentMentor,
     }),
     [
       iframeUrl,
@@ -674,6 +684,7 @@ export default function CourseContentLayout({
       agentMode,
       agentFullscreen,
       unitAutoCompletionDisabled,
+      assessmentMentor,
     ],
   );
 

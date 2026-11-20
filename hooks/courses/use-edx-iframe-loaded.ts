@@ -62,13 +62,28 @@ export function isEdxUnitLoadedMessage(data: unknown): data is EdxUnitLoadedMess
   return type === EDX_UNIT_LOADED_MESSAGE_TYPE && typeof usageId === 'string' && usageId !== '';
 }
 
-/** Records that the iframe now shows `usageId`; a unit can't be loaded without its iframe being so. */
-export function markEdxUnitLoaded(usageId: string) {
-  if (!edxIframeLoaded) markEdxIframeLoaded();
+function announceUnitLoaded(usageId: string) {
   loadedUnitId = usageId;
   window.dispatchEvent(
     new CustomEvent<EdxUnitLoadedDetail>(EDX_UNIT_LOADED_EVENT, { detail: { usageId } }),
   );
+}
+
+/** Records that the iframe now shows `usageId`; a unit can't be loaded there without its iframe being so. */
+export function markEdxUnitLoaded(usageId: string) {
+  if (!edxIframeLoaded) markEdxIframeLoaded();
+  announceUnitLoaded(usageId);
+}
+
+/**
+ * Records that the page rendered `usageId` itself, with no course iframe: an
+ * assessment unit whose mentor the host embeds directly. Satisfies
+ * `waitForEdxUnitLoaded` the way the iframe's `unit.loaded` frame does, but
+ * leaves the iframe's own loaded state alone, so nothing iframe-gated mounts
+ * on the strength of a unit that never went through the iframe.
+ */
+export function markUnitRenderedByHost(usageId: string) {
+  announceUnitLoaded(usageId);
 }
 
 export function getLoadedEdxUnitId() {

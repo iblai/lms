@@ -11,6 +11,12 @@ vi.mock('@/components/course-agent-chat', () => ({
   CourseAgentChat: () => <div data-testid="course-agent-chat">CourseAgentChat</div>,
 }));
 
+vi.mock('@/components/assessment-mentor-chat', () => ({
+  AssessmentMentorChat: ({ block }: { block: { mentor: string } }) => (
+    <div data-testid="assessment-mentor-chat">{block.mentor}</div>
+  ),
+}));
+
 const mockSetMentorSidebarHidden = vi.fn();
 vi.mock('@/components/chat-button', () => ({
   useChatState: () => ({ setMentorSidebarHidden: mockSetMentorSidebarHidden }),
@@ -18,17 +24,29 @@ vi.mock('@/components/chat-button', () => ({
 
 import AgentTab from '../page';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import type { MentorXblockOutlineNode } from '@/types/courses';
 
 const mockSetAgentFullscreen = vi.fn();
+
+const mentorBlock = (id: string, mentor: string): MentorXblockOutlineNode => ({
+  id,
+  block_id: id,
+  type: 'ibl_mentor_xblock',
+  display_name: 'Assessment',
+  mentor,
+  assessment_mode: true,
+});
 
 // `activeTab` is derived from the route by the course-content layout, so this
 // page always renders as the agent tab — the harness doesn't model it.
 const Harness = ({
   agentMode = 'learning',
   agentFullscreen = false,
+  assessmentMentor = null,
 }: {
   agentMode?: 'learning' | 'assessment';
   agentFullscreen?: boolean;
+  assessmentMentor?: MentorXblockOutlineNode | null;
 }) => (
   <EdxIframeContext.Provider
     value={
@@ -37,6 +55,7 @@ const Harness = ({
         agentMode,
         agentFullscreen,
         setAgentFullscreen: mockSetAgentFullscreen,
+        assessmentMentor,
       } as any
     }
   >
@@ -95,7 +114,7 @@ describe('AgentTab page', () => {
     expect(classes(container.firstChild as HTMLElement)).toContain('relative');
   });
 
-  it('shows EdxIframe in flow and hides CourseAgentChat in assessment mode', () => {
+  it('falls back to the edX iframe in assessment mode when the outline names no mentor xblock', () => {
     const { getByTestId } = renderAgentTab('assessment');
     const iframeWrapper = getByTestId('edx-iframe').parentElement;
     const chatWrapper = getByTestId('course-agent-chat').parentElement;
@@ -105,6 +124,70 @@ describe('AgentTab page', () => {
     expect(iframeWrapper).not.toHaveAttribute('aria-hidden', 'true');
     expect(classes(chatWrapper)).toContain('hidden');
     expect(classes(chatWrapper)).not.toContain('min-h-0');
+  });
+
+  describe('assessment unit with its mentor xblock in the outline', () => {
+    const block = mentorBlock('mentor-xblock-1', 'mentor-uuid-1');
+
+    it('embeds that mentor directly, with neither the edX iframe nor the learning chat mounted', async () => {
+      const { findByTestId, queryByTestId } = render(
+        <Harness agentMode="assessment" assessmentMentor={block} />,
+      );
+      expect(await findByTestId('assessment-mentor-chat')).toHaveTextContent('mentor-uuid-1');
+      expect(queryByTestId('edx-iframe')).not.toBeInTheDocument();
+      expect(queryByTestId('course-agent-chat')).not.toBeInTheDocument();
+    });
+
+    it('gives the embedded mentor the full-height slot the learning chat has', async () => {
+      const { findByTestId } = render(<Harness agentMode="assessment" assessmentMentor={block} />);
+      const wrapper = (await findByTestId('assessment-mentor-chat')).parentElement;
+      expect(classes(wrapper)).toEqual(expect.arrayContaining(['min-h-0', 'flex-1']));
+      expect(classes(wrapper)).not.toContain('hidden');
+    });
+
+    it('goes by the outline, not the mode flag, so the mentor shows the moment the unit is known', async () => {
+      const { findByTestId, queryByTestId } = render(
+        <Harness agentMode="learning" assessmentMentor={block} />,
+      );
+      expect(await findByTestId('assessment-mentor-chat')).toBeInTheDocument();
+      expect(queryByTestId('edx-iframe')).not.toBeInTheDocument();
+    });
+
+    it('remounts the embed for a different assessment unit', async () => {
+      const { findByTestId, rerender } = render(
+        <Harness agentMode="assessment" assessmentMentor={block} />,
+      );
+      const first = await findByTestId('assessment-mentor-chat');
+      rerender(
+        <Harness
+          agentMode="assessment"
+          assessmentMentor={mentorBlock('mentor-xblock-2', 'mentor-uuid-2')}
+        />,
+      );
+      const second = await findByTestId('assessment-mentor-chat');
+      expect(second).toHaveTextContent('mentor-uuid-2');
+      expect(second).not.toBe(first);
+    });
+
+    it('returns to the course iframe and learning chat for a unit without one', async () => {
+      const { findByTestId, getByTestId, queryByTestId, rerender } = render(
+        <Harness agentMode="assessment" assessmentMentor={block} />,
+      );
+      await findByTestId('assessment-mentor-chat');
+      rerender(<Harness agentMode="learning" assessmentMentor={null} />);
+      expect(queryByTestId('assessment-mentor-chat')).not.toBeInTheDocument();
+      expect(getByTestId('edx-iframe')).toBeInTheDocument();
+      expect(await findByTestId('course-agent-chat')).toBeInTheDocument();
+    });
+
+    it('keeps the fullscreen exit button over the embedded mentor', async () => {
+      const { findByTestId, getByTestId } = render(
+        <Harness agentMode="assessment" agentFullscreen assessmentMentor={block} />,
+      );
+      await findByTestId('assessment-mentor-chat');
+      fireEvent.click(getByTestId('agent-fullscreen-exit'));
+      expect(mockSetAgentFullscreen).toHaveBeenCalledWith(false);
+    });
   });
 
   it('keeps the same EdxIframe node mounted across mode switches', () => {

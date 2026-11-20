@@ -195,6 +195,29 @@ export interface CourseOutlineChildNode {
   special_exam_info?: boolean;
 }
 
+/**
+ * The mentor xblock an assessment unit holds, as the completion outline lists
+ * it under that unit: the block plus the xblock's own settings, so the page
+ * can embed the mentor without loading the edX unit.
+ */
+export interface MentorXblockOutlineNode extends CourseOutlineChildNode {
+  type: 'ibl_mentor_xblock';
+  mentor: string;
+  mentor_domain?: string;
+  auth_domain?: string;
+  is_anonymous?: boolean;
+  is_context_aware?: boolean;
+  is_advanced?: boolean;
+  context_origins?: string[];
+  enable_chat_action_popup?: boolean;
+  hide_sidebar?: boolean;
+  hide_navbar?: boolean;
+  disable_guided_prompts?: boolean;
+  assessment_mode?: boolean;
+  weight?: number;
+  completion_percentage?: number;
+}
+
 export interface CourseBlockDetailsBlock {
   id: string;
   block_id: string;
