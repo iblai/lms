@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "lastUpdated": "2026-11-16",
+  "lastUpdated": "2026-11-19",
   "summary": {
-    "totalCheckpoints": 286,
-    "coveredCheckpoints": 286,
+    "totalCheckpoints": 287,
+    "coveredCheckpoints": 287,
     "percent": 100,
     "totalJourneys": 39
   },
@@ -218,6 +218,9 @@
         "services/instructor.ts",
         "components/course-lesson-navigator.tsx",
         "components/course-agent-chat.tsx",
+        "components/assessment-mentor-chat.tsx",
+        "utils/assessment-mentor.ts",
+        "hooks/courses/use-course-agent-bridge.ts",
         "components/course-access-guard.tsx",
         "components/edx-iframe/edx-iframe.tsx",
         "hooks/courses/edx-iframe-context.ts",
@@ -349,7 +352,7 @@
         },
         {
           "id": "tabs-21",
-          "description": "A unit whose getCourseBlockDetails includes a block of type=ibl_mentor_xblock opens straight in assessment mode on /agent (edX iframe shown, agent chat hidden) with a \"Switched to assessment mode\" toast",
+          "description": "An assessment unit whose outline entry lists an ibl_mentor_xblock child opens on /agent with a \"Switched to assessment mode\" toast and embeds that mentor straight into the page (<agent-ai> carrying the xblock's mentor and edxusageid, grading on), with no edX iframe and no course-loading spinner",
           "status": "covered"
         },
         {
@@ -440,6 +443,11 @@
         {
           "id": "tabs-39",
           "description": "Discussions tab is left out of the tab row when the course's threads list (`GET /api/discussion/v1/threads/`) answers 404, and a direct visit to `/discussion` shows a \"Discussions aren't available\" notice instead of the forum",
+          "status": "covered"
+        },
+        {
+          "id": "tabs-40",
+          "description": "An assessment unit whose outline entry lacks the ibl_mentor_xblock child (a course not republished since the outline gained it) but whose getCourseBlockDetails still carries one falls back to assessment mode on the edX iframe (iframe shown, no page-embedded mentor) with the \"Switched to assessment mode\" toast",
           "status": "covered"
         }
       ]

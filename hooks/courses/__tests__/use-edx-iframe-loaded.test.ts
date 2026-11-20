@@ -13,6 +13,7 @@ import {
   markEdxIframeLoaded,
   markEdxIframeUnloaded,
   markEdxUnitLoaded,
+  markUnitRenderedByHost,
   requestEdxUnitContext,
   useEdxIframeLoaded,
   waitForEdxUnitLoaded,
@@ -154,6 +155,43 @@ describe('unit loaded signal', () => {
     markEdxUnitLoaded('unit-1');
     markEdxIframeUnloaded();
     expect(getLoadedEdxUnitId()).toBeNull();
+  });
+});
+
+describe('unit rendered by the host', () => {
+  beforeEach(() => {
+    markEdxIframeUnloaded();
+  });
+
+  afterEach(() => {
+    markEdxIframeUnloaded();
+  });
+
+  it('records and announces the unit like a unit.loaded frame would', () => {
+    const listener = vi.fn();
+    window.addEventListener(EDX_UNIT_LOADED_EVENT, listener);
+    try {
+      markUnitRenderedByHost('unit-1');
+
+      expect(getLoadedEdxUnitId()).toBe('unit-1');
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({ usageId: 'unit-1' });
+    } finally {
+      window.removeEventListener(EDX_UNIT_LOADED_EVENT, listener);
+    }
+  });
+
+  it('satisfies a wait on that unit', () => {
+    const onLoaded = vi.fn();
+    waitForEdxUnitLoaded('unit-1', onLoaded);
+    markUnitRenderedByHost('unit-1');
+    expect(onLoaded).toHaveBeenCalledTimes(1);
+    expect(hasEdxIframeLoaded()).toBe(false);
+  });
+
+  it('does not imply the course iframe has loaded', () => {
+    markUnitRenderedByHost('unit-1');
+    expect(hasEdxIframeLoaded()).toBe(false);
   });
 });
 

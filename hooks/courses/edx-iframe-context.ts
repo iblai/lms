@@ -1,4 +1,4 @@
-import { CourseOutlineChildNode } from '@/types/courses';
+import { CourseOutlineChildNode, MentorXblockOutlineNode } from '@/types/courses';
 // @ts-ignore
 import { ExamInfo } from '@iblai/iblai-js/data-layer';
 import { createContext } from 'react';
@@ -27,6 +27,11 @@ export const EdxIframeContext = createContext<{
   // + course `agent_content_mode` all on), so the edX unit must not complete
   // itself. Told to the edX iframe over postMessage.
   disableUnitAutoCompletion: boolean;
+  // The current unit's mentor xblock as the course outline lists it, for the
+  // agent tab to embed directly. Null when the unit has none, or when the
+  // course was published before the outline carried the xblock's type: an
+  // assessment unit then still goes through the edX iframe.
+  assessmentMentor: MentorXblockOutlineNode | null;
   //setCourseOutline: (outline:CourseOutlineChildNode[]) => void;
 }>({
   iframeUrl: '',
@@ -45,5 +50,6 @@ export const EdxIframeContext = createContext<{
   agentFullscreen: false,
   setAgentFullscreen: () => {},
   disableUnitAutoCompletion: false,
+  assessmentMentor: null,
   //setCourseOutline: () => {},
 });

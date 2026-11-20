@@ -104,6 +104,7 @@ describe('EdxIframe - JWT PostMessage', () => {
     agentFullscreen: false,
     setAgentFullscreen: vi.fn(),
     disableUnitAutoCompletion: false,
+    assessmentMentor: null,
   };
 
   const defaultCourseOutlineValue = {

@@ -1,17 +1,19 @@
 'use client';
 
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import '@iblai/agent-ai';
-import { useDispatch } from 'react-redux';
 import { config } from '@/lib/config';
 import { getUserId } from '@/utils/helpers';
 import { useChatState } from '@/components/chat-button';
-import { setMentorAgentReady, setMentorSpinnerHidden } from '@/features/mentor';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { useDefaultMentor } from '@/hooks/use-default-mentor';
 import { CourseOutlineContext } from '@/contexts/course-outline-context';
 import { EdxIframeContext } from '@/hooks/courses/edx-iframe-context';
+import {
+  getCourseAgentIframe,
+  useCourseAgentBridge,
+} from '@/hooks/courses/use-course-agent-bridge';
 import {
   EDX_UNIT_LOADED_EVENT,
   requestEdxUnitContext,
@@ -19,10 +21,7 @@ import {
 } from '@/hooks/courses/use-edx-iframe-loaded';
 import { useUnitAutoCompletion } from '@/hooks/courses/use-unit-auto-completion';
 import { Spinner } from '@/components/spinner';
-import type { CourseOutlineChildNode } from '@/types/courses';
-
-// The `<agent-ai>` element's host-facing surface this component relies on.
-type CourseAgentElement = HTMLElement & { sendHostInfoToIframe?: () => void };
+import { findOutlineNode } from '@/utils/assessment-mentor';
 
 export function CourseAgentChat() {
   const tenant = useTenantParam();
@@ -35,9 +34,7 @@ export function CourseAgentChat() {
     courseMentor,
     onError: () => toast.error('No mentors found'),
   });
-  const [spinnerHidden, setSpinnerHidden] = useState(false);
-  const mentorElementRef = useRef<CourseAgentElement | null>(null);
-  const dispatch = useDispatch();
+  const mentorElementRef = useCourseAgentBridge(mentorInUse);
   const { course, currentUnitID } = useContext(CourseOutlineContext);
   const { courseID, courseOutline } = useContext(EdxIframeContext);
   // The agent reads the unit the (hidden) course iframe is showing, so mounting
@@ -54,16 +51,7 @@ export function CourseAgentChat() {
   // of the wrong one.
   const currentUnitDisplayName = useMemo(() => {
     if (!currentUnitID) return undefined;
-    const findUnit = (node?: CourseOutlineChildNode): CourseOutlineChildNode | undefined => {
-      if (!node) return undefined;
-      if (node.id === currentUnitID) return node;
-      for (const child of node.children ?? []) {
-        const match = findUnit(child);
-        if (match) return match;
-      }
-      return undefined;
-    };
-    return findUnit(courseOutline)?.display_name || undefined;
+    return findOutlineNode(courseOutline, currentUnitID)?.display_name || undefined;
   }, [courseOutline, currentUnitID]);
 
   // With edX auto-completion off, the agent is the one that marks the unit
@@ -79,33 +67,6 @@ export function CourseAgentChat() {
       }
     : {};
 
-  useEffect(() => {
-    dispatch(setMentorSpinnerHidden(spinnerHidden));
-    return () => {
-      dispatch(setMentorSpinnerHidden(false));
-    };
-  }, [spinnerHidden, dispatch]);
-
-  // The agent SPA posts `{ ready: true }` to its parent once it can take
-  // host messages; controls that drive it (e.g. autoplay) wait for that.
-  useEffect(() => {
-    if (!mentorInUse) return;
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.ready !== true) return;
-      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
-        'iframe',
-      ) as HTMLIFrameElement | null;
-      if (!iframe || event.source !== iframe.contentWindow) return;
-      console.log('[Agent Iframe loaded]: ', event?.data);
-      dispatch(setMentorAgentReady(true));
-    };
-    window.addEventListener('message', handleMessage);
-    return () => {
-      window.removeEventListener('message', handleMessage);
-      dispatch(setMentorAgentReady(false));
-    };
-  }, [mentorInUse, dispatch]);
-
   // The embed stores the course iframe's `context` frame but only forwards it
   // to the mentor when the host URL changes — which, on a unit switch, happens
   // before the new unit's iframe exists, so the mentor sat one unit behind.
@@ -117,7 +78,7 @@ export function CourseAgentChat() {
     };
     window.addEventListener(EDX_UNIT_LOADED_EVENT, handleUnitLoaded);
     return () => window.removeEventListener(EDX_UNIT_LOADED_EVENT, handleUnitLoaded);
-  }, []);
+  }, [mentorElementRef]);
 
   // This chat mounts only once the course iframe has loaded, so the embed
   // missed that page's `context` frame. Ask the page to announce itself again
@@ -126,73 +87,20 @@ export function CourseAgentChat() {
   useEffect(() => {
     if (!mentorElementRef.current) return;
     requestEdxUnitContext();
-  }, [mentorInUse, isLoading, edxIframeLoaded]);
+  }, [mentorElementRef, mentorInUse, isLoading, edxIframeLoaded]);
 
   useEffect(() => {
     const handleUnitSwitched = (event: Event) => {
       const message = (event as CustomEvent<{ message?: string }>).detail?.message;
       if (!message) return;
-      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
-        'iframe',
-      ) as HTMLIFrameElement | null;
-      iframe?.contentWindow?.postMessage({ type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message }, '*');
-    };
-    window.addEventListener('mentor:unit-switched', handleUnitSwitched);
-    return () => window.removeEventListener('mentor:unit-switched', handleUnitSwitched);
-  }, []);
-
-  useEffect(() => {
-    const handleAutoplayChanged = (event: Event) => {
-      const enabled = (event as CustomEvent<{ enabled?: boolean }>).detail?.enabled;
-      if (typeof enabled !== 'boolean') return;
-      const iframe = mentorElementRef.current?.shadowRoot?.querySelector(
-        'iframe',
-      ) as HTMLIFrameElement | null;
-      iframe?.contentWindow?.postMessage(
-        {
-          type: enabled
-            ? 'MENTOR:ENABLE_AUTOPLAY_LAST_AI_MESSAGE'
-            : 'MENTOR:DISABLE_AUTOPLAY_LAST_AI_MESSAGE',
-        },
+      getCourseAgentIframe(mentorElementRef.current)?.contentWindow?.postMessage(
+        { type: 'MENTOR:CHAT_ACTION_ADD_MESSAGE', message },
         '*',
       );
     };
-    window.addEventListener('mentor:autoplay-changed', handleAutoplayChanged);
-    return () => window.removeEventListener('mentor:autoplay-changed', handleAutoplayChanged);
-  }, []);
-
-  //TODO mutation observer to be removed once we able to have a READY postmessage from the iframe
-  useEffect(() => {
-    if (!mentorInUse) return;
-    let observer: MutationObserver | null = null;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-
-    const attach = () => {
-      const spinner = mentorElementRef.current?.shadowRoot?.querySelector(
-        '#loading-spinner',
-      ) as HTMLElement | null;
-      if (!spinner) return false;
-      const update = () => setSpinnerHidden(spinner.style.display === 'none');
-      update();
-      observer = new MutationObserver(update);
-      observer.observe(spinner, { attributes: true, attributeFilter: ['style'] });
-      return true;
-    };
-
-    if (!attach()) {
-      intervalId = setInterval(() => {
-        if (attach() && intervalId) {
-          clearInterval(intervalId);
-          intervalId = null;
-        }
-      }, 100);
-    }
-
-    return () => {
-      observer?.disconnect();
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [mentorInUse]);
+    window.addEventListener('mentor:unit-switched', handleUnitSwitched);
+    return () => window.removeEventListener('mentor:unit-switched', handleUnitSwitched);
+  }, [mentorElementRef]);
 
   if (isLoading || !edxIframeLoaded) {
     return <CourseAgentChatLoading />;
