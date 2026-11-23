@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 import {
   useCreateStudioCourseMutation,
   useDeleteStudioCourseMutation,
-  useUpdateStudioCourseSettingsMutation,
 } from '@iblai/iblai-js/data-layer';
+import { useUpdateStudioCourseSettingsMutation } from '@/services/studio';
 import { useTenantParam } from '@/hooks/use-tenant-param';
 import { getOrg } from '@/utils/helpers';
 import { parseCourseKey } from '@/utils/course-creation';
@@ -26,9 +26,10 @@ const DEFAULT_FIELDS: CourseCreationFields = {
  * Minimal course-creation flow against Studio: create the course shell, then
  * apply its basic settings (name + description). Settings failure rolls the
  * shell back so no partial course is left behind. On success the created
- * course key is exposed so the UI can hand off to Studio for authoring.
+ * course key is exposed (and passed to `onCreated`) so the UI can hand off to
+ * the course's Studio pages.
  */
-export function useCourseCreation() {
+export function useCourseCreation(onCreated?: (courseKey: string) => void) {
   const tenant = useTenantParam();
 
   const [fields, setFields] = useState<CourseCreationFields>(DEFAULT_FIELDS);
@@ -109,11 +110,13 @@ export function useCourseCreation() {
 
       // 2. Apply the basic course settings.
       await updateCourseSettings({
+        courseKey,
         settings: buildSettingsPayload(org, courseKey),
       }).unwrap();
 
       toast.success('Course created successfully.');
       setCreatedCourseKey(courseKey);
+      onCreated?.(courseKey);
     } catch (error) {
       console.error('Failed to create course:', error);
       // Roll back the partially created course so nothing incomplete is left.

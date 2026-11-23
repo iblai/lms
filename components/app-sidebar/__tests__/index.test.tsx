@@ -430,19 +430,15 @@ describe('AppSidebar', () => {
       expect(screen.queryByTestId('section-studio')).not.toBeInTheDocument();
     });
 
-    it('shows Studio to platform admins and opens the Studio host in a new tab', () => {
+    it('shows Studio to platform admins and opens the native Studio page', () => {
       vi.mocked(useGetDepartmentMemberCheckQuery).mockReturnValue({
         data: { is_platform_admin: true, is_department_admin: false },
       } as any);
       const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
       render(<AppSidebar />);
       fireEvent.click(expandedRow('studio'));
-      expect(openSpy).toHaveBeenCalledWith(
-        'https://studio.example.com',
-        '_blank',
-        'noopener,noreferrer',
-      );
-      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/studio');
+      expect(openSpy).not.toHaveBeenCalled();
       openSpy.mockRestore();
     });
 
@@ -799,6 +795,20 @@ describe('AppSidebar — free-trial gate', () => {
     fireEvent.click(screen.getByText('footer-invites'));
     expect(mockExecuteWithTrialCheck).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('invite-dialog')).not.toBeInTheDocument();
+  });
+
+  it('routes Studio through the gate instead of navigating', () => {
+    render(<AppSidebar />);
+    fireEvent.click(expandedRow('studio'));
+    expect(mockExecuteWithTrialCheck).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('opens the native Studio page once the gate lets a trial user through', () => {
+    mockExecuteWithTrialCheck.mockImplementation((action: () => unknown) => action());
+    render(<AppSidebar />);
+    fireEvent.click(expandedRow('studio'));
+    expect(mockPush).toHaveBeenCalledWith('/platform/test-tenant/studio');
   });
 
   it('routes Analytics through the gate instead of navigating', () => {

@@ -50,6 +50,7 @@ import { checkRbacPermission } from '@/hoc';
 import { WATCHER_RBAC_RESOURCE } from '@/utils/course-content-mode';
 import { getUserEmail, getUserName, onAccountDeleted } from '@/utils/helpers';
 import { isDiscoverEnabled } from '@/utils/discover-visibility';
+import { studioBasePath } from '@/utils/studio';
 import { TOUR_TARGET } from '@/components/product-tour/tour-targets';
 import { useLearnerMode } from '@/hooks/use-learner-mode';
 import { canMonetize, useCurrentTenant, useUserTenants } from '@/utils/localstorage';
@@ -240,8 +241,8 @@ export function AppSidebar() {
     enableDiscoverPage: metadata?.enable_discover_page,
   });
 
-  // Studio mirrors the nav-bar implementation: config-flag gated,
-  // admin-only, external link to the Studio host.
+  // Studio is config-flag gated and admin-only; it opens the native Studio
+  // pages rather than the Studio host.
   const studioAllowed =
     isInstructorMode &&
     config.settings.studioHeaderMenuEnabled() &&
@@ -387,14 +388,11 @@ export function AppSidebar() {
     }
     list.push({ type: 'divider', id: 'library-divider' });
     if (studioAllowed) {
-      list.push(flat('studio', PencilRuler, 'Studio', config.urls.studioUrl()));
+      list.push(flat('studio', PencilRuler, 'Studio', studioBasePath(tenant)));
     } else if (showTrialGatedAdminMenu) {
       list.push(
-        flat('studio', PencilRuler, 'Studio', config.urls.studioUrl(), {
-          onClick: () =>
-            runAdminAction(() =>
-              window.open(config.urls.studioUrl(), '_blank', 'noopener,noreferrer'),
-            ),
+        flat('studio', PencilRuler, 'Studio', studioBasePath(tenant), {
+          onClick: () => runAdminAction(() => router.push(studioBasePath(tenant))),
         }),
       );
     }

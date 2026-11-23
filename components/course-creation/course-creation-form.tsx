@@ -1,29 +1,33 @@
 'use client';
 
-import { CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { config } from '@/lib/config';
 import { useCourseCreation } from '@/hooks/course-creation/use-course-creation';
+import { useTenantParam } from '@/hooks/use-tenant-param';
+import { studioCoursePath } from '@/utils/studio';
 
 interface CourseCreationFormProps {
   onCancel?: () => void;
+  /** Runs once the course exists; a caller that navigates away sets this. */
+  onCreated?: (courseKey: string) => void;
 }
 
-export function CourseCreationForm({ onCancel }: CourseCreationFormProps) {
-  const { fields, setField, submitting, createdCourseKey, handleFormSubmit } = useCourseCreation();
+export function CourseCreationForm({ onCancel, onCreated }: CourseCreationFormProps) {
+  const tenant = useTenantParam();
+  const { fields, setField, submitting, createdCourseKey, handleFormSubmit } =
+    useCourseCreation(onCreated);
 
-  // Post-creation hand-off: authoring continues on Studio in a new tab (same
-  // URL scheme as the course-content "Authoring" tab).
   if (createdCourseKey) {
     return (
       <div className="flex w-full flex-col items-center gap-3 py-6 text-center">
         <CheckCircle2 className="h-10 w-10 text-amber-500" />
         <p className="font-medium text-gray-800">Course created successfully.</p>
         <p className="max-w-md text-sm text-gray-500">
-          Your course shell is ready. Continue building its content in Studio.
+          Your course shell is ready. Continue setting it up in Studio.
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
           {onCancel && (
@@ -31,15 +35,13 @@ export function CourseCreationForm({ onCancel }: CourseCreationFormProps) {
               Close
             </Button>
           )}
-          <a
-            href={`${config.urls.studioUrl()}/course/${createdCourseKey}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href={studioCoursePath(tenant, createdCourseKey)}
             className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-[var(--button-primary-gradient-from)] to-[var(--button-primary-gradient-to)] px-4 py-2 text-sm font-medium text-[var(--button-primary-text)] transition-opacity hover:opacity-[var(--button-primary-hover-opacity)]"
           >
-            Continue editing in Studio
-            <ExternalLink className="h-4 w-4" aria-hidden />
-          </a>
+            Continue in Studio
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
         </div>
       </div>
     );

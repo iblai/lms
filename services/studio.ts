@@ -3,11 +3,82 @@ import { iblFetchBaseQuery } from '@/lib/utils';
 import { SERVICES } from '@/lib/constants';
 import { getUserName } from '@/utils/helpers';
 
+export interface StudioCourseSummary {
+  course_key: string;
+  display_name: string;
+  org: string;
+  number: string;
+  run: string;
+  archived: boolean;
+}
+
+export interface StudioCourseSettings {
+  formData: Record<string, any>;
+  formChoices: Record<string, { value: string; label: string }[]>;
+}
+
 // Define a service using a base URL and expected endpoints
 export const StudioSlice = createApi({
   reducerPath: 'StudioSlice',
   baseQuery: iblFetchBaseQuery,
+  tagTypes: ['studio-courses', 'studio-course-settings'],
   endpoints: (builder) => ({
+    // Studio's own course list: every course the caller can author, across
+    // orgs, and unlike the search index it lists a course the moment it exists.
+    getStudioCourses: builder.query<StudioCourseSummary[], void>({
+      query: () => ({
+        url: '/api/contentstore/v1/home/courses',
+        service: SERVICES.STUDIO,
+      }),
+      transformResponse: (response: {
+        courses?: Omit<StudioCourseSummary, 'archived'>[];
+        archived_courses?: Omit<StudioCourseSummary, 'archived'>[];
+      }) => [
+        ...(response.courses ?? []).map((course) => ({ ...course, archived: false })),
+        ...(response.archived_courses ?? []).map((course) => ({ ...course, archived: true })),
+      ],
+      providesTags: ['studio-courses'],
+    }),
+    // The plugin's combined settings view (edX course details + DM catalog
+    // metadata). DM's Studio proxy does not reach `api/ibl`, so this goes to
+    // the Studio host with the edX JWT.
+    getStudioCourseSettings: builder.query<StudioCourseSettings, { courseKey: string }>({
+      query: ({ courseKey }) => ({
+        url: `/api/ibl/v1/course_settings/?course_key=${encodeURIComponent(courseKey)}`,
+        service: SERVICES.STUDIO_DIRECT,
+      }),
+      providesTags: (_result, _error, { courseKey }) => [
+        { type: 'studio-course-settings', id: courseKey },
+      ],
+    }),
+    // The endpoint replaces the settings wholesale: send the full `formData`
+    // back with the edits applied, never a partial payload.
+    updateStudioCourseSettings: builder.mutation<
+      Record<string, any>,
+      { courseKey: string; settings: Record<string, any> }
+    >({
+      query: ({ courseKey, settings }) => ({
+        url: '/api/ibl/v1/course_settings/',
+        method: 'POST',
+        body: { ...settings, course_key: courseKey },
+        service: SERVICES.STUDIO_DIRECT,
+      }),
+      invalidatesTags: (_result, _error, { courseKey }) => [
+        { type: 'studio-course-settings', id: courseKey },
+        'studio-courses',
+      ],
+    }),
+    createStudioProgram: builder.mutation<
+      Record<string, any>,
+      { org: string; programId: string; name: string }
+    >({
+      query: ({ org, programId, name }) => ({
+        url: '/api/ibl/manage/program/',
+        method: 'POST',
+        body: { org, program_id: programId, name, course_list: [] },
+        service: SERVICES.STUDIO_DIRECT,
+      }),
+    }),
     getCoursesAdvancedSettings: builder.query<Record<string, any>, { course_id: string }>({
       query: ({ course_id }) => ({
         url: `/api/contentstore/v0/advanced_settings/${course_id}?fetch_all=0`,
@@ -65,6 +136,10 @@ export const StudioSlice = createApi({
 // Export hooks for usage in functional components, which are
 // auto-generated based on the defined endpoints
 export const {
+  useGetStudioCoursesQuery,
+  useGetStudioCourseSettingsQuery,
+  useUpdateStudioCourseSettingsMutation,
+  useCreateStudioProgramMutation,
   useGetCoursesAdvancedSettingsQuery,
   useLazyGetCoursesAdvancedSettingsQuery,
   useUpdateCoursesAdvancedSettingsMutation,

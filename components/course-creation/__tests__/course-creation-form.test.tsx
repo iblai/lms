@@ -3,19 +3,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-vi.mock('@/lib/config', () => ({
-  config: {
-    urls: {
-      studioUrl: () => 'https://studio.example.com',
-    },
-  },
+vi.mock('@/hooks/use-tenant-param', () => ({
+  useTenantParam: () => 'test-tenant',
 }));
 
 const mockSetField = vi.fn();
 const mockHandleFormSubmit = vi.fn();
 const mockUseCourseCreation = vi.fn();
 vi.mock('@/hooks/course-creation/use-course-creation', () => ({
-  useCourseCreation: () => mockUseCourseCreation(),
+  useCourseCreation: (...args: unknown[]) => mockUseCourseCreation(...args),
 }));
 
 import { CourseCreationForm } from '../course-creation-form';
@@ -89,7 +85,7 @@ describe('CourseCreationForm', () => {
     expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('shows the success hand-off with a Studio link after creation', () => {
+  it('shows the success hand-off linking to the Studio pages of the course', () => {
     mockUseCourseCreation.mockReturnValue({
       ...baseHookState,
       createdCourseKey: 'course-v1:org+CS101+2026',
@@ -98,16 +94,23 @@ describe('CourseCreationForm', () => {
     render(<CourseCreationForm onCancel={onCancel} />);
 
     expect(screen.getByText('Course created successfully.')).toBeInTheDocument();
-    const link = screen.getByText('Continue editing in Studio').closest('a');
+    const link = screen.getByText('Continue in Studio').closest('a');
     expect(link).toHaveAttribute(
       'href',
-      'https://studio.example.com/course/course-v1:org+CS101+2026',
+      '/platform/test-tenant/studio/courses/course-v1%3Aorg%2BCS101%2B2026/details',
     );
-    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).not.toHaveAttribute('target');
     expect(screen.queryByLabelText('Course name *')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes onCreated through to the creation hook', () => {
+    const onCreated = vi.fn();
+    render(<CourseCreationForm onCreated={onCreated} />);
+
+    expect(mockUseCourseCreation).toHaveBeenCalledWith(onCreated);
   });
 
   it('omits the Close button in the success view without onCancel', () => {

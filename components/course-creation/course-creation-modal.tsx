@@ -6,6 +6,7 @@ import { CourseCreationForm } from '@/components/course-creation/course-creation
 interface CourseCreationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated?: (courseKey: string) => void;
 }
 
 /**
@@ -13,7 +14,7 @@ interface CourseCreationModalProps {
  * Radix unmounts the content on close, so every open starts a fresh form —
  * same as the old dedicated page did on navigation.
  */
-export function CourseCreationModal({ open, onOpenChange }: CourseCreationModalProps) {
+export function CourseCreationModal({ open, onOpenChange, onCreated }: CourseCreationModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -30,7 +31,7 @@ export function CourseCreationModal({ open, onOpenChange }: CourseCreationModalP
             msOverflowStyle: 'none',
           }}
         >
-          <CourseCreationForm onCancel={() => onOpenChange(false)} />
+          <CourseCreationForm onCancel={() => onOpenChange(false)} onCreated={onCreated} />
         </div>
       </DialogContent>
     </Dialog>

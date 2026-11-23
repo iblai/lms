@@ -15,6 +15,8 @@ const mockUpdateCourseSettings = vi.fn();
 vi.mock('@iblai/iblai-js/data-layer', () => ({
   useCreateStudioCourseMutation: () => [mockCreateCourse],
   useDeleteStudioCourseMutation: () => [mockDeleteCourse],
+}));
+vi.mock('@/services/studio', () => ({
   useUpdateStudioCourseSettingsMutation: () => [mockUpdateCourseSettings],
 }));
 
@@ -113,6 +115,7 @@ describe('useCourseCreation', () => {
       courseData: { org: 'test-org', display_name: 'My Course' },
     });
     expect(mockUpdateCourseSettings).toHaveBeenCalledWith({
+      courseKey: COURSE_KEY,
       settings: expect.objectContaining({
         org: 'test-org',
         course_id: 'CS101',
@@ -131,6 +134,31 @@ describe('useCourseCreation', () => {
     expect(result.current.createdCourseKey).toBe(COURSE_KEY);
     expect(result.current.submitting).toBe(false);
     expect(mockDeleteCourse).not.toHaveBeenCalled();
+  });
+
+  it('hands the created course key to onCreated', async () => {
+    const onCreated = vi.fn();
+    const { result } = renderHook(() => useCourseCreation(onCreated));
+    fillFields(result);
+
+    await act(async () => {
+      await result.current.handleFormSubmit();
+    });
+
+    expect(onCreated).toHaveBeenCalledWith(COURSE_KEY);
+  });
+
+  it('does not call onCreated when the settings step fails', async () => {
+    mockUpdateCourseSettings.mockReturnValue(unwrapReject(new Error('settings exploded')));
+    const onCreated = vi.fn();
+    const { result } = renderHook(() => useCourseCreation(onCreated));
+    fillFields(result);
+
+    await act(async () => {
+      await result.current.handleFormSubmit();
+    });
+
+    expect(onCreated).not.toHaveBeenCalled();
   });
 
   it('ignores submissions while one is already in flight', async () => {

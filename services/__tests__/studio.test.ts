@@ -5,13 +5,14 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 // Mock iblFetchBaseQuery to avoid Node 25 + jsdom AbortSignal cross-realm
 // incompatibility in fetchBaseQuery's Request constructor.
 let capturedBaseQueryArgs: any[] = [];
+let nextResponse: any = null;
 vi.mock('@/lib/utils', async (importOriginal) => {
   const original = await importOriginal<typeof import('@/lib/utils')>();
   return {
     ...original,
     iblFetchBaseQuery: async (args: any) => {
       capturedBaseQueryArgs.push({ ...args, method: (args.method ?? 'GET').toUpperCase() });
-      return { data: { name: 'Program' } };
+      return { data: nextResponse ?? { name: 'Program' } };
     },
   };
 });
@@ -191,6 +192,7 @@ describe('StudioSlice query functions (executed via store dispatch)', () => {
 
   beforeEach(() => {
     capturedBaseQueryArgs = [];
+    nextResponse = null;
     window.localStorage.setItem('userData', JSON.stringify({ user_nicename: 'jane' }));
     store = configureStore({
       reducer: { [StudioSlice.reducerPath]: StudioSlice.reducer },
@@ -227,6 +229,104 @@ describe('StudioSlice query functions (executed via store dispatch)', () => {
       url: '/api/contentstore/v0/advanced_settings/course-v1:Org+Run+1',
       body: advanced_settings,
       service: SERVICES.STUDIO,
+    });
+  });
+
+  it('getStudioCourses lists the Studio home courses through the proxy', async () => {
+    await store.dispatch((StudioSlice.endpoints.getStudioCourses as any).initiate());
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'GET',
+      url: '/api/contentstore/v1/home/courses',
+      service: SERVICES.STUDIO,
+    });
+  });
+
+  it('getStudioCourses merges active and archived courses, flagging the archived ones', async () => {
+    const course = { course_key: 'course-v1:Org+A+1', display_name: 'A', org: 'Org' };
+    const archived = { course_key: 'course-v1:Org+B+1', display_name: 'B', org: 'Org' };
+    nextResponse = { courses: [course], archived_courses: [archived] };
+    const result: any = await store.dispatch(
+      (StudioSlice.endpoints.getStudioCourses as any).initiate(),
+    );
+    expect(result.data).toEqual([
+      { ...course, archived: false },
+      { ...archived, archived: true },
+    ]);
+  });
+
+  it('getStudioCourses tolerates a response without course lists', async () => {
+    nextResponse = {};
+    const result: any = await store.dispatch(
+      (StudioSlice.endpoints.getStudioCourses as any).initiate(),
+    );
+    expect(result.data).toEqual([]);
+  });
+
+  it('getStudioCourseSettings reads the course settings from the Studio host', async () => {
+    await store.dispatch(
+      (StudioSlice.endpoints.getStudioCourseSettings as any).initiate({
+        courseKey: 'course-v1:Org+Run+1',
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'GET',
+      url: '/api/ibl/v1/course_settings/?course_key=course-v1%3AOrg%2BRun%2B1',
+      service: SERVICES.STUDIO_DIRECT,
+    });
+  });
+
+  it('updateStudioCourseSettings POSTs the full settings with the course key', async () => {
+    await store.dispatch(
+      (StudioSlice.endpoints.updateStudioCourseSettings as any).initiate({
+        courseKey: 'course-v1:Org+Run+1',
+        settings: { title: 'New', course_key: 'stale' },
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'POST',
+      url: '/api/ibl/v1/course_settings/',
+      body: { title: 'New', course_key: 'course-v1:Org+Run+1' },
+      service: SERVICES.STUDIO_DIRECT,
+    });
+  });
+
+  it('updateStudioCourseSettings refetches the settings it changed', async () => {
+    const args = { courseKey: 'course-v1:Org+Run+1' };
+    const subscription = store.dispatch(
+      (StudioSlice.endpoints.getStudioCourseSettings as any).initiate(args),
+    );
+    await subscription;
+    await store.dispatch(
+      (StudioSlice.endpoints.updateStudioCourseSettings as any).initiate({
+        ...args,
+        settings: { title: 'New' },
+      }),
+    );
+    await vi.waitFor(() => expect(capturedBaseQueryArgs).toHaveLength(3));
+    expect(capturedBaseQueryArgs[2]).toMatchObject({
+      method: 'GET',
+      url: '/api/ibl/v1/course_settings/?course_key=course-v1%3AOrg%2BRun%2B1',
+    });
+    subscription.unsubscribe();
+  });
+
+  it('createStudioProgram POSTs an empty program to the Studio host', async () => {
+    await store.dispatch(
+      (StudioSlice.endpoints.createStudioProgram as any).initiate({
+        org: 'Org',
+        programId: 'data-science',
+        name: 'Data Science',
+      }),
+    );
+    expect(capturedBaseQueryArgs).toHaveLength(1);
+    expect(capturedBaseQueryArgs[0]).toMatchObject({
+      method: 'POST',
+      url: '/api/ibl/manage/program/',
+      body: { org: 'Org', program_id: 'data-science', name: 'Data Science', course_list: [] },
+      service: SERVICES.STUDIO_DIRECT,
     });
   });
 

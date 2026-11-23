@@ -10,10 +10,19 @@ vi.mock('@/components/ui/dialog', () => ({
 }));
 
 vi.mock('../course-creation-form', () => ({
-  CourseCreationForm: ({ onCancel }: { onCancel?: () => void }) => (
+  CourseCreationForm: ({
+    onCancel,
+    onCreated,
+  }: {
+    onCancel?: () => void;
+    onCreated?: (courseKey: string) => void;
+  }) => (
     <div data-testid="course-creation-form">
       <button data-testid="form-cancel" onClick={onCancel}>
         cancel
+      </button>
+      <button data-testid="form-created" onClick={() => onCreated?.('course-v1:org+CS101+2026')}>
+        created
       </button>
     </div>
   ),
@@ -47,5 +56,14 @@ describe('CourseCreationModal', () => {
     fireEvent.click(screen.getByTestId('form-cancel'));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('forwards onCreated to the form', () => {
+    const onCreated = vi.fn();
+    render(<CourseCreationModal open onOpenChange={onOpenChange} onCreated={onCreated} />);
+
+    fireEvent.click(screen.getByTestId('form-created'));
+
+    expect(onCreated).toHaveBeenCalledWith('course-v1:org+CS101+2026');
   });
 });

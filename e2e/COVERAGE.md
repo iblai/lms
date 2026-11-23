@@ -1,6 +1,6 @@
 # SkillsAI E2E Coverage — User Journey Checklist
 
-> Last updated: 2026-11-16 | 286 checkpoints | 39 journeys | 100% covered
+> Last updated: 2026-11-23 | 294 checkpoints | 40 journeys | 100% covered
 
 ## How This Works
 
@@ -603,3 +603,18 @@ Skips when the launcher is not shown (mentor sidebar hidden on the tenant).
 ---
 
 > **Note:** `auth.setup.ts` runs before all journeys to set up authentication. It is not a user journey.
+
+---
+
+## Journey 41: Native Studio (8 checkpoints) — `journeys/41-native-studio.spec.ts`
+
+**Source files:** `app/platform/[tenant]/studio/page.tsx`, `app/platform/[tenant]/studio/layout.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/layout.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/details/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/outline/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/configuration/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/instructor/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/gradebook/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/analytics/page.tsx`, `app/platform/[tenant]/studio/courses/[course_id]/monetization/page.tsx`, `app/studio/page.tsx`, `components/studio/studio-home.tsx`, `components/studio/studio-access-guard.tsx`, `components/studio/studio-course-shell.tsx`, `components/studio/course-details-form.tsx`, `components/studio/studio-frame.tsx`, `components/studio/program-creation-modal.tsx`, `components/course-creation/course-creation-form.tsx`, `components/course-creation/course-creation-modal.tsx`, `components/app-sidebar/index.tsx`, `hooks/course-creation/use-course-creation.ts`, `services/studio.ts`, `utils/studio.ts`
+
+- [x] Admin's sidebar Studio entry opens /platform/<tenant>/studio inside the LMS (no new tab) and shows the Studio home
+- [x] Courses view lists the tenant's courses, each linking to its Studio details page; searching filters the list and a term with no match shows the no-match state
+- [x] Create Course opens the creation dialog with the course name and description fields; Cancel closes it
+- [x] Programs tab switches the list to ?view=programs with program rows linking to the program page; Create Program derives the program ID from the name and Cancel closes it
+- [x] Opening a course lands on /studio/courses/<course-id>/details inside the Studio course shell: Studio breadcrumb and the section nav (Details, Outline, Grades, Settings) with Details active
+- [x] The details form is filled from the course settings with Save changes disabled; editing a field enables it and reverting the edit disables it again
+- [x] Outline embeds Studio: the frame enters through the edX SSO login with a one-time code redirecting to the course page on the Studio host, and "Open in a new tab" links to that page
+- [x] Settings shows the course configuration (credentials + advanced settings) inside Studio; the Studio breadcrumb returns to the Studio home
