@@ -43,6 +43,7 @@ const buildContextValue = (overrides = {}) => ({
   agentFullscreen: false,
   setAgentFullscreen: vi.fn(),
   disableUnitAutoCompletion: false,
+  assessmentMentor: null,
   ...overrides,
 });
 

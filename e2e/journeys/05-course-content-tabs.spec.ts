@@ -1015,9 +1015,42 @@ test.describe('Journey 05: Course Content Tabs', () => {
     logger.info('No Learn/Assess switch on the agent tab');
   });
 
-  test('Checkpoint 21: A unit with an ibl_mentor_xblock opens straight in assessment mode', async ({
+  /** The DM completion outline the course content page loads; each assessment unit lists its mentor xblock there. */
+  const OUTLINE_ENDPOINT = /\/api\/catalog\/enrollment\/courses\/completion\/\?.*endpoint=outline/;
+
+  type OutlineNode = { id: string; type?: string; children?: OutlineNode[]; mentor?: string };
+
+  const isMentorXblock = (node: OutlineNode) => node?.type === 'ibl_mentor_xblock';
+
+  /** Verticals whose outline entry lists an `ibl_mentor_xblock` child, in course order. */
+  const findAssessmentUnits = (node: OutlineNode | null, found: OutlineNode[] = []) => {
+    if (!node) return found;
+    if (node.type === 'vertical' && (node.children ?? []).some(isMentorXblock)) found.push(node);
+    for (const child of node.children ?? []) findAssessmentUnits(child, found);
+    return found;
+  };
+
+  /** Lands on the course's `/agent` tab, returning its URL, or null when the course has no Agent tab. */
+  const openAgentTab = async (page: Page): Promise<string | null> => {
+    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
+    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
+    if (!hasAgentTab) return null;
+    await agentTab.click();
+    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
+    return page.url().replace(/\?.*$/, '');
+  };
+
+  test('Checkpoint 21: An assessment unit the outline describes embeds its mentor directly, with no edX iframe', async ({
     page,
   }) => {
+    // The course content page requests the outline on load; keep its body to
+    // pick an assessment unit from it.
+    const outlineResponse = page
+      .waitForResponse((response) => OUTLINE_ENDPOINT.test(response.url()) && response.ok(), {
+        timeout: 120_000,
+      })
+      .catch(() => null);
+
     const ready = await navigateToCourseContent(page);
 
     if (!ready) {
@@ -1025,39 +1058,39 @@ test.describe('Journey 05: Course Content Tabs', () => {
       return;
     }
 
-    const agentTab = page.getByRole('link', { name: 'Agent' }).first();
-    const hasAgentTab = await agentTab.isVisible({ timeout: 30_000 }).catch(() => false);
-
-    if (!hasAgentTab) {
+    const agentUrl = await openAgentTab(page);
+    if (!agentUrl) {
       test.skip();
       return;
     }
 
-    await agentTab.click();
-    await page.waitForURL(/\/agent(\?|$)/, { timeout: 30_000 });
-
-    // The switch happens once getCourseBlockDetails reports a block of
-    // type=ibl_mentor_xblock for the current vertical; units without one stay
-    // in learning mode, which is a valid pass here.
-    const assessmentToast = page.getByText('Switched to assessment mode').first();
-    const switched = await assessmentToast.isVisible({ timeout: 30_000 }).catch(() => false);
-
-    if (!switched) {
-      logger.info('Current unit has no ibl_mentor_xblock — stays in learning mode; skipping');
+    const outline = (await (await outlineResponse)?.json().catch(() => null)) as OutlineNode | null;
+    const assessmentUnit = findAssessmentUnits(outline)[0];
+    if (!assessmentUnit) {
+      logger.info('Outline lists no unit with an ibl_mentor_xblock child — skipping');
       test.skip();
       return;
     }
+    const mentorBlock = assessmentUnit.children!.find(isMentorXblock)!;
 
-    // Assessment mode shows the edX unit in place of the agent chat.
-    await expect(page.locator('iframe#edx-iframe').first()).toBeVisible({ timeout: 30_000 });
-    const mentorAi = page.locator('agent-ai').first();
-    if ((await mentorAi.count()) > 0) {
-      const mentorWrapperClass = await mentorAi
-        .locator('xpath=ancestor::div[1]')
-        .getAttribute('class');
-      expect(mentorWrapperClass ?? '').toContain('hidden');
-    }
-    logger.info('Assessment unit opened in assessment mode with the toast');
+    await page.goto(`${agentUrl}?unit_id=${encodeURIComponent(assessmentUnit.id)}`);
+    await waitForAppShell(page);
+
+    await expect(page.getByText('Switched to assessment mode').first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    // The mentor the xblock names is embedded straight into the page, graded
+    // against the xblock, and no edX unit is loaded for it.
+    const embedded = page.getByTestId('assessment-mentor-chat');
+    await expect(embedded).toBeVisible({ timeout: 60_000 });
+    const mentorAi = embedded.locator('agent-ai');
+    await expect(mentorAi).toHaveAttribute('mentor', mentorBlock.mentor ?? '');
+    await expect(mentorAi).toHaveAttribute('edxusageid', mentorBlock.id);
+    await expect(mentorAi).toHaveAttribute('enablegrading', '');
+    expect(await page.locator('iframe#edx-iframe').count()).toBe(0);
+    expect(await page.locator('[data-testid="course-agent-chat-loading"]').count()).toBe(0);
+    logger.info('Assessment unit embeds its mentor directly, with no edX iframe');
   });
 
   test('Checkpoint 22: Mobile course-controls popover carries no Learn/Assess switch', async ({
@@ -1578,5 +1611,74 @@ test.describe('Journey 05: Course Content Tabs', () => {
     await expect(page.getByTestId('discussions-unavailable')).toBeVisible({ timeout: 60_000 });
     await expect(page.getByTestId('course-discussions')).toHaveCount(0);
     logger.info('Discussions tab hidden and /discussion shows the unavailable notice');
+  });
+
+  test('Checkpoint 40: An assessment unit the outline does not describe falls back to the edX iframe', async ({
+    page,
+  }) => {
+    // Serve the outline as a course published before it carried the mentor
+    // xblock's type: strip those children, keeping the units themselves. The
+    // block-details API still flags the unit as an assessment.
+    let strippedUnitId: string | null = null;
+    await page.route(OUTLINE_ENDPOINT, async (route) => {
+      const response = await route.fetch();
+      const outline = (await response.json().catch(() => null)) as OutlineNode | null;
+      if (!outline) {
+        await route.fulfill({ response });
+        return;
+      }
+      const units = findAssessmentUnits(outline);
+      for (const unit of units) {
+        unit.children = (unit.children ?? []).filter((child) => !isMentorXblock(child));
+      }
+      strippedUnitId ??= units[0]?.id ?? null;
+      await route.fulfill({ response, json: outline });
+    });
+
+    const outlineSeen = page
+      .waitForResponse((response) => OUTLINE_ENDPOINT.test(response.url()), {
+        timeout: 120_000,
+      })
+      .catch(() => null);
+
+    const ready = await navigateToCourseContent(page);
+
+    if (!ready) {
+      test.skip();
+      return;
+    }
+
+    const agentUrl = await openAgentTab(page);
+    if (!agentUrl) {
+      test.skip();
+      return;
+    }
+
+    await outlineSeen;
+    if (!strippedUnitId) {
+      logger.info('Outline lists no unit with an ibl_mentor_xblock child — skipping');
+      test.skip();
+      return;
+    }
+
+    await page.goto(`${agentUrl}?unit_id=${encodeURIComponent(strippedUnitId)}`);
+    await waitForAppShell(page);
+
+    await expect(page.getByText('Switched to assessment mode').first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    // Without the xblock in the outline, the edX unit is shown and its own
+    // embed loads the mentor; the page embeds none itself.
+    await expect(page.locator('iframe#edx-iframe').first()).toBeVisible({ timeout: 30_000 });
+    expect(await page.getByTestId('assessment-mentor-chat').count()).toBe(0);
+    const learningChat = page.locator('agent-ai').first();
+    if ((await learningChat.count()) > 0) {
+      const wrapperClass = await learningChat
+        .locator('xpath=ancestor::div[1]')
+        .getAttribute('class');
+      expect(wrapperClass ?? '').toContain('hidden');
+    }
+    logger.info('Assessment unit without the xblock in the outline fell back to the edX iframe');
   });
 });
