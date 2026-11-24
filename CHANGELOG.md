@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.105.0](https://github.com/iblai/lms/compare/skills-v0.104.5...skills-v0.105.0) (2026-11-24)
+
+### Features
+
+* **agent-tab:** embed assessment mentors straight from the course outline ([5998422](https://github.com/iblai/lms/commit/59984224a9fe9cf957771f6af15659674cef53f8))
+* **agent-tab:** embed assessment mentors straight from the course outline ([d7aff6a](https://github.com/iblai/lms/commit/d7aff6a1b342c54acabef2b9211ce49a5e49b48a))
+
+### Chores
+
+* package version reinitialized ([c36a27e](https://github.com/iblai/lms/commit/c36a27e60176146201222fe96fd3319a40ba4717))
+* package version updated for dev test ([d2f9b73](https://github.com/iblai/lms/commit/d2f9b736b8df86649d908db31e195fe99397ba87))
+
 ## [0.104.5](https://github.com/iblai/lms/compare/skills-v0.104.4...skills-v0.104.5) (2026-11-19)
 
 ### Bug Fixes
