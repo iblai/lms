@@ -3,12 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SyllabusTab } from '../syllabus-tab';
 import '@testing-library/jest-dom';
 
-vi.mock('@/components/default-empty-box', () => ({
-  DefaultEmptyBox: ({ message }: { message: string }) => (
-    <div data-testid="empty-box">{message}</div>
-  ),
-}));
-
 vi.mock('@/components/skeleton-multiplier', () => ({
   SkeletonMultiplier: () => <div data-testid="skeleton" />,
 }));
@@ -29,30 +23,24 @@ const renderTab = (overrides: Partial<typeof defaultProps> = {}) =>
   render(<SyllabusTab {...defaultProps} {...overrides} />);
 
 describe('SyllabusTab', () => {
-  it('renders the Syllabus heading', () => {
-    renderTab();
+  it('renders the Syllabus heading when the outline has sections', () => {
+    renderTab({ courseOutline: { children: [{ id: 's1', display_name: 'Intro' }] } });
     expect(screen.getByText('Syllabus')).toBeInTheDocument();
   });
 
-  it('shows skeleton when loading', () => {
-    renderTab({ courseOutlineLoading: true });
+  it('shows the card with a skeleton while loading', () => {
+    renderTab({ courseOutline: {}, courseOutlineLoading: true });
+    expect(screen.getByText('Syllabus')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
-  it('shows empty state when no children', () => {
-    renderTab({ courseOutline: {} });
-    expect(screen.getByTestId('empty-box')).toBeInTheDocument();
-    expect(screen.getByText('No course syllabus found.')).toBeInTheDocument();
-  });
-
-  it('shows empty state when children array is empty', () => {
-    renderTab({ courseOutline: { children: [] } });
-    expect(screen.getByTestId('empty-box')).toBeInTheDocument();
-  });
-
-  it('does not show empty state when loading', () => {
-    renderTab({ courseOutline: {}, courseOutlineLoading: true });
-    expect(screen.queryByTestId('empty-box')).not.toBeInTheDocument();
+  it.each([
+    ['has no children', {}],
+    ['has an empty children array', { children: [] }],
+    ['is null', null],
+  ])('renders nothing once loaded when the outline %s', (_label, courseOutline) => {
+    const { container } = renderTab({ courseOutline });
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders sections from courseOutline.children', () => {
@@ -170,10 +158,5 @@ describe('SyllabusTab', () => {
     });
     fireEvent.click(screen.getByText('Empty Lesson'));
     expect(handleOpenLesson).not.toHaveBeenCalled();
-  });
-
-  it('handles null courseOutline children gracefully', () => {
-    renderTab({ courseOutline: null });
-    expect(screen.getByTestId('empty-box')).toBeInTheDocument();
   });
 });
