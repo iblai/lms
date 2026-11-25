@@ -283,7 +283,6 @@ export async function redirectToAuthSpa(
     redirectPathStorageKey: LOCAL_STORAGE_KEYS.REDIRECT_TO,
     hasNonExpiredAuthToken,
     isOffline: () => isOfflineServerOrigin() || (isTauriApp() && isTauriOfflineMode()),
-    preserveTokenKey: 'edx_jwt_token',
     isNativeApp: () => isTauriApp(),
     scheme: 'iblai-skills',
   });
