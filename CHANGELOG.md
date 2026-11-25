@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.105.1](https://github.com/iblai/lms/compare/skills-v0.105.0...skills-v0.105.1) (2026-11-25)
+
+### Chores
+
+* **deps:** upgrade @iblai/iblai-js to 3.0.3 ([d7d8172](https://github.com/iblai/lms/commit/d7d81722efcde8d9ff984c1d91057281b08e18a7))
+
 ## [0.105.0](https://github.com/iblai/lms/compare/skills-v0.104.5...skills-v0.105.0) (2026-11-24)
 
 ### Features
