@@ -1,12 +1,19 @@
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
 import { logger } from '@iblai/iblai-js/playwright';
-import { SAMPLE_LESSON_COMPLETION_COURSE_ID, STUDIO_DOMAIN_URL } from '../fixtures/test-data';
+import {
+  MFE_DOMAIN_URL,
+  PLAYWRIGHT_PASSWORD,
+  PLAYWRIGHT_USERNAME,
+  SAMPLE_LESSON_COMPLETION_COURSE_ID,
+  STUDIO_DOMAIN_URL,
+} from '../fixtures/test-data';
 import { getCourseContentTab, gotoTenantPage, waitForAppShell } from '../utils/navigation';
 import {
   deleteStudioUnit,
   duplicateLastStudioUnit,
   expandStudioSubsection,
   publishStudioUnit,
+  reachStudio,
   renameStudioUnit,
   startEdxSession,
   studioCourseUrl,
@@ -29,7 +36,9 @@ import {
  * Studio, duplicates the last unit of the first subsection, renames the copy
  * with a timestamp and publishes it, then returns to the Agent tab, opens the
  * new unit from the outline and has the agent complete it. The unit is deleted
- * from Studio again when the test ends.
+ * from Studio again when the test ends. If Studio lands on the authn MFE
+ * sign-in page (`MFE_DOMAIN_URL`) instead of the course outline, the journey
+ * signs in there with `PLAYWRIGHT_USERNAME` / `PLAYWRIGHT_PASSWORD`.
  *
  * Needs `SAMPLE_LESSON_COMPLETION_COURSE_ID` and `STUDIO_DOMAIN_URL`; skips
  * when either is missing.
@@ -133,10 +142,14 @@ test.describe('Journey 39: Agent Lesson Completion', () => {
       ]);
       studio = popup;
       // Studio bounces through the LMS OAuth2 handshake and comes back here;
-      // without a session it would stop on the LMS sign-in page instead.
-      await expect(studio).toHaveURL((url) => url.href.startsWith(expectedStudioUrl), {
-        timeout: 120_000,
+      // when the SSO session did not take, it stops on the MFE sign-in page.
+      const signedIn = await reachStudio(studio, expectedStudioUrl, MFE_DOMAIN_URL, {
+        username: PLAYWRIGHT_USERNAME,
+        password: PLAYWRIGHT_PASSWORD,
       });
+      logger.info(
+        signedIn ? 'Studio required an MFE sign-in' : 'Studio opened with the SSO session',
+      );
       await expect(studio).toHaveTitle(/Course Outline/, { timeout: 60_000 });
     });
 
