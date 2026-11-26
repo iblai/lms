@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.106.1](https://github.com/iblai/lms/compare/skills-v0.106.0...skills-v0.106.1) (2026-11-26)
+
+### Bug Fixes
+
+* **course-about:** render overview lists and hide empty About/Syllabus cards ([836cf21](https://github.com/iblai/lms/commit/836cf217d3cf2c51c96700b44a53aacea93be7d1))
+
 ## [0.106.0](https://github.com/iblai/lms/compare/skills-v0.105.1...skills-v0.106.0) (2026-11-25)
 
 ### Features
