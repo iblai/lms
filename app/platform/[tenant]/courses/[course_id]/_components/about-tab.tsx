@@ -3,6 +3,19 @@
 import { useRef, useEffect } from 'react';
 import { DEFAULT_OVERVIEW_PLACEHOLDER } from '@/utils/helpers';
 
+const EMBEDDED_MEDIA_PATTERN = /<(img|video|audio|iframe|embed|object|svg)\b/i;
+
+// Rich-text editors save a cleared field as markup like `<p>&nbsp;</p>`, which
+// is non-empty as a string but shows nothing.
+function hasVisibleContent(html: string): boolean {
+  if (EMBEDDED_MEDIA_PATTERN.test(html)) return true;
+  const text = html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;|&#160;|&#xa0;/gi, ' ')
+    .replace(/\u00a0/g, ' ');
+  return text.trim() !== '';
+}
+
 interface AboutTabProps {
   course: any;
 }
@@ -80,10 +93,9 @@ export function AboutTab({ course }: AboutTabProps) {
     }
   }, [course?.overview]);
 
-  // Check if overview content is valid (exists and is not the default placeholder)
   const isOverviewValid = (overview: string | undefined): boolean => {
-    if (!overview || (overview || '').trim() === '') return false;
-    const normalizedOverview = (overview || '').replace(/\s+/g, ' ').trim();
+    if (!overview || !hasVisibleContent(overview)) return false;
+    const normalizedOverview = overview.replace(/\s+/g, ' ').trim();
     const normalizedPlaceholder = DEFAULT_OVERVIEW_PLACEHOLDER.replace(/\s+/g, ' ').trim();
     return normalizedOverview !== normalizedPlaceholder;
   };
@@ -95,18 +107,20 @@ export function AboutTab({ course }: AboutTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-medium text-gray-800">Course Description</h2>
-        <p className="text-gray-600">{course.description}</p>
-      </div>
+      {course?.description?.trim() && (
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 text-lg font-medium text-gray-800">Course Description</h2>
+          <p className="text-gray-600">{course.description}</p>
+        </div>
+      )}
 
-      {isOverviewValid(course.overview) && (
+      {isOverviewValid(course?.overview) && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <h2 className="mb-4 text-lg font-medium text-gray-800">Course Overview</h2>
           {isHtmlContent(course.overview || '') ? (
             <div
               ref={overviewRef}
-              className="prose prose-sm course-overview-content max-w-none text-gray-600 [&_a]:text-amber-600 [&_a]:hover:text-amber-700 [&_article]:mb-3 [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-medium [&_h2]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-gray-700 [&_img]:my-2 [&_img]:rounded-lg [&_p]:mb-2 [&_p]:text-gray-600 [&_section]:mb-4"
+              className="prose prose-sm course-overview-content max-w-none text-gray-600 [&_a]:text-amber-600 [&_a]:hover:text-amber-700 [&_article]:mb-3 [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-medium [&_h2]:text-gray-800 [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-gray-700 [&_img]:my-2 [&_img]:rounded-lg [&_li]:mb-1 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_p]:text-gray-600 [&_section]:mb-4 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
               dangerouslySetInnerHTML={{ __html: course.overview || '' }}
             />
           ) : (

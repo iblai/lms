@@ -2,7 +2,6 @@
 
 import { Plus, Minus, Play } from 'lucide-react';
 import isEmpty from 'lodash/isEmpty';
-import { DefaultEmptyBox } from '@/components/default-empty-box';
 import { SkeletonMultiplier } from '@/components/skeleton-multiplier';
 import { SkeletonCourseSyllabus } from '@/components/skeleton-course-syllabus';
 
@@ -21,13 +20,11 @@ export function SyllabusTab({
   toggleSection,
   handleOpenLesson,
 }: SyllabusTabProps) {
+  if (!courseOutlineLoading && isEmpty(courseOutline?.children)) return null;
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-lg font-medium text-gray-800">Syllabus</h2>
-      {!courseOutlineLoading &&
-        (!courseOutline?.children || courseOutline.children.length === 0) && (
-          <DefaultEmptyBox message="No course syllabus found." />
-        )}
       <div className="space-y-3">
         {courseOutlineLoading && (
           <SkeletonMultiplier multiplier={6} Skeleton={SkeletonCourseSyllabus} />
