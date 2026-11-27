@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.106.2](https://github.com/iblai/lms/compare/skills-v0.106.1...skills-v0.106.2) (2026-11-27)
+
+### CI
+
+* add a release-candidate tag and image build for a PR ([5da3226](https://github.com/iblai/lms/commit/5da32263df1b5e1616a2d289cadad652c426c298))
+* remove workflows unused for two months ([dce21af](https://github.com/iblai/lms/commit/dce21af49ab5d4199b1d60def62196df5efad713))
+
 ## [0.106.1](https://github.com/iblai/lms/compare/skills-v0.106.0...skills-v0.106.1) (2026-11-26)
 
 ### Bug Fixes
